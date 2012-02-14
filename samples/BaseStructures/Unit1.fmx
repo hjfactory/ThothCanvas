@@ -1,0 +1,53 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  BiDiMode = bdLeftToRight
+  Caption = 'Form1'
+  ClientHeight = 626
+  ClientWidth = 1070
+  Transparency = False
+  Visible = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  StyleLookup = 'backgroundstyle'
+  object Memo1: TMemo
+    Position.Point = '(720,72)'
+    Width = 337.000000000000000000
+    Height = 513.000000000000000000
+    TabOrder = 1
+    WordWrap = False
+  end
+  object Panel1: TPanel
+    Position.Point = '(24,8)'
+    Width = 689.000000000000000000
+    Height = 577.000000000000000000
+    TabOrder = 2
+    object ScrollBox1: TScrollBox
+      Align = alClient
+      Width = 689.000000000000000000
+      Height = 577.000000000000000000
+      OnMouseDown = ScrollBox1MouseDown
+      OnMouseUp = ScrollBox1MouseUp
+      TabOrder = 1
+    end
+  end
+  object CheckBox1: TCheckBox
+    Position.Point = '(736,32)'
+    Width = 120.000000000000000000
+    Height = 19.000000000000000000
+    TabOrder = 3
+    IsChecked = True
+    Text = 'CheckBox1'
+    OnChange = CheckBox1Change
+  end
+  object Button1: TButton
+    Position.Point = '(840,32)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button1Click
+    TabOrder = 4
+    StaysPressed = False
+    IsPressed = False
+    Text = 'Button1'
+  end
+end
