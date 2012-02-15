@@ -1,3 +1,7 @@
+{
+ 이 샘플은 TShape를 이용해서 Draw하는 test coding이다.
+ 향후 Canvas에 직접 그리는 방식으로 검토 필요
+}
 unit Unit1;
 
 interface
@@ -8,14 +12,40 @@ uses
   FMX.Memo;
 
 type
+  TThCommand = class;
+
+  IThCommand = interface
+
+  end;
+
+  IThObserver = interface;
+  IThSubject = interface
+    procedure Report(ACommand: IThCommand);
+    procedure AddObserver(AObserver: IThObserver);
+  end;
+
+  IThObserver = interface
+    procedure Notifycation(ACommand: TThCommand);
+  end;
+
+// Canvas
+  TThCanvas = class(TFramedScrollBox, IThObserver)
+  public
+    procedure Notifycation(ACommand: TThCommand); virtual;
+  end;
+
+  TThShape = class;
+
+  TThShapeClass = class of TThShape;
+
   TThShape = class(TShape)
   private
-    FThCanvas: TScrollBox;
+    FThCanvas: TThCanvas;
     //
   public
     constructor Create(AOwner: TComponent); override;
 
-    property ThCanvas: TScrollBox read FThCanvas;
+    property ThCanvas: TThCanvas read FThCanvas;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
@@ -30,24 +60,69 @@ type
     procedure Paint; override;
   end;
 
+// Command
+  TThCommand = class(TInterfacedObject, IThCommand)
+  protected
+    procedure Execute; virtual; abstract;
+    procedure Rollback; virtual; abstract;
+  end;
+
+  TThShapeCommand = class(TThCommand)
+  public
+//    procedure Execute; override;
+//    procedure Rollback; override;
+  end;
+
+  TThInsertShapeCommand = class(TThShapeCommand)
+
+  end;
+
+  TThDeleteShapeCommand = class(TThShapeCommand)
+
+  end;
+
+  TThMoveShapeCommand = class(TThShapeCommand)
+
+  end;
+
+  TThResizeShapeCommand = class(TThShapeCommand)
+
+  end;
+
+  TThStyleCommand = class(TThCommand)
+
+  end;
+
+// Main form
+
   TForm1 = class(TForm)
     Memo1: TMemo;
-    Panel1: TPanel;
-    ScrollBox1: TScrollBox;
     CheckBox1: TCheckBox;
     Button1: TButton;
+    Button2: TButton;
+    Path1: TPath;
+    Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure CheckBox1Change(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+  private
+    { Private declarations }
+    FThCanvas: TThCanvas;
+    FPosition: TPosition;
+    FDraw: Boolean;
+    FLine: TThLine;
+
     procedure ScrollBox1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure ScrollBox1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
-    procedure CheckBox1Change(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-  private
-    { Private declarations }
-    FPosition: TPosition;
-    FDraw: Boolean;
+    procedure ScrollBox1MouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Single);
 
     procedure LineMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
@@ -83,6 +158,30 @@ begin
 //  fsPascal1.
 end;
 
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  Bmp: TBitmap;
+begin
+//  ScrollBox1.SaveToStream();
+//  Image1.Position.X := ScrollBox1.Position.X;
+//  Image1.Position.Y := ScrollBox1.Position.Y;
+//  Image1.Width := SCrollBox1.Width;
+//  Image1.Height := SCrollBox1.Height;
+
+//  Bmp.Canvas.
+//  Image1.Bitmap.Canvas.
+
+//  Image1.
+//  Image1.Canvas.BeginScene;
+//  ScrollBox1.PaintTo(Image1.Bitmap.Canvas, RectF(0, 0, 100, 100));
+//  Image1.PaintTo(ScrollBox1.Canvas, RectF(0, 0, 100, 100));
+//  Image1.Bitmap.Canvas.d
+//  Image1.Canvas.EndScene;
+//  Image1.Bitmap.BitmapChanged;
+
+
+end;
+
 procedure TForm1.CheckBox1Change(Sender: TObject);
 begin
   FDraw := TCheckBox(Sender).IsChecked;
@@ -92,10 +191,24 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
 //  FPosition := TPosition.Create(PointF(0, 0));
   FDraw := True;
+
+//  Image1.Bitmap.LoadFromFile('F:\Temp\새 폴더\test.bmp');
+  FThCanvas := TThCanvas.Create(Self);
+  FThCanvas.Position.Point := PointF(10, 40);
+  FThCanvas.Width := 700;
+  FThCanvas.Height := 580;
+  FThCanvas.OnMouseDown := ScrollBox1MouseDown;
+  FThCanvas.OnMouseUp := ScrollBox1MouseUp;
+  FThCanvas.OnMouseMove := ScrollBox1MouseMove;
+  FThCanvas.Parent := Self;
+//  FThCanvas.parent
+
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
+  FThCanvas.Free;
+
   if Assigned(FPosition) then
     FPosition.Free;
 end;
@@ -146,7 +259,25 @@ begin
     FPosition := TPosition.Create(PointF(X, Y));
     FPosition.X := X;
     FPosition.Y := y;
+
+    FLine := TThLine.Create(FThCanvas);
+    FLine.Position.X := FPosition.X;
+    FLine.Position.Y := FPosition.Y;
+    FLine.OnMouseDown := LineMouseDown;
+    FLine.OnMouseUp := LineMouseUp;
   end;
+end;
+
+procedure TForm1.ScrollBox1MouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Single);
+begin
+  if not Assigned(FPosition) then
+    Exit;
+
+
+  FLine.Width := X - FPosition.X;
+  FLine.Height := Y - FPosition.Y;
+    FLine.Parent := FThCanvas;
 end;
 
 procedure TForm1.ScrollBox1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -159,14 +290,9 @@ begin
     if not Assigned(FPosition) then
       Exit;
 
-    Line := TThLine.Create(ScrollBox1);
-    Line.Position.X := FPosition.X;
-    Line.OnMouseDown := LineMouseDown;
-    Line.OnMouseUp := LineMouseUp;
-    Line.Position.Y := FPosition.Y;
-    Line.Width := X - FPosition.X;
-    Line.Height := Y - FPosition.Y;
-    Line.Parent := ScrollBox1;
+    FLine.Width := X - FPosition.X;
+    FLine.Height := Y - FPosition.Y;
+    FLine.Parent := FThCanvas;
 
     FPosition.Free;
     FPosition := nil;
@@ -181,7 +307,7 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FThCanvas := TScrollBox(AOwner);
+  FThCanvas := TThCanvas(AOwner);
 end;
 
 procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -204,6 +330,14 @@ begin
 
   P := LocalToAbsolute(PointF(X, Y));
   FThCanvas.MouseUp(Button, Shift, P.X, P.Y);
+end;
+
+{ TThCanvas }
+
+procedure TThCanvas.Notifycation;
+begin
+  inherited;
+
 end;
 
 end.
