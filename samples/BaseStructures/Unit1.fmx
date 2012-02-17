@@ -1,9 +1,11 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  BiDiMode = bdLeftToRight
   Caption = 'Form1'
   ClientHeight = 626
   ClientWidth = 1070
+  Transparency = False
   Visible = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -13,7 +15,7 @@ object Form1: TForm1
     Width = 337.000000000000000000
     Height = 513.000000000000000000
     TabOrder = 0
-    KeyboardType = vktDefault
+    WordWrap = False
     object Path1: TPath
       Position.Point = '(32,128)'
       Width = 185.000000000000000000
@@ -38,6 +40,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button1Click
     TabOrder = 2
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button1'
   end
   object Button2: TButton
@@ -46,34 +50,44 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button2Click
     TabOrder = 3
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button2'
   end
   object Button3: TButton
     Position.Point = '(24,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 5
+    TabOrder = 4
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button3'
   end
   object Button4: TButton
     Position.Point = '(288,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 6
+    TabOrder = 5
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button4'
   end
   object Button5: TButton
     Position.Point = '(112,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 7
+    TabOrder = 6
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button5'
   end
   object Button6: TButton
     Position.Point = '(200,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 8
+    TabOrder = 7
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button6'
   end
 end

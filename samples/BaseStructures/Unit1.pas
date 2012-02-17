@@ -28,6 +28,12 @@ type
     procedure Notifycation(ACommand: TThCommand);
   end;
 
+  TThothController = class(TInterfacedObject, IThSubject)
+  public
+    procedure Report(ACommand: IThCommand);
+    procedure AddObserver(AObserver: IThObserver);
+  end;
+
 // Canvas
   TThCanvas = class(TFramedScrollBox, IThObserver)
   public
@@ -337,6 +343,18 @@ end;
 procedure TThCanvas.Notifycation;
 begin
   inherited;
+
+end;
+
+{ TThothController }
+
+procedure TThothController.AddObserver(AObserver: IThObserver);
+begin
+
+end;
+
+procedure TThothController.Report(ACommand: IThCommand);
+begin
 
 end;
 
