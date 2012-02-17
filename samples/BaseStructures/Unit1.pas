@@ -9,13 +9,11 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Objects, FMX.Layouts,
-  FMX.Memo;
+  FMX.Memo, Winapi.Windows;
 
 type
   TThCommand = class;
-
   IThCommand = interface
-
   end;
 
   IThObserver = interface;
@@ -28,20 +26,43 @@ type
     procedure Notifycation(ACommand: TThCommand);
   end;
 
+///////////////////////////////////////////////////////
+// ObjectList
+  TThObjectList = class(TInterfacedObject, IThObserver)
+  private
+    procedure Notifycation(ACommand: TThCommand);
+  end;
+
+///////////////////////////////////////////////////////
+// Command List
+  TCommandList = class
+
+  end;
+
+///////////////////////////////////////////////////////
+// Manager
+  TThothManager = class(TInterfacedObject, IThSubject)
+    procedure Report(ACommand: IThCommand);
+    procedure AddObserver(AObserver: IThObserver);
+  end;
+
+///////////////////////////////////////////////////////
 // Canvas
   TThCanvas = class(TFramedScrollBox, IThObserver)
   public
     procedure Notifycation(ACommand: TThCommand); virtual;
   end;
 
+///////////////////////////////////////////////////////
+// Shape
   TThShape = class;
-
   TThShapeClass = class of TThShape;
 
   TThShape = class(TShape)
   private
     FThCanvas: TThCanvas;
     //
+    function LocalToParent(P: TPointF): TPointF;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -60,6 +81,7 @@ type
     procedure Paint; override;
   end;
 
+///////////////////////////////////////////////////////
 // Command
   TThCommand = class(TInterfacedObject, IThCommand)
   protected
@@ -93,8 +115,8 @@ type
 
   end;
 
+///////////////////////////////////////////////////////
 // Main form
-
   TForm1 = class(TForm)
     Memo1: TMemo;
     CheckBox1: TCheckBox;
@@ -194,13 +216,13 @@ begin
 
 //  Image1.Bitmap.LoadFromFile('F:\Temp\»õ Æú´õ\test.bmp');
   FThCanvas := TThCanvas.Create(Self);
+  FThCanvas.Parent := Self;
   FThCanvas.Position.Point := PointF(10, 40);
   FThCanvas.Width := 700;
   FThCanvas.Height := 580;
   FThCanvas.OnMouseDown := ScrollBox1MouseDown;
   FThCanvas.OnMouseUp := ScrollBox1MouseUp;
   FThCanvas.OnMouseMove := ScrollBox1MouseMove;
-  FThCanvas.Parent := Self;
 //  FThCanvas.parent
 
 end;
@@ -218,9 +240,9 @@ procedure TForm1.LineMouseDown(Sender: TObject; Button: TMouseButton;
 var
   P: TPointF;
 begin
-  P := TLine(Sender).LocalToAbsolute(PointF(X, Y));
+  P := TThLine(Sender).LocalToParent(PointF(X, Y));
 
-  Memo1.Lines.Add(Format('Line Down: %f, %f, %f, %f', [X, Y, P.X, P.Y]));
+  Memo1.Lines.Add(Format('Line Down: X:%f, Y:%f, %f, %f', [X, Y, P.X, P.Y]));
 
 //  TLine(Sender).Parent.do
 //TLine(Sender).Parent)
@@ -233,9 +255,9 @@ procedure TForm1.LineMouseUp(Sender: TObject; Button: TMouseButton;
 var
   P: TPointF;
 begin
-  P := TLine(Sender).LocalToAbsolute(PointF(X, Y));
+  P := TThLine(Sender).LocalToParent(PointF(X, Y));
 
-  Memo1.Lines.Add(Format('Line Up: %f, %f, %f, %f', [X, Y, P.X, P.Y]));
+  Memo1.Lines.Add(Format('Line Up: X:%f, Y:%f, %f, %f', [X, Y, P.X, P.Y]));
 
 //  TLine(Sender).Parent.do
 //  TThShape(Sender).ThCanvas.MouseUp(Button, Shift, P.X, P.Y);
@@ -246,8 +268,7 @@ procedure TForm1.ScrollBox1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Single);
 begin
 //  Local
-
-  Memo1.Lines.Add(Format('ScrollBox Down: %f, %f', [X, Y]));
+  Memo1.Lines.Add(Format('ScrollBox Down: X:%f, Y:%f', [X, Y]));
 
   if FDraw then
   begin
@@ -277,7 +298,7 @@ begin
 
   FLine.Width := X - FPosition.X;
   FLine.Height := Y - FPosition.Y;
-    FLine.Parent := FThCanvas;
+  FLine.Parent := FThCanvas;
 end;
 
 procedure TForm1.ScrollBox1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -298,7 +319,7 @@ begin
     FPosition := nil;
   end;
 
-  Memo1.Lines.Add(Format('Up: %f, %f', [X, Y]));
+  Memo1.Lines.Add(Format('Up: X:%f, Y:%f', [X, Y]));
 end;
 
 { TThShape }
@@ -310,6 +331,17 @@ begin
   FThCanvas := TThCanvas(AOwner);
 end;
 
+function TThShape.LocalToParent(P: TPointF): TPointF;
+begin
+//  FOrm1.Memo1.Lines.Add(Format('LocalToParent', []));
+{$IFDEF MSWINDOWS}
+  OutputDebugString(PChar(Format('LocalToParent', [])));
+{$ENDIF}
+
+  Result.X := Position.X + P.X;
+  Result.Y := Position.Y + P.Y;
+end;
+
 procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 var
@@ -317,7 +349,7 @@ var
 begin
   inherited;
 
-  P := LocalToAbsolute(PointF(X, Y));
+  P := LocalToParent(PointF(X, Y));
   FThCanvas.MouseDown(Button, Shift, P.X, P.Y);
 end;
 
@@ -328,7 +360,7 @@ var
 begin
   inherited;
 
-  P := LocalToAbsolute(PointF(X, Y));
+  P := LocalToParent(PointF(X, Y));
   FThCanvas.MouseUp(Button, Shift, P.X, P.Y);
 end;
 
@@ -338,6 +370,25 @@ procedure TThCanvas.Notifycation;
 begin
   inherited;
 
+end;
+
+{ TThObjectList }
+
+procedure TThObjectList.Notifycation(ACommand: TThCommand);
+begin
+
+end;
+
+{ TThothManager }
+
+procedure TThothManager.AddObserver(AObserver: IThObserver);
+begin
+
+end;
+
+procedure TThothManager.Report(ACommand: IThCommand);
+begin
+  OutputDebugString(PChar('test'));
 end;
 
 end.
