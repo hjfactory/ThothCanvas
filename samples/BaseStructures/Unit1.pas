@@ -28,7 +28,6 @@ type
 
 ///////////////////////////////////////////////////////
 // ObjectList
-  public
   TThObjectList = class(TInterfacedObject, IThObserver)
   private
     procedure Notifycation(ACommand: TThCommand);
