@@ -32,7 +32,6 @@ object Form1: TForm1
     TabOrder = 1
     IsChecked = True
     Text = 'CheckBox1'
-    OnChange = CheckBox1Change
   end
   object Button1: TButton
     Position.Point = '(840,8)'
@@ -58,36 +57,35 @@ object Form1: TForm1
     Position.Point = '(24,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
+    OnClick = Button3Click
     TabOrder = 4
     StaysPressed = False
     IsPressed = False
-    Text = 'Button3'
-  end
-  object Button4: TButton
-    Position.Point = '(288,8)'
-    Width = 80.000000000000000000
-    Height = 22.000000000000000000
-    TabOrder = 5
-    StaysPressed = False
-    IsPressed = False
-    Text = 'Button4'
+    Text = 'Line'
   end
   object Button5: TButton
     Position.Point = '(112,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 6
+    OnClick = Button5Click
+    TabOrder = 5
     StaysPressed = False
     IsPressed = False
-    Text = 'Button5'
+    Text = 'Rectangle'
   end
   object Button6: TButton
     Position.Point = '(200,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 7
+    TabOrder = 6
     StaysPressed = False
     IsPressed = False
-    Text = 'Button6'
+    Text = 'Circle'
+  end
+  object Rectangle1: TRectangle
+    Position.Point = '(576,384)'
+    Width = 193.000000000000000000
+    Height = 137.000000000000000000
+    Fill.Kind = bkNone
   end
 end
