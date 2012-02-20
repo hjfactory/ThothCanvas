@@ -73,7 +73,7 @@ var
 begin
   if Assigned(FShapeList) then
   begin
-    for I := FShapeList.Count - 1 to 0 do
+    for I := FShapeList.Count - 1 downto 0 do
       TObject(FShapeList[I]).Free;
 
     FShapeList.Free;

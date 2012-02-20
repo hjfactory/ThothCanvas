@@ -8,6 +8,21 @@ uses
   ThothTypes;
 
 type
+  TThInterfacedObject = class(TObject, IInterface)
+  protected
+    FRefCount: Integer;
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
+  public
+    procedure AfterConstruction; override;
+    procedure BeforeDestruction; override;
+    class function NewInstance: TObject; override;
+    property RefCount: Integer read FRefCount;
+  end;
+
+
+
   TThShape = class;
   TThShapeClass = class of TThShape;
 
@@ -376,6 +391,41 @@ begin
   FitRect(R, GetShapeRect);
   Canvas.FillEllipse(R, AbsoluteOpacity);
   Canvas.DrawEllipse(R, AbsoluteOpacity);
+end;
+
+{ TThInterfacedObject }
+
+procedure TThInterfacedObject.AfterConstruction;
+begin
+  inherited;
+
+end;
+
+procedure TThInterfacedObject.BeforeDestruction;
+begin
+  inherited;
+
+end;
+
+class function TThInterfacedObject.NewInstance: TObject;
+begin
+  Result := inherited NewInstance;
+end;
+
+function TThInterfacedObject.QueryInterface(const IID: TGUID; out Obj): HResult;
+begin
+  if GetInterface(IID, Obj) then
+    Result := 0
+  else
+    Result := E_NOINTERFACE;
+end;
+
+function TThInterfacedObject._AddRef: Integer;
+begin
+end;
+
+function TThInterfacedObject._Release: Integer;
+begin
 end;
 
 end.

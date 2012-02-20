@@ -39,9 +39,10 @@ destructor TThObjectList.Destroy;
 var
   I: Integer;
 begin
-  for I := FList.Count - 1 to 0 do
-    TObject(FList[I]).Free;
+//  for I := FList.Count - 1 downto 0 do
+//    TObject(FList[I]).Free;
 
+  FList.Clear;
   FList.Free;
 
   inherited;

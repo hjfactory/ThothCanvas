@@ -11,7 +11,6 @@ type
 // Manager
   TThothObjectManager = class(TInterfacedObject, IThSubject)
   private
-    FDatetime: TDatetime;
     FObjectList: TThObjectList;
     FObservers: TInterfaceList;
   public
@@ -34,27 +33,26 @@ uses
 
 constructor TThothObjectManager.Create;
 begin
-  FDatetime := now;
-
   FObservers := TInterfaceList.Create;
   FObjectList := TThObjectList.Create;
-  FObjectList.SetSubject(Self);
+  RegistObserver(FObjectList);
+//  FObjectList.SetSubject(Self);
 end;
 
 destructor TThothObjectManager.Destroy;
 begin
   OutputDebugString(PChar('TThothObjectManager.Destroy;'));
 
+//  FObjectList := nil;
+  FObservers.Clear;
   FObjectList.Free;
-  FObservers.Free;
+//  FObservers.Free;
 
   inherited;
 end;
 
 procedure TThothObjectManager.RegistObserver(AObserver: IThObserver);
 begin
-  OutputDebugString(PChar(FormatDateTime('HH:NN:SS.ZZZ', FDatetime)));
-
   FObservers.Add(AObserver);
 end;
 
@@ -63,8 +61,6 @@ var
   I: Integer;
   Observer: IThObserver;
 begin
-  OutputDebugString(PChar(FormatDateTime('HH:NN:SS.ZZZ', FDatetime)));
-
   for I := 0 to FObservers.Count - 1 do
     IThObserver(FObservers[I]).Notifycation(ACommand);
 end;

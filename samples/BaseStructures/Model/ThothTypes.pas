@@ -10,6 +10,8 @@ type
   end;
 
   IThObserver = interface;
+//  TThObserver = class;
+
   IThSubject = interface
     procedure Report(ACommand: IThCommand);
     procedure RegistObserver(AObserver: IThObserver);
@@ -20,6 +22,10 @@ type
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
   end;
+//  TThObserver = class(TInterfacedObject, IThObserver)
+//    procedure Notifycation(ACommand: IThCommand); virtual; abstract;
+//    procedure SetSubject(ASubject: IThSubject); virtual; abstract;
+//  end;
 
   IThShape = interface
   end;
