@@ -22,7 +22,7 @@ type
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
   end;
-//  TThObserver = class(TInterfacedObject, IThObserver)
+//  TThObserver = class(TThInterfacedObject, IThObserver)
 //    procedure Notifycation(ACommand: IThCommand); virtual; abstract;
 //    procedure SetSubject(ASubject: IThSubject); virtual; abstract;
 //  end;

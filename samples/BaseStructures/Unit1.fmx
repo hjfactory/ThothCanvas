@@ -1,9 +1,11 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  BiDiMode = bdLeftToRight
   Caption = 'Form1'
   ClientHeight = 509
   ClientWidth = 558
+  Transparency = False
   Visible = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -14,6 +16,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button3Click
     TabOrder = 0
+    StaysPressed = False
+    IsPressed = False
     Text = 'Line'
   end
   object Button5: TButton
@@ -22,6 +26,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button5Click
     TabOrder = 1
+    StaysPressed = False
+    IsPressed = False
     Text = 'Rectangle'
   end
   object Button6: TButton
@@ -30,6 +36,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button6Click
     TabOrder = 2
+    StaysPressed = False
+    IsPressed = False
     Text = 'Circle'
   end
   object Button1: TButton
@@ -38,6 +46,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button1Click
     TabOrder = 3
+    StaysPressed = False
+    IsPressed = False
     Text = 'Select'
   end
   object Button2: TButton
@@ -46,6 +56,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button2Click
     TabOrder = 4
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button2'
   end
 end

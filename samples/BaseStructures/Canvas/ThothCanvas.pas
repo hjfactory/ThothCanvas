@@ -112,7 +112,7 @@ begin
 
     FObjectManager.Report(TThInsertShapeCommand.Create(FShape));
 //    TThothObjectManager(FObjectManager).
-    FDrawMode := dmNone;
+    FDrawMode := dmSelect;
   end;
 //  FShape.Parent := Self;
 

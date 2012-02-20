@@ -9,7 +9,7 @@ uses
 type
 ///////////////////////////////////////////////////////
 // Manager
-  TThothObjectManager = class(TInterfacedObject, IThSubject)
+  TThothObjectManager = class(TThInterfacedObject, IThSubject)
   private
     FObjectList: TThObjectList;
     FObservers: TInterfaceList;

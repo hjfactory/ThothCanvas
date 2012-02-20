@@ -10,7 +10,7 @@ type
 ///////////////////////////////////////////////////////
 // Command
   TThCommand = class;
-  TThCommand = class(TInterfacedObject, IThCommand)
+  TThCommand = class(TThInterfacedObject, IThCommand)
   end;
 
   TThShapeCommand = class(TThCommand)

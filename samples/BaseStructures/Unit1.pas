@@ -46,18 +46,18 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   FObjectManager := TThothObjectManager.Create;
 
-//  FThCanvas := TThCanvas.Create(Self);
-//  FThCanvas.SetSubject(FObjectManager);
-//  FThCanvas.Parent := Self;
-//  FThCanvas.Position.Point := PointF(10, 40);
-//  FThCanvas.Width := 700;
-//  FThCanvas.Height := 580;
+  FThCanvas := TThCanvas.Create(Self);
+  FThCanvas.SetSubject(FObjectManager);
+  FThCanvas.Parent := Self;
+  FThCanvas.Position.Point := PointF(10, 40);
+  FThCanvas.Width := 530;
+  FThCanvas.Height := 450;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
   FObjectManager.Free;
-//  FThCanvas.Free;
+  FThCanvas.Free;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);

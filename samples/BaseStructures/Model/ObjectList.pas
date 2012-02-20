@@ -9,7 +9,7 @@ uses
 type
 ///////////////////////////////////////////////////////
 // ObjectList
-  TThObjectList = class(TInterfacedObject, IThObserver)
+  TThObjectList = class(TThInterfacedObject, IThObserver)
   private
     FList: TList;
   public
@@ -39,10 +39,10 @@ destructor TThObjectList.Destroy;
 var
   I: Integer;
 begin
-//  for I := FList.Count - 1 downto 0 do
-//    TObject(FList[I]).Free;
+  for I := FList.Count - 1 downto 0 do
+    TObject(FList[I]).Free;
 
-  FList.Clear;
+//  FList.Clear;
   FList.Free;
 
   inherited;
