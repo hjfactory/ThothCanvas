@@ -90,7 +90,9 @@
 			<DCCReference Include="Canvas\ThothCanvas.pas"/>
 			<DCCReference Include="Model\ThothTypes.pas"/>
 			<DCCReference Include="Model\ThothCommands.pas"/>
-			<DCCReference Include="Model\ThothManager.pas"/>
+			<DCCReference Include="Model\ObjectList.pas"/>
+			<DCCReference Include="Controller\ObjectManager.pas"/>
+			<DCCReference Include="Model\CommandList.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

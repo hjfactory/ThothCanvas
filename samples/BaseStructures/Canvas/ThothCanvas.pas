@@ -5,33 +5,44 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Objects, FMX.Controls, FMX.Layouts,
-  ThothTypes, ThothObjects;
+  ThothTypes, ThothObjects, ThothCommands, ObjectManager;
 
 type
+  TThDrawMode = (dmNone, dmSelect, dmMove, dmDraw, dmDrawing);
+
 ///////////////////////////////////////////////////////
 // Canvas
   TThCanvas = class(TFramedScrollBox, IThObserver, IThCanvas)
   private
+//    FObjectManager: TThothObjectManager;
+    FObjectManager: IThSubject;
     FPosition: TPosition;
     FShape: TThShape;
     FDrawClass: TThShapeClass;
+    FDrawMode: TThDrawMode;
 
-    procedure DrawBegin(Shape: IThShape);
-    procedure DrawEnd(Shape: IThShape);
+    function PointInShape(const X, Y: Single): TThShape;
+    procedure SetDrawClass(const Value: TThShapeClass);
   public
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
     procedure Notifycation(ACommand: IThCommand); virtual;
+    procedure SetSubject(ASubject: IThSubject);
 
-    property DrawClass: TThShapeClass read FDrawClass write FDrawClass;
+    property DrawClass: TThShapeClass read FDrawClass write SetDrawClass;
+    property DrawMode: TThDrawMode read FDrawMode write FDrawMode;
   end;
 
 
 implementation
+
+uses
+  Winapi.Windows;
 
 { TThCanvas }
 
@@ -39,52 +50,54 @@ constructor TThCanvas.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FDrawClass := TThLine;
+  FDrawClass := nil;
+  FPosition := TPosition.Create(PointF(0, 0));
 end;
 
-procedure TThCanvas.DrawBegin(Shape: IThShape);
+destructor TThCanvas.Destroy;
 begin
+  FPosition.Free;
 
-end;
-
-procedure TThCanvas.DrawEnd(Shape: IThShape);
-begin
-
+  inherited;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  Shape: TThShape;
 begin
   inherited;
 
-//  OutputDebugString(PChar(Format('ScrollBox Down: X:%f, Y:%f', [X, Y])));
-
-  if Assigned(FPosition) then
+  if not Assigned(FDrawClass) then
   begin
-    FPosition.Free;
+    FDrawMode := dmNone;
+
+    Shape := PointInShape(X, Y);
+    Exit;
   end;
 
-  FPosition := TPosition.Create(PointF(X, Y));
+//  OutputDebugString(PChar(Format('ScrollBox Down: X:%f, Y:%f', [X, Y])));
+
   FPosition.X := X;
   FPosition.Y := y;
 
   FShape := FDrawClass.Create(Self);
   FShape.Position.X := FPosition.X;
   FShape.Position.Y := FPosition.Y;
+  FShape.Parent := Self;
 
+  FDrawMode := dmDrawing;
 end;
 
 procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
   inherited;
 
-  if not Assigned(FPosition) then
-    Exit;
-
-
-  FShape.Width := X - FPosition.X;
-  FShape.Height := Y - FPosition.Y;
-  FShape.Parent := Self;
+  if FDrawMode = dmDrawing then
+  begin
+    FShape.Width := X - FPosition.X;
+    FShape.Height := Y - FPosition.Y;
+  end;
 end;
 
 procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
@@ -92,23 +105,56 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if not Assigned(FPosition) then
-    Exit;
+  if FDrawMode = dmDrawing then
+  begin
+    FShape.Width := X - FPosition.X;
+    FShape.Height := Y - FPosition.Y;
 
-  FShape.Width := X - FPosition.X;
-  FShape.Height := Y - FPosition.Y;
-  FShape.Parent := Self;
-
-  FPosition.Free;
-  FPosition := nil;
+    FObjectManager.Report(TThInsertShapeCommand.Create(FShape));
+//    TThothObjectManager(FObjectManager).
+    FDrawMode := dmNone;
+  end;
+//  FShape.Parent := Self;
 
 //  OutputDebugString(PChar(Format('Up: X:%f, Y:%f', [X, Y])));
 end;
 
 procedure TThCanvas.Notifycation(ACommand: IThCommand);
 begin
-  inherited;
+  if ACommand is TThInsertShapeCommand then
+    OutputDebugSTring(PChar('TThCanvas TThInsertShapeCommand'));
+end;
 
+function TThCanvas.PointInShape(const X, Y: Single): TThShape;
+begin
+  Result := nil;
+end;
+
+procedure TThCanvas.SetDrawClass(const Value: TThShapeClass);
+begin
+  FDrawClass := Value;
+  if Value = nil then
+  begin
+    FDrawMode := dmSelect;
+  end
+  else
+  begin
+    FDrawMode := dmDraw;
+  end;
+end;
+
+procedure TThCanvas.SetSubject(ASubject: IThSubject);
+begin
+  if Assigned(ASubject) then
+    FObjectManager := TThothObjectManager(ASubject);
+
+  if Assigned(ASubject) then
+  begin
+
+  end;
+//  FObjectManager := (ASubject) as TThothObjectManager;
+
+  ASubject.RegistObserver(Self);
 end;
 
 end.

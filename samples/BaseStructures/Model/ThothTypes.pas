@@ -12,20 +12,19 @@ type
   IThObserver = interface;
   IThSubject = interface
     procedure Report(ACommand: IThCommand);
-    procedure AddObserver(AObserver: IThObserver);
+    procedure RegistObserver(AObserver: IThObserver);
+    procedure UnregistObserver(AObserver: IThObserver);
   end;
 
   IThObserver = interface
     procedure Notifycation(ACommand: IThCommand);
+    procedure SetSubject(ASubject: IThSubject);
   end;
 
   IThShape = interface
-
   end;
 
   IThCanvas = interface
-    procedure DrawBegin(Shape: IThShape);
-    procedure DrawEnd(Shape: IThShape);
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
   end;
 

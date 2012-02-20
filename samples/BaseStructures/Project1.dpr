@@ -7,7 +7,9 @@ uses
   ThothCanvas in 'Canvas\ThothCanvas.pas',
   ThothTypes in 'Model\ThothTypes.pas',
   ThothCommands in 'Model\ThothCommands.pas',
-  ThothManager in 'Model\ThothManager.pas';
+  ObjectList in 'Model\ObjectList.pas',
+  ObjectManager in 'Controller\ObjectManager.pas',
+  CommandList in 'Model\CommandList.pas';
 
 {$R *.res}
 

@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Objects,
+  FMX.Types, FMX.Objects, System.Math,
   ThothTypes;
 
 type
@@ -15,25 +15,35 @@ type
 // Shape
   TThShape = class(TShape, IThShape)
   private
+    FGapSize: Integer;
     FThCanvas: IThCanvas;
-    //
+
+    FHideSelection: Boolean;
+    FMinSize: Integer;
+
+    FRatio: Single;
+    FMove, FLeftTop, FLeftBottom, FRightTop, FRightBottom: Boolean;
+    FLeftTopHot, FLeftBottomHot, FRightTopHot, FRightBottomHot: Boolean;
+    FDownPos, FMovePos: TPointF;
+    FGripSize: Single;
+
     function LocalToParent(P: TPointF): TPointF;
+    procedure SetGripSize(const Value: Single);
+  protected
+//    procedure Paint; virtual;
   public
     constructor Create(AOwner: TComponent); override;
-
-//    property ThCanvas: TThCanvas read FThCanvas;
+    property GripSize: Single read FGripSize write SetGripSize;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   end;
 
   TThLine = class(TThShape)
-    // implement
-      // Selection point
-      //
+  protected
+    procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Paint; override;
   end;
 
   TThRectangle = class(TThShape)
@@ -46,12 +56,13 @@ type
     FCorners: TCorners;
     FXRadius: Single;
     FYRadius: Single;
-    procedure Paint; override;
     function IsCornersStored: Boolean;
     procedure SetCorners(const Value: TCorners);
     procedure SetCornerType(const Value: TCornerType);
     procedure SetXRadius(const Value: Single);
     procedure SetYRadius(const Value: Single);
+  protected
+    procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -70,10 +81,11 @@ type
     property Sides: TSides read FSides write SetSides stored IsSidesStored;
   end;
 
-  TTHCircle = class(TThShape)
+  TThCircle = class(TThShape)
+  protected
+    procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Paint; override;
   end;
 
 
@@ -89,6 +101,7 @@ begin
   inherited;
 
   FThCanvas := TThCanvas(AOwner);
+  FGapSize := 3;
 end;
 
 function TThShape.LocalToParent(P: TPointF): TPointF;
@@ -103,24 +116,135 @@ procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 var
   P: TPointF;
+  R: TRectF;
 begin
   inherited;
 
-  P := LocalToParent(PointF(X, Y));
-  FThCanvas.MouseDown(Button, Shift, P.X, P.Y);
-//  FThCanvas.DrawBegin(Self);
+  if TThCanvas(FThCanvas).DrawMode = dmDraw then
+  begin
+    P := LocalToParent(PointF(X, Y));
+    FThCanvas.MouseDown(Button, Shift, P.X, P.Y);
+  end;
+{
+  FDownPos := PointF(X, Y);
+  if Button = TMouseButton.mbLeft then
+  begin
+    FRatio := Width / Height;
+    R := LocalRect;
+    R := RectF(R.Left - (GripSize), R.Top - (GripSize), R.Left + (GripSize),
+      R.Top + (GripSize));
+    if PointInRect(FDownPos, R) then
+    begin
+      FLeftTop := True;
+      Exit;
+    end;
+    R := LocalRect;
+    R := RectF(R.Right - (GripSize), R.Top - (GripSize), R.Right + (GripSize),
+      R.Top + (GripSize));
+    if PointInRect(FDownPos, R) then
+    begin
+      FRightTop := True;
+      Exit;
+    end;
+    R := LocalRect;
+    R := RectF(R.Right - (GripSize), R.Bottom - (GripSize), R.Right + (GripSize),
+      R.Bottom + (GripSize));
+    if PointInRect(FDownPos, R) then
+    begin
+      FRightBottom := True;
+      Exit;
+    end;
+    R := LocalRect;
+    R := RectF(R.Left - (GripSize), R.Bottom - (GripSize), R.Left + (GripSize),
+      R.Bottom + (GripSize));
+    if PointInRect(FDownPos, R) then
+    begin
+      FLeftBottom := True;
+      Exit;
+    end;
+    Repaint;
+    FMove := True;
+  end;
+}
 end;
 
 procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
-var
-  P: TPointF;
 begin
   inherited;
 
-//  P := LocalToParent(PointF(X, Y));
-//  FThCanvas.MouseUp(Button, Shift, P.X, P.Y);
-//  FThCanvas.DrawEnd(Self);
+end;
+
+{
+procedure TThShape.Paint;
+var
+  R: TRectF;
+begin
+  inherited;
+
+  if FHideSelection then
+    Exit;
+  R := LocalRect;
+  InflateRect(R, -0.5, -0.5);
+  Canvas.Fill.Kind := TBrushKind.bkSolid;
+  Canvas.Fill.Color := $FFFFFFFF;
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Kind := TBrushKind.bkSolid;
+  Canvas.Stroke.Color := $FF1072C5;
+  Canvas.StrokeDash := TStrokeDash.sdDash;
+  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity);
+  Canvas.StrokeDash := TStrokeDash.sdSolid;
+
+  R := LocalRect;
+  InflateRect(R, -0.5, -0.5);
+  if FLeftTopHot then
+    Canvas.Fill.Color := $FFFF0000
+  else
+    Canvas.Fill.Color := $FFFFFFFF;
+  Canvas.FillEllipse(RectF(R.Left - (GripSize), R.Top - (GripSize),
+    R.Left + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+  Canvas.DrawEllipse(RectF(R.Left - (GripSize), R.Top - (GripSize),
+    R.Left + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+  R := LocalRect;
+  if FRightTopHot then
+    Canvas.Fill.Color := $FFFF0000
+  else
+    Canvas.Fill.Color := $FFFFFFFF;
+  Canvas.FillEllipse(RectF(R.Right - (GripSize), R.Top - (GripSize),
+    R.Right + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+  Canvas.DrawEllipse(RectF(R.Right - (GripSize), R.Top - (GripSize),
+    R.Right + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+  R := LocalRect;
+  if FLeftBottomHot then
+    Canvas.Fill.Color := $FFFF0000
+  else
+    Canvas.Fill.Color := $FFFFFFFF;
+  Canvas.FillEllipse(RectF(R.Left - (GripSize), R.Bottom - (GripSize),
+    R.Left + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
+  Canvas.DrawEllipse(RectF(R.Left - (GripSize), R.Bottom - (GripSize),
+    R.Left + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
+  R := LocalRect;
+  if FRightBottomHot then
+    Canvas.Fill.Color := $FFFF0000
+  else
+    Canvas.Fill.Color := $FFFFFFFF;
+  Canvas.FillEllipse(RectF(R.Right - (GripSize), R.Bottom - (GripSize),
+    R.Right + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
+  Canvas.DrawEllipse(RectF(R.Right - (GripSize), R.Bottom - (GripSize),
+    R.Right + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
+end;
+}
+procedure TThShape.SetGripSize(const Value: Single);
+begin
+  if FGripSize <> Value then
+  begin
+    FGripSize := Value;
+    if FGripSize > 20 then
+      FGripSize := 20;
+    if FGripSize < 1 then
+      FGripSize := 1;
+    Repaint;
+  end;
 end;
 
 { TThLine }
@@ -165,6 +289,8 @@ var
   R: TRectF;
   Off: Single;
 begin
+  inherited;
+
   R := GetShapeRect;
   if Sides <> AllSides then
   begin
@@ -235,16 +361,21 @@ end;
 
 { TTHCircle }
 
-constructor TTHCircle.Create(AOwner: TComponent);
+constructor TThCircle.Create(AOwner: TComponent);
 begin
   inherited;
 
+  Fill.Kind := TBrushKind.bkNone;
 end;
 
-procedure TTHCircle.Paint;
+procedure TThCircle.Paint;
+var
+  R: TRectF;
 begin
-  inherited;
-
+  R := RectF(0, 0, Max(Width, Height), Max(Width, Height));
+  FitRect(R, GetShapeRect);
+  Canvas.FillEllipse(R, AbsoluteOpacity);
+  Canvas.DrawEllipse(R, AbsoluteOpacity);
 end;
 
 end.

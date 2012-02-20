@@ -3,89 +3,61 @@ object Form1: TForm1
   Top = 0
   BiDiMode = bdLeftToRight
   Caption = 'Form1'
-  ClientHeight = 626
-  ClientWidth = 1070
+  ClientHeight = 509
+  ClientWidth = 558
   Transparency = False
   Visible = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   StyleLookup = 'backgroundstyle'
-  object Memo1: TMemo
-    Position.Point = '(720,72)'
-    Width = 337.000000000000000000
-    Height = 513.000000000000000000
-    TabOrder = 0
-    WordWrap = False
-    object Path1: TPath
-      Position.Point = '(32,128)'
-      Width = 185.000000000000000000
-      Height = 113.000000000000000000
-      Data.Path = {
-        0400000000000000000020410000C84202000000000020410000964302000000
-        00009643000048C302000000000096430000C842}
-    end
-  end
-  object CheckBox1: TCheckBox
-    Position.Point = '(736,32)'
-    Width = 97.000000000000000000
-    Height = 19.000000000000000000
-    TabOrder = 1
-    IsChecked = True
-    Text = 'CheckBox1'
-  end
-  object Button1: TButton
-    Position.Point = '(840,8)'
-    Width = 80.000000000000000000
-    Height = 22.000000000000000000
-    OnClick = Button1Click
-    TabOrder = 2
-    StaysPressed = False
-    IsPressed = False
-    Text = 'Button1'
-  end
-  object Button2: TButton
-    Position.Point = '(840,40)'
-    Width = 80.000000000000000000
-    Height = 22.000000000000000000
-    OnClick = Button2Click
-    TabOrder = 3
-    StaysPressed = False
-    IsPressed = False
-    Text = 'Button2'
-  end
   object Button3: TButton
-    Position.Point = '(24,8)'
+    Position.Point = '(112,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button3Click
-    TabOrder = 4
+    TabOrder = 0
     StaysPressed = False
     IsPressed = False
     Text = 'Line'
   end
   object Button5: TButton
-    Position.Point = '(112,8)'
+    Position.Point = '(200,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button5Click
-    TabOrder = 5
+    TabOrder = 1
     StaysPressed = False
     IsPressed = False
     Text = 'Rectangle'
   end
   object Button6: TButton
-    Position.Point = '(200,8)'
+    Position.Point = '(288,8)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    TabOrder = 6
+    OnClick = Button6Click
+    TabOrder = 2
     StaysPressed = False
     IsPressed = False
     Text = 'Circle'
   end
-  object Rectangle1: TRectangle
-    Position.Point = '(576,384)'
-    Width = 193.000000000000000000
-    Height = 137.000000000000000000
-    Fill.Kind = bkNone
+  object Button1: TButton
+    Position.Point = '(24,8)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button1Click
+    TabOrder = 3
+    StaysPressed = False
+    IsPressed = False
+    Text = 'Select'
+  end
+  object Button2: TButton
+    Position.Point = '(472,8)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button2Click
+    TabOrder = 13
+    StaysPressed = False
+    IsPressed = False
+    Text = 'Button2'
   end
 end
