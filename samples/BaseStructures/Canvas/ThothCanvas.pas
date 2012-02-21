@@ -8,7 +8,7 @@ uses
   ThothTypes, ThothObjects, ThothCommands, ObjectManager;
 
 type
-  TThDrawMode = (dmNone, dmSelect, dmMove, dmDraw, dmDrawing);
+  TThDrawMode = (dmSelect, dmMove, dmDraw, dmDrawing);
 
 ///////////////////////////////////////////////////////
 // Canvas
@@ -17,7 +17,7 @@ type
 //    FObjectManager: TThothObjectManager;
     FObjectManager: IThSubject;
     FPosition: TPosition;
-    FShape: TThShape;
+    FShape: IThShape;
     FDrawClass: TThShapeClass;
     FDrawMode: TThDrawMode;
 
@@ -68,11 +68,9 @@ var
 begin
   inherited;
 
-  if not Assigned(FDrawClass) then
+  if FDrawMode = dmSelect then
   begin
-    FDrawMode := dmNone;
-
-    Shape := PointInShape(X, Y);
+//    Shape := PointInShape(X, Y);
     Exit;
   end;
 
@@ -82,9 +80,9 @@ begin
   FPosition.Y := y;
 
   FShape := FDrawClass.Create(Self);
-  FShape.Position.X := FPosition.X;
-  FShape.Position.Y := FPosition.Y;
-  FShape.Parent := Self;
+  TThShape(FShape).Position.X := FPosition.X;
+  TThShape(FShape).Position.Y := FPosition.Y;
+  TThShape(FShape).Parent := Self;
 
   FDrawMode := dmDrawing;
 end;
@@ -95,8 +93,8 @@ begin
 
   if FDrawMode = dmDrawing then
   begin
-    FShape.Width := X - FPosition.X;
-    FShape.Height := Y - FPosition.Y;
+    TThShape(FShape).Width := X - FPosition.X;
+    TThShape(FShape).Height := Y - FPosition.Y;
   end;
 end;
 
@@ -107,10 +105,10 @@ begin
 
   if FDrawMode = dmDrawing then
   begin
-    FShape.Width := X - FPosition.X;
-    FShape.Height := Y - FPosition.Y;
+    TThShape(FShape).Width := X - FPosition.X;
+    TThShape(FShape).Height := Y - FPosition.Y;
 
-    FObjectManager.Report(TThInsertShapeCommand.Create(FShape));
+    FObjectManager.Report(TThInsertShapeCommand.Create(TThShape(FShape)));
 //    TThothObjectManager(FObjectManager).
     FDrawMode := dmSelect;
   end;

@@ -16,8 +16,6 @@ type
   public
   end;
 
-
-
   TThShape = class;
   TThShapeClass = class of TThShape;
 
@@ -142,32 +140,28 @@ begin
     begin
       FRatio := Width / Height;
       R := LocalRect;
-      R := RectF(R.Left - (GripSize), R.Top - (GripSize), R.Left + (GripSize),
-        R.Top + (GripSize));
+      R := RectF(R.Left - (GripSize), R.Top - (GripSize), R.Left + (GripSize), R.Top + (GripSize));
       if PointInRect(FDownPos, R) then
       begin
         FLeftTop := True;
         Exit;
       end;
       R := LocalRect;
-      R := RectF(R.Right - (GripSize), R.Top - (GripSize), R.Right + (GripSize),
-        R.Top + (GripSize));
+      R := RectF(R.Right - (GripSize), R.Top - (GripSize), R.Right + (GripSize), R.Top + (GripSize));
       if PointInRect(FDownPos, R) then
       begin
         FRightTop := True;
         Exit;
       end;
       R := LocalRect;
-      R := RectF(R.Right - (GripSize), R.Bottom - (GripSize), R.Right + (GripSize),
-        R.Bottom + (GripSize));
+      R := RectF(R.Right - (GripSize), R.Bottom - (GripSize), R.Right + (GripSize), R.Bottom + (GripSize));
       if PointInRect(FDownPos, R) then
       begin
         FRightBottom := True;
         Exit;
       end;
       R := LocalRect;
-      R := RectF(R.Left - (GripSize), R.Bottom - (GripSize), R.Left + (GripSize),
-        R.Bottom + (GripSize));
+      R := RectF(R.Left - (GripSize), R.Bottom - (GripSize), R.Left + (GripSize), R.Bottom + (GripSize));
       if PointInRect(FDownPos, R) then
       begin
         FLeftBottom := True;
@@ -408,10 +402,12 @@ end;
 
 function TThInterfacedObject._AddRef: Integer;
 begin
+  Result := 0;
 end;
 
 function TThInterfacedObject._Release: Integer;
 begin
+  Result := 0;
 end;
 
 end.
