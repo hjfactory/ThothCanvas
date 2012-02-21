@@ -1,5 +1,10 @@
 unit ThothCanvas;
 
+{
+그리는 도중에는 버퍼(FBufferBmp)에???
+Canvas의 영역을 Bitmap으로 저장하는 방법 필요
+}
+
 interface
 
 uses
@@ -16,8 +21,9 @@ type
   private
 //    FObjectManager: TThothObjectManager;
     FObjectManager: IThSubject;
-    FPosition: TPosition;
-    FShape: IThShape;
+    FSelectionList: TList;
+
+    FDrawShape: TThShape;
     FDrawClass: TThShapeClass;
     FDrawMode: TThDrawMode;
 
@@ -34,15 +40,20 @@ type
     procedure Notifycation(ACommand: IThCommand); virtual;
     procedure SetSubject(ASubject: IThSubject);
 
+    procedure DrawShape(AClass: TThShapeClass; AStart, AEnd: TPointF);
     property DrawClass: TThShapeClass read FDrawClass write SetDrawClass;
     property DrawMode: TThDrawMode read FDrawMode write FDrawMode;
+
+    procedure ClearSelection;
+    procedure Selection(AShape: TThShape);    // Unselect & select
+    procedure AddSelection(AShape: TThShape); // Multi select
   end;
 
 
 implementation
 
 uses
-  Winapi.Windows;
+  Winapi.Windows, System.Math;
 
 { TThCanvas }
 
@@ -51,14 +62,29 @@ begin
   inherited;
 
   FDrawClass := nil;
-  FPosition := TPosition.Create(PointF(0, 0));
+
+  FSelectionList := TList.Create;
 end;
 
 destructor TThCanvas.Destroy;
 begin
-  FPosition.Free;
+  FSelectionList.Clear;
+  FSelectionList.Free;
 
   inherited;
+end;
+
+procedure TThCanvas.DrawShape(AClass: TThShapeClass; AStart, AEnd: TPointF);
+
+begin
+  with AClass.Create(Self) do
+  begin
+    Position.X := AStart.X;
+    Position.Y := AStart.Y;
+    Width := Abs(AStart.X - AEnd.X);
+    Height := Abs(AStart.Y - AEnd.Y);
+    Parent := Self;
+  end;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -70,19 +96,14 @@ begin
 
   if FDrawMode = dmSelect then
   begin
-//    Shape := PointInShape(X, Y);
+    ClearSelection;
     Exit;
   end;
 
-//  OutputDebugString(PChar(Format('ScrollBox Down: X:%f, Y:%f', [X, Y])));
-
-  FPosition.X := X;
-  FPosition.Y := y;
-
-  FShape := FDrawClass.Create(Self);
-  TThShape(FShape).Position.X := FPosition.X;
-  TThShape(FShape).Position.Y := FPosition.Y;
-  TThShape(FShape).Parent := Self;
+  FDrawShape := FDrawClass.Create(Self);
+  FDrawShape.Position.X := X;
+  FDrawShape.Position.Y := Y;
+  FDrawShape.Parent := Self;
 
   FDrawMode := dmDrawing;
 end;
@@ -93,8 +114,8 @@ begin
 
   if FDrawMode = dmDrawing then
   begin
-    TThShape(FShape).Width := X - FPosition.X;
-    TThShape(FShape).Height := Y - FPosition.Y;
+    FDrawShape.Width := X - FDrawShape.Position.X;
+    FDrawShape.Height := Y - FDrawShape.Position.Y;
   end;
 end;
 
@@ -105,16 +126,15 @@ begin
 
   if FDrawMode = dmDrawing then
   begin
-    TThShape(FShape).Width := X - FPosition.X;
-    TThShape(FShape).Height := Y - FPosition.Y;
+    FDrawShape.Width := Abs(X - FDrawShape.Position.X);
+    FDrawShape.Height := Abs(Y - FDrawShape.Position.Y);
 
-    FObjectManager.Report(TThInsertShapeCommand.Create(TThShape(FShape)));
-//    TThothObjectManager(FObjectManager).
+    FDrawShape.Position.X := Min(X, FDrawShape.Position.X);
+    FDrawShape.Position.Y := Min(Y, FDrawShape.Position.Y);
+
+    FObjectManager.Report(TThInsertShapeCommand.Create(FDrawShape));
     FDrawMode := dmSelect;
   end;
-//  FShape.Parent := Self;
-
-//  OutputDebugString(PChar(Format('Up: X:%f, Y:%f', [X, Y])));
 end;
 
 procedure TThCanvas.Notifycation(ACommand: IThCommand);
@@ -126,6 +146,27 @@ end;
 function TThCanvas.PointInShape(const X, Y: Single): TThShape;
 begin
   Result := nil;
+end;
+
+procedure TThCanvas.ClearSelection;
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionList.Count - 1 do
+    TThShape(FSelectionList[I]).Selected := False;
+  FSelectionList.Clear;
+end;
+
+procedure TThCanvas.Selection(AShape: TThShape);
+begin
+  ClearSelection;
+  AddSelection(AShape);
+end;
+
+procedure TThCanvas.AddSelection(AShape: TThShape);
+begin
+  AShape.Selected := True;
+  FSelectionList.Add(AShape);
 end;
 
 procedure TThCanvas.SetDrawClass(const Value: TThShapeClass);
@@ -145,13 +186,6 @@ procedure TThCanvas.SetSubject(ASubject: IThSubject);
 begin
   if Assigned(ASubject) then
     FObjectManager := TThothObjectManager(ASubject);
-
-  if Assigned(ASubject) then
-  begin
-
-  end;
-//  FObjectManager := (ASubject) as TThothObjectManager;
-
   ASubject.RegistObserver(Self);
 end;
 

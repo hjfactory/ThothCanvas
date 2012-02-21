@@ -75,7 +75,8 @@ var
   I: Integer;
 begin
   for I := 0 to FList.Count - 1 do
-    OutputDebugString(PChar(Format('%d> %s', [I, TThShape(FList[I]).ClassName])));
+    with TThShape(FList[I]) do
+      OutputDebugString(PChar(Format('%d> %s(W:%f, H:%f, %f,%f / %f,%f)', [I, ClassName, Width, Height, StartPos.X, StartPos.Y, EndPos.X, EndPos.Y])));
 end;
 
 end.

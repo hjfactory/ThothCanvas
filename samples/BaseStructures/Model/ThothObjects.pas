@@ -1,5 +1,9 @@
 unit ThothObjects;
 
+{
+  selection은 Canvas에서 처리?? 매번 Repaint 해야함
+}
+
 interface
 
 uses
@@ -29,21 +33,33 @@ type
     FMinSize: Integer;
 
     FRatio: Single;
-    FMove, FLeftTop, FLeftBottom, FRightTop, FRightBottom: Boolean;
+    FLeftTop, FLeftBottom, FRightTop, FRightBottom: Boolean;
     FLeftTopHot, FLeftBottomHot, FRightTopHot, FRightBottomHot: Boolean;
     FDownPos, FMovePos: TPointF;
     FGripSize: Single;
+    FSelected: Boolean;
 
     function LocalToParent(P: TPointF): TPointF;
     procedure SetGripSize(const Value: Single);
+    function GetEndPos: TPointF;
+    function GetStartPos: TPointF;
+    procedure SetSelected(const Value: Boolean);
   protected
     procedure Paint; override;
+
+    procedure SetSelectionPos; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     property GripSize: Single read FGripSize write SetGripSize;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+
+    property StartPos: TPointF read GetStartPos;
+    property EndPos: TPointF read GetEndPos;
+
+    property Selected: Boolean read FSelected write SetSelected;
   end;
 
   TThLine = class(TThShape)
@@ -108,15 +124,47 @@ begin
   inherited;
 
   FThCanvas := TThCanvas(AOwner);
-  FGripSize := 7;
+  FGripSize := 3;
+  FSelected := False;
+end;
+
+function TThShape.GetStartPos: TPointF;
+begin
+  Result := PointF(
+          IfThen(Width > 0, Position.X, Position.X + Width),
+          IfThen(Height > 0, Position.Y, Position.Y + Height));
+end;
+
+function TThShape.GetEndPos: TPointF;
+begin
+  Result := PointF(
+          IfThen(Width < 0, Position.X, Position.X + Width),
+          IfThen(Height < 0, Position.Y, Position.Y + Height));
 end;
 
 function TThShape.LocalToParent(P: TPointF): TPointF;
 begin
-//  FOrm1.Memo1.Lines.Add(Format('LocalToParent', []));
-
   Result.X := Position.X + P.X;
   Result.Y := Position.Y + P.Y;
+end;
+
+procedure TThShape.SetSelected(const Value: Boolean);
+begin
+  if FSelected = Value then
+    Exit;
+
+  FSelected := Value;
+
+  if Value then
+    SetSelectionPos;
+
+  Repaint;
+  TThCanvas(FThCanvas).Repaint;
+end;
+
+procedure TThShape.SetSelectionPos;
+begin
+
 end;
 
 procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -136,40 +184,62 @@ begin
   else if TThCanvas(FThCanvas).DrawMode = dmSelect then
   begin
     FDownPos := PointF(X, Y);
-    if Button = TMouseButton.mbLeft then
+
+    if FSelected then
     begin
-      FRatio := Width / Height;
-      R := LocalRect;
-      R := RectF(R.Left - (GripSize), R.Top - (GripSize), R.Left + (GripSize), R.Top + (GripSize));
-      if PointInRect(FDownPos, R) then
+      if Button = TMouseButton.mbLeft then
       begin
-        FLeftTop := True;
-        Exit;
+        FRatio := Width / Height;
+        R := LocalRect;
+        R := RectF(R.Left - (GripSize), R.Top - (GripSize), R.Left + (GripSize), R.Top + (GripSize));
+        if PointInRect(FDownPos, R) then
+        begin
+          FLeftTop := True;
+          Exit;
+        end;
+        R := LocalRect;
+        R := RectF(R.Right - (GripSize), R.Top - (GripSize), R.Right + (GripSize), R.Top + (GripSize));
+        if PointInRect(FDownPos, R) then
+        begin
+          FRightTop := True;
+          Exit;
+        end;
+        R := LocalRect;
+        R := RectF(R.Right - (GripSize), R.Bottom - (GripSize), R.Right + (GripSize), R.Bottom + (GripSize));
+        if PointInRect(FDownPos, R) then
+        begin
+          FRightBottom := True;
+          Exit;
+        end;
+        R := LocalRect;
+        R := RectF(R.Left - (GripSize), R.Bottom - (GripSize), R.Left + (GripSize), R.Bottom + (GripSize));
+        if PointInRect(FDownPos, R) then
+        begin
+          FLeftBottom := True;
+          Exit;
+        end;
       end;
-      R := LocalRect;
-      R := RectF(R.Right - (GripSize), R.Top - (GripSize), R.Right + (GripSize), R.Top + (GripSize));
-      if PointInRect(FDownPos, R) then
-      begin
-        FRightTop := True;
-        Exit;
-      end;
-      R := LocalRect;
-      R := RectF(R.Right - (GripSize), R.Bottom - (GripSize), R.Right + (GripSize), R.Bottom + (GripSize));
-      if PointInRect(FDownPos, R) then
-      begin
-        FRightBottom := True;
-        Exit;
-      end;
-      R := LocalRect;
-      R := RectF(R.Left - (GripSize), R.Bottom - (GripSize), R.Left + (GripSize), R.Bottom + (GripSize));
-      if PointInRect(FDownPos, R) then
-      begin
-        FLeftBottom := True;
-        Exit;
-      end;
-      Repaint;
-      FMove := True;
+    end
+    else
+    begin
+      if ssShift in Shift then
+        TThCanvas(FThCanvas).AddSelection(Self)
+      else
+        TThCanvas(FThCanvas).Selection(Self);
     end;
+  end;
+end;
+
+procedure TThShape.MouseMove(Shift: TShiftState; X, Y: Single);
+begin
+  inherited;
+
+  if (ssLeft in Shift) and FSelected then
+  begin
+    Position.X := Position.X + X - FDownPos.X;
+    Position.Y := Position.Y + Y - FDownPos.Y;
+
+    TThCanvas(FThCanvas).Repaint;
   end;
 end;
 
@@ -180,21 +250,15 @@ begin
 
 end;
 
-//procedure TThShape.Paint;
-//begin
-//  inherited;
-//
-//end;
 procedure TThShape.Paint;
 var
   R: TRectF;
 begin
   inherited;
 
-  if TThCanvas(FThCanvas).DrawMode <> dmSelect then
+  if FHideSelection or not FSelected then
     Exit;
-  if FHideSelection then
-    Exit;
+
   R := LocalRect;
 //  InflateRect(R, -0.5, -0.5);
   Canvas.Fill.Kind := TBrushKind.bkSolid;
@@ -216,6 +280,7 @@ begin
     R.Left + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
   Canvas.DrawEllipse(RectF(R.Left - (GripSize), R.Top - (GripSize),
     R.Left + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+
   R := LocalRect;
   if FRightTopHot then
     Canvas.Fill.Color := $FFFF0000
@@ -225,6 +290,7 @@ begin
     R.Right + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
   Canvas.DrawEllipse(RectF(R.Right - (GripSize), R.Top - (GripSize),
     R.Right + (GripSize), R.Top + (GripSize)), AbsoluteOpacity);
+
   R := LocalRect;
   if FLeftBottomHot then
     Canvas.Fill.Color := $FFFF0000
@@ -234,6 +300,7 @@ begin
     R.Left + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
   Canvas.DrawEllipse(RectF(R.Left - (GripSize), R.Bottom - (GripSize),
     R.Left + (GripSize), R.Bottom + (GripSize)), AbsoluteOpacity);
+
   R := LocalRect;
   if FRightBottomHot then
     Canvas.Fill.Color := $FFFF0000

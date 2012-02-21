@@ -3,8 +3,8 @@ object Form1: TForm1
   Top = 0
   BiDiMode = bdLeftToRight
   Caption = 'Form1'
-  ClientHeight = 509
-  ClientWidth = 558
+  ClientHeight = 670
+  ClientWidth = 831
   Transparency = False
   Visible = False
   OnCreate = FormCreate
@@ -51,13 +51,38 @@ object Form1: TForm1
     Text = 'Select'
   end
   object Button2: TButton
-    Position.Point = '(472,8)'
-    Width = 80.000000000000000000
+    Position.Point = '(400,8)'
+    Width = 41.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button2Click
     TabOrder = 4
     StaysPressed = False
     IsPressed = False
-    Text = 'Button2'
+    Text = 'test'
+    object Button4: TButton
+      Position.Point = '(40,0)'
+      Width = 49.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button4Click
+      TabOrder = 1
+      StaysPressed = False
+      IsPressed = False
+      Text = 'hit 100'
+    end
+  end
+  object Button7: TButton
+    Position.Point = '(488,8)'
+    Width = 49.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button7Click
+    TabOrder = 6
+    StaysPressed = False
+    IsPressed = False
+    Text = 'bitmap'
+  end
+  object Image1: TImage
+    Position.Point = '(560,40)'
+    Width = 233.000000000000000000
+    Height = 145.000000000000000000
   end
 end
