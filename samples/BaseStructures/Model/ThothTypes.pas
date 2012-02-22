@@ -31,7 +31,7 @@ type
   end;
 
   IThCanvas = interface
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+//    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
   end;
 
 implementation

@@ -13,7 +13,7 @@ uses
   ThothTypes, ThothObjects, ThothCommands, ObjectManager;
 
 type
-  TThDrawMode = (dmSelect, dmMove, dmDraw, dmDrawing);
+  TThDrawMode = (dmNone, dmSelect, dmMove, dmDraw, dmDrawing);
 
 ///////////////////////////////////////////////////////
 // Canvas
@@ -62,6 +62,7 @@ begin
   inherited;
 
   FDrawClass := nil;
+  FDrawMode := dmNone;
 
   FSelectionList := TList.Create;
 end;
@@ -94,9 +95,10 @@ var
 begin
   inherited;
 
-  if FDrawMode = dmSelect then
+  ClearSelection;
+
+  if FDrawMode in [dmNone, dmSelect] then
   begin
-    ClearSelection;
     Exit;
   end;
 
@@ -109,6 +111,9 @@ begin
 end;
 
 procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  I: Integer;
+  Shape: TThShape;
 begin
   inherited;
 
@@ -116,6 +121,17 @@ begin
   begin
     FDrawShape.Width := X - FDrawShape.Position.X;
     FDrawShape.Height := Y - FDrawShape.Position.Y;
+  end
+  else if (FDrawMode = dmSelect) and (ssLeft in Shift) then
+  begin
+    for I := 0 to FSelectionList.Count - 1 do
+    begin
+      Shape := TThShape(FSelectionList[I]);
+      Shape.Position.X := Shape.Position.X + X{ - FDownPos.X};
+      Shape.Position.Y := Shape.Position.Y + Y{ - FDownPos.Y};
+    end;
+
+    Repaint;
   end;
 end;
 
@@ -133,7 +149,7 @@ begin
     FDrawShape.Position.Y := Min(Y, FDrawShape.Position.Y);
 
     FObjectManager.Report(TThInsertShapeCommand.Create(FDrawShape));
-    FDrawMode := dmSelect;
+    FDrawMode := dmNone;
   end;
 end;
 
@@ -167,6 +183,8 @@ procedure TThCanvas.AddSelection(AShape: TThShape);
 begin
   AShape.Selected := True;
   FSelectionList.Add(AShape);
+
+  FDrawMode := dmSelect;
 end;
 
 procedure TThCanvas.SetDrawClass(const Value: TThShapeClass);
@@ -174,7 +192,7 @@ begin
   FDrawClass := Value;
   if Value = nil then
   begin
-    FDrawMode := dmSelect;
+    FDrawMode := dmNone;
   end
   else
   begin

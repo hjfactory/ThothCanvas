@@ -130,16 +130,19 @@ end;
 
 function TThShape.GetStartPos: TPointF;
 begin
-  Result := PointF(
-          IfThen(Width > 0, Position.X, Position.X + Width),
-          IfThen(Height > 0, Position.Y, Position.Y + Height));
+  Result := Position.Point;
+
+//  Result := PointF(
+//          IfThen(Width > 0, Position.X, Position.X + Width),
+//          IfThen(Height > 0, Position.Y, Position.Y + Height));
 end;
 
 function TThShape.GetEndPos: TPointF;
 begin
-  Result := PointF(
-          IfThen(Width < 0, Position.X, Position.X + Width),
-          IfThen(Height < 0, Position.Y, Position.Y + Height));
+  Result := PointF(Position.X + Width, Position.Y + Height);
+//  Result := PointF(
+//          IfThen(Width < 0, Position.X, Position.X + Width),
+//          IfThen(Height < 0, Position.Y, Position.Y + Height));
 end;
 
 function TThShape.LocalToParent(P: TPointF): TPointF;
@@ -178,10 +181,10 @@ begin
   if TThCanvas(FThCanvas).DrawMode = dmDraw then
   begin
     P := LocalToParent(PointF(X, Y));
-    FThCanvas.MouseDown(Button, Shift, P.X, P.Y);
+    TThCanvas(FThCanvas).MouseDown(Button, Shift, P.X, P.Y);
     Exit;
   end
-  else if TThCanvas(FThCanvas).DrawMode = dmSelect then
+  else if TThCanvas(FThCanvas).DrawMode in [dmNone, dmSelect] then
   begin
     FDownPos := PointF(X, Y);
 
@@ -236,10 +239,12 @@ begin
 
   if (ssLeft in Shift) and FSelected then
   begin
-    Position.X := Position.X + X - FDownPos.X;
-    Position.Y := Position.Y + Y - FDownPos.Y;
-
-    TThCanvas(FThCanvas).Repaint;
+    // 수정필요
+    TThCanvas(FThCanvas).MouseMove(Shift, X - FDownPos.X, Y - FDownPos.Y);
+//    Position.X := Position.X + X - FDownPos.X;
+//    Position.Y := Position.Y + Y - FDownPos.Y;
+//
+//    TThCanvas(FThCanvas).Repaint;
   end;
 end;
 

@@ -3,7 +3,7 @@
 			<ProjectGuid>{024ACFB2-A307-48D0-A48D-D73FC2DF25AF}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
 			<FrameworkType>FMX</FrameworkType>
-			<MainSource>Project1.dpr</MainSource>
+			<MainSource>BaseStructure.dpr</MainSource>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -138,7 +138,7 @@
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
 					<Source>
-						<Source Name="MainSource">Project1.dpr</Source>
+						<Source Name="MainSource">BaseStructure.dpr</Source>
 					</Source>
 				</Delphi.Personality>
 				<Deployment/>
