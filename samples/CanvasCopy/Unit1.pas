@@ -14,7 +14,9 @@ type
     Button1: TButton;
     Panel1: TPanel;
     Image1: TImage;
+    FramedScrollBox1: TFramedScrollBox;
     procedure Button1Click(Sender: TObject);
+    procedure ScrollBox2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -35,6 +37,18 @@ begin
   with ScrollBox1.Canvas do
   begin
 
+  end;
+end;
+
+procedure TForm1.ScrollBox2Click(Sender: TObject);
+begin
+  with TRectangle.Create(ScrollBox2) do
+  begin
+    Position.X := 30;
+    Position.Y := 200;
+    Width := 200;
+    Height := 100;
+    Parent := ScrollBox2;
   end;
 end;
 

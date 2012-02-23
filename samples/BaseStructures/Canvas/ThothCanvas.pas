@@ -17,18 +17,26 @@ type
 
 ///////////////////////////////////////////////////////
 // Canvas
-  TThCanvas = class(TFramedScrollBox, IThObserver, IThCanvas)
+  TThCanvas = class(TScrollBox, IThObserver, IThCanvas)
   private
 //    FObjectManager: TThothObjectManager;
+//    FTest: TThShape;
     FObjectManager: IThSubject;
     FSelectionList: TList;
 
+    FDownPos, FCurrPos: TPointF;
     FDrawShape: TThShape;
     FDrawClass: TThShapeClass;
     FDrawMode: TThDrawMode;
 
     function PointInShape(const X, Y: Single): TThShape;
     procedure SetDrawClass(const Value: TThShapeClass);
+  protected
+    procedure Paint; override;
+
+    procedure DoInsertShape(AShape: TThShape);
+    procedure DoMoveShapes;
+    procedure DoDeleteShapes;
   public
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -45,8 +53,11 @@ type
     property DrawMode: TThDrawMode read FDrawMode write FDrawMode;
 
     procedure ClearSelection;
-    procedure Selection(AShape: TThShape);    // Unselect & select
+    procedure SetSelection(AShape: TThShape);    // Unselect & select
     procedure AddSelection(AShape: TThShape); // Multi select
+    procedure Unselection(AShape: TThShape);
+
+    procedure DeleteSelectedShapes;
   end;
 
 
@@ -65,6 +76,10 @@ begin
   FDrawMode := dmNone;
 
   FSelectionList := TList.Create;
+
+  MouseTracking := True;
+  DisableMouseWheel := True;
+//  ShowScrollBars := False;
 end;
 
 destructor TThCanvas.Destroy;
@@ -72,19 +87,55 @@ begin
   FSelectionList.Clear;
   FSelectionList.Free;
 
+//  if Assigned(FTest) then
+//    FTest.Free;
+
   inherited;
+end;
+
+procedure TThCanvas.DeleteSelectedShapes;
+begin
+  DoDeleteShapes;
+end;
+
+procedure TThCanvas.DoDeleteShapes;
+var
+  I: Integer;
+begin
+  FObjectManager.Report(TThDeleteShapeCommand.Create(Self, FSelectionList));
+
+//  FTest := TThShape(FSelectionList[0]);
+
+  for I := 0 to FSelectionList.Count - 1 do
+    TThShape(FSelectionList[I]).Parent := nil;
+
+  ClearSelection;
+
+  Repaint;
+end;
+
+procedure TThCanvas.DoInsertShape(AShape: TThShape);
+begin
+  FObjectManager.Report(TThInsertShapeCommand.Create(Self, AShape));
+end;
+
+procedure TThCanvas.DoMoveShapes;
+begin
+  FObjectManager.Report(TThMoveShapeCommand.Create(Self, FSelectionList));
 end;
 
 procedure TThCanvas.DrawShape(AClass: TThShapeClass; AStart, AEnd: TPointF);
 
 begin
-  with AClass.Create(Self) do
+  with AClass.Create(nil) do
   begin
     Position.X := AStart.X;
     Position.Y := AStart.Y;
     Width := Abs(AStart.X - AEnd.X);
     Height := Abs(AStart.Y - AEnd.Y);
     Parent := Self;
+
+//    Children
   end;
 end;
 
@@ -93,11 +144,26 @@ procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 var
   Shape: TThShape;
 begin
+
   inherited;
 
-  ClearSelection;
+  if  (FDrawMode in [dmSelect, dmDraw]) then
+  begin
+    MouseTracking := False;
+  end;
 
-  if FDrawMode in [dmNone, dmSelect] then
+  FDownPos := PointF(X, Y);
+  FCurrPos := FDownPos;
+
+//  if 공백클릭 시 then
+
+  if FDrawMode <> dmSelect then
+    ClearSelection;
+
+  if FDrawMode = dmSelect then
+    FDrawMode := dmMove;
+
+  if FDrawMode in [dmNone, dmSelect, dmMove] then
   begin
     Exit;
   end;
@@ -122,15 +188,17 @@ begin
     FDrawShape.Width := X - FDrawShape.Position.X;
     FDrawShape.Height := Y - FDrawShape.Position.Y;
   end
-  else if (FDrawMode = dmSelect) and (ssLeft in Shift) then
+  else if (FDrawMode in [dmSelect, dmMove]) and (ssLeft in Shift) then
   begin
+//    Exit;
     for I := 0 to FSelectionList.Count - 1 do
     begin
       Shape := TThShape(FSelectionList[I]);
-      Shape.Position.X := Shape.Position.X + X{ - FDownPos.X};
-      Shape.Position.Y := Shape.Position.Y + Y{ - FDownPos.Y};
+      Shape.Position.X := Shape.Position.X + X - FCurrPos.X{ - FDownPos.X};
+      Shape.Position.Y := Shape.Position.Y + Y - FCurrPos.Y{ - FDownPos.Y};
     end;
 
+    FCurrPos := PointF(X, Y);
     Repaint;
   end;
 end;
@@ -148,15 +216,34 @@ begin
     FDrawShape.Position.X := Min(X, FDrawShape.Position.X);
     FDrawShape.Position.Y := Min(Y, FDrawShape.Position.Y);
 
-    FObjectManager.Report(TThInsertShapeCommand.Create(FDrawShape));
-    FDrawMode := dmNone;
+    DoInsertShape(FDrawShape);
   end;
+
+  if (FDrawMode = dmMove) and (FDownPos <> FCurrPos) then
+    DoMoveShapes;
+
+  FDrawMode := dmNone;
+    MouseTracking := True;
 end;
 
 procedure TThCanvas.Notifycation(ACommand: IThCommand);
 begin
+  OutputDebugSTring(PChar('TThCanvas - ' + TThShapeCommand(ACommand).ClassName));
+
   if ACommand is TThInsertShapeCommand then
-    OutputDebugSTring(PChar('TThCanvas TThInsertShapeCommand'));
+    // Canvas에 추가
+  else if ACommand is TThDeleteShapeCommand then
+    // Canvas에서 제거
+  else if ACommand is TThRestoreShapeCommand then
+    // Canvas에 InsertObject
+  else if ACommand is TThRemoveShapeCommand then
+    // Canvas에서 제거(있으면)
+  ;
+end;
+
+procedure TThCanvas.Paint;
+begin
+  inherited;
 end;
 
 function TThCanvas.PointInShape(const X, Y: Single): TThShape;
@@ -173,7 +260,7 @@ begin
   FSelectionList.Clear;
 end;
 
-procedure TThCanvas.Selection(AShape: TThShape);
+procedure TThCanvas.SetSelection(AShape: TThShape);
 begin
   ClearSelection;
   AddSelection(AShape);
@@ -181,10 +268,21 @@ end;
 
 procedure TThCanvas.AddSelection(AShape: TThShape);
 begin
-  AShape.Selected := True;
+  TThShape(AShape).Selected := True;
   FSelectionList.Add(AShape);
 
   FDrawMode := dmSelect;
+end;
+
+procedure TThCanvas.Unselection(AShape: TThShape);
+begin
+  TThShape(AShape).Selected := False;
+  FSelectionList.Remove(AShape);
+
+  if FSelectionList.Count = 0 then
+    FDrawMode := dmNone
+  else
+    FDrawMode := dmSelect;
 end;
 
 procedure TThCanvas.SetDrawClass(const Value: TThShapeClass);

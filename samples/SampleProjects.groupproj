@@ -9,6 +9,9 @@
 			<Projects Include="BaseStructures\BaseStructure.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="BufferCanvas\BufferCanvas.dproj">
+				<Dependencies/>
+			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
 		<Target Name="BaseStructure:Make">
 			<MSBuild Projects="BaseStructures\BaseStructure.dproj" Targets="Make"/>
 		</Target>
+		<Target Name="BufferCanvas">
+			<MSBuild Projects="BufferCanvas\BufferCanvas.dproj"/>
+		</Target>
+		<Target Name="BufferCanvas:Clean">
+			<MSBuild Projects="BufferCanvas\BufferCanvas.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="BufferCanvas:Make">
+			<MSBuild Projects="BufferCanvas\BufferCanvas.dproj" Targets="Make"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="CanvasCopy;BaseStructure"/>
+			<CallTarget Targets="CanvasCopy;BaseStructure;BufferCanvas"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="CanvasCopy:Clean;BaseStructure:Clean"/>
+			<CallTarget Targets="CanvasCopy:Clean;BaseStructure:Clean;BufferCanvas:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="CanvasCopy:Make;BaseStructure:Make"/>
+			<CallTarget Targets="CanvasCopy:Make;BaseStructure:Make;BufferCanvas:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>

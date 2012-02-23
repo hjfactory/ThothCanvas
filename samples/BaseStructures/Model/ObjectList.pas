@@ -12,6 +12,7 @@ type
   TThObjectList = class(TThInterfacedObject, IThObserver)
   private
     FList: TList;
+    FBackupList: TList;
   public
     constructor Create;
     destructor Destroy; override;
@@ -53,16 +54,17 @@ var
   I: Integer;
   Cmd: TThShapeCommand;
 begin
-  if ACommand is TThInsertShapeCommand then
-    OutputDebugSTring(PChar('TThInsertShapeCommand'));
+  OutputDebugSTring(PChar('TThObjectList - ' + TThShapeCommand(ACommand).ClassName));
 
-  if ACommand is TThShapeCommand then
-  begin
-    Cmd := TThShapeCommand(ACommand);
-    for I := 0 to Cmd.ShapeCount - 1 do
-      FList.Add(Cmd[I]);
-//    FList.Add(
-  end;
+  if ACommand is TThInsertShapeCommand then
+    // FList에 추가
+  else if ACommand is TThDeleteShapeCommand then
+    // FList에서 FBackup으로 이동, Index추가
+  else if ACommand is TThRestoreShapeCommand then
+    // FBackup에서 FList로 이동(Insert)
+  else if ACommand is TThRemoveShapeCommand then
+    // FBackup에서 제거 후 객체해제
+  ;
 end;
 
 procedure TThObjectList.SetSubject(ASubject: IThSubject);

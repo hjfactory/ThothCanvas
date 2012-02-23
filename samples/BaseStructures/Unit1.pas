@@ -9,12 +9,12 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Objects, FMX.Layouts,
-  FMX.Memo, ThothCanvas, ThothObjects, ObjectManager;
+  FMX.Memo, ThothCanvas, ThothObjects, ObjectManager, ThothTypes;
 
 type
 ///////////////////////////////////////////////////////
 // Main form
-  TForm1 = class(TForm)
+  TForm1 = class(TForm, IThObserver)  // 걍 여기다가 함
     Button3: TButton;
     Button5: TButton;
     Button6: TButton;
@@ -22,7 +22,12 @@ type
     Button2: TButton;
     Button4: TButton;
     Button7: TButton;
-    Image1: TImage;
+    Panel1: TPanel;
+    Button8: TButton;
+    Panel2: TPanel;
+    Button9: TButton;
+    btnUndo: TButton;
+    btnRedo: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -32,12 +37,21 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
+    procedure btnUndoClick(Sender: TObject);
+    procedure btnRedoClick(Sender: TObject);
   private
     { Private declarations }
     FObjectManager: TThothObjectManager;
     FThCanvas: TThCanvas;
+    FThCanvas2: TThCanvas;
+
+    FTest: TRectangle;
   public
     { Public declarations }
+    procedure Notifycation(ACommand: IThCommand); virtual;
+    procedure SetSubject(ASubject: IThSubject);
   end;
 
 var
@@ -45,16 +59,22 @@ var
 
 implementation
 
+uses
+  WinAPI.Windows, ThothCommands;
+
 {$R *.fmx}
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FObjectManager := TThothObjectManager.Create;
+  SetSubject(FObjectManager);
+//  FObjectManager.RegistObserver(Self);
 
-  FThCanvas := TThCanvas.Create(Self);
+  FThCanvas := TThCanvas.Create(nil);
   FThCanvas.SetSubject(FObjectManager);
-  FThCanvas.Parent := Self;
-  FThCanvas.Position.Point := PointF(10, 40);
+  FThCanvas.Parent := Panel2;
+//  FThCanvas.Position.Point := PointF(10, 40);
+  FThCanvas.Align := TAlignLayout.alClient;
   FThCanvas.Width := 530;
   FThCanvas.Height := 450;
 end;
@@ -65,14 +85,52 @@ begin
   FThCanvas.Free;
 end;
 
+procedure TForm1.Notifycation(ACommand: IThCommand);
+begin
+  OutputDebugSTring(PChar('TForm1 - ' + TThShapeCommand(ACommand).ClassName));
+
+  btnUndo.Enabled := FObjectManager.CommandList.HasUndo;
+  btnRedo.Enabled := FObjectManager.CommandList.HasRedo;
+end;
+
+procedure TForm1.SetSubject(ASubject: IThSubject);
+begin
+  ASubject.RegistObserver(Self);
+end;
+
+procedure TForm1.btnRedoClick(Sender: TObject);
+begin
+  FObjectManager.Redo;
+end;
+
+procedure TForm1.btnUndoClick(Sender: TObject);
+begin
+  FObjectManager.Undo;
+end;
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   FThCanvas.DrawClass := nil;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
+var
+  a: WORD;
 begin
+  FTest := TRectangle.Create(Self);
+
+  with FTest do
+  begin
+    Position.Point := PointF(100, 100);
+    Width := 100;
+    Height:= 100;
+    Parent := Self;
+  end;
+
   FObjectManager.test;
+
+  FThCanvas.Centre;
+  ShowMessage(FloatToStr(FThCanvas.VScrollBar.Value));
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -87,7 +145,7 @@ var
 begin
   Randomize;
   FThCanvas.BeginUpdate;
-  for I := 0 to 500 do
+  for I := 0 to 100 do
   begin
     P := PointF(Random(Trunc(FThCanvas.Width - 200)), Random(Trunc(FThCanvas.Height - 200)));
 
@@ -102,6 +160,8 @@ end;
 procedure TForm1.Button5Click(Sender: TObject);
 begin
   FThCanvas.DrawClass := TThRectangle;
+  if Assigned(FThCanvas2) then
+    FThCanvas2.DrawClass := TThRectangle;
 end;
 
 procedure TForm1.Button6Click(Sender: TObject);
@@ -110,23 +170,24 @@ begin
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);
-var
-  bmp: TBitmap;
-  Stream: TMemoryStream;
 begin
-  bmp := TBitmap.Create(Trunc(FThCanvas.Width), Trunc(FThCanvas.Height));
+  FThCanvas2 := TThCanvas.Create(nil);
+  FThCanvas2.SetSubject(FObjectManager);
+  FThCanvas2.Parent := FThCanvas;
+//  FThCanvas2.Align := TAlignLayout.alClient;
+  FThCanvas2.Position.Point := PointF(100, 100);
+  FThCanvas2.Width := 530;
+  FThCanvas2.Height := 450;
+end;
 
-  Stream := TMemoryStream.Create;
+procedure TForm1.Button8Click(Sender: TObject);
+begin
+  FTest.Free;
+end;
 
-  FThCanvas.SaveToStream(Stream);
-
-  bmp.LoadFromStream(Stream);
-//  bmp.Canvas.
-  bmp.BitmapChanged;
-
-  Image1.Bitmap.Assign(bmp);
-
-  Stream.Free;
+procedure TForm1.Button9Click(Sender: TObject);
+begin
+  FThCanvas.DeleteSelectedShapes;
 end;
 
 end.

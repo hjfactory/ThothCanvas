@@ -3,25 +3,29 @@ unit ThothCommands;
 interface
 
 uses
-  System.Classes,
+  System.Classes, System.Types,
   ThothTypes, ThothObjects;
 
 type
 ///////////////////////////////////////////////////////
 // Command
   TThCommand = class;
-  TThCommand = class(TThInterfacedObject, IThCommand)
+  TThCommand = class(TInterfacedObject, IThCommand)
+  protected
+    FSource: IThObserver;
+  public
+    property Source: IThObserver read FSource;
   end;
 
   TThShapeCommand = class(TThCommand)
   private
-    FShape: TThShape;
     FShapeList: TList;
     function GetShapeCount: Integer;
     function Get(Index: Integer): TThShape;
   public
-    constructor Create; overload;
-    constructor Create(AShape: TThShape); overload;
+    constructor Create(ASource: IThObserver); overload;
+    constructor Create(ASource: IThObserver; AShape: TThShape); overload;
+    constructor Create(ASource: IThObserver; AShapes: TList); overload;
     destructor Destroy; override;
 
     procedure AddShape(AShape: TThShape);
@@ -29,23 +33,32 @@ type
     property ShapeCount: Integer read GetShapeCount;
 
     property Items[Index: Integer]: TThShape read Get; default;
+
+    property List: TList read FShapeList;
   end;
 
-  TThInsertShapeCommand = class(TThShapeCommand)
-
-  end;
-
-  TThDeleteShapeCommand = class(TThShapeCommand)
-
-  end;
-
+  TThInsertShapeCommand = class(TThShapeCommand);
+  TThRestoreShapeCommand = class(TThShapeCommand);
+  TThDeleteShapeCommand = class(TThShapeCommand);
+  TThRemoveShapeCommand = class(TThShapeCommand);
   TThMoveShapeCommand = class(TThShapeCommand)
+  private
+    FBeforePos: TPointF;
+    FAfterPos: TPointF;
+  public
+    constructor Create(ASource: IThObserver; AShapes: TList; ABefore, AAfter: TPointF); overload;
+
+    property BeforePos: TPointF read FBeforePos write FBeforePos;
+    property AfterPos: TPointF read FAfterPos write FAfterPos;
+  end;
+  TThScaleShapeCommand = class(TThShapeCommand);
+
+  TThEditCommand = class(TThCommand)
 
   end;
 
-  TThScaleShapeCommand = class(TThShapeCommand)
-
-  end;
+  TThUndoCommand = class(TThEditCommand);
+  TThRedoCommand = class(TThEditCommand);
 
   TThStyleCommand = class(TThCommand)
 
@@ -56,15 +69,24 @@ implementation
 
 { TThShapeCommand }
 
-constructor TThShapeCommand.Create;
+constructor TThShapeCommand.Create(ASource: IThObserver);
 begin
+  FShapeList := TList.Create;
+  FSource := ASource;
 end;
 
-constructor TThShapeCommand.Create(AShape: TThShape);
+constructor TThShapeCommand.Create(ASource: IThObserver; AShapes: TList);
 begin
-  Create;
+  Create(ASource);
 
-  FShape := AShape;
+  FShapeList.Assign(AShapes);
+end;
+
+constructor TThShapeCommand.Create(ASource: IThObserver; AShape: TThShape);
+begin
+  Create(ASource);
+
+  FShapeList.Add(AShape);
 end;
 
 destructor TThShapeCommand.Destroy;
@@ -72,12 +94,7 @@ var
   I: Integer;
 begin
   if Assigned(FShapeList) then
-  begin
-    for I := FShapeList.Count - 1 downto 0 do
-      TObject(FShapeList[I]).Free;
-
     FShapeList.Free;
-  end;
 
   inherited;
 end;
@@ -85,30 +102,29 @@ end;
 function TThShapeCommand.Get(Index: Integer): TThShape;
 begin
   Result := nil;
-  if Assigned(FShape) and (Index = 0) then
-    Result := FShape
-  else if FShapeList.Count > Index then
-    Result := TThShape(FShapeList[Index])
-  ;
+  if FShapeList.Count > Index then
+    Result := TThShape(FShapeList[Index]);
 end;
 
 function TThShapeCommand.GetShapeCount: Integer;
 begin
-  Result := 0;
-
-  if Assigned(FShapeList) and (FShapeList.Count > 1) then
-    Result := FShapeList.Count
-  else if Assigned(FShape) then
-    Result := 1
-  ;
+  Result := FShapeList.Count;
 end;
 
 procedure TThShapeCommand.AddShape(AShape: TThShape);
 begin
-  if not Assigned(FShapeList) then
-    FShapeList := TList.Create;
-
   FShapeList.Add(AShape)
+end;
+
+{ TThMoveShapeCommand }
+
+constructor TThMoveShapeCommand.Create(ASource: IThObserver; AShapes: TList;
+  ABefore, AAfter: TPointF);
+begin
+  Create(ASource, AShapes);
+
+  FBeforePos := ABefore;
+  FAfterPos := AfterPos;
 end;
 
 end.

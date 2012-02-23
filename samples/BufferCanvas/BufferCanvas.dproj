@@ -1,9 +1,9 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{024ACFB2-A307-48D0-A48D-D73FC2DF25AF}</ProjectGuid>
+			<ProjectGuid>{299E53A2-E173-4F1F-B3A7-8E422C6B2DA9}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
 			<FrameworkType>FMX</FrameworkType>
-			<MainSource>BaseStructure.dpr</MainSource>
+			<MainSource>BufferCanvas.dpr</MainSource>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -40,7 +40,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_UsePackage>bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;soaprtl;bindengine;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;IPIndyImpl;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_UsePackage>bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;soaprtl;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;IPIndyImpl;$(DCC_UsePackage)</DCC_UsePackage>
 			<Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
 			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
 			<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
@@ -52,10 +52,10 @@
 			<DCC_K>false</DCC_K>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
-			<DCC_UsePackage>DBXOdbcDriver;DBXSybaseASEDriver;vclimg;vclactnband;vcldb;bindcompvcl;vcldsnap;vclie;vcltouch;DBXDb2Driver;websnap;VclSmp;vcl;DBXMSSQLDriver;dsnapcon;vclx;webdsnap;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_UsePackage>DBXOdbcDriver;DBXSybaseASEDriver;vclimg;vclactnband;vcldb;vcldsnap;bindcompvcl;vclie;vcltouch;DBXDb2Driver;websnap;VclSmp;vcl;DBXMSSQLDriver;dsnapcon;vclx;webdsnap;$(DCC_UsePackage)</DCC_UsePackage>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
-			<DCC_UsePackage>vcldbx;frx16;TeeDB;Rave100VCL;vclib;Tee;inetdbbde;DBXOdbcDriver;svnui;ibxpress;DBXSybaseASEDriver;vclimg;frxDB16;fmi;fs16;FMXTee;TeeUI;vclactnband;vcldb;bindcompvcl;vcldsnap;bkboard;vclie;vcltouch;DBXDb2Driver;websnap;vclribbon;frxe16;VclSmp;fsDB16;vcl;DataSnapConnectors;CloudService;DBXMSSQLDriver;CodeSiteExpressPkg;FmxTeeUI;dsnapcon;vclx;webdsnap;svn;bdertl;adortl;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_UsePackage>vcldbx;frx16;TeeDB;Rave100VCL;vclib;Tee;inetdbbde;DBXOdbcDriver;svnui;ibxpress;DBXSybaseASEDriver;vclimg;frxDB16;intrawebdb_120_160;fmi;fs16;FMXTee;TeeUI;vclactnband;vcldb;vcldsnap;bindcompvcl;vclie;vcltouch;Intraweb_120_160;DBXDb2Driver;websnap;vclribbon;frxe16;VclSmp;fsDB16;vcl;DataSnapConnectors;CloudService;DBXMSSQLDriver;FmxTeeUI;dsnapcon;vclx;webdsnap;svn;bdertl;adortl;$(DCC_UsePackage)</DCC_UsePackage>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_Locale>1033</VerInfo_Locale>
@@ -82,18 +82,10 @@
 			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="Unit1.pas">
-				<Form>Form1</Form>
+			<DCCReference Include="Unit2.pas">
+				<Form>Form2</Form>
 				<FormType>fmx</FormType>
 			</DCCReference>
-			<DCCReference Include="Model\ThothObjects.pas"/>
-			<DCCReference Include="Canvas\ThothCanvas.pas"/>
-			<DCCReference Include="Model\ThothTypes.pas"/>
-			<DCCReference Include="Model\ThothCommands.pas"/>
-			<DCCReference Include="Model\ObjectList.pas"/>
-			<DCCReference Include="Controller\ObjectManager.pas"/>
-			<DCCReference Include="Model\CommandList.pas"/>
-			<DCCReference Include="Command\CommandFactory.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -139,7 +131,7 @@
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
 					<Source>
-						<Source Name="MainSource">BaseStructure.dpr</Source>
+						<Source Name="MainSource">BufferCanvas.dpr</Source>
 					</Source>
 				</Delphi.Personality>
 				<Deployment/>

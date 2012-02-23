@@ -1,0 +1,63 @@
+object Form2: TForm2
+  Left = 0
+  Top = 0
+  Caption = 'Form2'
+  ClientHeight = 400
+  ClientWidth = 600
+  Visible = False
+  OnCreate = FormCreate
+  StyleLookup = 'backgroundstyle'
+  object Panel1: TPanel
+    Align = alRight
+    Position.Point = '(456,0)'
+    Width = 144.000000000000000000
+    Height = 400.000000000000000000
+    TabOrder = 1
+    object Button1: TButton
+      Position.Point = '(8,8)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button1Click
+      TabOrder = 1
+      Text = 'Button1'
+    end
+    object Button2: TButton
+      Position.Point = '(8,48)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button2Click
+      TabOrder = 2
+      Text = 'Button2'
+    end
+    object Button3: TButton
+      Position.Point = '(8,88)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button3Click
+      TabOrder = 3
+      Text = 'Button3'
+    end
+    object Button4: TButton
+      Position.Point = '(8,128)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button4Click
+      TabOrder = 4
+      Text = 'Button4'
+    end
+    object Memo1: TMemo
+      Position.Point = '(24,176)'
+      Width = 100.000000000000000000
+      Height = 193.000000000000000000
+      TabOrder = 5
+      KeyboardType = vktDefault
+    end
+  end
+  object ScrollBox1: TScrollBox
+    Position.Point = '(368,328)'
+    Width = 50.000000000000000000
+    Height = 50.000000000000000000
+    OnPaint = ScrollBox1Paint
+    TabOrder = 2
+  end
+end

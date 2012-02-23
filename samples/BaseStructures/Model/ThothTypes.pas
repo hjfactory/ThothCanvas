@@ -6,10 +6,11 @@ uses
   System.UITypes, System.Classes;
 
 type
+  IThObserver = interface;
+
   IThCommand = interface
   end;
 
-  IThObserver = interface;
 //  TThObserver = class;
 
   IThSubject = interface
@@ -31,7 +32,9 @@ type
   end;
 
   IThCanvas = interface
-//    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+//    property Selected read
+//    procedure SetSelection(AShape: IThShape);    // Unselect & select
+//    procedure AddSelection(AShape: IThShape); // Multi select
   end;
 
 implementation

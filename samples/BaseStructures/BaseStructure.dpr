@@ -9,7 +9,8 @@ uses
   ThothCommands in 'Model\ThothCommands.pas',
   ObjectList in 'Model\ObjectList.pas',
   ObjectManager in 'Controller\ObjectManager.pas',
-  CommandList in 'Model\CommandList.pas';
+  CommandList in 'Model\CommandList.pas',
+  CommandFactory in 'Command\CommandFactory.pas';
 
 {$R *.res}
 
