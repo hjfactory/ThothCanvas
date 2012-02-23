@@ -96,7 +96,7 @@ var
 begin
   for I := 0 to FRedoList.Count - 1 do
     if FRedoList[I] is TThInsertShapeCommand then
-      FSubject.Report(TThRemoveShapeCommand.Create(Self, TThShapeCommand(FRedoList[I]).List));
+      FSubject.Subject(Self, TThRemoveShapeCommand.Create(TThShapeCommand(FRedoList[I]).List));
       // 기존 리스트에 담겨져 있던 객체들은 어카지??
         // 1, 커맨드를 돌며 삭제한다.
         // 2, 처리할때마다 확인하고 처리한다.
@@ -111,7 +111,7 @@ begin
   begin
     // Delete한 객체는 해제하기 위해 RemoveShape 커맨드 전송
     if FUndoList[I] is TThDeleteShapeCommand then
-      FSubject.Report(TThRemoveShapeCommand.Create(Self, TThShapeCommand(FUndoList[I]).List));
+      FSubject.Subject(Self, TThRemoveShapeCommand.Create(TThShapeCommand(FUndoList[I]).List));
   end;
 end;
 
@@ -123,11 +123,11 @@ end;
 function TThCommandList.ExchangeCommand(ACommand: IThCommand): IThCommand;
 begin
   if ACommand is TThInsertShapeCommand then
-    Result := TThDeleteShapeCommand.Create(Self, TThShapeCommand(ACommand).List)
+    Result := TThDeleteShapeCommand.Create(TThShapeCommand(ACommand).List)
   else if ACommand is TThDeleteShapeCommand then
-    Result := TThRestoreShapeCommand.Create(Self, TThShapeCommand(ACommand).List)
+    Result := TThRestoreShapeCommand.Create(TThShapeCommand(ACommand).List)
   else if ACommand is TThMoveShapeCommand then
-    Result := TThMoveShapeCommand.Create(Self, TThShapeCommand(ACommand).List)
+    Result := TThMoveShapeCommand.Create(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).AfterPos, TThMoveShapeCommand(ACommand).BeforePos)
   ;
 end;
 
@@ -158,7 +158,7 @@ end;
 //  Command := IThCommand(ASrc.Last);
 //  Command2 := ExchangeCommand(Command);
 //
-//  FSubject.Report(Command2);
+//  FSubject.Subject(Command2);
 //
 //  ASrc.Delete(ASrc.Count - 1);
 //  ADest.Add(Command2);
@@ -177,7 +177,7 @@ begin
   FUndoList.Delete(FUndoList.Count - 1);
   FRedoList.Add(Command);
 
-  FSubject.Report(ExchangeCommand(Command));
+  FSubject.Subject(Self, ExchangeCommand(Command));
 
   OutputDebugSTring(PChar(Format('TCommandList - Un: %d, Re: %d', [FUndoList.Count, FRedoList.Count])));
 end;
@@ -190,13 +190,12 @@ begin
     Exit;
 
   Command := IThCommand(FRedoList.Last);
-
-  FSubject.Report(ExchangeCommand(Command));
+//  TThCommand(Command).Source := Self;
 
   FRedoList.Delete(FRedoList.Count - 1);
   FUndoList.Add(Command);
 
-  FSubject.Report(ExchangeCommand(Command));
+  FSubject.Subject(Self, Command);
 
   if FUndoList.Count > FLimit then
     ResizeUndoList(FLimit);

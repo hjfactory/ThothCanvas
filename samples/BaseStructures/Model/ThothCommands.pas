@@ -11,10 +11,6 @@ type
 // Command
   TThCommand = class;
   TThCommand = class(TInterfacedObject, IThCommand)
-  protected
-    FSource: IThObserver;
-  public
-    property Source: IThObserver read FSource;
   end;
 
   TThShapeCommand = class(TThCommand)
@@ -23,9 +19,9 @@ type
     function GetShapeCount: Integer;
     function Get(Index: Integer): TThShape;
   public
-    constructor Create(ASource: IThObserver); overload;
-    constructor Create(ASource: IThObserver; AShape: TThShape); overload;
-    constructor Create(ASource: IThObserver; AShapes: TList); overload;
+    constructor Create; overload;
+    constructor Create(AShape: TThShape); overload;
+    constructor Create(AShapes: TList); overload;
     destructor Destroy; override;
 
     procedure AddShape(AShape: TThShape);
@@ -46,7 +42,7 @@ type
     FBeforePos: TPointF;
     FAfterPos: TPointF;
   public
-    constructor Create(ASource: IThObserver; AShapes: TList; ABefore, AAfter: TPointF); overload;
+    constructor Create(AShapes: TList; ABefore, AAfter: TPointF); overload;
 
     property BeforePos: TPointF read FBeforePos write FBeforePos;
     property AfterPos: TPointF read FAfterPos write FAfterPos;
@@ -67,24 +63,26 @@ type
 
 implementation
 
+uses
+  WinAPI.Windows;
+
 { TThShapeCommand }
 
-constructor TThShapeCommand.Create(ASource: IThObserver);
+constructor TThShapeCommand.Create;
 begin
   FShapeList := TList.Create;
-  FSource := ASource;
 end;
 
-constructor TThShapeCommand.Create(ASource: IThObserver; AShapes: TList);
+constructor TThShapeCommand.Create(AShapes: TList);
 begin
-  Create(ASource);
+  Create;
 
   FShapeList.Assign(AShapes);
 end;
 
-constructor TThShapeCommand.Create(ASource: IThObserver; AShape: TThShape);
+constructor TThShapeCommand.Create(AShape: TThShape);
 begin
-  Create(ASource);
+  Create;
 
   FShapeList.Add(AShape);
 end;
@@ -95,6 +93,8 @@ var
 begin
   if Assigned(FShapeList) then
     FShapeList.Free;
+
+  OutputDebugString(PChar('Command Destroy: ' + Self.ClassName));
 
   inherited;
 end;
@@ -118,13 +118,13 @@ end;
 
 { TThMoveShapeCommand }
 
-constructor TThMoveShapeCommand.Create(ASource: IThObserver; AShapes: TList;
+constructor TThMoveShapeCommand.Create(AShapes: TList;
   ABefore, AAfter: TPointF);
 begin
-  Create(ASource, AShapes);
+  Create(AShapes);
 
   FBeforePos := ABefore;
-  FAfterPos := AfterPos;
+  FAfterPos := AAfter;
 end;
 
 end.

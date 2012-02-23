@@ -43,6 +43,7 @@ type
     FGripSize: Single;
     FSelected: Boolean;
     FSelections: array of TSelectionPointRec;
+    FIndex: Integer;
 
     function LocalToParent(P: TPointF): TPointF;
     procedure SetGripSize(const Value: Single);
@@ -70,6 +71,7 @@ type
     property EndPos: TPointF read GetEndPos;
 
     property Selected: Boolean read FSelected write SetSelected;
+    property Index: Integer read FIndex write FIndex;
   end;
 
   TThLine = class(TThShape)

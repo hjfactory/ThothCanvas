@@ -42,14 +42,14 @@ end;
 
 procedure TForm1.ScrollBox2Click(Sender: TObject);
 begin
-  with TRectangle.Create(ScrollBox2) do
-  begin
-    Position.X := 30;
-    Position.Y := 200;
-    Width := 200;
-    Height := 100;
-    Parent := ScrollBox2;
-  end;
+//  with TRectangle.Create(ScrollBox2) do
+//  begin
+//    Position.X := 30;
+//    Position.Y := 200;
+//    Width := 200;
+//    Height := 100;
+//    Parent := ScrollBox2;
+//  end;
 end;
 
 end.

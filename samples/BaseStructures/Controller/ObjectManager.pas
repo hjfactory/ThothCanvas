@@ -21,7 +21,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Report(ACommand: IThCommand);
+    procedure Subject(ASource: IThObserver; ACommand: IThCommand);
     procedure RegistObserver(AObserver: IThObserver);
     procedure UnregistObserver(AObserver: IThObserver);
 
@@ -70,17 +70,25 @@ begin
   FObservers.Add(AObserver);
 end;
 
-procedure TThothObjectManager.Report(ACommand: IThCommand);
+procedure TThothObjectManager.Subject(ASource: IThObserver; ACommand: IThCommand);
 var
   I: Integer;
   Observer: IThObserver;
 begin
+  if ACommand is TThMoveShapeCommand then
+    OutputDebugString(PChar(Format('TThothObjectManager.Subject.TThMoveShapeCommand(%f,%f) (%f, %f)', [
+        TThMoveShapeCommand(ACommand).BeforePos.X
+      , TThMoveShapeCommand(ACommand).BeforePos.Y
+      , TThMoveShapeCommand(ACommand).AfterPos.X
+      , TThMoveShapeCommand(ACommand).AfterPos.Y
+    ])));
+
   for I := 0 to FObservers.Count - 1 do
   begin
-    if FObservers[I] = TThCommand(ACommand).Source then
+    if FObservers[I] = ASource then
       Continue;
 
-    IThObserver(FObservers[I]).Notifycation(ACommand);
+     IThObserver(FObservers[I]).Notifycation(ACommand);
   end;
 end;
 

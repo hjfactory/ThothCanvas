@@ -1,9 +1,11 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  BiDiMode = bdLeftToRight
   Caption = 'Form1'
   ClientHeight = 400
   ClientWidth = 600
+  Transparency = False
   Visible = False
   StyleLookup = 'backgroundstyle'
   object Button1: TButton
@@ -12,6 +14,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button1Click
     TabOrder = 0
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button1'
   end
   object Panel1: TPanel
@@ -31,8 +35,8 @@ object Form1: TForm1
       end
       object FramedScrollBox1: TFramedScrollBox
         Align = alClient
-        Width = 417.000000000000000000
-        Height = 337.000000000000000000
+        Width = 449.000000000000000000
+        Height = 369.000000000000000000
         TabOrder = 1
       end
     end

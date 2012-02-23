@@ -10,3 +10,4 @@ __history
 *.dll
 *.elf
 bin/*
+win32/*

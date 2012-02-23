@@ -32,11 +32,11 @@ type
     function PointInShape(const X, Y: Single): TThShape;
     procedure SetDrawClass(const Value: TThShapeClass);
   protected
-    procedure Paint; override;
+//    procedure Paint; override;
 
     procedure DoInsertShape(AShape: TThShape);
-    procedure DoMoveShapes;
-    procedure DoDeleteShapes;
+    procedure DoMoveShapes(AShapes: TList; ABefore, AAfter: TPointF);
+    procedure DoDeleteShapes(AShapes: TList);
   public
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -45,7 +45,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure Notifycation(ACommand: IThCommand); virtual;
+    procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
 
     procedure DrawShape(AClass: TThShapeClass; AStart, AEnd: TPointF);
@@ -58,6 +58,11 @@ type
     procedure Unselection(AShape: TThShape);
 
     procedure DeleteSelectedShapes;
+
+    procedure InsertShape(AShape: TThShape);
+    procedure InsertShapes(AShapes: TList);
+    procedure MoveShapes(AShapes: TList; ABefore, AAfter: TPointF);
+    procedure DeleteShapes(AShapes: TList);
   end;
 
 
@@ -95,33 +100,34 @@ end;
 
 procedure TThCanvas.DeleteSelectedShapes;
 begin
-  DoDeleteShapes;
+  DeleteShapes(FSelectionList);
+  DoDeleteShapes(FSelectionList);
+  ClearSelection;
 end;
 
-procedure TThCanvas.DoDeleteShapes;
+procedure TThCanvas.DeleteShapes(AShapes: TList);
 var
   I: Integer;
 begin
-  FObjectManager.Report(TThDeleteShapeCommand.Create(Self, FSelectionList));
-
-//  FTest := TThShape(FSelectionList[0]);
-
-  for I := 0 to FSelectionList.Count - 1 do
-    TThShape(FSelectionList[I]).Parent := nil;
-
-  ClearSelection;
+  for I := 0 to AShapes.Count - 1 do
+    TThShape(AShapes[I]).Parent := nil;
 
   Repaint;
 end;
 
-procedure TThCanvas.DoInsertShape(AShape: TThShape);
+procedure TThCanvas.DoDeleteShapes(AShapes: TList);
 begin
-  FObjectManager.Report(TThInsertShapeCommand.Create(Self, AShape));
+  FObjectManager.Subject(Self, TThDeleteShapeCommand.Create(AShapes));
 end;
 
-procedure TThCanvas.DoMoveShapes;
+procedure TThCanvas.DoInsertShape(AShape: TThShape);
 begin
-  FObjectManager.Report(TThMoveShapeCommand.Create(Self, FSelectionList));
+  FObjectManager.Subject(Self, TThInsertShapeCommand.Create(AShape));
+end;
+
+procedure TThCanvas.DoMoveShapes(AShapes: TList; ABefore, AAfter: TPointF);
+begin
+  FObjectManager.Subject(Self, TThMoveShapeCommand.Create(AShapes, ABefore, AAfter));
 end;
 
 procedure TThCanvas.DrawShape(AClass: TThShapeClass; AStart, AEnd: TPointF);
@@ -139,10 +145,31 @@ begin
   end;
 end;
 
+procedure TThCanvas.InsertShape(AShape: TThShape);
+begin
+  if AShape.Index > -1 then
+  begin
+//    InsertObject(AShape.Index, AShape);
+    AShape.Parent := Self;
+  end
+  else
+    AShape.Parent := Self;
+
+  Repaint;
+end;
+
+procedure TThCanvas.InsertShapes(AShapes: TList);
+var
+  I: Integer;
+begin
+  for I := 0 to AShapes.Count - 1 do
+    InsertShape(AShapes[I]);
+
+//  Repaint;
+end;
+
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
-var
-  Shape: TThShape;
 begin
 
   inherited;
@@ -205,6 +232,8 @@ end;
 
 procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  P: TPointF;
 begin
   inherited;
 
@@ -220,10 +249,26 @@ begin
   end;
 
   if (FDrawMode = dmMove) and (FDownPos <> FCurrPos) then
-    DoMoveShapes;
+  begin
+    P := PointF(
+        FDrawShape.Position.Point.X - (FCurrPos.X - FDownPos.X)
+      , FDrawShape.Position.Point.Y - (FCurrPos.Y - FDownPos.Y)
+    );
+    DoMoveShapes(FSelectionList, P, FDrawShape.Position.Point);
+  end;
 
   FDrawMode := dmNone;
     MouseTracking := True;
+end;
+
+procedure TThCanvas.MoveShapes(AShapes: TList; ABefore, AAfter: TPointF);
+var
+  I: Integer;
+begin
+  for I := 0 to AShapes.Count - 1 do
+    TThShape(AShapes[I]).Position.Point := AAfter;
+
+  Repaint;
 end;
 
 procedure TThCanvas.Notifycation(ACommand: IThCommand);
@@ -232,19 +277,24 @@ begin
 
   if ACommand is TThInsertShapeCommand then
     // Canvas에 추가
+    InsertShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThDeleteShapeCommand then
     // Canvas에서 제거
+    DeleteShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThRestoreShapeCommand then
     // Canvas에 InsertObject
+    InsertShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThRemoveShapeCommand then
     // Canvas에서 제거(있으면)
+  else if ACommand is TThMoveShapeCommand then
+    MoveShapes(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).BeforePos, TThMoveShapeCommand(ACommand).AfterPos)
   ;
 end;
-
-procedure TThCanvas.Paint;
-begin
-  inherited;
-end;
+//
+//procedure TThCanvas.Paint;
+//begin
+//  inherited;
+//end;
 
 function TThCanvas.PointInShape(const X, Y: Single): TThShape;
 begin

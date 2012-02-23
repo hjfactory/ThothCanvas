@@ -75,8 +75,8 @@ begin
   FThCanvas.Parent := Panel2;
 //  FThCanvas.Position.Point := PointF(10, 40);
   FThCanvas.Align := TAlignLayout.alClient;
-  FThCanvas.Width := 530;
-  FThCanvas.Height := 450;
+//  FThCanvas.Width := 530;
+//  FThCanvas.Height := 450;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -117,20 +117,20 @@ procedure TForm1.Button2Click(Sender: TObject);
 var
   a: WORD;
 begin
-  FTest := TRectangle.Create(Self);
-
-  with FTest do
-  begin
-    Position.Point := PointF(100, 100);
-    Width := 100;
-    Height:= 100;
-    Parent := Self;
-  end;
-
+//  FTest := TRectangle.Create(Self);
+//
+//  with FTest do
+//  begin
+//    Position.Point := PointF(100, 100);
+//    Width := 100;
+//    Height:= 100;
+//    Parent := Self;
+//  end;
+//
   FObjectManager.test;
 
-  FThCanvas.Centre;
-  ShowMessage(FloatToStr(FThCanvas.VScrollBar.Value));
+//  FThCanvas.Centre;
+//  ShowMessage(FloatToStr(FThCanvas.VScrollBar.Value));
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);

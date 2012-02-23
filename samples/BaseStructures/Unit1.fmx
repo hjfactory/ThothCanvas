@@ -1,9 +1,11 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  BiDiMode = bdLeftToRight
   Caption = 'Form1'
   ClientHeight = 670
   ClientWidth = 798
+  Transparency = False
   Visible = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -14,6 +16,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button3Click
     TabOrder = 0
+    StaysPressed = False
+    IsPressed = False
     Text = 'Line'
   end
   object Button5: TButton
@@ -22,6 +26,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button5Click
     TabOrder = 1
+    StaysPressed = False
+    IsPressed = False
     Text = 'Rectangle'
   end
   object Button6: TButton
@@ -30,6 +36,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button6Click
     TabOrder = 2
+    StaysPressed = False
+    IsPressed = False
     Text = 'Circle'
   end
   object Button1: TButton
@@ -38,6 +46,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button1Click
     TabOrder = 3
+    StaysPressed = False
+    IsPressed = False
     Text = 'Select'
   end
   object Button2: TButton
@@ -46,6 +56,8 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button2Click
     TabOrder = 4
+    StaysPressed = False
+    IsPressed = False
     Text = 'test'
     object Button4: TButton
       Position.Point = '(40,0)'
@@ -53,6 +65,8 @@ object Form1: TForm1
       Height = 22.000000000000000000
       OnClick = Button4Click
       TabOrder = 0
+      StaysPressed = False
+      IsPressed = False
       Text = 'hit 100'
     end
   end
@@ -62,19 +76,23 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button7Click
     TabOrder = 5
+    StaysPressed = False
+    IsPressed = False
     Text = 'BufBmp'
   end
   object Panel1: TPanel
     Position.Point = '(560,40)'
     Width = 225.000000000000000000
     Height = 609.000000000000000000
-    TabOrder = 7
+    TabOrder = 6
     object Button9: TButton
       Position.Point = '(8,8)'
       Width = 209.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button9Click
-      TabOrder = 1
+      TabOrder = 0
+      StaysPressed = False
+      IsPressed = False
       Text = 'Delete selections'
     end
     object btnUndo: TButton
@@ -83,7 +101,9 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = btnUndoClick
-      TabOrder = 2
+      TabOrder = 1
+      StaysPressed = False
+      IsPressed = False
       Text = 'Undo'
     end
     object btnRedo: TButton
@@ -92,7 +112,9 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = btnRedoClick
-      TabOrder = 3
+      TabOrder = 2
+      StaysPressed = False
+      IsPressed = False
       Text = 'Redo'
     end
   end
@@ -101,13 +123,15 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button8Click
-    TabOrder = 8
+    TabOrder = 7
+    StaysPressed = False
+    IsPressed = False
     Text = 'Button8'
   end
   object Panel2: TPanel
     Position.Point = '(8,40)'
     Width = 545.000000000000000000
     Height = 609.000000000000000000
-    TabOrder = 9
+    TabOrder = 8
   end
 end

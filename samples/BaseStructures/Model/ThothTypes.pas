@@ -14,7 +14,7 @@ type
 //  TThObserver = class;
 
   IThSubject = interface
-    procedure Report(ACommand: IThCommand);
+    procedure Subject(ASource: IThObserver; ACommand: IThCommand);
     procedure RegistObserver(AObserver: IThObserver);
     procedure UnregistObserver(AObserver: IThObserver);
   end;
