@@ -11,6 +11,9 @@ uses
   FMX.Types, FMX.Objects, System.Math,
   ThothTypes;
 
+var
+  TestObj: Integer = 0;
+
 type
   TThInterfacedObject = class(TObject, IInterface)
   protected
@@ -31,6 +34,7 @@ type
 // Shape
   TThShape = class(TShape, IThShape)
   private
+    FIndex: Integer;
     FThCanvas: IThCanvas;
 
     FHideSelection: Boolean;
@@ -43,7 +47,6 @@ type
     FGripSize: Single;
     FSelected: Boolean;
     FSelections: array of TSelectionPointRec;
-    FIndex: Integer;
 
     function LocalToParent(P: TPointF): TPointF;
     procedure SetGripSize(const Value: Single);
@@ -60,6 +63,7 @@ type
     property SelectionCount: Integer read GetSelectionCount write SetSelectionCount;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     property GripSize: Single read FGripSize write SetGripSize;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
@@ -127,7 +131,7 @@ type
 implementation
 
 uses
-  ThothCanvas;
+  ThothCanvas, WinAPI.Windows;
 
 { TThShape }
 
@@ -135,9 +139,20 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
+  FIndex := -1;
+
   FThCanvas := TThCanvas(AOwner);
   FGripSize := 3;
   FSelected := False;
+  Inc(TestObj);
+end;
+
+destructor TThShape.Destroy;
+begin
+  Dec(TestObj);
+  OutputDebugString(PChar('############## Object Destroy: ' + Self.ClassName + '(' + IntToStr(TestObj) + ')'));
+
+  inherited;
 end;
 
 function TThShape.GetSelectionCount: Integer;

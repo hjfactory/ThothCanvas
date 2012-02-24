@@ -41,9 +41,12 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    procedure InsertObject(Index: Integer; AObject: TFmxObject); override;
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
@@ -143,6 +146,18 @@ begin
 
 //    Children
   end;
+end;
+
+procedure TThCanvas.InsertObject(Index: Integer; AObject: TFmxObject);
+begin
+  InvalidateRect(BoundsRect);
+  if (FContent <> nil) and (AObject <> FContent) and (AObject <> FResourceLink) and
+    not (AObject is TEffect) and not (AObject is TAnimation) then
+  begin
+    FContent.InsertObject(Index, AObject);
+  end
+  else
+    inherited;
 end;
 
 procedure TThCanvas.InsertShape(AShape: TThShape);

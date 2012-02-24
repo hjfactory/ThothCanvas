@@ -62,6 +62,8 @@ begin
 end;
 
 destructor TThCommandList.Destroy;
+var
+  I: Integer;
 begin
   FUndoList.Free;
   FRedoList.Free;

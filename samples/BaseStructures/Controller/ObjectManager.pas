@@ -62,6 +62,8 @@ begin
   FObjectList.Free;
 //  FObservers.Free;
 
+  FCommandList.Free;
+
   inherited;
 end;
 

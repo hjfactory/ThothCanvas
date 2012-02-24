@@ -12,7 +12,12 @@ type
   TThObjectList = class(TThInterfacedObject, IThObserver)
   private
     FList: TList;
-    FBackupList: TList;
+    FBackup: TList;
+
+    procedure InsertShapes(AShapes: TList);
+    procedure DeleteShapes(AShapes: TList);
+    procedure RestoreShapes(AShapes: TList);
+    procedure RemoveShapes(AShapes: TList);
   public
     constructor Create;
     destructor Destroy; override;
@@ -34,19 +39,64 @@ uses
 constructor TThObjectList.Create;
 begin
   FList := TList.Create;
+  FBackup := TList.Create;
 end;
 
 destructor TThObjectList.Destroy;
 var
   I: Integer;
 begin
-  for I := FList.Count - 1 downto 0 do
-    TObject(FList[I]).Free;
-
-//  FList.Clear;
+// Canvas에서 처리?
+//  for I := FList.Count - 1 downto 0 do
+//    TObject(FList[I]).Free;
   FList.Free;
 
+  for I := FBackup.Count - 1 downto 0 do
+    TObject(FBackup[I]).Free;
+  FBackup.Free;
+
   inherited;
+end;
+
+procedure TThObjectList.InsertShapes(AShapes: TList);
+begin
+  FList.Assign(AShapes, TListAssignOp.laOr);
+end;
+
+procedure TThObjectList.DeleteShapes(AShapes: TList);
+var
+  I: Integer;
+  Shape: TThShape;
+begin
+  for I := 0 to AShapes.Count - 1 do
+  begin
+    Shape := TThShape(AShapes[I]);
+    Shape.Index := FList.IndexOf(Shape);
+    if Shape.Index > -1 then
+      FList.Delete(Shape.Index);
+    FBackup.Add(Shape);
+  end;
+end;
+
+procedure TThObjectList.RestoreShapes(AShapes: TList);
+var
+  I, Idx: Integer;
+  Shape: TThShape;
+begin
+  for I := 0 to AShapes.Count - 1 do
+  begin
+    Shape := TThShape(AShapes[I]);
+    FBackup.RemoveItem(Shape, TList.TDirection.FromEnd);
+    FList.Insert(Shape.Index, Shape);
+  end;
+end;
+
+procedure TThObjectList.RemoveShapes(AShapes: TList);
+var
+  I: Integer;
+begin
+  for I := FBackup.Count - 1 downto 0 do
+    TObject(FBackup[I]).Free;
 end;
 
 procedure TThObjectList.Notifycation(ACommand: IThCommand);
@@ -57,12 +107,16 @@ begin
   OutputDebugSTring(PChar('TThObjectList - ' + TThShapeCommand(ACommand).ClassName));
 
   if ACommand is TThInsertShapeCommand then
+    InsertShapes(TThShapeCommand(ACommand).List)
     // FList에 추가
   else if ACommand is TThDeleteShapeCommand then
+    DeleteShapes(TThShapeCommand(ACommand).List)
     // FList에서 FBackup으로 이동, Index추가
   else if ACommand is TThRestoreShapeCommand then
+    RestoreShapes(TThShapeCommand(ACommand).List)
     // FBackup에서 FList로 이동(Insert)
   else if ACommand is TThRemoveShapeCommand then
+    RemoveShapes(TThShapeCommand(ACommand).List)
     // FBackup에서 제거 후 객체해제
   ;
 end;
