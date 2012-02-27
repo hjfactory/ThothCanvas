@@ -34,7 +34,7 @@ type
 // Shape
   TThShape = class(TShape, IThShape)
   private
-    FIndex: Integer;
+    FDepth: Integer;
     FThCanvas: IThCanvas;
 
     FHideSelection: Boolean;
@@ -75,7 +75,7 @@ type
     property EndPos: TPointF read GetEndPos;
 
     property Selected: Boolean read FSelected write SetSelected;
-    property Index: Integer read FIndex write FIndex;
+    property Depth: Integer read FDepth write FDepth;
   end;
 
   TThLine = class(TThShape)
@@ -139,7 +139,7 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FIndex := -1;
+  FDepth := -1;
 
   FThCanvas := TThCanvas(AOwner);
   FGripSize := 3;

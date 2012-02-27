@@ -95,6 +95,56 @@ object Form1: TForm1
       TabOrder = 2
       Text = 'Redo'
     end
+    object trbScale: TTrackBar
+      Position.Point = '(16,96)'
+      Width = 193.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 3
+      Min = 0.100000001490116100
+      Max = 3.000000000000000000
+      Orientation = orHorizontal
+      Value = 1.000000000000000000
+      OnChange = trbScaleChange
+    end
+    object Label1: TLabel
+      Position.Point = '(8,72)'
+      Width = 120.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 4
+      Text = 'Scale'
+    end
+    object Label2: TLabel
+      Position.Point = '(8,120)'
+      Width = 120.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 5
+      Text = 'Rotate'
+    end
+    object TrackBar1: TTrackBar
+      Position.Point = '(16,144)'
+      Width = 193.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 6
+      Max = 359.000000000000000000
+      Orientation = orHorizontal
+      OnChange = TrackBar1Change
+    end
+    object Button10: TButton
+      Position.Point = '(171,80)'
+      Width = 33.000000000000000000
+      Height = 14.000000000000000000
+      OnClick = Button10Click
+      TabOrder = 7
+      Text = 'reset'
+    end
+    object Button11: TButton
+      Position.Point = '(170,132)'
+      Width = 36.000000000000000000
+      Height = 14.000000000000000000
+      OnClick = Button11Click
+      TabOrder = 8
+      Text = 'reset'
+    end
   end
   object Button8: TButton
     Position.Point = '(544,8)'

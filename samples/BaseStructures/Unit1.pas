@@ -28,6 +28,12 @@ type
     Button9: TButton;
     btnUndo: TButton;
     btnRedo: TButton;
+    trbScale: TTrackBar;
+    Label1: TLabel;
+    Label2: TLabel;
+    TrackBar1: TTrackBar;
+    Button10: TButton;
+    Button11: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -41,6 +47,10 @@ type
     procedure Button9Click(Sender: TObject);
     procedure btnUndoClick(Sender: TObject);
     procedure btnRedoClick(Sender: TObject);
+    procedure trbScaleChange(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure Button10Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
   private
     { Private declarations }
     FObjectManager: TThothObjectManager;
@@ -48,6 +58,8 @@ type
     FThCanvas2: TThCanvas;
 
     FTest: TRectangle;
+
+    procedure DoScale(Value: Single);
   public
     { Public declarations }
     procedure Notifycation(ACommand: IThCommand); virtual;
@@ -70,7 +82,7 @@ begin
   SetSubject(FObjectManager);
 //  FObjectManager.RegistObserver(Self);
 
-  FThCanvas := TThCanvas.Create(nil);
+  FThCanvas := TThCanvas.Create(Panel2);
   FThCanvas.SetSubject(FObjectManager);
   FThCanvas.Parent := Panel2;
 //  FThCanvas.Position.Point := PointF(10, 40);
@@ -98,6 +110,18 @@ begin
   ASubject.RegistObserver(Self);
 end;
 
+procedure TForm1.TrackBar1Change(Sender: TObject);
+begin
+  FThCanvas.SelectionRoate(TTrackBar(Sender).Value);
+end;
+
+procedure TForm1.trbScaleChange(Sender: TObject);
+begin
+//  FThCanvas.SelectionScale(TTrackBar(Sender).Value);
+  FThCanvas.Scale.X := TTrackBar(Sender).Value;
+  FThCanvas.Scale.Y := TTrackBar(Sender).Value;
+end;
+
 procedure TForm1.btnRedoClick(Sender: TObject);
 begin
   FObjectManager.Redo;
@@ -106,6 +130,16 @@ end;
 procedure TForm1.btnUndoClick(Sender: TObject);
 begin
   FObjectManager.Undo;
+end;
+
+procedure TForm1.Button10Click(Sender: TObject);
+begin
+  trbScale.Value := 1;
+end;
+
+procedure TForm1.Button11Click(Sender: TObject);
+begin
+  TrackBar1.Value := 0;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -188,6 +222,10 @@ end;
 procedure TForm1.Button9Click(Sender: TObject);
 begin
   FThCanvas.DeleteSelectedShapes;
+end;
+
+procedure TForm1.DoScale(Value: Single);
+begin
 end;
 
 end.

@@ -66,6 +66,9 @@ type
     procedure InsertShapes(AShapes: TList);
     procedure MoveShapes(AShapes: TList; ABefore, AAfter: TPointF);
     procedure DeleteShapes(AShapes: TList);
+
+    procedure SelectionScale(Value: Single);
+    procedure SelectionRoate(Value: Single);
   end;
 
 
@@ -155,6 +158,7 @@ begin
     not (AObject is TEffect) and not (AObject is TAnimation) then
   begin
     FContent.InsertObject(Index, AObject);
+//    FContent.AddObject(AObject);
   end
   else
     inherited;
@@ -162,15 +166,15 @@ end;
 
 procedure TThCanvas.InsertShape(AShape: TThShape);
 begin
-  if AShape.Index > -1 then
+  if AShape.Depth > -1 then
   begin
-//    InsertObject(AShape.Index, AShape);
-    AShape.Parent := Self;
+    InsertObject(AShape.Depth, AShape);   // InsertObject이용 시 오류 발생
+//    AShape.Parent := Self;
   end
   else
     AShape.Parent := Self;
 
-  Repaint;
+//  Repaint;
 end;
 
 procedure TThCanvas.InsertShapes(AShapes: TList);
@@ -348,6 +352,30 @@ begin
     FDrawMode := dmNone
   else
     FDrawMode := dmSelect;
+end;
+
+procedure TThCanvas.SelectionRoate(Value: Single);
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionList.Count - 1 do
+  begin
+    TThShape(FSelectionList[I]).RotationAngle := Value;
+  end;
+
+  Repaint;
+end;
+
+procedure TThCanvas.SelectionScale(Value: Single);
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionList.Count - 1 do
+  begin
+    TThShape(FSelectionList[I]).Scale.Point := PointF(Value, Value);
+  end;
+
+  Repaint;
 end;
 
 procedure TThCanvas.SetDrawClass(const Value: TThShapeClass);

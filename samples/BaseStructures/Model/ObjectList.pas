@@ -71,9 +71,9 @@ begin
   for I := 0 to AShapes.Count - 1 do
   begin
     Shape := TThShape(AShapes[I]);
-    Shape.Index := FList.IndexOf(Shape);
-    if Shape.Index > -1 then
-      FList.Delete(Shape.Index);
+    Shape.Depth := FList.IndexOf(Shape);
+    if Shape.Depth > -1 then
+      FList.Delete(Shape.Depth);
     FBackup.Add(Shape);
   end;
 end;
@@ -87,7 +87,7 @@ begin
   begin
     Shape := TThShape(AShapes[I]);
     FBackup.RemoveItem(Shape, TList.TDirection.FromEnd);
-    FList.Insert(Shape.Index, Shape);
+    FList.Insert(Shape.Depth, Shape);
   end;
 end;
 

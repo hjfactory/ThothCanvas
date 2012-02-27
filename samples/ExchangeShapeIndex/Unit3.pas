@@ -9,6 +9,7 @@ uses
 type
   TSB = class(TScrollBox)
   public
+    procedure InsertShape(AShape: TShape);
     procedure InsertObject(Index: Integer; AObject: TFmxObject); override;
   end;
 
@@ -99,7 +100,8 @@ procedure TForm3.Button5Click(Sender: TObject);
 begin
   R4.Position.Point := PointF(100, 100);
 
-  SB.InsertObject(1, R4);
+//  SB.InsertObject(0, R4);
+  SB.InsertShape(R4);
 //  R4.Parent := SB;
 
   SB.Repaint;
@@ -116,6 +118,19 @@ begin
   end
   else
     inherited;
+end;
+
+procedure TSB.InsertShape(AShape: TShape);
+begin
+  if AShape.Index > -1 then
+  begin
+    InsertObject(0, AShape);
+//    AShape.Parent := Self;
+  end
+  else
+    AShape.Parent := Self;
+
+  Repaint;
 end;
 
 end.

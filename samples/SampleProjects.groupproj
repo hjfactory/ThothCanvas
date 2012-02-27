@@ -15,6 +15,9 @@
 			<Projects Include="ExchangeShapeIndex\ExchangeShapeIndex.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="InfiniteCanvas\InfiniteCanvas.dproj">
+				<Dependencies/>
+			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
 		<Target Name="ExchangeShapeIndex:Make">
 			<MSBuild Projects="ExchangeShapeIndex\ExchangeShapeIndex.dproj" Targets="Make"/>
 		</Target>
+		<Target Name="InfiniteCanvas">
+			<MSBuild Projects="InfiniteCanvas\InfiniteCanvas.dproj"/>
+		</Target>
+		<Target Name="InfiniteCanvas:Clean">
+			<MSBuild Projects="InfiniteCanvas\InfiniteCanvas.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="InfiniteCanvas:Make">
+			<MSBuild Projects="InfiniteCanvas\InfiniteCanvas.dproj" Targets="Make"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="CanvasCopy;BaseStructure;BufferCanvas;ExchangeShapeIndex"/>
+			<CallTarget Targets="CanvasCopy;BaseStructure;BufferCanvas;ExchangeShapeIndex;InfiniteCanvas"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="CanvasCopy:Clean;BaseStructure:Clean;BufferCanvas:Clean;ExchangeShapeIndex:Clean"/>
+			<CallTarget Targets="CanvasCopy:Clean;BaseStructure:Clean;BufferCanvas:Clean;ExchangeShapeIndex:Clean;InfiniteCanvas:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="CanvasCopy:Make;BaseStructure:Make;BufferCanvas:Make;ExchangeShapeIndex:Make"/>
+			<CallTarget Targets="CanvasCopy:Make;BaseStructure:Make;BufferCanvas:Make;ExchangeShapeIndex:Make;InfiniteCanvas:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>
