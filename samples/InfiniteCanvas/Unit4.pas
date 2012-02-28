@@ -13,17 +13,19 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Layouts, FMX.Memo, FMX.Objects;
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Layouts, FMX.Memo, FMX.Objects,
+  Unit5;
 
 type
   TForm4 = class(TForm)
     Panel1: TPanel;
     Panel2: TPanel;
-    ScrollBox1: TScrollBox;
-    Memo1: TMemo;
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
+    ScrollBox1: TScrollBox;
+    Panel3: TPanel;
+    Button4: TButton;
     StyleBook1: TStyleBook;
     procedure ScrollBox1Paint(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
@@ -33,8 +35,10 @@ type
     procedure ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; var Handled: Boolean);
     procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
+    FCanvas: TThothCanvas;
   public
     { Public declarations }
   end;
@@ -53,7 +57,7 @@ begin
     Parent := ScrollBox1;
     Width := 100;
     height := 100;
-    Position.Point := PointF(1000, 1000);
+    Position.Point := PointF(10, 10);
   end;
 //
 //  with TRectangle.Create(ScrollBox1) do
@@ -78,34 +82,55 @@ end;
 procedure TForm4.Button3Click(Sender: TObject);
 begin
 
-Memo1.Lines.Add(Format('%f, %f', [
-  ScrollBox1.HScrollBar.ViewportSize,
-  ScrollBox1.VScrollBar.ViewportSize]));
+//Memo1.Lines.Add(Format('%f, %f', [
+//  ScrollBox1.HScrollBar.ViewportSize,
+//  ScrollBox1.VScrollBar.ViewportSize]));
+end;
+
+procedure TForm4.Button4Click(Sender: TObject);
+begin
+  with TRectangle.Create(FCanvas) do
+  begin
+    Parent := FCanvas;
+    Width := 100;
+    height := 100;
+    Position.Point := PointF(10, 10);
+  end;
+
+  FCanvas.Realign;
 end;
 
 procedure TForm4.FormCreate(Sender: TObject);
 begin
 //  ScrollBox1.con
 
-  ScrollBox1.MouseTracking := True;
-//  ScrollBox1.HScrollBar.Value := 10000;
-
-  ScrollBox1.HScrollBar.Min := -1000;
-  ScrollBox1.VScrollBar.Min := -1000;
-
-  ScrollBox1.HScrollBar.Max := 1000;
-  ScrollBox1.VScrollBar.Max := 1000;
+//  ScrollBox1.MouseTracking := True;
+  ScrollBox1.HScrollBar.Value := 10000;
+//
+//  ScrollBox1.HScrollBar.Min := -1000;
+//  ScrollBox1.VScrollBar.Min := -1000;
+//
+//  ScrollBox1.HScrollBar.Max := 1000;
+//  ScrollBox1.VScrollBar.Max := 1000;
 
 //  ScrollBox1.AutoHide := FAlse;
 
-  ScrollBox1.ShowSizeGrip := True;
+//  ScrollBox1.ShowSizeGrip := True;
 
+  FCanvas := TThothCanvas.Create(Panel3);
+  FCanvas.Align := TAlignLayout.alClient;
+  FCanvas.Parent := Panel3;
+
+//  FCanvas.StyleName := 'TScrollBoxstyle';
+//  FCanvas.StyleLookup := 'TScrollBoxstyle';
+
+  FCanvas.HScrollBar.Visible := True;
 end;
 
 procedure TForm4.ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; var Handled: Boolean);
 begin
-  Memo1.Lines.Add(Format('%d', [WheelDelta]));
+//  Memo1.Lines.Add(Format('%d', [WheelDelta]));
 end;
 
 procedure TForm4.ScrollBox1Paint(Sender: TObject; Canvas: TCanvas;

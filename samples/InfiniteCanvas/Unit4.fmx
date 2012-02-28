@@ -16,12 +16,19 @@ object Form4: TForm4
     object ScrollBox1: TScrollBox
       Align = alClient
       Width = 448.000000000000000000
-      Height = 400.000000000000000000
+      Height = 232.000000000000000000
       OnMouseWheel = ScrollBox1MouseWheel
       OnPaint = ScrollBox1Paint
-      StyleLookup = 'ScrollBox1Style1'
       TabOrder = 0
       MouseTracking = True
+    end
+    object Panel3: TPanel
+      Align = alBottom
+      Position.Point = '(0,232)'
+      Width = 448.000000000000000000
+      Height = 168.000000000000000000
+      StyleLookup = 'Panel3Style1'
+      TabOrder = 1
     end
   end
   object Panel2: TPanel
@@ -30,20 +37,12 @@ object Form4: TForm4
     Width = 152.000000000000000000
     Height = 400.000000000000000000
     TabOrder = 1
-    object Memo1: TMemo
-      Align = alBottom
-      Position.Point = '(0,280)'
-      Width = 152.000000000000000000
-      Height = 120.000000000000000000
-      TabOrder = 0
-      KeyboardType = vktDefault
-    end
     object Button1: TButton
       Position.Point = '(8,8)'
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button1Click
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Rect(1000, 0)'
     end
     object Button2: TButton
@@ -51,7 +50,7 @@ object Form4: TForm4
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button2Click
-      TabOrder = 2
+      TabOrder = 1
       Text = 'ContentRect'
     end
     object Button3: TButton
@@ -59,8 +58,16 @@ object Form4: TForm4
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button3Click
-      TabOrder = 3
+      TabOrder = 2
       Text = 'Button3'
+    end
+    object Button4: TButton
+      Position.Point = '(16,256)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button4Click
+      TabOrder = 3
+      Text = 'Button4'
     end
   end
   object StyleBook1: TStyleBook
@@ -68,8 +75,17 @@ object Form4: TForm4
       'object TLayout'
       '  Width = 50.000000000000000000'
       '  Height = 50.000000000000000000'
+      '  object TRectangle'
+      '    StyleName = '#39'Panel3Style1'#39
+      '    Position.Point = '#39'(387,376)'#39
+      '    Width = 50.000000000000000000'
+      '    Height = 50.000000000000000000'
+      '    HitTest = False'
+      '    DesignVisible = False'
+      '    Fill.Color = claWhite'
+      '    Stroke.Color = xFF8E8E8E'
+      '  end'
       '  object TLayout'
-      '    StyleName = '#39'ScrollBox1Style1'#39
       '    Position.Point = '#39'(245,336)'#39
       '    Width = 334.000000000000000000'
       '    Height = 131.000000000000000000'
@@ -92,7 +108,6 @@ object Form4: TForm4
       '        Position.Point = '#39'(318,0)'#39
       '        Width = 16.000000000000000000'
       '        Height = 115.000000000000000000'
-      '        StyleLookup = '#39'ScrollBox1vscrollbar1'#39
       '        TabOrder = 1'
       '        Max = 100.000000000000000000'
       '        Orientation = orVertical'
@@ -104,7 +119,6 @@ object Form4: TForm4
       '        Position.Point = '#39'(0,115)'#39
       '        Width = 334.000000000000000000'
       '        Height = 16.000000000000000000'
-      '        StyleLookup = '#39'ScrollBox1hscrollbar1'#39
       '        TabOrder = 2'
       '        Max = 100.000000000000000000'
       '        Orientation = orHorizontal'
@@ -118,7 +132,6 @@ object Form4: TForm4
       '        Height = 8.000000000000000000'
       '        Padding.Rect = '#39'(2,0,0,0)'#39
       '        Visible = False'
-      '        StyleLookup = '#39'ScrollBox1vsmallscrollbar1'#39
       '        TabOrder = 3'
       '        Max = 100.000000000000000000'
       '        Orientation = orVertical'
@@ -132,7 +145,6 @@ object Form4: TForm4
       '        Height = 8.000000000000000000'
       '        Padding.Rect = '#39'(0,2,0,0)'#39
       '        Visible = False'
-      '        StyleLookup = '#39'ScrollBox1hsmallscrollbar1'#39
       '        TabOrder = 4'
       '        Max = 100.000000000000000000'
       '        Orientation = orHorizontal'
@@ -154,7 +166,6 @@ object Form4: TForm4
       '            Locked = True'
       '            Width = 20.000000000000000000'
       '            Height = 20.000000000000000000'
-      '            StyleLookup = '#39'ScrollBox1sizegrip1'#39
       '            TabOrder = 0'
       '          end'
       '        end'
@@ -162,7 +173,7 @@ object Form4: TForm4
       '    end'
       '  end'
       '  object TLayout'
-      '    StyleName = '#39'ScrollBox1vscrollbar1'#39
+      '    StyleName = '#39'ScrollBarStyle'#39
       '    Position.Point = '#39'(324,375)'#39
       '    Width = 176.000000000000000000'
       '    Height = 53.000000000000000000'
@@ -248,93 +259,7 @@ object Form4: TForm4
       '    end'
       '  end'
       '  object TLayout'
-      '    StyleName = '#39'ScrollBox1hscrollbar1'#39
-      '    Position.Point = '#39'(324,375)'#39
-      '    Width = 176.000000000000000000'
-      '    Height = 53.000000000000000000'
-      '    DesignVisible = False'
-      '    object TRectangle'
-      '      StyleName = '#39'background'#39
-      '      Align = alContents'
-      '      Locked = True'
-      '      Width = 176.000000000000000000'
-      '      Height = 53.000000000000000000'
-      '      HitTest = False'
-      '      Fill.Color = xFF484848'
-      '      Stroke.Kind = bkNone'
-      '    end'
-      '    object TButton'
-      '      StyleName = '#39'leftbutton'#39
-      '      Align = alLeft'
-      '      Position.Point = '#39'(0,18)'#39
-      '      Locked = True'
-      '      Width = 18.000000000000000000'
-      '      Height = 17.000000000000000000'
-      '      StyleLookup = '#39'scrollbarleftbutton'#39
-      '      TabOrder = 1'
-      '      CanFocus = False'
-      '    end'
-      '    object TTrack'
-      '      StyleName = '#39'htrack'#39
-      '      Align = alClient'
-      '      Position.Point = '#39'(18,18)'#39
-      '      Locked = True'
-      '      Width = 140.000000000000000000'
-      '      Height = 17.000000000000000000'
-      '      StyleLookup = '#39'scrollbarhtrackstyle'#39
-      '      TabOrder = 2'
-      '      Max = 1.000000000000000000'
-      '      Orientation = orHorizontal'
-      '      ViewportSize = 0.100000001490116100'
-      '    end'
-      '    object TButton'
-      '      StyleName = '#39'rightbutton'#39
-      '      Align = alRight'
-      '      Position.Point = '#39'(158,18)'#39
-      '      Locked = True'
-      '      Width = 18.000000000000000000'
-      '      Height = 17.000000000000000000'
-      '      StyleLookup = '#39'scrollbarrightbutton'#39
-      '      TabOrder = 3'
-      '      CanFocus = False'
-      '    end'
-      '    object TTrack'
-      '      StyleName = '#39'vtrack'#39
-      '      Align = alClient'
-      '      Position.Point = '#39'(18,18)'#39
-      '      Locked = True'
-      '      Width = 140.000000000000000000'
-      '      Height = 17.000000000000000000'
-      '      StyleLookup = '#39'scrollbarvtrackstyle'#39
-      '      TabOrder = 4'
-      '      Max = 1.000000000000000000'
-      '      Orientation = orHorizontal'
-      '      ViewportSize = 0.100000001490116100'
-      '    end'
-      '    object TButton'
-      '      StyleName = '#39'topbutton'#39
-      '      Align = alTop'
-      '      Locked = True'
-      '      Width = 176.000000000000000000'
-      '      Height = 18.000000000000000000'
-      '      StyleLookup = '#39'scrollbartopbutton'#39
-      '      TabOrder = 5'
-      '      CanFocus = False'
-      '    end'
-      '    object TButton'
-      '      StyleName = '#39'bottombutton'#39
-      '      Align = alBottom'
-      '      Position.Point = '#39'(0,35)'#39
-      '      Locked = True'
-      '      Width = 176.000000000000000000'
-      '      Height = 18.000000000000000000'
-      '      StyleLookup = '#39'scrollbarbottombutton'#39
-      '      TabOrder = 6'
-      '      CanFocus = False'
-      '    end'
-      '  end'
-      '  object TLayout'
-      '    StyleName = '#39'ScrollBox1vsmallscrollbar1'#39
+      '    StyleName = '#39'SmallScrollBarStyle'#39
       '    Position.Point = '#39'(324,375)'#39
       '    Width = 176.000000000000000000'
       '    Height = 53.000000000000000000'
@@ -365,38 +290,7 @@ object Form4: TForm4
       '    end'
       '  end'
       '  object TLayout'
-      '    StyleName = '#39'ScrollBox1hsmallscrollbar1'#39
-      '    Position.Point = '#39'(324,375)'#39
-      '    Width = 176.000000000000000000'
-      '    Height = 53.000000000000000000'
-      '    DesignVisible = False'
-      '    object TTrack'
-      '      StyleName = '#39'htrack'#39
-      '      Align = alClient'
-      '      Locked = True'
-      '      Width = 176.000000000000000000'
-      '      Height = 53.000000000000000000'
-      '      StyleLookup = '#39'smallscrollbarhtrackstyle'#39
-      '      TabOrder = 0'
-      '      Max = 1.000000000000000000'
-      '      Orientation = orHorizontal'
-      '      ViewportSize = 0.100000001490116100'
-      '    end'
-      '    object TTrack'
-      '      StyleName = '#39'vtrack'#39
-      '      Align = alClient'
-      '      Locked = True'
-      '      Width = 176.000000000000000000'
-      '      Height = 53.000000000000000000'
-      '      StyleLookup = '#39'smallscrollbarvtrackstyle'#39
-      '      TabOrder = 1'
-      '      Max = 1.000000000000000000'
-      '      Orientation = orHorizontal'
-      '      ViewportSize = 0.100000001490116100'
-      '    end'
-      '  end'
-      '  object TLayout'
-      '    StyleName = '#39'ScrollBox1sizegrip1'#39
+      '    StyleName = '#39'SizeGripStyle'#39
       '    Position.Point = '#39'(401,390)'#39
       '    Width = 23.000000000000000000'
       '    Height = 23.000000000000000000'
@@ -425,8 +319,95 @@ object Form4: TForm4
       '      WrapMode = iwOriginal'
       '    end'
       '  end'
+      '  object TLayout'
+      '    Position.Point = '#39'(245,336)'#39
+      '    Width = 334.000000000000000000'
+      '    Height = 131.000000000000000000'
+      '    DesignVisible = False'
+      '    object TLayout'
+      '      StyleName = '#39'background'#39
+      '      Align = alContents'
+      '      Locked = True'
+      '      Width = 334.000000000000000000'
+      '      Height = 131.000000000000000000'
+      '      object TLayout'
+      '        StyleName = '#39'content'#39
+      '        Align = alClient'
+      '        Width = 318.000000000000000000'
+      '        Height = 115.000000000000000000'
+      '      end'
+      '      object TScrollBar'
+      '        StyleName = '#39'vscrollbar'#39
+      '        Align = alRight'
+      '        Position.Point = '#39'(318,0)'#39
+      '        Width = 16.000000000000000000'
+      '        Height = 115.000000000000000000'
+      '        TabOrder = 1'
+      '        Max = 100.000000000000000000'
+      '        Orientation = orVertical'
+      '        SmallChange = 1.000000000000000000'
+      '      end'
+      '      object TScrollBar'
+      '        StyleName = '#39'hscrollbar'#39
+      '        Align = alBottom'
+      '        Position.Point = '#39'(0,115)'#39
+      '        Width = 334.000000000000000000'
+      '        Height = 16.000000000000000000'
+      '        TabOrder = 2'
+      '        Max = 100.000000000000000000'
+      '        Orientation = orHorizontal'
+      '        SmallChange = 1.000000000000000000'
+      '      end'
+      '      object TSmallScrollBar'
+      '        StyleName = '#39'vsmallscrollbar'#39
+      '        Align = alRight'
+      '        Position.Point = '#39'(99,2)'#39
+      '        Width = 8.000000000000000000'
+      '        Height = 8.000000000000000000'
+      '        Padding.Rect = '#39'(2,0,0,0)'#39
+      '        Visible = False'
+      '        TabOrder = 3'
+      '        Max = 100.000000000000000000'
+      '        Orientation = orVertical'
+      '        SmallChange = 1.000000000000000000'
+      '      end'
+      '      object TSmallScrollBar'
+      '        StyleName = '#39'hsmallscrollbar'#39
+      '        Align = alBottom'
+      '        Position.Point = '#39'(2,113)'#39
+      '        Width = 150.000000000000000000'
+      '        Height = 8.000000000000000000'
+      '        Padding.Rect = '#39'(0,2,0,0)'#39
+      '        Visible = False'
+      '        TabOrder = 4'
+      '        Max = 100.000000000000000000'
+      '        Orientation = orHorizontal'
+      '        SmallChange = 1.000000000000000000'
+      '      end'
+      '      object TLayout'
+      '        Align = alContents'
+      '        Width = 334.000000000000000000'
+      '        Height = 131.000000000000000000'
+      '        object TLayout'
+      '          Align = alBottom'
+      '          Position.Point = '#39'(0,111)'#39
+      '          Width = 334.000000000000000000'
+      '          Height = 20.000000000000000000'
+      '          object TSizeGrip'
+      '            StyleName = '#39'sizegrip'#39
+      '            Align = alRight'
+      '            Position.Point = '#39'(314,0)'#39
+      '            Locked = True'
+      '            Width = 20.000000000000000000'
+      '            Height = 20.000000000000000000'
+      '            TabOrder = 0'
+      '          end'
+      '        end'
+      '      end'
+      '    end'
+      '  end'
       'end')
     Left = 104
-    Top = 96
+    Top = 64
   end
 end
