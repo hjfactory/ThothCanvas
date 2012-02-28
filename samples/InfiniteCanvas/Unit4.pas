@@ -122,7 +122,7 @@ begin
   FCanvas.Parent := Panel3;
 
 //  FCanvas.StyleName := 'TScrollBoxstyle';
-//  FCanvas.StyleLookup := 'TScrollBoxstyle';
+  FCanvas.StyleLookup := 'ScrollBoxstyle';
 
   FCanvas.HScrollBar.Visible := True;
 end;
