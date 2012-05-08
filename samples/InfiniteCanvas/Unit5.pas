@@ -60,6 +60,8 @@ type
 
     procedure AddObject(AObject: TFmxObject); override;
 
+    procedure Center;
+
     procedure Realign; override;
 
     procedure Sort(Compare: TFmxObjectSortCompare); override;
@@ -138,6 +140,18 @@ begin
   FHScrollAni := nil;
 end;
 
+procedure TThothCanvas.Center;
+begin
+  if (VScrollBar <> nil) and (VScrollBar.Visible) then
+  begin
+    VScrollBar.Value := (VScrollBar.Max - VScrollBar.Min - VScrollBar.ViewportSize) / 2;
+  end;
+  if (HScrollBar <> nil) and (HScrollBar.Visible) then
+  begin
+    HScrollBar.Value := (HScrollBar.Max - HScrollBar.Min - HScrollBar.ViewportSize) / 2;
+  end;
+end;
+
 procedure TThothCanvas.ContentAddObject(AObject: TFmxObject);
 begin
 
@@ -158,6 +172,7 @@ begin
   inherited;
 
   FAutoHide := False;
+  FShowScrollBars := True;
 
   FContent := TThothContent.Create(Self);
   FContent.Parent := Self;
@@ -346,7 +361,7 @@ procedure TThothCanvas.Realign;
       VScrollBar.BringToFront;
       if VScrollBar.Visible and (ContentLayout <> nil) then
       begin
-        VScrollBar.Max := RectHeight(R);
+        VScrollBar.Max := R.Bottom; //RectHeight(R); hjf
         VScrollBar.ViewportSize := ContentLayout.Height;
         VScrollBar.SmallChange := VScrollBar.ViewportSize / 5;
         VScrollBar.Value := FScrollDesign.Y;
@@ -378,7 +393,7 @@ procedure TThothCanvas.Realign;
       HScrollBar.BringToFront;
       if HScrollBar.Visible and (ContentLayout <> nil) then
       begin
-        HScrollBar.Max := RectWidth(R);
+        HScrollBar.Max := R.Right; //RectWidth(R); hjf
         HScrollBar.ViewportSize := ContentLayout.Width;
         HScrollBar.SmallChange := HScrollBar.ViewportSize / 5;
         HScrollBar.Value := ContentLayout.Position.X - FContent.Position.X;

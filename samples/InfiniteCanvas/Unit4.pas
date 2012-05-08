@@ -32,6 +32,7 @@ type
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThothCanvas;
@@ -43,6 +44,9 @@ var
   Form4: TForm4;
 
 implementation
+
+uses
+  WinAPI.Windows;
 
 {$R *.fmx}
 
@@ -59,6 +63,11 @@ begin
   ScrollBox1.Repaint;
 end;
 
+procedure TForm4.Button3Click(Sender: TObject);
+begin
+  OutputDebugString(PChar(Format('%f %f', [FCanvas.HScrollBar.Value, FCanvas.VScrollBar.Value])));
+end;
+
 procedure TForm4.Button4Click(Sender: TObject);
 begin
   with TRectangle.Create(FCanvas) do
@@ -70,6 +79,7 @@ begin
   end;
 
   FCanvas.Realign;
+  FCanvas.Center;
 end;
 
 procedure TForm4.FormCreate(Sender: TObject);
@@ -83,7 +93,14 @@ begin
 //  FCanvas.StyleName := 'TScrollBoxstyle';
   FCanvas.StyleLookup := 'ScrollBoxstyle';
 
+  FCanvas.HScrollBar.Min := -1000;
+  FCanvas.HScrollBar.Max := 1000;
+  FCanvas.VScrollBar.Min := -1000;
+  FCanvas.VScrollBar.Max := 1000;
+
   FCanvas.HScrollBar.Visible := True;
+  FCanvas.VScrollBar.Visible := True;
+  FCanvas.Realign;
 end;
 
 procedure TForm4.ScrollBox1Paint(Sender: TObject; Canvas: TCanvas;

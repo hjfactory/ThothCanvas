@@ -1,11 +1,9 @@
 object Form4: TForm4
   Left = 0
   Top = 0
-  BiDiMode = bdLeftToRight
   Caption = 'Form4'
   ClientHeight = 400
   ClientWidth = 600
-  Transparency = False
   Visible = False
   OnCreate = FormCreate
   StyleBook = StyleBook1
@@ -44,8 +42,6 @@ object Form4: TForm4
       Height = 22.000000000000000000
       OnClick = Button1Click
       TabOrder = 0
-      StaysPressed = False
-      IsPressed = False
       Text = 'Rect(1000, 0)'
     end
     object Button2: TButton
@@ -53,17 +49,14 @@ object Form4: TForm4
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       TabOrder = 1
-      StaysPressed = False
-      IsPressed = False
       Text = 'ContentRect'
     end
     object Button3: TButton
-      Position.Point = '(40,192)'
+      Position.Point = '(16,224)'
       Width = 80.000000000000000000
       Height = 22.000000000000000000
+      OnClick = Button3Click
       TabOrder = 2
-      StaysPressed = False
-      IsPressed = False
       Text = 'Button3'
     end
     object Button4: TButton
@@ -72,8 +65,6 @@ object Form4: TForm4
       Height = 22.000000000000000000
       OnClick = Button4Click
       TabOrder = 3
-      StaysPressed = False
-      IsPressed = False
       Text = 'Button4'
     end
   end
