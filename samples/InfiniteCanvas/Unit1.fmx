@@ -1,0 +1,26 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 400
+  ClientWidth = 600
+  Visible = False
+  StyleLookup = 'backgroundstyle'
+  object ScrollBox1: TScrollBox
+    Align = alClient
+    Width = 600.000000000000000000
+    Height = 400.000000000000000000
+    TabOrder = 1
+    MouseTracking = True
+    object Rectangle1: TRectangle
+      Position.Point = '(480,240)'
+      Width = 153.000000000000000000
+      Height = 153.000000000000000000
+    end
+    object Rectangle2: TRectangle
+      Position.Point = '(-40,-32)'
+      Width = 153.000000000000000000
+      Height = 153.000000000000000000
+    end
+  end
+end

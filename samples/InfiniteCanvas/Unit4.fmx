@@ -2,70 +2,78 @@ object Form4: TForm4
   Left = 0
   Top = 0
   Caption = 'Form4'
-  ClientHeight = 400
-  ClientWidth = 600
+  ClientHeight = 617
+  ClientWidth = 882
   Visible = False
   OnCreate = FormCreate
   StyleBook = StyleBook1
   StyleLookup = 'backgroundstyle'
   object Panel1: TPanel
     Align = alClient
-    Width = 448.000000000000000000
-    Height = 400.000000000000000000
+    Position.Point = '(0,33)'
+    Width = 882.000000000000000000
+    Height = 584.000000000000000000
     TabOrder = 0
     object ScrollBox1: TScrollBox
       Align = alClient
-      Width = 448.000000000000000000
-      Height = 232.000000000000000000
+      Width = 882.000000000000000000
+      Height = 584.000000000000000000
+      OnMouseDown = ScrollBox1MouseDown
+      OnMouseMove = ScrollBox1MouseMove
+      OnMouseUp = ScrollBox1MouseUp
       OnPaint = ScrollBox1Paint
       TabOrder = 0
       MouseTracking = True
-    end
-    object Panel3: TPanel
-      Align = alBottom
-      Position.Point = '(0,232)'
-      Width = 448.000000000000000000
-      Height = 168.000000000000000000
-      StyleLookup = 'Panel3Style1'
-      TabOrder = 1
-    end
-  end
-  object Panel2: TPanel
-    Align = alRight
-    Position.Point = '(448,0)'
-    Width = 152.000000000000000000
-    Height = 400.000000000000000000
-    TabOrder = 1
-    object Button1: TButton
-      Position.Point = '(8,8)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button1Click
-      TabOrder = 0
-      Text = 'Rect(1000, 0)'
-    end
-    object Button2: TButton
-      Position.Point = '(8,40)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      TabOrder = 1
-      Text = 'ContentRect'
-    end
-    object Button3: TButton
-      Position.Point = '(16,224)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button3Click
-      TabOrder = 2
-      Text = 'Button3'
-    end
-    object Button4: TButton
-      Position.Point = '(16,256)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button4Click
-      TabOrder = 3
-      Text = 'Button4'
+      object Rectangle1: TRectangle
+        Position.Point = '(304,104)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle2: TRectangle
+        Position.Point = '(416,144)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle5: TRectangle
+        Position.Point = '(448,64)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle6: TRectangle
+        Position.Point = '(608,216)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle7: TRectangle
+        Position.Point = '(480,240)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle8: TRectangle
+        Position.Point = '(640,56)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle9: TRectangle
+        Position.Point = '(104,296)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle10: TRectangle
+        Position.Point = '(344,296)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle3: TRectangle
+        Position.Point = '(144,40)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
+      object Rectangle4: TRectangle
+        Position.Point = '(120,160)'
+        Width = 161.000000000000000000
+        Height = 145.000000000000000000
+      end
     end
   end
   object StyleBook1: TStyleBook
@@ -407,5 +415,19 @@ object Form4: TForm4
       'end')
     Left = 104
     Top = 64
+  end
+  object Panel2: TPanel
+    Align = alTop
+    Width = 882.000000000000000000
+    Height = 33.000000000000000000
+    TabOrder = 4
+    object Button1: TButton
+      Position.Point = '(32,8)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button1Click
+      TabOrder = 1
+      Text = 'Button1'
+    end
   end
 end
