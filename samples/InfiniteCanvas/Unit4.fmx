@@ -9,8 +9,6 @@ object Form4: TForm4
   StyleBook = StyleBook1
   StyleLookup = 'backgroundstyle'
   object Panel1: TPanel
-    Align = alClient
-    Position.Point = '(0,33)'
     Width = 882.000000000000000000
     Height = 584.000000000000000000
     TabOrder = 0
@@ -21,6 +19,7 @@ object Form4: TForm4
       OnMouseDown = ScrollBox1MouseDown
       OnMouseMove = ScrollBox1MouseMove
       OnMouseUp = ScrollBox1MouseUp
+      OnMouseWheel = ScrollBox1MouseWheel
       OnPaint = ScrollBox1Paint
       TabOrder = 0
       MouseTracking = True
@@ -420,13 +419,13 @@ object Form4: TForm4
     Align = alTop
     Width = 882.000000000000000000
     Height = 33.000000000000000000
-    TabOrder = 4
+    TabOrder = 1
     object Button1: TButton
       Position.Point = '(32,8)'
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button1Click
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Button1'
     end
   end

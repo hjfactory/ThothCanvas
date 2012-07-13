@@ -43,6 +43,8 @@ type
     procedure ScrollBox1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure Button1Click(Sender: TObject);
+    procedure ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; var Handled: Boolean);
   private
     { Private declarations }
     FOffSet, FPos: TPointF;
@@ -57,7 +59,7 @@ var
 implementation
 
 uses
-  WinAPI.Windows;
+  WinAPI.Windows, Math;
 
 {$R *.fmx}
 
@@ -159,6 +161,30 @@ begin
 
     ScrollBox1.Repaint;
   end;
+end;
+
+procedure TForm4.ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; var Handled: Boolean);
+var
+  I: Integer;
+begin
+//  for I := 0 to ScrollBox1.Children[1].ChildrenCount - 1 do
+//  begin
+//    if ScrollBox1.Children[1].Children[I] is TShape then
+//    begin
+//      TControl(ScrollBox1.Children[1].Children[I]).Scale.X := TControl(ScrollBox1.Children[1].Children[I]).Scale.X * IfThen(WheelDelta > 0, 1.1, 0.9);
+//      TControl(ScrollBox1.Children[1].Children[I]).Scale.Y := TControl(ScrollBox1.Children[1].Children[I]).Scale.Y * IfThen(WheelDelta > 0, 1.1, 0.9);
+//    end;
+//  end;
+
+  ScrollBox1.Scale.X := ScrollBox1.Scale.X * IfThen(WheelDelta > 0, 1.1, 0.9);
+  ScrollBox1.Scale.Y := ScrollBox1.Scale.Y * IfThen(WheelDelta > 0, 1.1, 0.9);
+
+  ScrollBox1.Width := Panel1.Width / ScrollBox1.Scale.X;
+  ScrollBox1.Height := Panel1.Height / ScrollBox1.Scale.Y;
+  ScrollBox1.Repaint;
+
+  OutputDebugString(PChar(Format('H: %f, Scale: %f, %f', [ScrollBox1.Height, ScrollBox1.Scale.X, ScrollBox1.Scale.Y])));
 end;
 
 procedure TForm4.ScrollBox1Paint(Sender: TObject; Canvas: TCanvas;
