@@ -23,6 +23,7 @@ object Form4: TForm4
       OnMouseDown = ScrollBox1MouseDown
       OnMouseMove = ScrollBox1MouseMove
       OnMouseUp = ScrollBox1MouseUp
+
       OnPainting = ScrollBox1Painting
       OnPaint = ScrollBox1Paint
       TabOrder = 0
