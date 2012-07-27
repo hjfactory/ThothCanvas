@@ -1,0 +1,27 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 578
+  ClientWidth = 809
+  Visible = False
+  OnCreate = FormCreate
+  StyleLookup = 'backgroundstyle'
+  object ScrollBox1: TScrollBox
+    Position.Point = '(600,376)'
+    Width = 153.000000000000000000
+    Height = 137.000000000000000000
+    TabOrder = 0
+    MouseTracking = True
+    ShowSizeGrip = True
+    UseSmallScrollBars = True
+    object Button1: TButton
+      Position.Point = '(88,104)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button1Click
+      TabOrder = 0
+      Text = 'Button1'
+    end
+  end
+end
