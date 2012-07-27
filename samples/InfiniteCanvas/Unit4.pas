@@ -43,6 +43,8 @@ type
     procedure ScrollBox1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure Button1Click(Sender: TObject);
+    procedure ScrollBox1Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
   private
     { Private declarations }
     FOffSet, FPos: TPointF;
@@ -56,8 +58,8 @@ var
 
 implementation
 
-uses
-  WinAPI.Windows;
+//uses
+//  WinAPI.Windows;
 
 {$R *.fmx}
 
@@ -136,14 +138,14 @@ begin
   Exit;
   if FDown then
   begin
-    OutputDebugString(PChar(Format('FPos: %f, %f', [FPos.X, FPos.Y])));
-    OutputDebugString(PChar(Format('X/Y: %f, %f', [X, Y])));
+//    OutputDebugString(PChar(Format('FPos: %f, %f', [FPos.X, FPos.Y])));
+//    OutputDebugString(PChar(Format('X/Y: %f, %f', [X, Y])));
     MovePos.SetLocation(X-FPos.X, Y-FPos.Y);
     FOffSet.Offset(MovePos);
     FPos := PointF(X, Y);
-    OutputDebugString(PChar(Format('OffSet: %f, %f', [FOffSet.X, FOffSet.Y])));
+//    OutputDebugString(PChar(Format('OffSet: %f, %f', [FOffSet.X, FOffSet.Y])));
 
-    OutputDebugString(PChar(Format('B: %f, %f', [Rectangle1.Position.X, Rectangle1.Position.Y])));
+//    OutputDebugString(PChar(Format('B: %f, %f', [Rectangle1.Position.X, Rectangle1.Position.Y])));
 
 //    scrollBox1.
 
@@ -151,7 +153,7 @@ begin
     Rectangle1.Position.X := Rectangle1.Position.X + MovePos.X;
     Rectangle1.Position.Y := Rectangle1.Position.Y + MovePos.Y;
 
-    OutputDebugString(PChar(Format('A: %f, %f', [Rectangle1.Position.X, Rectangle1.Position.Y])));
+//    OutputDebugString(PChar(Format('A: %f, %f', [Rectangle1.Position.X, Rectangle1.Position.Y])));
 //    for I := 0 to ScrollBox1.ChildrenCount - 1 do
 //    begin
 //      TShape(ScrollBox1.Children[I]).Position.Point.Offset(FOffSet);
@@ -162,6 +164,22 @@ begin
 end;
 
 procedure TForm4.ScrollBox1Paint(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  I: Integer;
+  X, Y: single;
+begin
+  X := Trunc(FOffSet.X) mod 100;
+  Y := Round(FOffSet.Y) mod 100;
+Exit;
+  for I := 0 to (Trunc(ScrollBox1.Width-1) div 100) do
+    Canvas.DrawLine(PointF(X + 100 * I, 0), PointF(X + 100 * I, ScrollBox1.Height), 1);
+
+  for I := 0 to (Trunc(ScrollBox1.Height-1) div 100) do
+    Canvas.DrawLine(PointF(0, Y + 100 * I), PointF(ScrollBox1.Width, Y + 100 * I), 1);
+end;
+
+procedure TForm4.ScrollBox1Painting(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 var
   I: Integer;
