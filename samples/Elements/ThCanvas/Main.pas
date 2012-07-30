@@ -9,10 +9,12 @@ uses
 
 type
   TForm1 = class(TForm)
-    ScrollBox1: TScrollBox;
+    Panel1: TPanel;
     Button1: TButton;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -29,28 +31,27 @@ implementation
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  with TButton.Create(ScrollBox1) do
+  with TButton.Create(FThCanvas) do
   begin
-    Parent := ScrollBox1;
-    Position.Point := PointF(200, 10);
-    Text := 'afasfdasfd';
+    Parent := FThCanvas;
+    Position.Point := PointF(10, 10);
+    Text := 'asdfsaf';
   end;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FThCanvas := TThCanvas.Create(Self);
-  FThCanvas.Parent := Self;
+  FThCanvas.Align := TAlignLayout.alClient;
+  FThCanvas.Parent := Panel1;
   FThCanvas.Position.Point := PointF(100, 50);
   FThCanvas.Width := 400;
   FThCanvas.Height := 400;
+end;
 
-  with TButton.Create(Self) do
-  begin
-    Parent := FThCanvas;
-    Position.Point := PointF(10, 10);
-    Text := 'asdfsaf';
-  end;
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  FThCanvas.Free;
 end;
 
 end.

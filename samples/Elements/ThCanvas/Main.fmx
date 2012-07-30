@@ -6,22 +6,27 @@ object Form1: TForm1
   ClientWidth = 809
   Visible = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   StyleLookup = 'backgroundstyle'
-  object ScrollBox1: TScrollBox
-    Position.Point = '(600,376)'
-    Width = 153.000000000000000000
-    Height = 137.000000000000000000
-    TabOrder = 0
-    MouseTracking = True
-    ShowSizeGrip = True
-    UseSmallScrollBars = True
-    object Button1: TButton
-      Position.Point = '(88,104)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button1Click
-      TabOrder = 0
-      Text = 'Button1'
-    end
+  object Panel1: TPanel
+    Position.Point = '(40,16)'
+    Width = 617.000000000000000000
+    Height = 497.000000000000000000
+    TabOrder = 9
+  end
+  object Button1: TButton
+    Position.Point = '(680,24)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button1Click
+    TabOrder = 10
+    Text = 'Button1'
+  end
+  object Button2: TButton
+    Position.Point = '(680,56)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 11
+    Text = 'Button2'
   end
 end
