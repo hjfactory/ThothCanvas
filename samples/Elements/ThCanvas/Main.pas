@@ -23,6 +23,8 @@ type
   private
     { Private declarations }
     FThCanvas: TThCanvas;
+
+    procedure ClickEvent(Sender: TObject);
   public
     { Public declarations }
   end;
@@ -46,7 +48,7 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  ShowMessage(Format('%s', [FThCanvas.test]));
+//  ShowMessage(Format('%s', [FThCanvas.test]));
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -54,10 +56,27 @@ begin
   with TButton.Create(FThCanvas) do
   begin
     Parent := FThCanvas;
-    Position.Point := PointF(-100, -110);
+    Position.Point := PointF(250, 150);
     Text := 'asdfsaf';
+    Onclick := ClickEvent;
+  end;
+  FThCanvas.Realign;
+
+  with TButton.Create(ScrollBox1) do
+  begin
+    Parent := ScrollBox1;
+    Position.Point := PointF(150, 150);
+    Text := 'asdfsaf';
+    Onclick := ClickEvent;
   end;
 
+
+  ScrollBox1.Realign
+end;
+
+procedure TForm1.ClickEvent(Sender: TObject);
+begin
+  ShowMessage(TButton(Sender).Parent.ClassName);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);

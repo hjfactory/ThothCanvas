@@ -13,20 +13,14 @@ type
     FLayout: TControl;
     FOffset: TPointF;
     FTrackingPos: TPointF;
-    FSize: TPointF;
 
     procedure SetTrackingPos(const Value: TPointF);
-    procedure SetSize(const Value: TPointF);
   protected
     constructor Create(AOwner: TComponent); override;
 
     function GetClipRect: TRectF; override;
-//    function GetUpdateRect: TRectF; override;
 
     property TrackingPos: TPointF read FTrackingPos write SetTrackingPos;
-    property Size: TPointF read FSize write SetSize;
-
-    procedure test;
   end;
 
   TThCanvas = class(TStyledControl)
@@ -36,6 +30,9 @@ type
 
     FContent: TThContent;
     FMouseTracking: Boolean;
+
+    function GetContentBounds: TRectF; virtual;
+    procedure RealignContent(R: TRectF); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -48,34 +45,28 @@ type
 
     property MouseTracking: Boolean read FMouseTracking write FMouseTracking default False;
 
-    function test: string;
-
     procedure Realign; override;
   end;
 
 implementation
+
+uses
+  Unit1;
 
 { TThContent }
 
 constructor TThContent.Create(AOwner: TComponent);
 begin
   inherited;
+  ClipChildren := True;
 end;
 
 function TThContent.GetClipRect: TRectF;
 begin
-
-  Result := RectF(0, 0, Size.X, Size.Y);
-  OffsetRect(Result, Position.X, Position.Y);
-
-//  if (Parent <> nil) and (Parent is TThContent) and  then
-
-// Update 할 영역만 반환
-end;
-
-procedure TThContent.SetSize(const Value: TPointF);
-begin
-  FSize := Value;
+//  Result := RectF(0, 0, TThCanvas(Parent).Width, TThCanvas(Parent).Height);
+  Result :=  TThCanvas(Parent).ClipRect;
+  OffsetRect(Result, -Position.X, -Position.Y);
+//  Debug(Format('L: %f, T: %f, R: %f, B: %f', [Result.Left, result.Top, Result.Right, Result.Bottom]));
 end;
 
 procedure TThContent.SetTrackingPos(const Value: TPointF);
@@ -84,17 +75,6 @@ begin
 
   Position.X := Position.X + Value.X;
   Position.Y := Position.Y + Value.Y;
-
-//  Self.SetBoundsRect(ClipRect);
-
-//  Self.SetBoundsRect();
-end;
-
-procedure TThContent.test;
-var
-  R: TRectF;
-begin
-  SetBoundsRect(ClipRect);
 end;
 
 { TThCanvas }
@@ -105,12 +85,13 @@ begin
 
   FMouseTracking := True;
 
+  AutoCapture := True;
+
   FContent := TThContent.Create(Self);
   FContent.Parent := Self;
   FContent.Stored := False;
   FContent.Locked := True;
   FContent.HitTest := False;
-  FContent.Size := PointF(Width, Height);
 end;
 
 destructor TThCanvas.Destroy;
@@ -119,6 +100,27 @@ begin
   FContent := nil;
 
   inherited;
+end;
+
+function TThCanvas.GetContentBounds: TRectF;
+var
+  i: Integer;
+  R, LocalR: TRectF;
+begin
+  Result := RectF(0, 0, Width, Height);
+  if (FContent <> nil) then
+  begin
+    R := ClipRect;
+    for i := 0 to FContent.ChildrenCount - 1 do
+      if FContent.Children[i] is TControl then
+        if (TControl(FContent.Children[i]).Visible) then
+        begin
+          if (csDesigning in ComponentState) and not (csDesigning in FContent.Children[i].ComponentState) then Continue;
+          LocalR := TControl(FContent.Children[i]).ParentedRect;
+          R := UnionRect(R, LocalR);
+        end;
+    Result := R;
+  end;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -159,8 +161,11 @@ end;
 procedure TThCanvas.Realign;
 
   procedure IntAlign;
+  var
+    R: TRectF;
   begin
-    FContent.test;
+    R := GetContentBounds;
+    RealignContent(R);
   end;
 begin
   if csDestroying in ComponentState then
@@ -181,10 +186,13 @@ begin
   end;
 end;
 
-function TThCanvas.test: string;
+procedure TThCanvas.RealignContent(R: TRectF);
 begin
-  Result := 'X: ' + IntToStr(Round(FContent.Width)) + ', Y: ' + IntToStr(Round(FContent.Height));
-  Result := 'X: ' + IntToStr(Round(FContent.Position.X)) + ', Y: ' + IntToStr(Round(FContent.Position.Y));
+  if (FContent <> nil) then
+  begin
+    FContent.SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
+    FContent.FRecalcUpdateRect := True; // need to recalc
+  end;
 end;
 
 procedure TThCanvas.AddObject(AObject: TFmxObject);
@@ -192,7 +200,7 @@ begin
   if Assigned(FContent) and (AObject <> FContent) and
     not (AObject is TEffect) and not (AObject is TAnimation) then
   begin
-    FContent.AddObject(AObject)
+    FContent.AddObject(AObject);
   end
   else
     inherited;
