@@ -10,15 +10,12 @@ type
     // Layout - ClipRect
     // OffSet - Point(Position)
   private
-    FLayout: TControl;
-    FOffset: TPointF;
     FTrackingPos: TPointF;
 
     procedure SetTrackingPos(const Value: TPointF);
   protected
-    constructor Create(AOwner: TComponent); override;
-
     function GetClipRect: TRectF; override;
+    procedure PaintChildren; override;
 
     property TrackingPos: TPointF read FTrackingPos write SetTrackingPos;
   end;
@@ -46,6 +43,7 @@ type
     property MouseTracking: Boolean read FMouseTracking write FMouseTracking default False;
 
     procedure Realign; override;
+    procedure Center;
   end;
 
 implementation
@@ -55,18 +53,74 @@ uses
 
 { TThContent }
 
-constructor TThContent.Create(AOwner: TComponent);
-begin
-  inherited;
-  ClipChildren := True;
-end;
-
 function TThContent.GetClipRect: TRectF;
 begin
-//  Result := RectF(0, 0, TThCanvas(Parent).Width, TThCanvas(Parent).Height);
-  Result :=  TThCanvas(Parent).ClipRect;
+  Result :=  TControl(Parent).ClipRect;
   OffsetRect(Result, -Position.X, -Position.Y);
-//  Debug(Format('L: %f, T: %f, R: %f, B: %f', [Result.Left, result.Top, Result.Right, Result.Bottom]));
+end;
+
+procedure TThContent.PaintChildren;
+var
+  I, j: Integer;
+  R: TRectF;
+  State: TCanvasSaveState;
+  AllowPaint: Boolean;
+begin
+  if FScene = nil then
+    Exit;
+  if FChildren <> nil then
+  begin
+    for I := 0 to FChildren.Count - 1 do
+      if (Children[I] is TControl) and
+        ((TControl(FChildren[I]).Visible) or (not TControl(FChildren[I]).Visible and (csDesigning in ComponentState) and not TControl(FChildren[I]).Locked)) then
+        with TControl(FChildren[I]) do
+        begin
+          if (csDesigning in ComponentState) then
+            Continue;
+          if not FInPaintTo and ((RectWidth(UpdateRect) = 0) or (RectHeight(UpdateRect) = 0)) then
+            Continue;
+          if Self.ClipChildren and not IntersectRect(Self.UpdateRect, UpdateRect) then
+            Continue;
+          // Check visibility
+          AllowPaint := False;
+          if (csDesigning in ComponentState) or FInPaintTo then
+            AllowPaint := True;
+          if not AllowPaint then
+          begin
+            R := UnionRect(GetChildrenRect, UpdateRect);
+            for j := 0 to FScene.GetUpdateRectsCount - 1 do
+              if IntersectRect(FScene.GetUpdateRect(j), R) then
+              begin
+                AllowPaint := True;
+                Break;
+              end;
+          end;
+          // Paint
+          if AllowPaint then
+          begin
+            State := nil;
+            try
+              // HJF - 캔버스 영역 안으로만 그리기 위한 조취
+              if {Self.FClipChildren and }CanClip then
+              begin
+                State := Canvas.SaveState;
+                Canvas.SetMatrix(Self.AbsoluteMatrix);
+                Canvas.IntersectClipRect(Self.ClipRect);
+              end;
+              if HasEffect and not HasAfterPaintEffect then
+                ApplyEffect;
+              Painting;
+              DoPaint;
+              AfterPaint;
+            finally
+              if State <> nil then
+                Canvas.RestoreState(State);
+            end;
+            if HasAfterPaintEffect then
+              ApplyEffect;
+          end;
+        end;
+  end;
 end;
 
 procedure TThContent.SetTrackingPos(const Value: TPointF);
@@ -78,6 +132,11 @@ begin
 end;
 
 { TThCanvas }
+
+procedure TThCanvas.Center;
+begin
+  FContent.Position.Point := PointF(0, 0);
+end;
 
 constructor TThCanvas.Create(AOwner: TComponent);
 begin
@@ -106,6 +165,7 @@ function TThCanvas.GetContentBounds: TRectF;
 var
   i: Integer;
   R, LocalR: TRectF;
+  C: TControl;
 begin
   Result := RectF(0, 0, Width, Height);
   if (FContent <> nil) then
@@ -116,7 +176,11 @@ begin
         if (TControl(FContent.Children[i]).Visible) then
         begin
           if (csDesigning in ComponentState) and not (csDesigning in FContent.Children[i].ComponentState) then Continue;
-          LocalR := TControl(FContent.Children[i]).ParentedRect;
+          // HJF - Scale등의 크기와 관련된 항목 처리
+//          LocalR := TControl(FContent.Children[i]).ParentedRect;
+          C := TControl(FContent.Children[i]);
+          LocalR := RectF(0, 0, C.Width * C.Scale.X, C.Height * C.Scale.Y);
+          OffsetRect(LocalR, C.Position.X, C.Position.Y);
           R := UnionRect(R, LocalR);
         end;
     Result := R;
@@ -165,6 +229,7 @@ procedure TThCanvas.Realign;
     R: TRectF;
   begin
     R := GetContentBounds;
+    OffsetRect(R, FContent.Position.X, FContent.Position.Y);
     RealignContent(R);
   end;
 begin

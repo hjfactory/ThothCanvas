@@ -3,7 +3,8 @@ program ThCanvasSample;
 uses
   FMX.Forms,
   Main in 'Main.pas' {Form1},
-  ThothCanvas in 'ThothCanvas.pas';
+  ThothCanvas in 'ThothCanvas.pas',
+  Unit1 in 'Unit1.pas';
 
 {$R *.res}
 
