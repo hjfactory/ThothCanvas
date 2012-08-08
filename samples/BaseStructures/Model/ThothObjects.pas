@@ -194,7 +194,7 @@ begin
     SetSelectionPos;
 
   Repaint;
-  TThCanvas(FThCanvas).Repaint;
+  TControl(Parent).Repaint;
 end;
 
 procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
