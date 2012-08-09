@@ -64,12 +64,19 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  if not Assigned(FRectangle) then
-    Exit;
+  if Assigned(FRectangle) then
+  begin
+    FRectangle.GripSize := StrToIntDef(Edit1.Text, 3);
+    FRectangle.ShadowSize := StrToIntDef(Edit2.Text, 3);
+    FRectangle.StrokeThickness := StrToIntDef(Edit3.Text, 1);
+  end;
 
-  FRectangle.GripSize := StrToIntDef(Edit1.Text, 3);
-  FRectangle.ShadowSize := StrToIntDef(Edit2.Text, 3);
-  FRectangle.StrokeThickness := StrToIntDef(Edit3.Text, 1);
+  if Assigned(FLine) then
+  begin
+    FLine.GripSize := StrToIntDef(Edit1.Text, 3);
+    FLine.ShadowSize := StrToIntDef(Edit2.Text, 3);
+    FLine.StrokeThickness := StrToIntDef(Edit3.Text, 1);
+  end;
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -89,19 +96,26 @@ end;
 
 procedure TForm1.TrackBar1Change(Sender: TObject);
 begin
-  if not Assigned(FRectangle) then
-    Exit;
+  if Assigned(FRectangle) then
+    FRectangle.Opacity := TTrackBar(Sender).Value;
 
-  FRectangle.Opacity := TTrackBar(Sender).Value;
+  if Assigned(FLine) then
+    FLine.Opacity := TTrackBar(Sender).Value;
 end;
 
 procedure TForm1.TrackBar2Change(Sender: TObject);
 begin
-  if not Assigned(FRectangle) then
-    Exit;
+  if Assigned(FRectangle) then
+  begin
+    FRectangle.Scale.X := TTrackBar(Sender).Value;
+    FRectangle.Scale.Y := TTrackBar(Sender).Value;
+  end;
 
-  FRectangle.Scale.X := TTrackBar(Sender).Value;
-  FRectangle.Scale.Y := TTrackBar(Sender).Value;
+  if Assigned(FLine) then
+  begin
+    FLine.Scale.X := TTrackBar(Sender).Value;
+    FLine.Scale.Y := TTrackBar(Sender).Value;
+  end;
 
 //  Memo1.Lines.Add(Format('X: %f, Y: %f, L: %f', [FRectangle.Position.X, FRectangle.Position.Y, FRectangle.ShapeRect.Left]));
 end;

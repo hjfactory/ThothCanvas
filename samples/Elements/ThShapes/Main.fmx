@@ -30,13 +30,13 @@ object Form1: TForm1
     Position.Point = '(344,72)'
     Width = 241.000000000000000000
     Height = 225.000000000000000000
-    TabOrder = 3
+    TabOrder = 2
     Text = 'GroupBox1'
     object Edit1: TEdit
       Position.Point = '(109,24)'
       Width = 52.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 1
+      TabOrder = 0
       KeyboardType = vktDefault
       Password = False
       Text = '3'
@@ -45,14 +45,14 @@ object Form1: TForm1
       Position.Point = '(16,27)'
       Width = 49.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 2
+      TabOrder = 1
       Text = 'GripSize'
     end
     object Edit2: TEdit
       Position.Point = '(109,48)'
       Width = 52.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 3
+      TabOrder = 2
       KeyboardType = vktDefault
       Password = False
       Text = '3'
@@ -61,14 +61,14 @@ object Form1: TForm1
       Position.Point = '(16,51)'
       Width = 73.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 4
+      TabOrder = 3
       Text = 'Shadow size'
     end
     object Edit3: TEdit
       Position.Point = '(109,72)'
       Width = 52.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 5
+      TabOrder = 4
       KeyboardType = vktDefault
       Password = False
       Text = '1'
@@ -77,14 +77,14 @@ object Form1: TForm1
       Position.Point = '(16,75)'
       Width = 97.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 6
+      TabOrder = 5
       Text = 'Stroke thickness'
     end
     object TrackBar1: TTrackBar
       Position.Point = '(104,144)'
       Width = 100.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 7
+      TabOrder = 6
       Max = 1.000000000000000000
       Orientation = orHorizontal
       Value = 1.000000000000000000
@@ -95,14 +95,14 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button2Click
-      TabOrder = 8
+      TabOrder = 7
       Text = 'Apply'
     end
     object TrackBar2: TTrackBar
       Position.Point = '(104,168)'
       Width = 100.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 9
+      TabOrder = 8
       Min = 0.200000002980232200
       Max = 5.000000000000000000
       Orientation = orHorizontal
@@ -113,14 +113,14 @@ object Form1: TForm1
       Position.Point = '(16,144)'
       Width = 89.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 10
+      TabOrder = 9
       Text = 'Opacity'
     end
     object Label5: TLabel
       Position.Point = '(16,168)'
       Width = 89.000000000000000000
       Height = 15.000000000000000000
-      TabOrder = 11
+      TabOrder = 10
       Text = 'Scale'
     end
   end
@@ -128,7 +128,7 @@ object Form1: TForm1
     Position.Point = '(344,304)'
     Width = 241.000000000000000000
     Height = 201.000000000000000000
-    TabOrder = 4
+    TabOrder = 3
     WordWrap = True
     KeyboardType = vktDefault
   end
@@ -137,7 +137,7 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button3Click
-    TabOrder = 13
+    TabOrder = 4
     Text = 'Button3'
   end
 end
