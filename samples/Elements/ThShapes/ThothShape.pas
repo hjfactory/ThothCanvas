@@ -7,8 +7,22 @@ uses
   FMX.Types;
 
 type
-  TThSelectionPoint = class(TControl)
+  TSelectionPosition = (spTopLeft, spTop, spTopRight, spLeft, spRight, spBottomLeft, spBottom, spBottomRight{, spCustom});
+
+  TThShapeControl = class(TControl)
+  protected
+    FInheritedOpacity: Boolean;
+    FInheritedScale: Boolean;
+
+    function GetAbsoluteOpacity: Single; override;
+    function GetAbsoluteMatrix: TMatrix; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
+  TThSelectionPoint = class(TThShapeControl)
   private
+    FSelectionPosition: TSelectionPosition;
     FPressed: Boolean;
 
     FFill: TBrush;
@@ -25,13 +39,14 @@ type
 
     procedure SetHeight(const Value: Single); override;
     procedure SetWidth(const Value: Single); override;
-    function PointInObject(X, Y: Single): Boolean; override;
     function GetUpdateRect: TRectF; override;
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    function PointInObject(X, Y: Single): Boolean; override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -46,10 +61,14 @@ type
 
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
+
+    property SelectionPosition: TSelectionPosition read FSelectionPosition write FSelectionPosition;
   end;
 
   TThShape = class(TControl)
   private
+    FPressed: Boolean;
+    FDownPos: TPointF;
     FHighlight: Boolean;
     FSelected: Boolean;
 
@@ -59,8 +78,12 @@ type
     FStrokeCap: TStrokeCap;
     FStrokeJoin: TStrokeJoin;
     FStrokeDash: TStrokeDash;
+    FShadowSize: Single;
+    FShadowColor: TAlphaColor;
+    FGripSize: Single;
+    FMinHeight: Single;
+    FMinWidth: Single;
 
-    function IsStrokeThicknessStored: Boolean;
     procedure SetFill(const Value: TBrush);
     procedure SetStroke(const Value: TBrush);
     procedure SetStrokeCap(const Value: TStrokeCap);
@@ -68,55 +91,60 @@ type
     procedure SetStrokeJoin(const Value: TStrokeJoin);
     procedure SetStrokeThickness(const Value: Single);
     procedure SetSelected(const Value: Boolean);
+    procedure SetShadowSize(const Value: Single);
+    procedure SetGripSize(const Value: Single);
+
+    procedure AddSelectionPoints(const Args: array of TSelectionPosition);
   protected
+    FSelectionPoints: TList;
+
     procedure FillChanged(Sender: TObject); virtual;
     procedure StrokeChanged(Sender: TObject); virtual;
+    procedure SelectionPointTrack(Sender: TObject); virtual;
+    procedure SelectionPointChange(Sender: TObject); virtual;
     function GetShapeRect: TRectF; virtual;
+    function GetShadowRect: TRectF; virtual;
 
-    procedure Painting; override;
     procedure Paint; override;
 
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
-    procedure PaintShape; virtual; abstract;
-    procedure PaintHighlightShape; virtual; abstract;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    procedure ShowSelection; virtual; abstract;
-    procedure HideSelection; virtual; abstract;
+    procedure PaintShape; virtual;
+    procedure PaintShadow; virtual;
+
+    procedure ShowSelection; virtual;
+    procedure HideSelection; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     property Fill: TBrush read FFill write SetFill;
     property Stroke: TBrush read FStroke write SetStroke;
-    property StrokeThickness: Single read FStrokeThickness
-      write SetStrokeThickness stored IsStrokeThicknessStored;
+    property StrokeThickness: Single read FStrokeThickness write SetStrokeThickness;
     property StrokeCap: TStrokeCap read FStrokeCap write SetStrokeCap default TStrokeCap.scFlat;
     property StrokeDash: TStrokeDash read FStrokeDash write SetStrokeDash default TStrokeDash.sdSolid;
     property StrokeJoin: TStrokeJoin read FStrokeJoin write SetStrokeJoin default TStrokeJoin.sjMiter;
     property ShapeRect: TRectF read GetShapeRect;
 
+    property GripSize: Single read FGripSize write SetGripSize;
+    property ShadowSize: Single read FShadowSize write SetShadowSize;
     property Selected: Boolean read FSelected write SetSelected;
+
+    property MinWidth: Single read FMinWidth write FMinWidth;
+    property MinHeight: Single read FMinHeight write FMinHeight;
   end;
 
   TThRectangle = class(TThShape)
-  private
-    FYRadius: Single;
-    FXRadius: Single;
-
-    FSelectionPoints: array[0..3] of TThSelectionPoint;
   protected
-    procedure SetXRadius(const Value: Single); virtual;
-    procedure SetYRadius(const Value: Single); virtual;
-
     procedure PaintShape; override;
-    procedure PaintHighlightShape; override;
-
-    procedure ShowSelection; override;
-    procedure HideSelection; override;
+    procedure PaintShadow; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOnwer: TComponent); override;
   published
     property Fill;
     property Stroke;
@@ -124,20 +152,84 @@ type
     property StrokeDash;
     property StrokeJoin;
     property StrokeThickness;
-    property XRadius: Single read FXRadius write SetXRadius;
-    property YRadius: Single read FYRadius write SetYRadius;
+  end;
+
+  TThLine = class(TThShape)
+  private
+    FEndPosition: TPosition;
+    procedure SetEndPosition(const Value: TPosition);
+  protected
+    procedure PaintShape; override;
+    procedure PaintShadow; override;
+
+    procedure SetHeight(const Value: Single); override;
+    procedure SetWidth(const Value: Single); override;
+    procedure SelectionPointTrack(Sender: TObject); override;
+  public
+    constructor Create(AOnwer: TComponent); override;
+  published
+    property Fill;
+    property Stroke;
+    property StrokeCap;
+    property StrokeDash;
+    property StrokeJoin;
+    property StrokeThickness;
+
+    property EndPosition: TPosition read FEndPosition write SetEndPosition;
   end;
 
 implementation
+
+uses
+  System.Math;
+
+const
+  __GRIP_SIZE   = 3;
+  __SHADOW_SIZE = 3;
+  __MIN_SIZE    = 50;
+
+{ TThShapeControl }
+
+constructor TThShapeControl.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FInheritedOpacity := True;
+  FInheritedScale := True;
+end;
+
+// Parent의 Scale 변경에 영향을 받지 않도록 처리
+function TThShapeControl.GetAbsoluteMatrix: TMatrix;
+begin
+  Result := inherited GetAbsoluteMatrix;
+  if not FInheritedScale then
+  begin
+//    Result.m31 := Position.X
+//    Result.m32
+    Result.m11 := Scale.X;
+    Result.m22 := Scale.Y;
+  end;
+end;
+
+function TThShapeControl.GetAbsoluteOpacity: Single;
+begin
+  if FInheritedOpacity then
+    Result := inherited
+  else
+    Result := FOpacity;
+end;
 
 { TThSelectionPoint }
 
 constructor TThSelectionPoint.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
 
   AutoCapture := True;
   ParentBounds := True;
+
+  FInheritedOpacity := False;
+  FInheritedScale := False;
 
   FFill := TBrush.Create(TBrushKind.bkSolid, $FFFFFFFF);
   FOverFill := TBrush.Create(TBrushKind.bkSolid, $FFFF0000);
@@ -145,7 +237,7 @@ begin
   FStroke.Color := $FF1072C5;
   FStrokeThickness := 1;
 
-  FGripSize := 3;
+  FGripSize := __GRIP_SIZE;
 
   Width := FGripSize * 2;
   Height := FGripSize * 2;
@@ -153,6 +245,8 @@ end;
 
 destructor TThSelectionPoint.Destroy;
 begin
+  FStroke.Free;
+  FFill.Free;
 
   inherited;
 end;
@@ -188,7 +282,6 @@ procedure TThSelectionPoint.MouseMove(Shift: TShiftState; X, Y: Single);
 var
   P: TPointF;
   R: TRectF;
-  ParentWidth, ParentHeight: Single;
 begin
   inherited;
   if FPressed and (Parent <> nil) and (Parent is TControl) then
@@ -203,27 +296,19 @@ begin
       begin
         R := TThShape(Parent).GetShapeRect;
 
-        if P.X < R.Left then
-          P.X := R.Left;
-        if P.Y < R.Top then
-          P.Y := R.Top;
-
-        if P.X > R.Right then
-          P.X := R.Right;
-        if P.Y > R.Bottom then
-          P.Y := R.Bottom;
+        P.X := MaxValue([P.X, R.Left]);
+        P.X := MinValue([P.X, R.Right]);
+        P.Y := MaxValue([P.Y, R.Top]);
+        P.Y := MinValue([P.Y, R.Bottom]);
       end
-      else
-      if (Canvas <> nil) then
+      else if (Canvas <> nil) then
       begin
-        if P.X > Canvas.Width then
-          P.X := Canvas.Width;
-        if P.Y > Canvas.Height then
-          P.Y := Canvas.Height;
+        P.X := MinValue([P.X, Canvas.Width]);
+        P.Y := MinValue([P.Y, Canvas.Height]);
       end;
     end;
-    Position.X := P.X;
-    Position.Y := P.Y;
+
+    Position.Point := P;
 
     if Assigned(FOnTrack) then
       FOnTrack(Self);
@@ -236,10 +321,8 @@ begin
   inherited;
 
   if FPressed then
-  begin
     if Assigned(FOnChange) then
       FOnChange(Self);
-  end;
   FPressed := False;
 end;
 
@@ -299,8 +382,18 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
+  AutoCapture := True;
+
   FSelected   := False;
   FHighlight  := False;
+  FGripSize   := __GRIP_SIZE;
+  FShadowSize := __SHADOW_SIZE;
+  FShadowColor  := claGray;
+
+  FSelectionPoints := TList.Create;
+
+  FMinWidth := __MIN_SIZE;
+  FMinHeight := __MIN_SIZE;
 
   FFill := TBrush.Create(TBrushKind.bkSolid, $FFE0E0E0);
   FFill.OnChanged := FillChanged;
@@ -311,9 +404,37 @@ begin
 end;
 
 destructor TThShape.Destroy;
+var
+  I: Integer;
 begin
+  FStroke.Free;
+  FFill.Free;
+  for I := FSelectionPoints.Count - 1 downto 0 do
+    TThSelectionPoint(FSelectionPoints[I]).Free;
+  FSelectionPoints.Free;
 
   inherited;
+end;
+
+procedure TThShape.AddSelectionPoints(const Args: array of TSelectionPosition);
+var
+  I: Integer;
+  SP: TThSelectionPoint;
+begin
+  FSelectionPoints.Clear;
+
+  for I := 0 to Length(Args) - 1 do
+  begin
+    SP := TThSelectionPoint.Create(Self);
+    SP.SelectionPosition := Args[I];
+    SP.OnTrack := SelectionPointTrack;
+    SP.OnChange := SelectionPointChange;
+    SP.Parent := Self;
+    SP.ParentBounds := False;
+    SP.Visible := False;
+
+    FSelectionPoints.Add(SP);
+  end;
 end;
 
 procedure TThShape.DoMouseEnter;
@@ -332,6 +453,96 @@ begin
   Repaint;
 end;
 
+function TThShape.GetShadowRect: TRectF;
+begin
+  Result := GetShapeRect;
+  OffsetRect(Result, FShadowSize / Scale.X, FShadowSize / Scale.Y);
+end;
+
+function TThShape.GetShapeRect: TRectF;
+begin
+  Result := LocalRect;
+  if FStroke.Kind <> TBrushKind.bkNone then
+  begin
+    InflateRect(Result, -(FGripSize / 2 / Scale.X), -(FGripSize / 2 / Scale.Y));
+    Result.Right := Result.Right - FShadowSize;
+    Result.Bottom := Result.Bottom - FShadowSize;
+  end;
+end;
+
+procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+  inherited;
+
+  if Button = TMouseButton.mbLeft then
+  begin
+    Selected := True;
+    FPressed := True;
+    FDownPos := PointF(X, Y);
+  end;
+end;
+
+procedure TThShape.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  P: TPointF;
+begin
+  inherited;
+  if FPressed and (Parent <> nil) and (Parent is TControl) then
+  begin
+    P := LocalToAbsolute(PointF(X, Y));
+    if (Parent <> nil) and (Parent is TControl) then
+      P := TControl(Parent).AbsoluteToLocal(P);
+
+    Position.X := Position.X + (X - FDownPos.X);
+    Position.Y := Position.Y + (Y - FDownPos.Y);
+
+//    if Assigned(FOnTrack) then
+//      FOnTrack(Self);
+  end;
+
+end;
+
+procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+  inherited;
+
+  if FPressed then
+  begin
+//    if Assigned(FOnChange) then
+//      FOnChange(Self);
+  end;
+  FPressed := False;
+end;
+
+procedure TThShape.Paint;
+begin
+  if FHighlight or FSelected then
+    PaintShadow;
+
+  PaintShape;
+
+  if FSelected and (FUpdating = 0) then
+    ShowSelection;
+end;
+
+procedure TThShape.PaintShadow;
+begin
+  Canvas.Fill.Color := FShadowColor;
+  Canvas.Stroke.Kind := TBrushKind.bkNone;
+end;
+
+procedure TThShape.PaintShape;
+begin
+  Canvas.Fill.Assign(FFill);
+  Canvas.Stroke.Assign(FStroke);
+  Canvas.StrokeThickness := FStrokeThickness;
+  Canvas.StrokeCap := FStrokeCap;
+  Canvas.StrokeJoin := FStrokeJoin;
+  Canvas.StrokeDash := FStrokeDash;
+end;
+
 procedure TThShape.FillChanged(Sender: TObject);
 begin
   if FUpdating = 0 then
@@ -344,43 +555,91 @@ begin
     Repaint;
 end;
 
-function TThShape.GetShapeRect: TRectF;
+procedure TThShape.SelectionPointChange(Sender: TObject);
 begin
-  Result := LocalRect;
-  if FStroke.Kind <> TBrushKind.bkNone then
-    InflateRect(Result, -(FStrokeThickness / 2) - 3, -(FStrokeThickness / 2) - 3);
+
 end;
 
-procedure TThShape.Paint;
+procedure TThShape.SelectionPointTrack(Sender: TObject);
+var
+  SP: TThSelectionPoint;
+  R: TRectF;
+  P: TPointF;
+  W, H: Single;
 begin
-  if FSelected then
+  SP := TThSelectionPoint(Sender);
+  R := GetShapeRect;
+
+  P := Position.Point;
+  W := Width;
+  H := Height;
+
+  // Left
+  if sp.SelectionPosition in [spLeft, spTopLeft, spBottomLeft] then
   begin
-    PaintHighlightShape;
-//    ShowSelection;
-  end
-  else
-  begin
-    if FHighlight then  PaintHighlightShape
-    else                PaintShape          ;
-    HideSelection;
+    W := W - SP.Position.X;
+    if W < FMinWidth then
+    begin
+      SP.Position.X := SP.Position.X - (FMinWidth - W);
+      W := FMinWidth;
+    end;
+    P.X := P.X + SP.Position.X;
   end;
-end;
 
-procedure TThShape.Painting;
-begin
-  inherited;
+  // Right
+  if sp.SelectionPosition in [spRight, spTopRight, spBottomRight] then
+  begin
+    W := SP.Position.X + SP.GripSize;
+    W := MinValue([W, FMinWidth]);
+  end;
 
-  Canvas.Fill.Assign(FFill);
-  Canvas.Stroke.Assign(FStroke);
-  Canvas.StrokeThickness := FStrokeThickness;
-  Canvas.StrokeCap := FStrokeCap;
-  Canvas.StrokeJoin := FStrokeJoin;
-  Canvas.StrokeDash := FStrokeDash;
+  // Top
+  if sp.SelectionPosition in [spTop, spTopLeft, spTopRight] then
+  begin
+    H := H - SP.Position.Y;
+    if H < FMinHeight then
+    begin
+      SP.Position.Y := SP.Position.Y - (FMinHeight - H);
+      H := FMinHeight;
+    end;
+    P.Y := P.Y + SP.Position.Y;
+  end;
+
+  // Bottom
+  if sp.SelectionPosition in [spBottom, spBottomLeft, spBottomRight] then
+  begin
+    H := SP.Position.Y + SP.GripSize;
+    H := MaxValue([H, FMinHeight]);
+  end;
+
+  Width := W;
+  Height := H;
+  Position.Point := P;
+
+  ShowSelection;
 end;
 
 procedure TThShape.SetFill(const Value: TBrush);
 begin
   FFill.Assign(Value);
+end;
+
+procedure TThShape.SetGripSize(const Value: Single);
+var
+  I: Integer;
+begin
+  if FGripSize = Value then
+    Exit;
+
+  FGripSize := Value;
+
+  for I := 0 to FSelectionPoints.Count - 1 do
+    TThSelectionPoint(FSelectionPoints[I]).GripSize := FGripSize;
+
+  Repaint;
+
+  if FSelected then
+    ShowSelection;
 end;
 
 procedure TThShape.SetSelected(const Value: Boolean);
@@ -391,8 +650,22 @@ begin
   FSelected := Value;
 
   if FSelected then
-    ShowSelection;
+    ShowSelection
+  else
+    HideSelection;
+
   Repaint;
+end;
+
+procedure TThShape.SetShadowSize(const Value: Single);
+begin
+  if FShadowSize = Value then
+    Exit;
+  FShadowSize := Value;
+  Repaint;
+
+  if FSelected then
+    ShowSelection;
 end;
 
 procedure TThShape.SetStroke(const Value: TBrush);
@@ -436,113 +709,187 @@ begin
   Repaint;
 end;
 
-function TThShape.IsStrokeThicknessStored: Boolean;
+procedure TThShape.ShowSelection;
+var
+  I: Integer;
+  P: TPointF;
+  R: TRectF;
+  SP: TThSelectionPoint;
 begin
-  Result := StrokeThickness <> 1;
+  R := GetShapeRect;
+
+  for I := 0 to FSelectionPoints.Count - 1 do
+  begin
+    SP := TThSelectionPoint(FSelectionPoints[I]);
+
+    case SP.SelectionPosition of
+      spTopLeft:      P := PointF(R.Left, R.Top);
+      spTop:          P := PointF(RectWidth(R) / 2, R.Top);
+      spTopRight:     P := PointF(R.Right, R.Top);
+      spLeft:         P := PointF(R.Left, RectHeight(R) / 2);
+      spRight:        P := PointF(R.Right, RectHeight(R) / 2);
+      spBottomLeft:   P := PointF(R.Left, R.Bottom);
+      spBottom:       P := PointF(RectWidth(R) / 2, R.Bottom);
+      spBottomRight:  P := PointF(R.Right, R.Bottom);
+    end;
+
+    SP.Position.Point := P;
+    SP.Visible := True;
+  end;
+
+  Repaint;
+end;
+
+procedure TThShape.HideSelection;
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionPoints.Count - 1 do
+    TThSelectionPoint(FSelectionPoints[I]).Visible := False;
 end;
 
 { TThRectangle }
 
-constructor TThRectangle.Create(AOwner: TComponent);
-var
-  I: Integer;
+constructor TThRectangle.Create;
 begin
   inherited;
 
-  FXRadius := 0;
-  FYRadius := 0;
-
-  for I := 0 to 3 do
-  begin
-    FSelectionPoints[I] := TThSelectionPoint.Create(Self);
-    FSelectionPoints[I].Parent := Self;
-    FSelectionPoints[I].Visible := False;
-  end;
+  AddSelectionPoints([spTopLeft, spTopRight, spBottomLeft, spBottomRight
+//  ,spLeft, spTop, spRight, spBottom // TEST
+  ]);
 end;
 
-procedure TThRectangle.PaintHighlightShape;
+procedure TThRectangle.PaintShadow;
 var
   R: TRectF;
-  Off: Single;
 begin
-  R := GetShapeRect;
-  OffsetRect(R, 3, 3);
-
-  Canvas.Fill.Color := claGray;
-  Canvas.Stroke.Kind := TBrushKind.bkSolid;
-  Canvas.StrokeThickness := 0;
-
-  Canvas.FillRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-  Canvas.DrawRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-
-  Painting;
-
-  R := GetShapeRect;
-  Canvas.FillRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-  Canvas.DrawRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+  inherited;
+  R := GetShadowRect;
+  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
 procedure TThRectangle.PaintShape;
 var
   R: TRectF;
-  Off: Single;
 begin
+  inherited;
   R := GetShapeRect;
-  Canvas.FillRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-  Canvas.DrawRect(R, XRadius, YRadius, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
-procedure TThRectangle.SetXRadius(const Value: Single);
+{ TThLine }
+
+constructor TThLine.Create(AOnwer: TComponent);
 begin
-  if FXRadius = Value then
-    Exit;
+  inherited;
 
-  FXRadius := Value;
-  Repaint;
+  FMinHeight := 1;
+
+  AddSelectionPoints([spTopLeft, spBottomRight
+//  ,spLeft, spTop, spRight, spBottom // TEST
+  ]);
 end;
 
-procedure TThRectangle.SetYRadius(const Value: Single);
+procedure TThLine.PaintShadow;
 begin
-  if FYRadius = Value then
-    Exit;
+  inherited;
 
-  FYRadius := Value;
-  Repaint;
 end;
 
-procedure TThRectangle.ShowSelection;
+procedure TThLine.PaintShape;
+begin
+  inherited;
+
+  Canvas.DrawLine(GetShapeRect.TopLeft, GetShapeRect.BottomRight,
+    AbsoluteOpacity);
+end;
+
+procedure TThLine.SelectionPointTrack(Sender: TObject);
 var
-  I: Integer;
+  SP: TThSelectionPoint;
   R: TRectF;
+  P: TPointF;
+  W, H: Single;
 begin
+  SP := TThSelectionPoint(Sender);
   R := GetShapeRect;
 
-//  TControl(Parent).Repaint;
+  P := Position.Point;
+  W := Width;
+  H := Height;
 
-  FSelectionPoints[0].Position.Point := PointF(R.Left, R.Top);
-  FSelectionPoints[1].Position.Point := PointF(R.Right, R.Top);
-  FSelectionPoints[2].Position.Point := PointF(R.Left, R.Bottom);
-  FSelectionPoints[3].Position.Point := PointF(R.Right, R.Bottom);
-
-//  FSelectionPoints[0].Position.Point := PointF(R.Left - (FSelectionPoints[0].GripSize / 2), R.Top - (FSelectionPoints[0].GripSize / 2));
-//  FSelectionPoints[1].Position.Point := PointF(R.Right - (FSelectionPoints[0].GripSize / 2), R.Top - (FSelectionPoints[0].GripSize / 2));
-//  FSelectionPoints[2].Position.Point := PointF(R.Left - (FSelectionPoints[0].GripSize / 2), R.Bottom - (FSelectionPoints[0].GripSize / 2));
-//  FSelectionPoints[3].Position.Point := PointF(R.Right - (FSelectionPoints[0].GripSize / 2), R.Bottom - (FSelectionPoints[0].GripSize / 2));
-
-  for I := 0 to 3 do
+  // Left
+  if sp.SelectionPosition in [spLeft, spTopLeft, spBottomLeft] then
   begin
-    FSelectionPoints[I].Visible := True;
+    W := W - SP.Position.X;
+    if W < FMinWidth then
+    begin
+      SP.Position.X := SP.Position.X - (FMinWidth - W);
+      W := FMinWidth;
+    end;
+    P.X := P.X + SP.Position.X;
   end;
+
+  // Right
+  if sp.SelectionPosition in [spRight, spTopRight, spBottomRight] then
+  begin
+    W := SP.Position.X + SP.GripSize;
+    W := MinValue([W, FMinWidth]);
+  end;
+
+  // Top
+  if sp.SelectionPosition in [spTop, spTopLeft, spTopRight] then
+  begin
+    H := H - SP.Position.Y;
+    if H < FMinHeight then
+    begin
+      SP.Position.Y := SP.Position.Y - (FMinHeight - H);
+      H := FMinHeight;
+    end;
+    P.Y := P.Y + SP.Position.Y;
+  end;
+
+  // Bottom
+  if sp.SelectionPosition in [spBottom, spBottomLeft, spBottomRight] then
+  begin
+    H := SP.Position.Y + SP.GripSize;
+    H := MaxValue([H, FMinHeight]);
+  end;
+
+  Width := W;
+  Height := H;
+  Position.Point := P;
+
+  ShowSelection;
 end;
 
-procedure TThRectangle.HideSelection;
-var
-  I: Integer;
+procedure TThLine.SetEndPosition(const Value: TPosition);
 begin
-  for I := 0 to 3 do
-  begin
-    FSelectionPoints[I].Visible := False;
-  end;
+  if FEndPosition = Value then
+    Exit;
+
+  FEndPosition := Value;
+
+  Width := Value.X - Position.X;
+  Height := Value.Y - Position.Y;
+
+  Repaint;
+end;
+
+procedure TThLine.SetHeight(const Value: Single);
+begin
+  inherited;
+
+  FEndPosition.Y := Value;
+end;
+
+procedure TThLine.SetWidth(const Value: Single);
+begin
+  inherited;
+
+  FEndPosition.X := Value;
 end;
 
 end.

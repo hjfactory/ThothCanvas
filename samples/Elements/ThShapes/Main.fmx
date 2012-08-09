@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 400
+  ClientHeight = 566
   ClientWidth = 600
   Visible = False
   StyleLookup = 'backgroundstyle'
@@ -24,14 +24,120 @@ object Form1: TForm1
     Height = 22.000000000000000000
     OnClick = Button1Click
     TabOrder = 1
-    Text = 'Button1'
+    Text = #49324#44033#54805' '#52628#44032
   end
-  object Button2: TButton
-    Position.Point = '(352,48)'
+  object GroupBox1: TGroupBox
+    Position.Point = '(344,72)'
+    Width = 241.000000000000000000
+    Height = 225.000000000000000000
+    TabOrder = 3
+    Text = 'GroupBox1'
+    object Edit1: TEdit
+      Position.Point = '(109,24)'
+      Width = 52.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 1
+      KeyboardType = vktDefault
+      Password = False
+      Text = '3'
+    end
+    object Label1: TLabel
+      Position.Point = '(16,27)'
+      Width = 49.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 2
+      Text = 'GripSize'
+    end
+    object Edit2: TEdit
+      Position.Point = '(109,48)'
+      Width = 52.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 3
+      KeyboardType = vktDefault
+      Password = False
+      Text = '3'
+    end
+    object Label2: TLabel
+      Position.Point = '(16,51)'
+      Width = 73.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 4
+      Text = 'Shadow size'
+    end
+    object Edit3: TEdit
+      Position.Point = '(109,72)'
+      Width = 52.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 5
+      KeyboardType = vktDefault
+      Password = False
+      Text = '1'
+    end
+    object Label3: TLabel
+      Position.Point = '(16,75)'
+      Width = 97.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 6
+      Text = 'Stroke thickness'
+    end
+    object TrackBar1: TTrackBar
+      Position.Point = '(104,144)'
+      Width = 100.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 7
+      Max = 1.000000000000000000
+      Orientation = orHorizontal
+      Value = 1.000000000000000000
+      OnChange = TrackBar1Change
+    end
+    object Button2: TButton
+      Position.Point = '(104,104)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button2Click
+      TabOrder = 8
+      Text = 'Apply'
+    end
+    object TrackBar2: TTrackBar
+      Position.Point = '(104,168)'
+      Width = 100.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 9
+      Min = 0.200000002980232200
+      Max = 5.000000000000000000
+      Orientation = orHorizontal
+      Value = 1.000000000000000000
+      OnChange = TrackBar2Change
+    end
+    object Label4: TLabel
+      Position.Point = '(16,144)'
+      Width = 89.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 10
+      Text = 'Opacity'
+    end
+    object Label5: TLabel
+      Position.Point = '(16,168)'
+      Width = 89.000000000000000000
+      Height = 15.000000000000000000
+      TabOrder = 11
+      Text = 'Scale'
+    end
+  end
+  object Memo1: TMemo
+    Position.Point = '(344,304)'
+    Width = 241.000000000000000000
+    Height = 201.000000000000000000
+    TabOrder = 4
+    WordWrap = True
+    KeyboardType = vktDefault
+  end
+  object Button3: TButton
+    Position.Point = '(440,24)'
     Width = 80.000000000000000000
     Height = 22.000000000000000000
-    OnClick = Button2Click
-    TabOrder = 2
-    Text = 'Button2'
+    OnClick = Button3Click
+    TabOrder = 13
+    Text = 'Button3'
   end
 end
