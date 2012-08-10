@@ -87,10 +87,10 @@ begin
   with FLine do
   begin
     Parent := ScrollBox1;
-    Position.Point := PointF(10, 10);
+    Position.Point := PointF(100, 100);
     ShadowSize := 3;
     Width := 100;
-    Height := 100;
+    Height := 6;
   end;
 end;
 

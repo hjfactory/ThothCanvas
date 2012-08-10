@@ -6,9 +6,6 @@
 			<Projects Include="CanvasCopy\CanvasCopy.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="BaseStructures\BaseStructure.dproj">
-				<Dependencies/>
-			</Projects>
 			<Projects Include="BufferCanvas\BufferCanvas.dproj">
 				<Dependencies/>
 			</Projects>
@@ -16,6 +13,9 @@
 				<Dependencies/>
 			</Projects>
 			<Projects Include="InfiniteCanvas\InfiniteCanvas.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="SmoothLine\Project1.dproj">
 				<Dependencies/>
 			</Projects>
 		</ItemGroup>
@@ -34,15 +34,6 @@
 		</Target>
 		<Target Name="CanvasCopy:Make">
 			<MSBuild Projects="CanvasCopy\CanvasCopy.dproj" Targets="Make"/>
-		</Target>
-		<Target Name="BaseStructure">
-			<MSBuild Projects="BaseStructures\BaseStructure.dproj"/>
-		</Target>
-		<Target Name="BaseStructure:Clean">
-			<MSBuild Projects="BaseStructures\BaseStructure.dproj" Targets="Clean"/>
-		</Target>
-		<Target Name="BaseStructure:Make">
-			<MSBuild Projects="BaseStructures\BaseStructure.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="BufferCanvas">
 			<MSBuild Projects="BufferCanvas\BufferCanvas.dproj"/>
@@ -71,14 +62,23 @@
 		<Target Name="InfiniteCanvas:Make">
 			<MSBuild Projects="InfiniteCanvas\InfiniteCanvas.dproj" Targets="Make"/>
 		</Target>
+		<Target Name="Project1">
+			<MSBuild Projects="SmoothLine\Project1.dproj"/>
+		</Target>
+		<Target Name="Project1:Clean">
+			<MSBuild Projects="SmoothLine\Project1.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="Project1:Make">
+			<MSBuild Projects="SmoothLine\Project1.dproj" Targets="Make"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="CanvasCopy;BaseStructure;BufferCanvas;ExchangeShapeIndex;InfiniteCanvas"/>
+			<CallTarget Targets="CanvasCopy;BufferCanvas;ExchangeShapeIndex;InfiniteCanvas;Project1"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="CanvasCopy:Clean;BaseStructure:Clean;BufferCanvas:Clean;ExchangeShapeIndex:Clean;InfiniteCanvas:Clean"/>
+			<CallTarget Targets="CanvasCopy:Clean;BufferCanvas:Clean;ExchangeShapeIndex:Clean;InfiniteCanvas:Clean;Project1:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="CanvasCopy:Make;BaseStructure:Make;BufferCanvas:Make;ExchangeShapeIndex:Make;InfiniteCanvas:Make"/>
+			<CallTarget Targets="CanvasCopy:Make;BufferCanvas:Make;ExchangeShapeIndex:Make;InfiniteCanvas:Make;Project1:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>

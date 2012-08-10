@@ -95,6 +95,7 @@ type
     procedure SetGripSize(const Value: Single);
 
     procedure AddSelectionPoints(const Args: array of TSelectionPosition);
+    procedure SetSelectionPoints(const Args: array of TSelectionPosition);
     function GetSelectionPoint(Index: Integer): TThSelectionPoint;
   protected
     FSelectionPoints: TList;
@@ -121,6 +122,7 @@ type
     procedure ShowSelection; virtual;
     procedure HideSelection; virtual;
 
+    function PtInShape(APt: TPointF): Boolean; virtual;
     property SelectionPoint[Index: Integer]: TThSelectionPoint read GetSelectionPoint;
   public
     constructor Create(AOwner: TComponent); override;
@@ -168,11 +170,13 @@ type
     procedure SetHeight(const Value: Single); override;
     procedure SetWidth(const Value: Single); override;
     procedure SelectionPointTrack(Sender: TObject); override;
+    procedure SelectionPointChange(Sender: TObject); override;
+
+    function PtInShape(APt: TPointF): Boolean; override;
   public
     constructor Create(AOnwer: TComponent); override;
     destructor Destroy; override;
   published
-    property Fill;
     property Stroke;
     property StrokeCap;
     property StrokeDash;
@@ -300,15 +304,15 @@ begin
       begin
         R := TThShape(Parent).GetShapeRect;
 
-        P.X := MaxValue([P.X, R.Left]);
-        P.X := MinValue([P.X, R.Right]);
-        P.Y := MaxValue([P.Y, R.Top]);
-        P.Y := MinValue([P.Y, R.Bottom]);
+        P.X := Max(P.X, R.Left);
+        P.X := Min(P.X, R.Right);
+        P.Y := Max(P.Y, R.Top);
+        P.Y := Min(P.Y, R.Bottom);
       end
       else if (Canvas <> nil) then
       begin
-        P.X := MinValue([P.X, Canvas.Width]);
-        P.Y := MinValue([P.Y, Canvas.Height]);
+        P.X := Min(P.X, Canvas.Width);
+        P.Y := Min(P.Y, Canvas.Height);
       end;
     end;
 
@@ -441,6 +445,15 @@ begin
   end;
 end;
 
+procedure TThShape.SetSelectionPoints(const Args: array of TSelectionPosition);
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionPoints.Count - 1 do
+    if Length(Args) > I then
+      GetSelectionPoint(I).SelectionPosition := Args[I];
+end;
+
 procedure TThShape.DoMouseEnter;
 begin
   inherited;
@@ -486,7 +499,7 @@ procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if Button = TMouseButton.mbLeft then
+  if (Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))) then
   begin
     Selected := True;
     FPressed := True;
@@ -554,6 +567,11 @@ begin
   Canvas.StrokeDash := FStrokeDash;
 end;
 
+function TThShape.PtInShape(APt: TPointF): Boolean;
+begin
+  Result := PtInRect(GetShapeRect, APt);
+end;
+
 procedure TThShape.FillChanged(Sender: TObject);
 begin
   if FUpdating = 0 then
@@ -601,7 +619,7 @@ begin
   if sp.SelectionPosition in [spRight, spTopRight, spBottomRight] then
   begin
     W := SP.Position.X + SP.GripSize * 2;
-    W := MaxValue([W, FMinWidth]);
+    W := Max(W, FMinWidth);
   end;
 
   // Top
@@ -620,7 +638,7 @@ begin
   if sp.SelectionPosition in [spBottom, spBottomLeft, spBottomRight] then
   begin
     H := SP.Position.Y + SP.GripSize * 2;
-    H := MaxValue([H, FMinHeight]);
+    H := Max(H, FMinHeight);
   end;
 
   Width := W;
@@ -811,22 +829,46 @@ begin
 end;
 
 procedure TThLine.PaintShadow;
+var
+  P1, P2: TPointF;
 begin
   inherited;
 
   if SelectionPoint[0].SelectionPosition = spTopLeft then
-    Canvas.DrawLine(GetShadowRect.TopLeft, GetShadowRect.BottomRight, AbsoluteOpacity)
+  begin
+    P1 := GetShadowRect.TopLeft;
+    P2 := GetShadowRect.BottomRight;
+  end
   else
-    Canvas.DrawLine(PointF(GetShadowRect.Left, GetShadowRect.Bottom), PointF(GetShadowRect.Right, GetShadowRect.Top), AbsoluteOpacity)
-  ;
+  begin
+    P1 := PointF(GetShadowRect.Left, GetShadowRect.Bottom);
+    P2 := PointF(GetShadowRect.Right, GetShadowRect.Top);
+  end;
+  Canvas.DrawLine(P1, P2, AbsoluteOpacity);
 end;
 
 procedure TThLine.PaintShape;
+var
+  P1, P2: TPointF;
 begin
   inherited;
 
-  Canvas.DrawLine(GetShapeRect.TopLeft, GetShapeRect.BottomRight,
-    AbsoluteOpacity);
+  if SelectionPoint[0].SelectionPosition = spTopLeft then
+  begin
+    P1 := GetShapeRect.TopLeft;
+    P2 := GetShapeRect.BottomRight;
+  end
+  else
+  begin
+    P1 := PointF(GetShapeRect.Left, GetShapeRect.Bottom);
+    P2 := PointF(GetShapeRect.Right, GetShapeRect.Top);
+  end;
+  Canvas.DrawLine(P1, P2, AbsoluteOpacity);
+end;
+
+function TThLine.PtInShape(APt: TPointF): Boolean;
+begin
+//  PtInCircle()
 end;
 
 procedure TThLine.SelectionPointTrack(Sender: TObject);
@@ -843,6 +885,9 @@ begin
   W := Width;
   H := Height;
 
+  DebugMsg(Format('INPUT P(%f, %f) SP(%f, %f), W/H(%f, %f)', [ P.X, P.Y, SP.Position.X, SP.Position.Y, W, H]));
+
+
   // Left
   if SP.SelectionPosition in [spTopLeft, spBottomLeft] then
   begin
@@ -854,6 +899,38 @@ begin
   if SP.SelectionPosition in [spTopLeft, spTopRight] then
   begin
     H := H - SP.Position.Y;
+    P.Y := P.Y + SP.Position.Y;
+  end;
+
+  // Right
+  if SP.SelectionPosition in [spTopRight, spBottomRight] then
+    W := SP.Position.X + FGripSize * 2;
+
+  // Bottom
+  if SP.SelectionPosition in [spBottomLeft, spBottomRight] then
+    H := SP.Position.Y + FGripSize * 2;
+
+  Position.X := P.X;
+  Position.Y := P.Y;
+  Width := W;//Abs(W);
+  Height := H; //Abs(H);
+{
+Exit;
+
+  // Left
+  if SP.SelectionPosition in [spTopLeft, spBottomLeft] then
+  begin
+    W := W - SP.Position.X;
+    P.X := P.X + SP.Position.X;
+  end;
+
+  // Top
+  if SP.SelectionPosition in [spTopLeft, spTopRight] then
+  begin
+    if SP.Position.Y < 0 then
+      H := SP.Position.Y
+    else
+      H := H - SP.Position.Y;
     P.Y := P.Y + SP.Position.Y;
   end;
 
@@ -872,8 +949,9 @@ begin
       H := SP.Position.Y + FGripSize * 2;
 
 //  Position.Point := P;
-
+Exit;
   DebugMsg(Format('%d, %f, %f, %f', [ORd(SP.SelectionPosition), SP.Position.X, W, H]));
+
 // 꼬였넹 풀어야 됨
   if SP.Position.X < 0 then
     Position.X := Position.X + W;
@@ -892,6 +970,7 @@ begin
   end;
   Width := Abs(W);
   Height := Abs(H);
+  ShowSelection;
 
 Exit;
   if SelectionPoint[0] = SP then
@@ -930,7 +1009,48 @@ Exit;
     end;
   end;
 
-//  ShowSelection;
+  ShowSelection;
+}
+end;
+
+procedure TThLine.SelectionPointChange(Sender: TObject);
+  // 좌우, 상하가 변했을때 선택점 반전 처리
+  procedure _ExchangeSelectionPosition;
+  begin
+    if SelectionPoint[0].SelectionPosition = spTopLeft then
+      SetSelectionPoints([spBottomLeft, spTopRight])
+    else
+      SetSelectionPoints([spTopLeft, spBottomRight]);
+  end;
+
+var
+  P: TPointF;
+  W, H: Single;
+begin
+  inherited;
+
+  W := Width;
+  H := Height;
+  P := Position.Point;
+
+  if W < 0 then
+  begin
+    P.X := P.X + W - GripSize * 2;
+    W := W - GripSize * 4;
+    if H >= 0 then
+      _ExchangeSelectionPosition;
+  end;
+  if H < 0 then
+  begin
+    P.Y := P.Y + H - GripSize * 2;
+    H := H - GripSize * 4;
+    if W >= 0 then
+      _ExchangeSelectionPosition;
+  end;
+
+  Width := Abs(W);
+  Height := Abs(H);
+  Position.Point := P;
 end;
 
 procedure TThLine.SetEndPosition(const Value: TPosition);

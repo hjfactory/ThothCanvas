@@ -1,0 +1,69 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 425
+  ClientWidth = 623
+  Visible = False
+  OnCreate = FormCreate
+  StyleLookup = 'backgroundstyle'
+  object Image1: TImage
+    Position.Point = '(16,24)'
+    Width = 353.000000000000000000
+    Height = 385.000000000000000000
+    OnMouseDown = Image1MouseDown
+  end
+  object Edit1: TEdit
+    Position.Point = '(432,80)'
+    Width = 89.000000000000000000
+    Height = 17.000000000000000000
+    TabOrder = 1
+    KeyboardType = vktDefault
+    Password = False
+  end
+  object Edit2: TEdit
+    Position.Point = '(432,104)'
+    Width = 89.000000000000000000
+    Height = 17.000000000000000000
+    TabOrder = 2
+    KeyboardType = vktDefault
+    Password = False
+  end
+  object Label1: TLabel
+    Position.Point = '(376,80)'
+    Width = 49.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 3
+    Text = 'PT1'
+  end
+  object Memo1: TMemo
+    Position.Point = '(376,288)'
+    Width = 209.000000000000000000
+    Height = 121.000000000000000000
+    TabOrder = 4
+    KeyboardType = vktDefault
+  end
+  object Label2: TLabel
+    Position.Point = '(376,104)'
+    Width = 49.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 5
+    Text = 'PT2'
+  end
+  object Label3: TLabel
+    Position.Point = '(376,40)'
+    Width = 49.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 6
+    Text = 'Range'
+  end
+  object Edit3: TEdit
+    Position.Point = '(432,40)'
+    Width = 89.000000000000000000
+    Height = 17.000000000000000000
+    TabOrder = 7
+    KeyboardType = vktDefault
+    Password = False
+    Text = '10'
+  end
+end
