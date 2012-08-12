@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Layouts, FMX.Objects,
-  ThothShape, FMX.Edit, FMX.Memo;
+  ThothShape, FMX.Edit, FMX.Memo, FMX.Platform;
 
 type
   TForm1 = class(TForm)
@@ -26,17 +26,21 @@ type
     Label5: TLabel;
     Memo1: TMemo;
     Button3: TButton;
+    Button4: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure ScrollBox1Click(Sender: TObject);
   private
     { Private declarations }
     FRectangle: TThRectangle;
     FLine: TThLine;
   public
     { Public declarations }
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   end;
 
 var
@@ -89,9 +93,36 @@ begin
     Parent := ScrollBox1;
     Position.Point := PointF(100, 100);
     ShadowSize := 3;
+    StrokeThickness := 3;
     Width := 100;
-    Height := 6;
+    Height := 50;
   end;
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+  Memo1.Lines.Add(Format('Form: %d, %d', [Form1.Left, Form1.Top]));
+  Memo1.Lines.Add(Format('Pnl: %f, %f', [Panel1.Position.X, Panel1.Position.Y]));
+  Memo1.Lines.Add(Format('SB: %f, %f', [ScrollBox1.Position.X, ScrollBox1.Position.Y]));
+  Memo1.Lines.Add(Format('Rect: %f, %f', [FRectangle.Position.X, FRectangle.Position.Y]));
+end;
+
+procedure TForm1.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+  inherited;
+
+
+  Memo1.Lines.Add(Format('%f, %f', [X, Y]));
+end;
+
+procedure TForm1.ScrollBox1Click(Sender: TObject);
+begin
+  if Assigned(FRectangle) then
+    FRectangle.Selected := False;
+
+  if Assigned(FLine) then
+    FLine.Selected := False;
 end;
 
 procedure TForm1.TrackBar1Change(Sender: TObject);
