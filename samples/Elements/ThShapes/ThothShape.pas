@@ -124,6 +124,8 @@ type
 
     function PtInShape(APt: TPointF): Boolean; virtual;
     property SelectionPoint[Index: Integer]: TThSelectionPoint read GetSelectionPoint;
+
+    function PointInObject(X, Y: Single): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -453,41 +455,8 @@ begin
 end;
 
 procedure TThShape.DoMouseEnter;
-var
-  P: TPointF;
-  R: TRectF;
 begin
-
-Exit;
-  DebugMsg(Format('%f, %f', [Platform.GetMousePos.X, Platform.GetMousePos.Y]));
-
-
-  P := PointF(0, 0);
-  P := ScreenToLocal(P);
-  DebugMsg(Format('P(0,0): %f, %f', [P.X, P.Y]));
-
-
-  P := Platform.GetMousePos;
-  P := ScreenToLocal(P);
-//  if Assigned(Parent) and (Parent is TControl) then
-//    P := TControl(Parent).LocalToAbsolute(P);
-//    P := TControl(Parent).AbsoluteToLocal(P);
-  DebugMsg(Format('Platform: %f, %f', [P.X, P.Y]));
-
-//  P := LocalToAbsolute(P);
-//  DebugMsg(Format('Local: %f, %f', [P.X, P.Y]));
-
-
-  R := GetShapeRect;
-  DebugMsg(Format('R: %f, %f, %f, %f', [R.Left, R.Top, R.Right, R.Bottom]));
-
-  if not PtInShape(P) then
-    Exit;
-
   inherited;
-
-  FHighlight := True;
-  Repaint;
 end;
 
 procedure TThShape.DoMouseLeave;
@@ -564,6 +533,16 @@ begin
     P := Platform.GetMousePos;
     P := ScreenToLocal(P);
 
+//if not PtInShape(P) then
+//begin
+//  HitTest := False;
+//end
+//else
+//begin
+//  HitTest := True;
+//end;
+
+
     FHighlight := PtInShape(P);
     Repaint;
   end;
@@ -613,6 +592,19 @@ begin
   Canvas.StrokeCap := FStrokeCap;
   Canvas.StrokeJoin := FStrokeJoin;
   Canvas.StrokeDash := FStrokeDash;
+end;
+
+function TThShape.PointInObject(X, Y: Single): Boolean;
+var
+  P: TPointF;
+begin
+  Result := inherited;
+
+  if Result then
+  begin
+    P := AbsoluteToLocal(PointF(X, Y));
+    Result := PtInShape(P);
+  end;
 end;
 
 function TThShape.PtInShape(APt: TPointF): Boolean;
