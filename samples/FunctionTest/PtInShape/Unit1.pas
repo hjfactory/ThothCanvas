@@ -17,9 +17,11 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Edit3: TEdit;
+    Button1: TButton;
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
     FIndex: Integer;
@@ -39,6 +41,21 @@ implementation
 
 uses
   System.Math;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  FIndex := 0;
+  Image1.Bitmap.Create(Round(Image1.Width), Round(Image1.Height));
+//  Image1.Bitmap.FillColor(claWhite);
+  Image1.Bitmap.Canvas.BeginScene;
+  Image1.Bitmap.Canvas.Fill.Color := claWhite;
+  Image1.Bitmap.Canvas.FillRect(Image1.ClipRect, 0, 0, AllCorners, 1);
+  Image1.Bitmap.Canvas.Stroke.Color := claBlack;
+  Image1.Bitmap.Canvas.StrokeThickness := 1;
+  Image1.Bitmap.Canvas.DrawRect(Image1.ClipRect, 0, 0, AllCorners, 1);
+  Image1.Bitmap.Canvas.EndScene;
+  Image1.Bitmap.BitmapChanged;
+end;
 
 procedure TForm1.DrawPoint(const AP: TPointF; AC: TAlphaColor);
 begin
@@ -131,11 +148,10 @@ begin
 
     Log(Format('W: %f, H: %f', [W, H]));
 
-    if W = 0 then
+    if (W = 0) or (H = 0) then
     begin
-
-    end
-    else if H = 0 then
+      if PtInRect(R, PointF(X, Y)) then
+        Log('correct point.');
     end
     else
     begin
@@ -150,7 +166,9 @@ begin
       Log(Format('Calc Y0: %f, Y1: %f, Y2: %f', [Tan(Rad) * (X0), Y1, Y2]));
 
       if (Y1 <= Y0) and (Y2 >= Y0) then
-        Log('correct point.');
+        Log('correct point.')
+      else
+        Exit;;
     end;
 
   end;

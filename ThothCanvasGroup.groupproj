@@ -1,0 +1,60 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{C63F00C0-DF13-4A5B-BFBF-4E1382640151}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="src\ThothCanvas.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="samples\Elements\ThCanvas\ThCanvasSample.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="samples\Elements\ThShapes\ThothShapeSample.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="ThothCanvas">
+			<MSBuild Projects="src\ThothCanvas.dproj"/>
+		</Target>
+		<Target Name="ThothCanvas:Clean">
+			<MSBuild Projects="src\ThothCanvas.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="ThothCanvas:Make">
+			<MSBuild Projects="src\ThothCanvas.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="ThCanvasSample">
+			<MSBuild Projects="samples\Elements\ThCanvas\ThCanvasSample.dproj"/>
+		</Target>
+		<Target Name="ThCanvasSample:Clean">
+			<MSBuild Projects="samples\Elements\ThCanvas\ThCanvasSample.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="ThCanvasSample:Make">
+			<MSBuild Projects="samples\Elements\ThCanvas\ThCanvasSample.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="ThothShapeSample">
+			<MSBuild Projects="samples\Elements\ThShapes\ThothShapeSample.dproj"/>
+		</Target>
+		<Target Name="ThothShapeSample:Clean">
+			<MSBuild Projects="samples\Elements\ThShapes\ThothShapeSample.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="ThothShapeSample:Make">
+			<MSBuild Projects="samples\Elements\ThShapes\ThothShapeSample.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="ThothCanvas;ThCanvasSample;ThothShapeSample"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="ThothCanvas:Clean;ThCanvasSample:Clean;ThothShapeSample:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="ThothCanvas:Make;ThCanvasSample:Make;ThothShapeSample:Make"/>
+		</Target>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
+	</Project>

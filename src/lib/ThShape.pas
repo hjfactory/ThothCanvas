@@ -1,10 +1,10 @@
-﻿unit ThothShape;
+﻿unit ThShape;
 
 interface
 
 uses
   System.Classes, System.Types, System.UITypes,
-  FMX.Types, Debug, System.SysUtils, FMX.Platform;
+  FMX.Types, System.SysUtils, FMX.Platform;
 
 type
   TSelectionPosition = (spTopLeft, spTop, spTopRight, spLeft, spRight, spBottomLeft, spBottom, spBottomRight{, spCustom});
@@ -474,21 +474,21 @@ begin
     Result := TThSelectionPoint(FSelectionPoints[Index]);
 end;
 
-function TThShape.GetShadowRect: TRectF;
-begin
-  Result := GetShapeRect;
-  OffsetRect(Result, FShadowSize / Scale.X, FShadowSize / Scale.Y);
-end;
-
 function TThShape.GetShapeRect: TRectF;
 begin
   Result := LocalRect;
   if FStroke.Kind <> TBrushKind.bkNone then
   begin
     InflateRect(Result, -(FGripSize / 2 / Scale.X), -(FGripSize / 2 / Scale.Y));
-    Result.Right := Result.Right - FShadowSize;
-    Result.Bottom := Result.Bottom - FShadowSize;
+    Result.Right := Result.Right - FShadowSize  / Scale.X;
+    Result.Bottom := Result.Bottom - FShadowSize / Scale.Y;
   end;
+end;
+
+function TThShape.GetShadowRect: TRectF;
+begin
+  Result := GetShapeRect;
+  OffsetRect(Result, FShadowSize / Scale.X, FShadowSize / Scale.Y);
 end;
 
 procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -533,16 +533,6 @@ begin
     P := Platform.GetMousePos;
     P := ScreenToLocal(P);
 
-//if not PtInShape(P) then
-//begin
-//  HitTest := False;
-//end
-//else
-//begin
-//  HitTest := True;
-//end;
-
-
     FHighlight := PtInShape(P);
     Repaint;
   end;
@@ -576,12 +566,13 @@ end;
 procedure TThShape.PaintShadow;
 begin
   Canvas.Fill.Color := FShadowColor;
+  Canvas.StrokeThickness := FShadowSize;
   Canvas.Stroke.Kind := TBrushKind.bkNone;
-//  Canvas.Stroke.Color := FShadowColor;
-//  Canvas.StrokeThickness := FStrokeThickness;
-//  Canvas.StrokeCap := FStrokeCap;
-//  Canvas.StrokeJoin := FStrokeJoin;
-//  Canvas.StrokeDash := FStrokeDash;
+
+  Canvas.Stroke.Color := FShadowColor;
+  Canvas.StrokeCap := FStrokeCap;
+  Canvas.StrokeJoin := FStrokeJoin;
+  Canvas.StrokeDash := FStrokeDash;
 end;
 
 procedure TThShape.PaintShape;
@@ -821,12 +812,9 @@ end;
 
 procedure TThLineShape.PaintShadow;
 begin
+//  Canvas.Fill.Color := FShadowColor;
+  Canvas.StrokeThickness := FStrokeThickness;
   Canvas.Stroke.Kind := TBrushKind.bkSolid;
-  Canvas.Stroke.Color := FShadowColor;
-  Canvas.StrokeThickness := FShadowSize;
-  Canvas.StrokeCap := TStrokeCap.scFlat;
-  Canvas.StrokeJoin := TStrokeJoin.sjMiter;
-  Canvas.StrokeDash := TStrokeDash.sdSolid;
 end;
 
 { TThRectangle }
@@ -866,6 +854,8 @@ constructor TThLine.Create(AOnwer: TComponent);
 begin
   inherited;
 
+  FStrokeCap := TStrokeCap.scRound;
+
   AddSelectionPoints([spTopLeft, spBottomRight
 //  ,spLeft, spTop, spRight, spBottom // TEST
   ]);
@@ -894,6 +884,7 @@ begin
     P1 := PointF(GetShapeRect.Left, GetShapeRect.Bottom);
     P2 := PointF(GetShapeRect.Right, GetShapeRect.Top);
   end;
+
   Canvas.DrawLine(P1, P2, AbsoluteOpacity);
 end;
 

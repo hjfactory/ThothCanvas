@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Layouts, FMX.Objects,
-  ThothShape, FMX.Edit, FMX.Memo, FMX.Platform;
+  ThShape, FMX.Edit, FMX.Memo, FMX.Platform;
 
 type
   TForm1 = class(TForm)
@@ -111,7 +111,6 @@ procedure TForm1.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
-
 
   Memo1.Lines.Add(Format('%f, %f', [X, Y]));
 end;

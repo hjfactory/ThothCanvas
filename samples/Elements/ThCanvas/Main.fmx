@@ -57,7 +57,7 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button5Click
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Button5'
   end
   object Rectangle1: TRectangle
@@ -71,7 +71,7 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button6Click
-    TabOrder = 16
+    TabOrder = 7
     Text = 'Button6'
   end
   object Button7: TButton
@@ -79,7 +79,7 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button7Click
-    TabOrder = 17
+    TabOrder = 8
     Text = 'Button7'
   end
 end

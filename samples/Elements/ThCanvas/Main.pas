@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms,
-  ThothCanvas, FMX.Layouts, FMX.Dialogs, FMX.Objects;
+  ThLayout, FMX.Layouts, FMX.Dialogs, FMX.Objects;
 
 type
   TForm1 = class(TForm)
@@ -31,7 +31,7 @@ type
   private
     { Private declarations }
     FA, FB: TButton;
-    FThCanvas: TThCanvas;
+    FThCanvas: TThContainer;
 
     procedure ClickEvent(Sender: TObject);
     procedure ResizeEvent(Sender: TObject);
@@ -123,7 +123,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
 //  Application.DefaultStyles
 
-  FThCanvas := TThCanvas.Create(Self);
+  FThCanvas := TThContainer.Create(Self);
   FThCanvas.Align := TAlignLayout.alClient;
   FThCanvas.Parent := Panel1;
   FThCanvas.Position.Point := PointF(100, 50);

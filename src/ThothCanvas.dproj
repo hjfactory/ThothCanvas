@@ -1,9 +1,9 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{B471A63B-C64E-4C91-B553-D5E577539FD2}</ProjectGuid>
+			<ProjectGuid>{B8F6629D-4F71-44AE-944A-F7DFE5FC4336}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
 			<FrameworkType>FMX</FrameworkType>
-			<MainSource>ThothShapeSample.dpr</MainSource>
+			<MainSource>ThothCanvas.dpr</MainSource>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -65,6 +65,10 @@
 			<DCC_RemoteDebug>true</DCC_RemoteDebug>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<DCC_ExeOutput>..\bin\$(Platform)\$(Config)</DCC_ExeOutput>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<VerInfo_Locale>1033</VerInfo_Locale>
+			<DCC_DcuOutput>..\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
 			<DCC_RemoteDebug>false</DCC_RemoteDebug>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -77,12 +81,13 @@
 			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="Main.pas">
+			<DCCReference Include="lib\ThLayout.pas"/>
+			<DCCReference Include="lib\ThShape.pas"/>
+			<DCCReference Include="form\MainForm.pas">
 				<Form>Form1</Form>
-				<FormType>fmx</FormType>
 			</DCCReference>
-			<DCCReference Include="Debug.pas"/>
-			<DCCReference Include="..\..\..\src\lib\ThShape.pas"/>
+			<DCCReference Include="lib\ThCanvas.pas"/>
+			<DCCReference Include="common\ThTypes.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -100,9 +105,6 @@
 			<Borland.ProjectType/>
 			<BorlandProject>
 				<Delphi.Personality>
-					<Source>
-						<Source Name="MainSource">ThothShapeSample.dpr</Source>
-					</Source>
 					<VersionInfo>
 						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
@@ -134,6 +136,9 @@
 						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
 						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
 					</Excluded_Packages>
+					<Source>
+						<Source Name="MainSource">ThothCanvas.dpr</Source>
+					</Source>
 				</Delphi.Personality>
 				<Deployment/>
 				<Platforms>

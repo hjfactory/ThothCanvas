@@ -3,8 +3,8 @@ program ThothShapeSample;
 uses
   FMX.Forms,
   Main in 'Main.pas' {Form1},
-  ThothShape in 'ThothShape.pas',
-  Debug in 'Debug.pas';
+  Debug in 'Debug.pas',
+  ThShape in '..\..\..\src\lib\ThShape.pas';
 
 {$R *.res}
 

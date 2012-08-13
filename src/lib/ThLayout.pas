@@ -1,4 +1,4 @@
-unit ThothCanvas;
+unit ThLayout;
 
 interface
 
@@ -20,7 +20,7 @@ type
     property TrackingPos: TPointF read FTrackingPos write SetTrackingPos;
   end;
 
-  TThCanvas = class(TStyledControl)
+  TThContainer = class(TStyledControl)
   private
     FDown: Boolean;
     FCurrentPos: TPointF;
@@ -47,9 +47,6 @@ type
   end;
 
 implementation
-
-uses
-  Unit1;
 
 { TThContent }
 
@@ -131,14 +128,14 @@ begin
   Position.Y := Position.Y + Value.Y;
 end;
 
-{ TThCanvas }
+{ TThContainer }
 
-procedure TThCanvas.Center;
+procedure TThContainer.Center;
 begin
   FContent.Position.Point := PointF(0, 0);
 end;
 
-constructor TThCanvas.Create(AOwner: TComponent);
+constructor TThContainer.Create(AOwner: TComponent);
 begin
   inherited;
 
@@ -153,7 +150,7 @@ begin
   FContent.HitTest := False;
 end;
 
-destructor TThCanvas.Destroy;
+destructor TThContainer.Destroy;
 begin
   FContent.Free;
   FContent := nil;
@@ -161,7 +158,7 @@ begin
   inherited;
 end;
 
-function TThCanvas.GetContentBounds: TRectF;
+function TThContainer.GetContentBounds: TRectF;
 var
   i: Integer;
   R, LocalR: TRectF;
@@ -187,7 +184,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+procedure TThContainer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
@@ -199,7 +196,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
+procedure TThContainer.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
   inherited;
 
@@ -211,7 +208,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
@@ -222,7 +219,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.Realign;
+procedure TThContainer.Realign;
 
   procedure IntAlign;
   var
@@ -251,7 +248,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.RealignContent(R: TRectF);
+procedure TThContainer.RealignContent(R: TRectF);
 begin
   if (FContent <> nil) then
   begin
@@ -260,7 +257,7 @@ begin
   end;
 end;
 
-procedure TThCanvas.AddObject(AObject: TFmxObject);
+procedure TThContainer.AddObject(AObject: TFmxObject);
 begin
   if Assigned(FContent) and (AObject <> FContent) and
     not (AObject is TEffect) and not (AObject is TAnimation) then

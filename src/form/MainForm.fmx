@@ -1,0 +1,31 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 400
+  ClientWidth = 600
+  Visible = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  StyleLookup = 'backgroundstyle'
+  object pnlMainMenu: TPanel
+    Align = alTop
+    Width = 600.000000000000000000
+    Height = 57.000000000000000000
+    TabOrder = 1
+  end
+  object pnlMenu: TPanel
+    Align = alRight
+    Position.Point = '(480,57)'
+    Width = 120.000000000000000000
+    Height = 343.000000000000000000
+    TabOrder = 10
+  end
+  object pnlMain: TPanel
+    Align = alClient
+    Position.Point = '(0,57)'
+    Width = 480.000000000000000000
+    Height = 343.000000000000000000
+    TabOrder = 11
+  end
+end
