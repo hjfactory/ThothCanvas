@@ -970,7 +970,8 @@ var
   SP, OtherSP: TThSelectionPoint;
   R: TRectF;
   P: TPointF;
-  W, H: Single;
+  W, H, W2, H2: Single;
+  Distance, Rad: Single;
 begin
   SP := TThSelectionPoint(Sender);
   R := GetShapeRect;
@@ -1000,7 +1001,29 @@ begin
   // Bottom
   if SP.SelectionPosition in [spBottomLeft, spBottomRight] then
     H := SP.Position.Y + FGripSize * 2;
-
+{
+  if W = 0 then
+  begin
+    if H < FMinSize then
+      H := FMinSize;
+  end
+  else
+  begin
+    Rad := ArcTan(H/W);
+    Distance := Abs(W * Cos(Rad));
+    Debug('%f', [Distance]);
+    if Distance < FMinSize then
+    begin
+      W := Cos(Rad) * FMinSize;
+      H := Sin(Rad) * FMinSize;
+      if SP.SelectionPosition in [spTopLeft, spBottomLeft] then
+      begin
+        P.X := P.X + (W - W2);
+        P.Y := P.Y + (H - H2);
+      end;
+    end;
+  end;
+}
   Position.X := P.X;
   Position.Y := P.Y;
   Width := W;//Abs(W);
