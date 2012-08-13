@@ -3,7 +3,7 @@ unit ThLayout;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Types, System.UITypes, FMX.Types;
+  System.Classes, System.SysUtils, System.Types, System.UITypes, FMX.Types, ThTypes;
 
 type
   TThContent = class(TControl)
@@ -22,14 +22,14 @@ type
 
   TThContainer = class(TStyledControl)
   private
-    FDown: Boolean;
-    FCurrentPos: TPointF;
-
     FContent: TThContent;
     FMouseTracking: Boolean;
 
     function GetContentBounds: TRectF; virtual;
     procedure RealignContent(R: TRectF); virtual;
+    function GetOffsetPos: TPointF;
+  protected
+    FCurrentPos: TPointF;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -38,9 +38,9 @@ type
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
     property MouseTracking: Boolean read FMouseTracking write FMouseTracking default False;
+    property OffsetPos: TPointF read GetOffsetPos;
 
     procedure Realign; override;
     procedure Center;
@@ -184,38 +184,31 @@ begin
   end;
 end;
 
+function TThContainer.GetOffsetPos: TPointF;
+begin
+  Result := FContent.Position.Point;
+end;
+
 procedure TThContainer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
 
-  if (Button = TMouseButton.mbLeft) and FMouseTracking then
+  if (FPressed) and FMouseTracking then
   begin
     FCurrentPos := PointF(X, Y);
-    FDown := True;
   end;
 end;
 
 procedure TThContainer.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
-  inherited;
-
-  if FDown and FMouseTracking then
+  if FPressed and FMouseTracking then
   begin
     FContent.TrackingPos := PointF(X - FCurrentPos.X, Y - FCurrentPos.Y);
 
+//    Debug('FContent.TrackingPos(%f, %f) - (%f, %f)', [FContent.TrackingPos.X, FContent.TrackingPos.Y, FContent.Position.X, FContent.Position.X]);
+
     FCurrentPos := PointF(X, Y);
-  end;
-end;
-
-procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
-  Y: Single);
-begin
-  inherited;
-
-  if FDown and FMouseTracking then
-  begin
-    FDown := False;
   end;
 end;
 

@@ -1,13 +1,10 @@
-unit ThothCommands;
+unit ThCommand;
 
 interface
 
 uses
   System.Classes, System.Types, System.SysUtils,
-  ThothTypes, ThothObjects;
-
-var
-  TestCmd: Integer = 0;
+  ThTypes, ThShape;
 
 type
 ///////////////////////////////////////////////////////
@@ -75,8 +72,6 @@ uses
 constructor TThShapeCommand.Create;
 begin
   FShapeList := TList.Create;
-
-  Inc(TestCmd);
 end;
 
 constructor TThShapeCommand.Create(AShapes: TList);
@@ -99,9 +94,6 @@ var
 begin
   if Assigned(FShapeList) then
     FShapeList.Free;
-
-  Dec(TestCmd);
-  OutputDebugString(PChar('############## Command Destroy: ' + Self.ClassName + '(' + IntToStr(TestCmd) + ')'));
 
   inherited;
 end;

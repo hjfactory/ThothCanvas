@@ -28,6 +28,22 @@ type
   IThCanvas = interface
   end;
 
+  procedure Debug(const Value: string; const Args: array of const); overload;
+  procedure Debug(Value: string); overload;
+
 implementation
+
+uses
+  WinAPI.Windows, System.SysUtils;
+
+procedure Debug(Value: string);
+begin
+  OutputDebugString(PChar(Value));
+end;
+
+procedure Debug(const Value: string; const Args: array of const);
+begin
+  Debug(Format(Value, Args));
+end;
 
 end.

@@ -3,7 +3,7 @@ unit CommandFactory;
 interface
 
 uses
-  ThothTypes, ThothCommands;
+  ThTypes, ThCommand;
 
 type
   TCommandFactory = class

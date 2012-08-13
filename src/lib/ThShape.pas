@@ -4,10 +4,14 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes,
-  FMX.Types, System.SysUtils, FMX.Platform;
+  FMX.Types, System.SysUtils, FMX.Platform,
+  ThTypes;
 
 type
   TSelectionPosition = (spTopLeft, spTop, spTopRight, spLeft, spRight, spBottomLeft, spBottom, spBottomRight{, spCustom});
+
+  TThShape = class;
+  TThSahpeClass = class of TThShape;
 
   TThShapeControl = class(TControl)
   protected
@@ -65,7 +69,7 @@ type
     property SelectionPosition: TSelectionPosition read FSelectionPosition write FSelectionPosition;
   end;
 
-  TThShape = class(TControl)
+  TThShape = class(TControl, IThShape)
   private
     FPressed: Boolean;
     FDownPos: TPointF;
@@ -81,8 +85,7 @@ type
     FShadowSize: Single;
     FShadowColor: TAlphaColor;
     FGripSize: Single;
-    FMinHeight: Single;
-    FMinWidth: Single;
+    FMinSize: Single;
 
     procedure SetFill(const Value: TBrush);
     procedure SetStroke(const Value: TBrush);
@@ -142,8 +145,13 @@ type
     property ShadowSize: Single read FShadowSize write SetShadowSize;
     property Selected: Boolean read FSelected write SetSelected;
 
-    property MinWidth: Single read FMinWidth write FMinWidth;
-    property MinHeight: Single read FMinHeight write FMinHeight;
+    property MinSize: Single read FMinSize write FMinSize;
+  end;
+
+  TThFillShape = class(TThShape)
+  protected
+    procedure SetHeight(const Value: Single); override;
+    procedure SetWidth(const Value: Single); override;
   end;
 
   TThLineShape = class(TThShape)
@@ -151,7 +159,7 @@ type
     procedure PaintShadow; override;
   end;
 
-  TThRectangle = class(TThShape)
+  TThRectangle = class(TThFillShape)
   protected
     procedure PaintShape; override;
     procedure PaintShadow; override;
@@ -392,6 +400,9 @@ begin
 
   AutoCapture := True;
 
+  FWidth := 0;
+  FHeight := 0;
+
   FSelected   := False;
   FHighlight  := False;
   FGripSize   := __GRIP_SIZE;
@@ -400,8 +411,7 @@ begin
 
   FSelectionPoints := TList.Create;
 
-  FMinWidth := __MIN_SIZE;
-  FMinHeight := __MIN_SIZE;
+  FMinSize := __MIN_SIZE;
 
   FFill := TBrush.Create(TBrushKind.bkSolid, $FFE0E0E0);
   FFill.OnChanged := FillChanged;
@@ -638,10 +648,10 @@ begin
   if sp.SelectionPosition in [spLeft, spTopLeft, spBottomLeft] then
   begin
     W := W - SP.Position.X;
-    if W < FMinWidth then
+    if W < FMinSize then
     begin
-      SP.Position.X := SP.Position.X - (FMinWidth - W);
-      W := FMinWidth;
+      SP.Position.X := SP.Position.X - (FMinSize - W);
+      W := FMinSize;
     end;
     P.X := P.X + SP.Position.X;
   end;
@@ -650,17 +660,17 @@ begin
   if sp.SelectionPosition in [spRight, spTopRight, spBottomRight] then
   begin
     W := SP.Position.X + SP.GripSize * 2;
-    W := Max(W, FMinWidth);
+    W := Max(W, FMinSize);
   end;
 
   // Top
   if sp.SelectionPosition in [spTop, spTopLeft, spTopRight] then
   begin
     H := H - SP.Position.Y;
-    if H < FMinHeight then
+    if H < FMinSize then
     begin
-      SP.Position.Y := SP.Position.Y - (FMinHeight - H);
-      H := FMinHeight;
+      SP.Position.Y := SP.Position.Y - (FMinSize - H);
+      H := FMinSize;
     end;
     P.Y := P.Y + SP.Position.Y;
   end;
@@ -669,7 +679,7 @@ begin
   if sp.SelectionPosition in [spBottom, spBottomLeft, spBottomRight] then
   begin
     H := SP.Position.Y + SP.GripSize * 2;
-    H := Max(H, FMinHeight);
+    H := Max(H, FMinSize);
   end;
 
   Width := W;
@@ -806,6 +816,24 @@ var
 begin
   for I := 0 to FSelectionPoints.Count - 1 do
     SelectionPoint[I].Visible := False;
+end;
+
+{ TThFillShape }
+
+procedure TThFillShape.SetHeight(const Value: Single);
+begin
+  if Value < FMinSize then
+    inherited SetHeight(FMinSize)
+  else
+    inherited;
+end;
+
+procedure TThFillShape.SetWidth(const Value: Single);
+begin
+  if Value < FMinSize then
+    inherited SetWidth(FMinSize)
+  else
+    inherited;
 end;
 
 { TThLineShape }

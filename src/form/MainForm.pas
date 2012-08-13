@@ -12,8 +12,12 @@ type
     pnlMainMenu: TPanel;
     pnlMenu: TPanel;
     pnlMain: TPanel;
+    Button1: TButton;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -26,7 +30,20 @@ var
 
 implementation
 
+uses
+  ThShape;
+
 {$R *.fmx}
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  FThCanvas.ShapeClass := TThRectangle;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  FThCanvas.ShapeClass := TThLine;
+end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
