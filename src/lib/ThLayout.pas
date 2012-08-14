@@ -22,14 +22,17 @@ type
 
   TThContainer = class(TStyledControl)
   private
-    FContent: TThContent;
+    FContentScale: Single;
     FMouseTracking: Boolean;
 
     function GetContentBounds: TRectF; virtual;
     procedure RealignContent(R: TRectF); virtual;
     function GetOffsetPos: TPointF;
   protected
+    FContent: TThContent;
     FCurrentPos: TPointF;
+
+    procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -38,12 +41,16 @@ type
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
     property MouseTracking: Boolean read FMouseTracking write FMouseTracking default False;
     property OffsetPos: TPointF read GetOffsetPos;
 
     procedure Realign; override;
     procedure Center;
+
+    function ZoomIn: Single;
+    function ZoomOut: Single;
   end;
 
 implementation
@@ -54,14 +61,23 @@ function TThContent.GetClipRect: TRectF;
 begin
   Result :=  TControl(Parent).ClipRect;
   OffsetRect(Result, -Position.X, -Position.Y);
+
+//  Result.Left := Result.Left / Scale.X;
+  Result.Right := Result.Right / Scale.X;
+  Result.Bottom := Result.Bottom / Scale.Y;
+
+  Debug('%f %f %f %f', [Result.Left, Result.Top, Result.Right, Result.Bottom]);
+//  Debug('UpdateRect %f %f %f %f', [UpdateRect.Left, UpdateRect.Top, UpdateRect.Right, UpdateRect.Bottom]);
 end;
 
 procedure TThContent.PaintChildren;
 var
-  I, j: Integer;
-  R: TRectF;
+  I, j, K: Integer;
+  R, ChildR: TRectF;
   State: TCanvasSaveState;
   AllowPaint: Boolean;
+
+  M: TMatrix;
 begin
   if FScene = nil then
     Exit;
@@ -101,8 +117,45 @@ begin
               if {Self.FClipChildren and }CanClip then
               begin
                 State := Canvas.SaveState;
-                Canvas.SetMatrix(Self.AbsoluteMatrix);
+
+                M := AbsoluteMatrix;
+                if M.m31 > 0 then
+                begin
+
+                end;
+
+//                R := ChildrenRect;
+//                if not ClipChildren and (FChildren <> nil) then
+//                begin
+//                  for K := 0 to FChildren.Count - 1 do
+//                  begin
+//                    if not(Children[K] is TControl) then
+//                      Continue;
+//                    if not TControl(FChildren[K]).Visible then
+//                      Continue;
+//                    R := TControl(FChildren[K]).UpdateRect;
+//                    ChildR := UnionRect(ChildR, R);
+//                  end;
+//                end;
+                M := Self.AbsoluteMatrix;
+                R := Self.ClipRect;
+
+//                if ChildR.Left < 0 then
+//                  M.m31 := TControl(Parent).AbsoluteMatrix.m31;// M.m31 + ChildR.Left;
+                  M.m31 := 120;//TControl(Parent).AbsoluteMatrix.m31;// M.m31 + ChildR.Left;
+                R.Left := R.Left + 120;
+                R.Right := R.Right + 120;
+//                M.m31 := M.m31 + (R.Left - Position.X);
+//                M.m32 := M.m32 + (R.Top - Position.Y);
+//                Canvas.SetMatrix(Self.AbsoluteMatrix);
+                Debug('000000 M %f R %f P %f, R.L %f R.R %f', [M.m31, ChildR.Left, Position.X, R.Left, R.Right]);
+                Canvas.SetMatrix(M);
                 Canvas.IntersectClipRect(Self.ClipRect);
+
+//                R := Self.ClipRect;
+//                OffsetRect(R, Position.X, Position.Y);
+
+//                Canvas.IntersectClipRect(Self.ClipRect);
               end;
               if HasEffect and not HasAfterPaintEffect then
                 ApplyEffect;
@@ -139,6 +192,7 @@ constructor TThContainer.Create(AOwner: TComponent);
 begin
   inherited;
 
+  FContentScale := 1;
   FMouseTracking := True;
 
   AutoCapture := True;
@@ -177,10 +231,13 @@ begin
 //          LocalR := TControl(FContent.Children[i]).ParentedRect;
           C := TControl(FContent.Children[i]);
           LocalR := RectF(0, 0, C.Width * C.Scale.X, C.Height * C.Scale.Y);
-          OffsetRect(LocalR, C.Position.X, C.Position.Y);
+//          LocalR := RectF(0, 0, C.Width, C.Height);
+//          OffsetRect(LocalR, C.Position.X, C.Position.Y);
           R := UnionRect(R, LocalR);
         end;
     Result := R;
+
+    Debug('ContentBound L T :%f, %f', [R.Left, R.Top]);
   end;
 end;
 
@@ -197,19 +254,46 @@ begin
   if (FPressed) and FMouseTracking then
   begin
     FCurrentPos := PointF(X, Y);
+//    FCurrentPos := ScalePoint(PointF(X, Y), FContentScale, FContentScale);
   end;
 end;
 
 procedure TThContainer.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  TP: TPointF;
 begin
   if FPressed and FMouseTracking then
   begin
-    FContent.TrackingPos := PointF(X - FCurrentPos.X, Y - FCurrentPos.Y);
+    TP := PointF(X - FCurrentPos.X, Y - FCurrentPos.Y);
+//    TP := ScalePoint(TP, 1/FContentScale, 1/FContentScale);
 
-//    Debug('FContent.TrackingPos(%f, %f) - (%f, %f)', [FContent.TrackingPos.X, FContent.TrackingPos.Y, FContent.Position.X, FContent.Position.X]);
+    FContent.TrackingPos := TP;
 
     FCurrentPos := PointF(X, Y);
   end;
+end;
+
+procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+//  if FPressed and FMouseTracking then
+//    RealignContent(GetContentBounds);
+  inherited;
+
+  if FMouseTracking then
+  begin
+    //
+    FLocalMatrix.m31 := -FContent.Position.X;
+    FContent.Repaint;
+  end;
+end;
+
+procedure TThContainer.Paint;
+begin
+  Canvas.Fill.Color := claGreen;
+  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+
+  inherited;
 end;
 
 procedure TThContainer.Realign;
@@ -220,6 +304,7 @@ procedure TThContainer.Realign;
   begin
     R := GetContentBounds;
     OffsetRect(R, FContent.Position.X, FContent.Position.Y);
+
     RealignContent(R);
   end;
 begin
@@ -242,12 +327,34 @@ begin
 end;
 
 procedure TThContainer.RealignContent(R: TRectF);
+var
+  W, H: Single;
 begin
   if (FContent <> nil) then
   begin
     FContent.SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
     FContent.FRecalcUpdateRect := True; // need to recalc
   end;
+end;
+
+function TThContainer.ZoomIn: Single;
+begin
+  FContentScale := FContentScale * 1.1;
+
+  FContent.Scale.X := FContentScale;
+  FContent.Scale.Y := FContentScale;
+
+  Result := FContent.Scale.X;
+end;
+
+function TThContainer.ZoomOut: Single;
+begin
+  FContentScale := FContentScale * 0.9;
+
+  FContent.Scale.X := FContentScale;
+  FContent.Scale.Y := FContentScale;
+
+  Result := FContent.Scale.X;
 end;
 
 procedure TThContainer.AddObject(AObject: TFmxObject);

@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, System.Types, System.UITypes,
   FMX.Types, System.SysUtils, FMX.Platform,
-  ThTypes;
+  ThInterface, ThTypes;
 
 type
   TSelectionPosition = (spTopLeft, spTop, spTopRight, spLeft, spRight, spBottomLeft, spBottom, spBottomRight{, spCustom});
@@ -27,7 +27,6 @@ type
   TThSelectionPoint = class(TThShapeControl)
   private
     FSelectionPosition: TSelectionPosition;
-    FPressed: Boolean;
 
     FFill: TBrush;
     FStroke: TBrush;
@@ -71,7 +70,6 @@ type
 
   TThShape = class(TControl, IThShape)
   private
-    FPressed: Boolean;
     FDownPos: TPointF;
     FHighlight: Boolean;
     FSelected: Boolean;
@@ -86,6 +84,8 @@ type
     FShadowColor: TAlphaColor;
     FGripSize: Single;
     FMinSize: Single;
+    FOnTrack: TNotifyEvent;
+    FOnChange: TNotifyEvent;
 
     procedure SetFill(const Value: TBrush);
     procedure SetStroke(const Value: TBrush);
@@ -146,6 +146,9 @@ type
     property Selected: Boolean read FSelected write SetSelected;
 
     property MinSize: Single read FMinSize write FMinSize;
+
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
   end;
 
   TThFillShape = class(TThShape)
@@ -289,9 +292,6 @@ procedure TThSelectionPoint.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
 begin
   inherited;
-
-  if Button = TMouseButton.mbLeft then
-    FPressed := True;
 end;
 
 procedure TThSelectionPoint.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -408,6 +408,7 @@ begin
   FGripSize   := __GRIP_SIZE;
   FShadowSize := __SHADOW_SIZE;
   FShadowColor  := claGray;
+  Opacity := 0.8;
 
   FSelectionPoints := TList.Create;
 
@@ -509,7 +510,6 @@ begin
   if (Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))) then
   begin
     Selected := True;
-    FPressed := True;
     FDownPos := PointF(X, Y);
   end
   else
@@ -535,8 +535,8 @@ begin
     Position.X := Position.X + (X - FDownPos.X);
     Position.Y := Position.Y + (Y - FDownPos.Y);
 
-//    if Assigned(FOnTrack) then
-//      FOnTrack(Self);
+    if Assigned(FOnTrack) then
+      FOnTrack(Self);
   end
   else
   begin
@@ -552,14 +552,13 @@ end;
 procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
-  inherited;
-
   if FPressed then
   begin
-//    if Assigned(FOnChange) then
-//      FOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
-  FPressed := False;
+
+  inherited;
 end;
 
 procedure TThShape.Paint;

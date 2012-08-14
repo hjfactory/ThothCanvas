@@ -19,6 +19,7 @@ type
     Rectangle1: TRectangle;
     Button6: TButton;
     Button7: TButton;
+    Panel2: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -56,15 +57,17 @@ begin
   with FA do
   begin
     Parent := FThCanvas;
-    Position.Point := PointF(10, 10);
+    Position.Point := PointF(-30, -10);
     Text := 'asdfsaf';
+    Width := 100;
+    Height := 100;
   end;
 
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-//  ShowMessage(Format('%s', [FThCanvas.test]));
+  FA.Position.Point := PointF(-10, 0);
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -107,6 +110,8 @@ end;
 procedure TForm1.Button7Click(Sender: TObject);
 begin
   FThCanvas.Center;
+
+  ShowMessage(Format('%f', [Panel2.Position.X]));
 end;
 
 procedure TForm1.ClickEvent(Sender: TObject);
@@ -129,6 +134,8 @@ begin
   FThCanvas.Position.Point := PointF(100, 50);
   FThCanvas.Width := 400;
   FThCanvas.Height := 400;
+
+//  FTHCanvas.ClipChildren := False;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

@@ -83,6 +83,7 @@
 			</DCCReference>
 			<DCCReference Include="Unit1.pas"/>
 			<DCCReference Include="..\..\..\src\lib\ThLayout.pas"/>
+			<DCCReference Include="..\..\..\src\common\ThTypes.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

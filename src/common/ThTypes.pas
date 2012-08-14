@@ -3,30 +3,9 @@ unit ThTypes;
 interface
 
 uses
-  System.UITypes, System.Classes;
+  System.UITypes, System.Classes, System.Types;
 
-type
-  IThObserver = interface;
-
-  IThCommand = interface
-  end;
-
-  IThSubject = interface
-    procedure Subject(ASource: IThObserver; ACommand: IThCommand);
-    procedure RegistObserver(AObserver: IThObserver);
-    procedure UnregistObserver(AObserver: IThObserver);
-  end;
-
-  IThObserver = interface
-    procedure Notifycation(ACommand: IThCommand);
-    procedure SetSubject(ASubject: IThSubject);
-  end;
-
-  IThShape = interface
-  end;
-
-  IThCanvas = interface
-  end;
+  function ScaleRect(const R: TRectF; dX, dY: Single): TRectF;
 
   procedure Debug(const Value: string; const Args: array of const); overload;
   procedure Debug(Value: string); overload;
@@ -35,6 +14,14 @@ implementation
 
 uses
   WinAPI.Windows, System.SysUtils;
+
+function ScaleRect(const R: TRectF; dX, dY: Single): TRectF;
+begin
+  Result.Left   := R.Left * dX;
+  Result.Top    := R.Top * dY;
+  Result.Right  := R.Right * dX;
+  Result.Bottom := R.Bottom * dY;
+end;
 
 procedure Debug(Value: string);
 begin

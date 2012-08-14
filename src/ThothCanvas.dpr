@@ -8,7 +8,8 @@ uses
   ThCanvas in 'lib\ThCanvas.pas',
   ThTypes in 'common\ThTypes.pas',
   CommandFactory in 'model\CommandFactory.pas',
-  ThCommand in 'common\ThCommand.pas';
+  ThCommand in 'common\ThCommand.pas',
+  ThInterface in 'model\ThInterface.pas';
 
 {$R *.res}
 

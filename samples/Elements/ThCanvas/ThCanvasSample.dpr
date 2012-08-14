@@ -4,7 +4,8 @@ uses
   FMX.Forms,
   Main in 'Main.pas' {Form1},
   Unit1 in 'Unit1.pas',
-  ThLayout in '..\..\..\src\lib\ThLayout.pas';
+  ThLayout in '..\..\..\src\lib\ThLayout.pas',
+  ThTypes in '..\..\..\src\common\ThTypes.pas';
 
 {$R *.res}
 

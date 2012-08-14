@@ -4,17 +4,24 @@ interface
 
 uses
   System.UITypes, System.Classes, System.Types,
-  ThTypes, ThLayout, ThShape;
+  ThInterface, ThTypes, ThLayout, ThShape;
 
 type
   TThCanvas = class(TThContainer, IThCanvas, IThObserver)
   private
+    FDefaultWidth, FDefaultHeight: Single;
     FDrawShape: TThShape;
     FShapeClass: TThSahpeClass;
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
+
+    procedure ShapeChange(Sender: TObject);
+    procedure ShapeTrack(Sender: TObject);
+  protected
   public
+    constructor Create(AOwner: TComponent); override;
+
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
@@ -26,6 +33,11 @@ type
 implementation
 
 { TThCanvas }
+
+constructor TThCanvas.Create(AOwner: TComponent);
+begin
+  inherited;
+end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
@@ -39,14 +51,14 @@ begin
     P := FCurrentPos;
     P.X := P.X - OffsetPos.X;
     P.Y := P.Y - OffsetPos.Y;
-//    P.Add(OffsetPos);
 
-    Debug('OffsetPos(%f, %f, %f, %f)', [OffsetPos.X, OffsetPos.Y, P.X, P.Y]);
+//    Debug('OffsetPos(%f, %f, %f, %f)', [OffsetPos.X, OffsetPos.Y, P.X, P.Y]);
 
     FDrawShape := FShapeClass.Create(nil);
     FDrawShape.Parent := Self;
-//    FDrawShape.Position.Point := FCurrentPos;
     FDrawShape.Position.Point := P;
+    FDrawShape.OnChange := ShapeChange;
+    FDrawShape.onTrack := ShapeTrack;
   end;
 end;
 
@@ -80,6 +92,22 @@ end;
 procedure TThCanvas.SetSubject(ASubject: IThSubject);
 begin
 
+end;
+
+procedure TThCanvas.ShapeChange(Sender: TObject);
+begin
+  if Sender is TObject then
+  begin
+
+  end;
+end;
+
+procedure TThCanvas.ShapeTrack(Sender: TObject);
+begin
+  if Sender is TObject then
+  begin
+
+  end;
 end;
 
 end.

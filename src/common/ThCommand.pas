@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.SysUtils,
-  ThTypes, ThShape;
+  ThInterface, ThTypes, ThShape;
 
 type
 ///////////////////////////////////////////////////////
