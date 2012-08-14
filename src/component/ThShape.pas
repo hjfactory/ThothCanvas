@@ -8,6 +8,7 @@ uses
   ThInterface, ThTypes;
 
 type
+  TShapeMoveEvent = procedure(Sender: TObject; const AStartPos: TPointF) of object;
   TSelectionPosition = (spTopLeft, spTop, spTopRight, spLeft, spRight, spBottomLeft, spBottom, spBottomRight{, spCustom});
 
   TThShape = class;
@@ -85,7 +86,8 @@ type
     FGripSize: Single;
     FMinSize: Single;
     FOnTrack: TNotifyEvent;
-    FOnChange: TNotifyEvent;
+    FOnMove: TShapeMoveEvent;
+    FOnSelect: TNotifyEvent;
 
     procedure SetFill(const Value: TBrush);
     procedure SetStroke(const Value: TBrush);
@@ -96,6 +98,8 @@ type
     procedure SetSelected(const Value: Boolean);
     procedure SetShadowSize(const Value: Single);
     procedure SetGripSize(const Value: Single);
+
+    procedure ChangeHighlight(const Value: Boolean);
 
     procedure AddSelectionPoints(const Args: array of TSelectionPosition);
     procedure SetSelectionPoints(const Args: array of TSelectionPosition);
@@ -147,8 +151,9 @@ type
 
     property MinSize: Single read FMinSize write FMinSize;
 
-    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnMove: TShapeMoveEvent read FOnMove write FOnMove;
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
+    property OnSelect: TNotifyEvent read FOnSelect write FOnSelect;
   end;
 
   TThFillShape = class(TThShape)
@@ -203,7 +208,7 @@ uses
   System.Math;
 
 const
-  __GRIP_SIZE   = 3;
+  __GRIP_SIZE   = 5;
   __SHADOW_SIZE = 3;
   __MIN_SIZE    = 50;
 
@@ -334,12 +339,11 @@ end;
 procedure TThSelectionPoint.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
-  inherited;
-
   if FPressed then
     if Assigned(FOnChange) then
       FOnChange(Self);
-  FPressed := False;
+
+  inherited;
 end;
 
 procedure TThSelectionPoint.Paint;
@@ -459,10 +463,12 @@ end;
 procedure TThShape.SetSelectionPoints(const Args: array of TSelectionPosition);
 var
   I: Integer;
+  SP: TSelectionPosition;
 begin
-  for I := 0 to FSelectionPoints.Count - 1 do
+//  for I := 0 to FSelectionPoints.Count - 1 do
+  for SP in Args do
     if Length(Args) > I then
-      GetSelectionPoint(I).SelectionPosition := Args[I];
+      GetSelectionPoint(I).SelectionPosition := SP;
 end;
 
 procedure TThShape.DoMouseEnter;
@@ -474,8 +480,7 @@ procedure TThShape.DoMouseLeave;
 begin
   inherited;
 
-  FHighlight := False;
-  Repaint;
+  ChangeHighlight(False);
 end;
 
 function TThShape.GetSelectionPoint(Index: Integer): TThSelectionPoint;
@@ -543,10 +548,8 @@ begin
     P := Platform.GetMousePos;
     P := ScreenToLocal(P);
 
-    FHighlight := PtInShape(P);
-    Repaint;
+    ChangeHighlight(PtInShape(P));
   end;
-
 end;
 
 procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
@@ -554,8 +557,8 @@ procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   if FPressed then
   begin
-    if Assigned(FOnChange) then
-      FOnChange(Self);
+    if Assigned(FOnMove) then
+      FOnMove(Self, FDownPos);
   end;
 
   inherited;
@@ -626,7 +629,7 @@ end;
 
 procedure TThShape.SelectionPointChange(Sender: TObject);
 begin
-
+  Assert(False, '');
 end;
 
 procedure TThShape.SelectionPointTrack(Sender: TObject);
@@ -711,6 +714,15 @@ begin
     ShowSelection;
 end;
 
+procedure TThShape.ChangeHighlight(const Value: Boolean);
+begin
+  if FHighlight = Value then
+    Exit;
+
+  FHighlight := Value;
+  Repaint;
+end;
+
 procedure TThShape.SetSelected(const Value: Boolean);
 begin
   if FSelected = Value then
@@ -719,7 +731,11 @@ begin
   FSelected := Value;
 
   if FSelected then
-    ShowSelection
+  begin
+    ShowSelection;
+    if Assigned(FOnSelect) then
+      FOnSelect(Self);
+  end
   else
     HideSelection;
 
@@ -882,6 +898,8 @@ begin
   inherited;
 
   FStrokeCap := TStrokeCap.scRound;
+  FStroke.Color := claGray;
+  FStrokeThickness := 7;
 
   AddSelectionPoints([spTopLeft, spBottomRight
 //  ,spLeft, spTop, spRight, spBottom // TEST
@@ -954,14 +972,21 @@ begin
   else
     Y := H - APt.Y;
 
-  Rad := ArcTan(H/W);
-  Y0  := Tan(Rad) * X;
-  R   := 5;
-  RX   := R / Cos(DegToRad(90) - Rad);
-  Y1  := Tan(Rad) * (X - RX);
-  YR   := Abs(Y1 - Y0);
+  if W = 0 then
+  begin
+    Result := True;
+  end
+  else
+  begin
+    Rad := ArcTan(H/W);
+    Y0  := Tan(Rad) * X;
+    R   := 5;
+    RX   := R / Cos(DegToRad(90) - Rad);
+    Y1  := Tan(Rad) * (X - RX);
+    YR   := Abs(Y1 - Y0);
 
-  Result := Abs(Y0 - Y) < YR;
+    Result := Abs(Y0 - Y) < YR;
+  end;
 end;
 
 procedure TThLine.SelectionPointTrack(Sender: TObject);

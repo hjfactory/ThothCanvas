@@ -1,15 +1,15 @@
-unit CommandList;
+unit ThCommandManager;
 
 interface
 
 uses
   System.Classes, System.SysUtils,
-  ThothTypes, ThothObjects, ThothCommands;
+  ThTypes, ThInterface, ThCommand;
 
 type
 ///////////////////////////////////////////////////////
 // Command List
-  TThCommandList = class(TThInterfacedObject, IThObserver)
+  TThCommandManager = class(TThInterfacedObject, IThObserver)
   private
     FSubject: IThSubject;
 
@@ -48,11 +48,11 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.Math;
+  System.Math;
 
-{ TThCommandList }
+{ TThCommandManager }
 
-constructor TThCommandList.Create;
+constructor TThCommandManager.Create;
 begin
   FLimit := High(Word) div 2;
 
@@ -61,7 +61,7 @@ begin
 //  FList.
 end;
 
-destructor TThCommandList.Destroy;
+destructor TThCommandManager.Destroy;
 var
   I: Integer;
 begin
@@ -71,16 +71,16 @@ begin
   inherited;
 end;
 
-procedure TThCommandList.SetSubject(ASubject: IThSubject);
+procedure TThCommandManager.SetSubject(ASubject: IThSubject);
 begin
   FSubject := ASubject;
 
   ASubject.RegistObserver(Self);
 end;
 
-procedure TThCommandList.Notifycation(ACommand: IThCommand);
+procedure TThCommandManager.Notifycation(ACommand: IThCommand);
 begin
-  OutputDebugSTring(PChar('TCommandList - ' + TThShapeCommand(ACommand).ClassName));
+  Debug('TThCommandManager - ' + TThShapeCommand(ACommand).ClassName);
 
   // 새로운 커맨드가 들어오면 Undo 불가(Redo초기화)
   if ACommand is TThInsertShapeCommand then
@@ -92,7 +92,7 @@ begin
     ResizeUndoList(FLimit);
 end;
 
-procedure TThCommandList.ClearRedo;
+procedure TThCommandManager.ClearRedo;
 var
   I: Integer;
 begin
@@ -105,7 +105,7 @@ begin
   FRedoList.Clear;
 end;
 
-procedure TThCommandList.ResizeUndoList(ASize: Integer);
+procedure TThCommandManager.ResizeUndoList(ASize: Integer);
 var
   I: Integer;
 begin
@@ -117,56 +117,35 @@ begin
   end;
 end;
 
-procedure TThCommandList.DoChange;
+procedure TThCommandManager.DoChange;
 begin
 
 end;
 
-function TThCommandList.ExchangeCommand(ACommand: IThCommand): IThCommand;
+function TThCommandManager.ExchangeCommand(ACommand: IThCommand): IThCommand;
 begin
   if ACommand is TThInsertShapeCommand then
     Result := TThDeleteShapeCommand.Create(TThShapeCommand(ACommand).List)
   else if ACommand is TThDeleteShapeCommand then
     Result := TThRestoreShapeCommand.Create(TThShapeCommand(ACommand).List)
   else if ACommand is TThMoveShapeCommand then
-    Result := TThMoveShapeCommand.Create(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).AfterPos, TThMoveShapeCommand(ACommand).BeforePos)
+    Result := TThMoveShapeCommand.Create(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).ToPos, TThMoveShapeCommand(ACommand).FromPos)
   ;
 end;
 
-function TThCommandList.HasRedo: Boolean;
+function TThCommandManager.HasRedo: Boolean;
 begin
   Result := FRedoList.Count > 0;
   if Result then
-    OutputDebugString(PChar('TThCommandList.HasRedo'));
+    Debug('TThCommandList.HasRedo');
 end;
 
-function TThCommandList.HasUndo: Boolean;
+function TThCommandManager.HasUndo: Boolean;
 begin
   Result := FUndoList.Count > 0;
 end;
 
-//function TThCommandList.ExchangeRedoCommand(ACommand: IThCommand): IThCommand;
-//begin
-//
-//end;
-
-//procedure TThCommandList.MoveCommand(ASrc, ADest: TInterfaceList);
-//var
-//  Command, Command2: IThCommand;
-//begin
-//  if ASrc.Count <= 0 then
-//    Exit;
-//
-//  Command := IThCommand(ASrc.Last);
-//  Command2 := ExchangeCommand(Command);
-//
-//  FSubject.Subject(Command2);
-//
-//  ASrc.Delete(ASrc.Count - 1);
-//  ADest.Add(Command2);
-//end;
-
-procedure TThCommandList.Undo;
+procedure TThCommandManager.Undo;
 var
   Command: IThCommand;
 begin
@@ -181,10 +160,10 @@ begin
 
   FSubject.Subject(Self, ExchangeCommand(Command));
 
-  OutputDebugSTring(PChar(Format('TCommandList - Un: %d, Re: %d', [FUndoList.Count, FRedoList.Count])));
+//  Debug('TCommandList - Un: %d, Re: %d', [FUndoList.Count, FRedoList.Count]);
 end;
 
-procedure TThCommandList.Redo;
+procedure TThCommandManager.Redo;
 var
   Command: IThCommand;
 begin

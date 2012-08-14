@@ -25,12 +25,27 @@ end;
 
 procedure Debug(Value: string);
 begin
-  OutputDebugString(PChar(Value));
+//  WriteLn('test');
+
+{$IFDEF DEBUG}
+  OutputDebugString(PChar(FormatDateTime('SS.ZZZ', Now) + ' ' + Value));
+{$ENDIF}
 end;
 
 procedure Debug(const Value: string; const Args: array of const);
 begin
   Debug(Format(Value, Args));
 end;
+
+procedure AssertProc(const Message, Filename: string;
+    LineNumber: Integer; ErrorAddr: Pointer);
+begin
+  Debug('%s - %s(%d line)', [Message, ExtractFileName(Filename), LineNumber]);
+end;
+
+initialization
+  AssertErrorProc := AssertProc;
+
+finalization
 
 end.

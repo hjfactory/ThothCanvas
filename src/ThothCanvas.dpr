@@ -3,13 +3,15 @@ program ThothCanvas;
 uses
   FMX.Forms,
   ThLayout in 'lib\ThLayout.pas',
-  ThShape in 'lib\ThShape.pas',
+  ThShape in 'component\ThShape.pas',
   MainForm in 'form\MainForm.pas' {Form1},
-  ThCanvas in 'lib\ThCanvas.pas',
+  ThCanvas in 'component\ThCanvas.pas',
   ThTypes in 'common\ThTypes.pas',
-  CommandFactory in 'model\CommandFactory.pas',
-  ThCommand in 'common\ThCommand.pas',
-  ThInterface in 'model\ThInterface.pas';
+  ThCommand in 'model\ThCommand.pas',
+  ThInterface in 'model\ThInterface.pas',
+  ThCommandManager in 'controller\ThCommandManager.pas',
+  ThMainController in 'controller\ThMainController.pas',
+  ThObjectManager in 'controller\ThObjectManager.pas';
 
 {$R *.res}
 

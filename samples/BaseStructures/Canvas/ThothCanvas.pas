@@ -229,6 +229,8 @@ var
 begin
   inherited;
 
+  OutputDebugSTring(PChar('MouseMove'));
+
   if FDrawMode = dmDrawing then
   begin
     FDrawShape.Width := X - FDrawShape.Position.X;

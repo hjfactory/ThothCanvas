@@ -12,17 +12,15 @@ type
   private
     FTrackingPos: TPointF;
 
-    procedure SetTrackingPos(const Value: TPointF);
   protected
     function GetClipRect: TRectF; override;
     procedure PaintChildren; override;
 
-    property TrackingPos: TPointF read FTrackingPos write SetTrackingPos;
+    procedure AddTrackingPos(const Value: TPointF);
   end;
 
   TThContainer = class(TStyledControl)
   private
-    FContentScale: Single;
     FMouseTracking: Boolean;
 
     function GetContentBounds: TRectF; virtual;
@@ -30,6 +28,7 @@ type
     function GetOffsetPos: TPointF;
   protected
     FContent: TThContent;
+    FContentScale: Single;
     FCurrentPos: TPointF;
 
     procedure Paint; override;
@@ -66,14 +65,14 @@ begin
   Result.Right := Result.Right / Scale.X;
   Result.Bottom := Result.Bottom / Scale.Y;
 
-  Debug('%f %f %f %f', [Result.Left, Result.Top, Result.Right, Result.Bottom]);
+//  Debug('%f %f %f %f', [Result.Left, Result.Top, Result.Right, Result.Bottom]);
 //  Debug('UpdateRect %f %f %f %f', [UpdateRect.Left, UpdateRect.Top, UpdateRect.Right, UpdateRect.Bottom]);
 end;
 
 procedure TThContent.PaintChildren;
 var
   I, j, K: Integer;
-  R, ChildR: TRectF;
+  R: TRectF;
   State: TCanvasSaveState;
   AllowPaint: Boolean;
 
@@ -113,49 +112,26 @@ begin
           begin
             State := nil;
             try
-              // HJF - 캔버스 영역 안으로만 그리기 위한 조취
+              // Frame 안에만 그리기 위해 FClipChildren 무시
               if {Self.FClipChildren and }CanClip then
               begin
                 State := Canvas.SaveState;
 
-                M := AbsoluteMatrix;
-                if M.m31 > 0 then
-                begin
-
-                end;
-
-//                R := ChildrenRect;
-//                if not ClipChildren and (FChildren <> nil) then
-//                begin
-//                  for K := 0 to FChildren.Count - 1 do
-//                  begin
-//                    if not(Children[K] is TControl) then
-//                      Continue;
-//                    if not TControl(FChildren[K]).Visible then
-//                      Continue;
-//                    R := TControl(FChildren[K]).UpdateRect;
-//                    ChildR := UnionRect(ChildR, R);
-//                  end;
-//                end;
                 M := Self.AbsoluteMatrix;
                 R := Self.ClipRect;
 
-//                if ChildR.Left < 0 then
-//                  M.m31 := TControl(Parent).AbsoluteMatrix.m31;// M.m31 + ChildR.Left;
-                  M.m31 := 120;//TControl(Parent).AbsoluteMatrix.m31;// M.m31 + ChildR.Left;
-                R.Left := R.Left + 120;
-                R.Right := R.Right + 120;
-//                M.m31 := M.m31 + (R.Left - Position.X);
-//                M.m32 := M.m32 + (R.Top - Position.Y);
-//                Canvas.SetMatrix(Self.AbsoluteMatrix);
-                Debug('000000 M %f R %f P %f, R.L %f R.R %f', [M.m31, ChildR.Left, Position.X, R.Left, R.Right]);
+                // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
+                //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
+                //  - R.Right : 우측 보정
+                M.m31 := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0)).X + Self.Position.X * Self.Scale.X;// * Self.Scale.X;
+//                R.Right := (R.Right  + Self.Position.X) * Self.Scale.X;// / Self.Scale.X;
+                // 희안하게 세로축은 문제가 안되네
+                M.m32 := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0)).Y + Self.Position.Y * Self.Scale.Y;
+//                R.Bottom := R.Bottom + Self.Position.Y;
+
+                Debug('000000 M %f P %f, R.L %f R.R %f', [M.m31, Self.Position.X, R.Left, R.Right]);
                 Canvas.SetMatrix(M);
-                Canvas.IntersectClipRect(Self.ClipRect);
-
-//                R := Self.ClipRect;
-//                OffsetRect(R, Position.X, Position.Y);
-
-//                Canvas.IntersectClipRect(Self.ClipRect);
+                Canvas.IntersectClipRect(R);
               end;
               if HasEffect and not HasAfterPaintEffect then
                 ApplyEffect;
@@ -173,7 +149,7 @@ begin
   end;
 end;
 
-procedure TThContent.SetTrackingPos(const Value: TPointF);
+procedure TThContent.AddTrackingPos(const Value: TPointF);
 begin
   FTrackingPos := Value;
 
@@ -214,7 +190,7 @@ end;
 
 function TThContainer.GetContentBounds: TRectF;
 var
-  i: Integer;
+  I: Integer;
   R, LocalR: TRectF;
   C: TControl;
 begin
@@ -222,17 +198,15 @@ begin
   if (FContent <> nil) then
   begin
     R := ClipRect;
-    for i := 0 to FContent.ChildrenCount - 1 do
-      if FContent.Children[i] is TControl then
-        if (TControl(FContent.Children[i]).Visible) then
+    for I := 0 to FContent.ChildrenCount - 1 do
+      if FContent.Children[I] is TControl then
+        if (TControl(FContent.Children[I]).Visible) then
         begin
-          if (csDesigning in ComponentState) and not (csDesigning in FContent.Children[i].ComponentState) then Continue;
-          // HJF - Scale등의 크기와 관련된 항목 처리
-//          LocalR := TControl(FContent.Children[i]).ParentedRect;
-          C := TControl(FContent.Children[i]);
+          if (csDesigning in ComponentState) and not (csDesigning in FContent.Children[I].ComponentState) then Continue;
+          // Scale등의 크기와 관련된 항목 처리
+//          LocalR := TControl(FContent.Children[I]).ParentedRect;
+          C := TControl(FContent.Children[I]);
           LocalR := RectF(0, 0, C.Width * C.Scale.X, C.Height * C.Scale.Y);
-//          LocalR := RectF(0, 0, C.Width, C.Height);
-//          OffsetRect(LocalR, C.Position.X, C.Position.Y);
           R := UnionRect(R, LocalR);
         end;
     Result := R;
@@ -265,9 +239,8 @@ begin
   if FPressed and FMouseTracking then
   begin
     TP := PointF(X - FCurrentPos.X, Y - FCurrentPos.Y);
-//    TP := ScalePoint(TP, 1/FContentScale, 1/FContentScale);
 
-    FContent.TrackingPos := TP;
+    FContent.AddTrackingPos(TP);
 
     FCurrentPos := PointF(X, Y);
   end;
@@ -327,8 +300,6 @@ begin
 end;
 
 procedure TThContainer.RealignContent(R: TRectF);
-var
-  W, H: Single;
 begin
   if (FContent <> nil) then
   begin

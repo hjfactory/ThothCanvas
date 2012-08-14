@@ -40,13 +40,13 @@ type
   TThRemoveShapeCommand = class(TThShapeCommand);
   TThMoveShapeCommand = class(TThShapeCommand)
   private
-    FBeforePos: TPointF;
-    FAfterPos: TPointF;
+    FFromPos: TPointF;
+    FToPos: TPointF;
   public
-    constructor Create(AShapes: TList; ABefore, AAfter: TPointF); overload;
+    constructor Create(AShapes: TList; const FromPos, ToPos: TPointF); overload;
 
-    property BeforePos: TPointF read FBeforePos write FBeforePos;
-    property AfterPos: TPointF read FAfterPos write FAfterPos;
+    property FromPos: TPointF read FFromPos write FFromPos;
+    property ToPos: TPointF read FToPos write FToPos;
   end;
   TThScaleShapeCommand = class(TThShapeCommand);
 
@@ -118,12 +118,12 @@ end;
 { TThMoveShapeCommand }
 
 constructor TThMoveShapeCommand.Create(AShapes: TList;
-  ABefore, AAfter: TPointF);
+  const FromPos, ToPos: TPointF);
 begin
   Create(AShapes);
 
-  FBeforePos := ABefore;
-  FAfterPos := AAfter;
+  FFromPos := FromPos;
+  FToPos := ToPos;
 end;
 
 end.

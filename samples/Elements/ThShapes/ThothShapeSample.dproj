@@ -82,8 +82,9 @@
 				<FormType>fmx</FormType>
 			</DCCReference>
 			<DCCReference Include="Debug.pas"/>
-			<DCCReference Include="..\..\..\src\lib\ThShape.pas"/>
+			<DCCReference Include="..\..\..\src\component\ThShape.pas"/>
 			<DCCReference Include="..\..\..\src\common\ThTypes.pas"/>
+			<DCCReference Include="..\..\..\src\model\ThInterface.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

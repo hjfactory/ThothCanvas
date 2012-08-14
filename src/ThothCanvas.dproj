@@ -82,15 +82,17 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="lib\ThLayout.pas"/>
-			<DCCReference Include="lib\ThShape.pas"/>
+			<DCCReference Include="component\ThShape.pas"/>
 			<DCCReference Include="form\MainForm.pas">
 				<Form>Form1</Form>
 			</DCCReference>
-			<DCCReference Include="lib\ThCanvas.pas"/>
+			<DCCReference Include="component\ThCanvas.pas"/>
 			<DCCReference Include="common\ThTypes.pas"/>
-			<DCCReference Include="model\CommandFactory.pas"/>
-			<DCCReference Include="common\ThCommand.pas"/>
+			<DCCReference Include="model\ThCommand.pas"/>
 			<DCCReference Include="model\ThInterface.pas"/>
+			<DCCReference Include="controller\ThCommandManager.pas"/>
+			<DCCReference Include="controller\ThMainController.pas"/>
+			<DCCReference Include="controller\ThObjectManager.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

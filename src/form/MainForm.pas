@@ -4,8 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs,
-  ThCanvas, FMX.Objects;
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Objects,
+  ThCanvas, ThMainController;
 
 type
   TForm1 = class(TForm)
@@ -16,20 +16,24 @@ type
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
-    Button5: TButton;
     Panel1: TPanel;
     Panel2: TPanel;
-    Rectangle1: TRectangle;
+    Undo: TButton;
+    Redo: TButton;
+    Button5: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure UndoClick(Sender: TObject);
+    procedure RedoClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
+    FController: TThMainController;
   public
     { Public declarations }
   end;
@@ -43,6 +47,31 @@ uses
   ThShape;
 
 {$R *.fmx}
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  FController := TThMainController.Create;
+
+  FThCanvas := TThCanvas.Create(Self);
+  FThCanvas.Parent := pnlMain;
+  FThCanvas.Align := TAlignLayout.alClient;
+  FThCanvas.SetSubject(FController);
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  FThCanvas.Free;
+end;
+
+procedure TForm1.RedoClick(Sender: TObject);
+begin
+  FController.Redo;
+end;
+
+procedure TForm1.UndoClick(Sender: TObject);
+begin
+  FController.Undo;
+end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
@@ -66,25 +95,7 @@ end;
 
 procedure TForm1.Button5Click(Sender: TObject);
 begin
-  with TThRectangle.Create(nil) do
-  begin
-    Parent := Rectangle1;
-    Position.Point := PointF(10, -10);
-    Width := 100;
-    Height := 100;
-  end;
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  FThCanvas := TThCanvas.Create(Self);
-  FThCanvas.Parent := pnlMain;
-  FThCanvas.Align := TAlignLayout.alClient;
-end;
-
-procedure TForm1.FormDestroy(Sender: TObject);
-begin
-  FThCanvas.Free;
+  FThCanvas.DeleteSelection;
 end;
 
 end.

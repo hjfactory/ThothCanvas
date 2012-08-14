@@ -1,15 +1,15 @@
-unit ObjectList;
+unit ThObjectManager;
 
 interface
 
 uses
   System.Classes, System.SysUtils,
-  ThothTypes, ThothObjects, ThothCommands;
+  ThTypes, ThInterface, ThCommand, ThShape;
 
 type
 ///////////////////////////////////////////////////////
 // ObjectList
-  TThObjectList = class(TThInterfacedObject, IThObserver)
+  TThObjectManager = class(TThInterfacedObject, IThObserver)
   private
     FList: TList;
     FBackup: TList;
@@ -36,13 +36,13 @@ uses
 
 { TThObjectList }
 
-constructor TThObjectList.Create;
+constructor TThObjectManager.Create;
 begin
   FList := TList.Create;
   FBackup := TList.Create;
 end;
 
-destructor TThObjectList.Destroy;
+destructor TThObjectManager.Destroy;
 var
   I: Integer;
 begin
@@ -58,12 +58,12 @@ begin
   inherited;
 end;
 
-procedure TThObjectList.InsertShapes(AShapes: TList);
+procedure TThObjectManager.InsertShapes(AShapes: TList);
 begin
   FList.Assign(AShapes, TListAssignOp.laOr);
 end;
 
-procedure TThObjectList.DeleteShapes(AShapes: TList);
+procedure TThObjectManager.DeleteShapes(AShapes: TList);
 var
   I: Integer;
   Shape: TThShape;
@@ -71,14 +71,16 @@ begin
   for I := 0 to AShapes.Count - 1 do
   begin
     Shape := TThShape(AShapes[I]);
-    Shape.Depth := FList.IndexOf(Shape);
-    if Shape.Depth > -1 then
-      FList.Delete(Shape.Depth);
+
+//    Shape.Depth := FList.IndexOf(Shape);
+//    if Shape.Depth > -1 then
+//      FList.Delete(Shape.Depth);
+
     FBackup.Add(Shape);
   end;
 end;
 
-procedure TThObjectList.RestoreShapes(AShapes: TList);
+procedure TThObjectManager.RestoreShapes(AShapes: TList);
 var
   I, Idx: Integer;
   Shape: TThShape;
@@ -87,11 +89,11 @@ begin
   begin
     Shape := TThShape(AShapes[I]);
     FBackup.RemoveItem(Shape, TList.TDirection.FromEnd);
-    FList.Insert(Shape.Depth, Shape);
+//    FList.Insert(Shape.Depth, Shape);
   end;
 end;
 
-procedure TThObjectList.RemoveShapes(AShapes: TList);
+procedure TThObjectManager.RemoveShapes(AShapes: TList);
 var
   I: Integer;
 begin
@@ -99,7 +101,7 @@ begin
     TObject(FBackup[I]).Free;
 end;
 
-procedure TThObjectList.Notifycation(ACommand: IThCommand);
+procedure TThObjectManager.Notifycation(ACommand: IThCommand);
 var
   I: Integer;
   Cmd: TThShapeCommand;
@@ -121,18 +123,18 @@ begin
   ;
 end;
 
-procedure TThObjectList.SetSubject(ASubject: IThSubject);
+procedure TThObjectManager.SetSubject(ASubject: IThSubject);
 begin
   ASubject.RegistObserver(Self);
 end;
 
-procedure TThObjectList.test;
+procedure TThObjectManager.test;
 var
   I: Integer;
 begin
-  for I := 0 to FList.Count - 1 do
-    with TThShape(FList[I]) do
-      OutputDebugString(PChar(Format('%d> %s(W:%f, H:%f, %f,%f / %f,%f)', [I, ClassName, Width, Height, StartPos.X, StartPos.Y, EndPos.X, EndPos.Y])));
+//  for I := 0 to FList.Count - 1 do
+//    with TThShape(FList[I]) do
+//      Debug('%d> %s(W:%f, H:%f, %f,%f / %f,%f)', [I, ClassName, Width, Height, StartPos.X, StartPos.Y, EndPos.X, EndPos.Y]);
 end;
 
 end.
