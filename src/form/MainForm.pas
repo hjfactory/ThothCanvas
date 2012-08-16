@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Objects,
-  ThCanvas, ThMainController;
+  ThCanvas, ThMainController, FMX.Edit;
 
 type
   TForm1 = class(TForm)
@@ -21,6 +21,12 @@ type
     Undo: TButton;
     Redo: TButton;
     Button5: TButton;
+    Rectangle1: TRectangle;
+    Edit1: TEdit;
+    Button6: TButton;
+    Edit2: TEdit;
+    Button7: TButton;
+    Edit3: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -30,6 +36,8 @@ type
     procedure UndoClick(Sender: TObject);
     procedure RedoClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -44,7 +52,7 @@ var
 implementation
 
 uses
-  ThShape;
+  ThShape, ThLayout;
 
 {$R *.fmx}
 
@@ -85,17 +93,30 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
-  FThCanvas.ZoomOut;
+  Edit2.Text := FloatToStr(FThCanvas.ZoomOut);
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
-  FThCanvas.ZoomIn;
+  Edit2.Text := FloatToStr(FThCanvas.ZoomIn);
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
 begin
   FThCanvas.DeleteSelection;
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);
+begin
+  Rectangle1.Position.X := StrToFloatDef(Edit1.Text, 0.0);
+  Rectangle1.Position.Y := StrToFloatDef(Edit1.Text, 0.0);
+  Rectangle1.BringToFront;
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);
+begin
+  MV := StrToFloatDef(Edit3.Text, 0.0);
+  FThCanvas.Repaint;
 end;
 
 end.

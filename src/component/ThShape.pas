@@ -160,11 +160,15 @@ type
   protected
     procedure SetHeight(const Value: Single); override;
     procedure SetWidth(const Value: Single); override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
   TThLineShape = class(TThShape)
   protected
     procedure PaintShadow; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
   TThRectangle = class(TThFillShape)
@@ -835,6 +839,13 @@ end;
 
 { TThFillShape }
 
+constructor TThFillShape.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FStrokeThickness := 0;
+end;
+
 procedure TThFillShape.SetHeight(const Value: Single);
 begin
   if Value < FMinSize then
@@ -852,6 +863,15 @@ begin
 end;
 
 { TThLineShape }
+
+constructor TThLineShape.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FStrokeCap := TStrokeCap.scRound;
+  FStroke.Color := claGray;
+  FStrokeThickness := 7;
+end;
 
 procedure TThLineShape.PaintShadow;
 begin
@@ -896,10 +916,6 @@ end;
 constructor TThLine.Create(AOnwer: TComponent);
 begin
   inherited;
-
-  FStrokeCap := TStrokeCap.scRound;
-  FStroke.Color := claGray;
-  FStrokeThickness := 7;
 
   AddSelectionPoints([spTopLeft, spBottomRight
 //  ,spLeft, spTop, spRight, spBottom // TEST

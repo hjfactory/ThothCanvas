@@ -50,7 +50,7 @@ object Form1: TForm1
       Width = 41.000000000000000000
       Height = 22.000000000000000000
       OnClick = UndoClick
-      TabOrder = 5
+      TabOrder = 4
       Text = 'Undo'
     end
     object Redo: TButton
@@ -58,7 +58,7 @@ object Form1: TForm1
       Width = 41.000000000000000000
       Height = 22.000000000000000000
       OnClick = RedoClick
-      TabOrder = 6
+      TabOrder = 5
       Text = 'Redo'
     end
     object Button5: TButton
@@ -66,8 +66,50 @@ object Form1: TForm1
       Width = 105.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button5Click
-      TabOrder = 7
+      TabOrder = 6
       Text = 'Selection delete'
+    end
+    object Edit1: TEdit
+      Position.Point = '(600,16)'
+      Width = 33.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 8
+      KeyboardType = vktDefault
+      Password = False
+      Text = '0'
+    end
+    object Button6: TButton
+      Position.Point = '(632,16)'
+      Width = 41.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button6Click
+      TabOrder = 9
+      Text = 'Button6'
+    end
+    object Edit2: TEdit
+      Position.Point = '(184,16)'
+      Width = 65.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 10
+      KeyboardType = vktDefault
+      Password = False
+    end
+    object Button7: TButton
+      Position.Point = '(704,32)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button7Click
+      TabOrder = 11
+      Text = 'Button7'
+    end
+    object Edit3: TEdit
+      Position.Point = '(704,8)'
+      Width = 100.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 12
+      KeyboardType = vktDefault
+      Password = False
+      Text = '0'
     end
   end
   object pnlMenu: TPanel
@@ -77,17 +119,10 @@ object Form1: TForm1
     Height = 352.000000000000000000
     TabOrder = 1
   end
-  object pnlMain: TPanel
-    Align = alClient
-    Position.Point = '(81,57)'
-    Width = 743.000000000000000000
-    Height = 352.000000000000000000
-    TabOrder = 2
-  end
   object Panel1: TPanel
     Align = alLeft
     Position.Point = '(0,57)'
-    Width = 81.000000000000000000
+    Width = 80.000000000000000000
     Height = 352.000000000000000000
     TabOrder = 3
   end
@@ -97,5 +132,17 @@ object Form1: TForm1
     Width = 927.000000000000000000
     Height = 100.000000000000000000
     TabOrder = 4
+  end
+  object pnlMain: TPanel
+    Align = alClient
+    Position.Point = '(80,57)'
+    Width = 744.000000000000000000
+    Height = 352.000000000000000000
+    TabOrder = 2
+    object Rectangle1: TRectangle
+      Position.Point = '(528,192)'
+      Width = 50.000000000000000000
+      Height = 50.000000000000000000
+    end
   end
 end

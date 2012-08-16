@@ -52,6 +52,9 @@ type
     function ZoomOut: Single;
   end;
 
+var
+  MV: Single = 0;
+
 implementation
 
 { TThContent }
@@ -77,6 +80,9 @@ var
   AllowPaint: Boolean;
 
   M: TMatrix;
+
+  CanvasAbsP: TPointF;          // Form내 Canvas 절대 좌표
+  ContentX, ContentY: Single;   // Content 이동거리
 begin
   if FScene = nil then
     Exit;
@@ -120,18 +126,32 @@ begin
                 M := Self.AbsoluteMatrix;
                 R := Self.ClipRect;
 
+                Debug('@ m31 %f m32 %f Pos %f %f R (%f, %f = %f)', [M.m31, M.m32, Position.X, Position.Y, R.Left, R.Right, R.Right - R.Left]);
+                ////////////////////////////////////////////////////////////////
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
                 //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
                 //  - R.Right : 우측 보정
-                M.m31 := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0)).X + Self.Position.X * Self.Scale.X;// * Self.Scale.X;
-//                R.Right := (R.Right  + Self.Position.X) * Self.Scale.X;// / Self.Scale.X;
-                // 희안하게 세로축은 문제가 안되네
-                M.m32 := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0)).Y + Self.Position.Y * Self.Scale.Y;
-//                R.Bottom := R.Bottom + Self.Position.Y;
 
-                Debug('000000 M %f P %f, R.L %f R.R %f', [M.m31, Self.Position.X, R.Left, R.Right]);
+                CanvasAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
+                ContentX    := -Self.Position.X;
+                ContentY    := -Self.Position.Y;
+
+                // m31 := Paernt의 절대 좌표 + Content 이동거리
+                M.m31 := CanvasAbsP.X + (ContentX * (1-Self.Scale.X));
+//                R.Left := R.Left - (ContentX / Self.Scale.X);
+                R.Left := R.Left - (ContentX / Self.Scale.X);
+                R.Right := R.Left + (Self.Width / Self.Scale.X);
+
+
+                M.m32 := CanvasAbsP.Y + (ContentY * (1-Self.Scale.Y));
+                R.Top := R.Top - (ContentY / Self.Scale.X);
+                R.Bottom := R.Top + (Self.Height / Self.Scale.X);
+
+                Debug('@@ M %f S.PX %f, R.L %f R.R %f', [M.m31, Self.Position.X, R.Left, R.Right]);
                 Canvas.SetMatrix(M);
                 Canvas.IntersectClipRect(R);
+                //
+                ////////////////////////////////////////////////////////////////
               end;
               if HasEffect and not HasAfterPaintEffect then
                 ApplyEffect;
@@ -256,13 +276,14 @@ begin
   if FMouseTracking then
   begin
     //
-    FLocalMatrix.m31 := -FContent.Position.X;
-    FContent.Repaint;
+////    FLocalMatrix.m31 := -FContent.Position.X;
+//    FContent.Repaint;
   end;
 end;
 
 procedure TThContainer.Paint;
 begin
+  // (Test) Background color
   Canvas.Fill.Color := claGreen;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 
