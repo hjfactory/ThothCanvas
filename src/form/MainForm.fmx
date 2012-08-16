@@ -73,7 +73,7 @@ object Form1: TForm1
       Position.Point = '(600,16)'
       Width = 33.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 8
+      TabOrder = 7
       KeyboardType = vktDefault
       Password = False
       Text = '0'
@@ -83,14 +83,14 @@ object Form1: TForm1
       Width = 41.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button6Click
-      TabOrder = 9
+      TabOrder = 8
       Text = 'Button6'
     end
     object Edit2: TEdit
       Position.Point = '(184,16)'
       Width = 65.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 10
+      TabOrder = 9
       KeyboardType = vktDefault
       Password = False
     end
@@ -99,14 +99,14 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button7Click
-      TabOrder = 11
+      TabOrder = 10
       Text = 'Button7'
     end
     object Edit3: TEdit
       Position.Point = '(704,8)'
       Width = 100.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 12
+      TabOrder = 11
       KeyboardType = vktDefault
       Password = False
       Text = '0'
@@ -124,21 +124,21 @@ object Form1: TForm1
     Position.Point = '(0,57)'
     Width = 80.000000000000000000
     Height = 352.000000000000000000
-    TabOrder = 3
+    TabOrder = 2
   end
   object Panel2: TPanel
     Align = alBottom
     Position.Point = '(0,409)'
     Width = 927.000000000000000000
     Height = 100.000000000000000000
-    TabOrder = 4
+    TabOrder = 3
   end
   object pnlMain: TPanel
     Align = alClient
     Position.Point = '(80,57)'
     Width = 744.000000000000000000
     Height = 352.000000000000000000
-    TabOrder = 2
+    TabOrder = 4
     object Rectangle1: TRectangle
       Position.Point = '(528,192)'
       Width = 50.000000000000000000

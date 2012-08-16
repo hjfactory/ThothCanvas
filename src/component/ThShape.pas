@@ -71,7 +71,8 @@ type
 
   TThShape = class(TControl, IThShape)
   private
-    FDownPos: TPointF;
+    FDownPos,
+    FDownPosition: TPointF;
     FHighlight: Boolean;
     FSelected: Boolean;
 
@@ -520,6 +521,8 @@ begin
   begin
     Selected := True;
     FDownPos := PointF(X, Y);
+    FDownPosition := Position.Point;
+//    FDownPos := Position.Point;
   end
   else
   begin
@@ -558,11 +561,22 @@ end;
 
 procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  P: TPointF;
 begin
   if FPressed then
   begin
-    if Assigned(FOnMove) then
-      FOnMove(Self, FDownPos);
+    P := Platform.GetMousePos;
+    P := ScreenToLocal(P);
+
+    if P.X = X then
+    begin
+
+    end;
+
+    if FDownPosition <> Position.Point then
+      if Assigned(FOnMove) then
+        FOnMove(Self, FDownPosition);
   end;
 
   inherited;

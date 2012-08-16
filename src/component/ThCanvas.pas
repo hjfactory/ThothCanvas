@@ -12,23 +12,25 @@ type
     FSubject: IThSubject;
 
     FDrawShape: TThShape;
-    FShapeClass: TThSahpeClass;
+    FCurrentShapeClass: TThSahpeClass;
     FSelectionShapes: TList;
 
     procedure ShapeMove(Sender: TObject; const AStartPos: TPointF);
     procedure ShapeSelect(Sender: TObject);
 
     // 사용자 요청
-    procedure InsertShape;
-    procedure MoveShapes(AShapes: TList; FromPos, ToPos: TPointF);
-    procedure DeleteShapes(AShapes: TList);
+    procedure ReqInsertShape;
+    procedure ReqMoveShapes(AShapes: TList; FromPos, ToPos: TPointF);
+    procedure ReqDeleteShapes(AShapes: TList);
 
     // 실제 처리
-    procedure DoInsertShape(AShape: TThShape);
-    procedure DoInsertShapes(AShapes: TList);
-    procedure DoMoveShapes(AShapes: TList; const ToPos: TPointF);
-    procedure DoDeleteShapes(AShapes: TList);
+    procedure InsertShape(AShape: TThShape);
+    procedure InsertShapes(AShapes: TList);
+    procedure MoveShapes(AShapes: TList; const ToPos: TPointF);
+    procedure DeleteShapes(AShapes: TList);
+    procedure ClearSelection;
   protected
+    procedure BlankClick; override;
     procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -43,7 +45,14 @@ type
 
     procedure DeleteSelection;
 
-    property ShapeClass: TThSahpeClass read FShapeClass write FShapeClass;
+    property CurrentShapeClass: TThSahpeClass read FCurrentShapeClass write FCurrentShapeClass;
+
+    // OnSelectShape;
+    // OnTracking
+    // OnClick
+    // OnMoveShape
+    // OnDeleteShape
+    // OnInsertShape
   end;
 
 
@@ -54,6 +63,20 @@ uses
   ThCommand;
 
 { TThCanvas }
+
+procedure TThCanvas.BlankClick;
+begin
+  ClearSelection;
+end;
+
+procedure TThCanvas.ClearSelection;
+var
+  I: Integer;
+begin
+  for I := 0 to FSelectionShapes.Count - 1 do
+    TThShape(FSelectionShapes[I]).Selected := False;
+  FSelectionShapes.Clear;
+end;
 
 constructor TThCanvas.Create(AOwner: TComponent);
 begin
@@ -82,34 +105,34 @@ begin
 
   if ACommand is TThInsertShapeCommand then
     // Canvas에 추가
-    DoInsertShapes(TThShapeCommand(ACommand).List)
+    InsertShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThDeleteShapeCommand then
     // Canvas에서 제거
-    DoDeleteShapes(TThShapeCommand(ACommand).List)
+    DeleteShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThRestoreShapeCommand then
     // Canvas에 InsertObject
-    DoInsertShapes(TThShapeCommand(ACommand).List)
+    InsertShapes(TThShapeCommand(ACommand).List)
   else if ACommand is TThRemoveShapeCommand then
     // Canvas에서 제거(있으면)
   else if ACommand is TThMoveShapeCommand then
-    DoMoveShapes(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).ToPos)
+    MoveShapes(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).ToPos)
   ;
 end;
 
-procedure TThCanvas.DoInsertShape(AShape: TThShape);
+procedure TThCanvas.InsertShape(AShape: TThShape);
 begin
   AShape.Parent := Self;
 end;
 
-procedure TThCanvas.DoInsertShapes(AShapes: TList);
+procedure TThCanvas.InsertShapes(AShapes: TList);
 var
   I: Integer;
 begin
   for I := 0 to AShapes.Count - 1 do
-    DoInsertShape(AShapes[I]);
+    InsertShape(AShapes[I]);
 end;
 
-procedure TThCanvas.DoDeleteShapes(AShapes: TList);
+procedure TThCanvas.DeleteShapes(AShapes: TList);
 var
   I: Integer;
 begin
@@ -117,7 +140,7 @@ begin
     TThShape(AShapes[I]).Parent := nil;
 end;
 
-procedure TThCanvas.DoMoveShapes(AShapes: TList; const ToPos: TPointF);
+procedure TThCanvas.MoveShapes(AShapes: TList; const ToPos: TPointF);
 var
   I: Integer;
 begin
@@ -130,23 +153,23 @@ procedure TThCanvas.KeyDown(var Key: Word; var KeyChar: WideChar;
 begin
   inherited;
 
-
+  // MultiSelect 지원을 위해 Ctrl 및 Shift SaveState 필요
 end;
 
-procedure TThCanvas.InsertShape;
+procedure TThCanvas.ReqInsertShape;
 begin
   FSubject.Subject(Self, TThInsertShapeCommand.Create(FDrawShape));
 
-  FShapeClass := nil;
+  FCurrentShapeClass := nil;
   FDrawShape := nil;
 end;
 
-procedure TThCanvas.DeleteShapes(AShapes: TList);
+procedure TThCanvas.ReqDeleteShapes(AShapes: TList);
 begin
   FSubject.Subject(Self, TThDeleteShapeCommand.Create(AShapes));
 end;
 
-procedure TThCanvas.MoveShapes(AShapes: TList; FromPos, ToPos: TPointF);
+procedure TThCanvas.ReqMoveShapes(AShapes: TList; FromPos, ToPos: TPointF);
 begin
   FSubject.Subject(Self, TThMoveShapeCommand.Create(FSelectionShapes, FromPos, ToPos));
 end;
@@ -158,7 +181,7 @@ var
 begin
   inherited;
 
-  if Assigned(FShapeClass) then
+  if Assigned(FCurrentShapeClass) then
   begin
     P := FCurrentPos;
     P.X := P.X - OffsetPos.X;
@@ -166,7 +189,7 @@ begin
 
 //    Debug('OffsetPos(%f, %f, %f, %f)', [OffsetPos.X, OffsetPos.Y, P.X, P.Y]);
 
-    FDrawShape := FShapeClass.Create(nil);
+    FDrawShape := FCurrentShapeClass.Create(nil);
     FDrawShape.Parent := Self;
     FDrawShape.Position.Point := ScalePoint(P, 1/FContentScale, 1/FContentScale);
     FDrawShape.OnMove := ShapeMove;
@@ -177,9 +200,7 @@ end;
 
 procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
-//    inherited;
-
-  if Assigned(FShapeClass) and Assigned(FDrawShape) then
+  if Assigned(FCurrentShapeClass) and Assigned(FDrawShape) then
   begin
     FDrawShape.Width := (X - FCurrentPos.X) / FContentScale;
     FDrawShape.Height := (Y - FCurrentPos.Y) / FContentScale;
@@ -193,29 +214,26 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  InsertShape;
+  if Assigned(FDrawShape) then
+    ReqInsertShape;
 end;
 
 procedure TThCanvas.ShapeMove(Sender: TObject; const AStartPos: TPointF);
 begin
-  MoveShapes(FSelectionShapes, AStartPos, TThShape(Sender).Position.Point);
+  ReqMoveShapes(FSelectionShapes, AStartPos, TThShape(Sender).Position.Point);
 end;
 
 procedure TThCanvas.ShapeSelect(Sender: TObject);
-var
-  I: Integer;
 begin
-  for I := 0 to FSelectionShapes.Count - 1 do
-    TThShape(FSelectionShapes[I]).Selected := False;
+  ClearSelection;
 
-  FSelectionShapes.Clear;
   FSelectionShapes.Add(Sender);
 end;
 
 procedure TThCanvas.DeleteSelection;
 begin
+  ReqDeleteShapes(FSelectionShapes);
   DeleteShapes(FSelectionShapes);
-  DoDeleteShapes(FSelectionShapes);
 end;
 
 end.

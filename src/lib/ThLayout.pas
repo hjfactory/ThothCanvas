@@ -29,9 +29,11 @@ type
   protected
     FContent: TThContent;
     FContentScale: Single;
+    FDownPos,
     FCurrentPos: TPointF;
 
     procedure Paint; override;
+    procedure BlankClick; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -41,6 +43,7 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
 
     property MouseTracking: Boolean read FMouseTracking write FMouseTracking default False;
     property OffsetPos: TPointF read GetOffsetPos;
@@ -131,6 +134,10 @@ begin
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
                 //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
                 //  - R.Right : 우측 보정
+
+                // @@@@@@@@@@@@@@@@@@@@@@@
+                // 확대축소, 트래킹, 이동 시 간혈적으로 문제 있음(발생패턴 인식 안됨)
+                // @@@@@@@@@@@@@@@@@@@@@@@
 
                 CanvasAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
                 ContentX    := -Self.Position.X;
@@ -247,6 +254,7 @@ begin
 
   if (FPressed) and FMouseTracking then
   begin
+    FDownPos := PointF(X, Y);
     FCurrentPos := PointF(X, Y);
 //    FCurrentPos := ScalePoint(PointF(X, Y), FContentScale, FContentScale);
   end;
@@ -268,17 +276,36 @@ end;
 
 procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  R: TRectF;
 begin
-//  if FPressed and FMouseTracking then
-//    RealignContent(GetContentBounds);
+  inherited;
+{// 굳이 범위로 지정하지 않아도 될듯
+  // 정교한 맞춤을 위한 이동은? 시간도 추가?
+  R.TopLeft := FDownPos.Subtract(PointF(3, 3));
+  R.BottomRight := FDownPos.Add(PointF(3, 3));
+
+  if PtInRect(R, PointF(X, Y)) then
+}
+  if FDownPos = PointF(X, Y) then
+    BlankClick;
+end;
+
+procedure TThContainer.BlankClick;
+begin
+
+end;
+
+procedure TThContainer.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
+  var Handled: Boolean);
+begin
   inherited;
 
-  if FMouseTracking then
-  begin
-    //
-////    FLocalMatrix.m31 := -FContent.Position.X;
-//    FContent.Repaint;
-  end;
+  if WheelDelta < 0 then
+    ZoomOut
+  else
+    ZoomIn
+  ;
 end;
 
 procedure TThContainer.Paint;
@@ -337,6 +364,8 @@ begin
   FContent.Scale.Y := FContentScale;
 
   Result := FContent.Scale.X;
+  
+// 기준점 으로 이동하는 기능 추가 필요(마우스가 있는 좌표가 확대/축소 후에도 마우스 위치에 있도록)
 end;
 
 function TThContainer.ZoomOut: Single;

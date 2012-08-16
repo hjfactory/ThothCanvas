@@ -83,12 +83,12 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  FThCanvas.ShapeClass := TThRectangle;
+  FThCanvas.CurrentShapeClass := TThRectangle;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  FThCanvas.ShapeClass := TThLine;
+  FThCanvas.CurrentShapeClass := TThLine;
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
