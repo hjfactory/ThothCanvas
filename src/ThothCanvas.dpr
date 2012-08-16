@@ -11,7 +11,9 @@ uses
   ThInterface in 'model\ThInterface.pas',
   ThCommandManager in 'controller\ThCommandManager.pas',
   ThMainController in 'controller\ThMainController.pas',
-  ThObjectManager in 'controller\ThObjectManager.pas';
+  ThObjectManager in 'controller\ThObjectManager.pas',
+  ThItem in 'lib\ThItem.pas',
+  ThControlPanel in 'component\ThControlPanel.pas';
 
 {$R *.res}
 

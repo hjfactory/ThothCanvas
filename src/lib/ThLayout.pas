@@ -77,7 +77,7 @@ end;
 
 procedure TThContent.PaintChildren;
 var
-  I, j, K: Integer;
+  I, j: Integer;
   R: TRectF;
   State: TCanvasSaveState;
   AllowPaint: Boolean;
@@ -85,7 +85,6 @@ var
   M: TMatrix;
 
   CanvasAbsP: TPointF;          // Form내 Canvas 절대 좌표
-  ContentX, ContentY: Single;   // Content 이동거리
 begin
   if FScene = nil then
     Exit;
@@ -134,27 +133,18 @@ begin
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
                 //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
                 //  - R.Right : 우측 보정
-
-                // @@@@@@@@@@@@@@@@@@@@@@@
-                // 확대축소, 트래킹, 이동 시 간혈적으로 문제 있음(발생패턴 인식 안됨)
-                // @@@@@@@@@@@@@@@@@@@@@@@
-
                 CanvasAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
-                ContentX    := -Self.Position.X;
-                ContentY    := -Self.Position.Y;
 
                 // m31 := Paernt의 절대 좌표 + Content 이동거리
-                M.m31 := CanvasAbsP.X + (ContentX * (1-Self.Scale.X));
-//                R.Left := R.Left - (ContentX / Self.Scale.X);
-                R.Left := R.Left - (ContentX / Self.Scale.X);
+                M.m31 := CanvasAbsP.X;
+                R.Left := 0;
                 R.Right := R.Left + (Self.Width / Self.Scale.X);
 
 
-                M.m32 := CanvasAbsP.Y + (ContentY * (1-Self.Scale.Y));
-                R.Top := R.Top - (ContentY / Self.Scale.X);
+                M.m32 := CanvasAbsP.Y;
+                R.Top := 0;
                 R.Bottom := R.Top + (Self.Height / Self.Scale.X);
 
-                Debug('@@ M %f S.PX %f, R.L %f R.R %f', [M.m31, Self.Position.X, R.Left, R.Right]);
                 Canvas.SetMatrix(M);
                 Canvas.IntersectClipRect(R);
                 //
@@ -276,8 +266,6 @@ end;
 
 procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
-var
-  R: TRectF;
 begin
   inherited;
 {// 굳이 범위로 지정하지 않아도 될듯
@@ -311,8 +299,8 @@ end;
 procedure TThContainer.Paint;
 begin
   // (Test) Background color
-  Canvas.Fill.Color := claGreen;
-  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+//  Canvas.Fill.Color := claPink;
+//  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 
   inherited;
 end;

@@ -522,14 +522,6 @@ begin
     Selected := True;
     FDownPos := PointF(X, Y);
     FDownPosition := Position.Point;
-//    FDownPos := Position.Point;
-  end
-  else
-  begin
-    if Assigned(Parent) and (Parent is TControl) then
-    begin
-
-    end;
   end;
 end;
 

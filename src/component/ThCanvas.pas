@@ -3,8 +3,8 @@ unit ThCanvas;
 interface
 
 uses
-  System.UITypes, System.Classes, System.Types,
-  ThInterface, ThTypes, ThLayout, ThShape;
+  System.UITypes, System.Classes, System.Types, FMX.Types,
+  ThInterface, ThTypes, ThShape, ThLayout;
 
 type
   TThCanvas = class(TThContainer, IThCanvas, IThObserver)
@@ -137,7 +137,7 @@ var
   I: Integer;
 begin
   for I := 0 to AShapes.Count - 1 do
-    TThShape(AShapes[I]).Parent := nil;
+    TControl(AShapes[I]).Parent := nil;
 end;
 
 procedure TThCanvas.MoveShapes(AShapes: TList; const ToPos: TPointF);

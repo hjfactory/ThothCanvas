@@ -2,6 +2,9 @@ unit ThInterface;
 
 interface
 
+uses
+  FMX.Types;
+
 type
   TThInterfacedObject = class(TObject, IInterface)
   protected
@@ -27,13 +30,21 @@ type
     procedure SetSubject(ASubject: IThSubject);
   end;
 
-  IThShape = interface
-  end;
-
   IThCanvas = interface
   end;
 
+  IThItem = interface(IControl)
+    procedure SetSelected(const Value: Boolean);
+    property Selected: Boolean write SetSelected;
+  end;
 
+  IThShape = interface
+  end;
+
+  IThControlPanel = interface
+    procedure Show;
+    procedure Hide;
+  end;
 
 implementation
 

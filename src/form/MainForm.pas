@@ -21,9 +21,6 @@ type
     Undo: TButton;
     Redo: TButton;
     Button5: TButton;
-    Rectangle1: TRectangle;
-    Edit1: TEdit;
-    Button6: TButton;
     Edit2: TEdit;
     Button7: TButton;
     Edit3: TEdit;
@@ -36,7 +33,6 @@ type
     procedure UndoClick(Sender: TObject);
     procedure RedoClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
   private
     { Private declarations }
@@ -104,13 +100,6 @@ end;
 procedure TForm1.Button5Click(Sender: TObject);
 begin
   FThCanvas.DeleteSelection;
-end;
-
-procedure TForm1.Button6Click(Sender: TObject);
-begin
-  Rectangle1.Position.X := StrToFloatDef(Edit1.Text, 0.0);
-  Rectangle1.Position.Y := StrToFloatDef(Edit1.Text, 0.0);
-  Rectangle1.BringToFront;
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);

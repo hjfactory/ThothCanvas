@@ -1,9 +1,9 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
-			<ProjectGuid>{B8F6629D-4F71-44AE-944A-F7DFE5FC4336}</ProjectGuid>
+			<ProjectGuid>{334E444F-D108-41D3-8459-4A1663DD6B4F}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
 			<FrameworkType>FMX</FrameworkType>
-			<MainSource>ThothCanvas.dpr</MainSource>
+			<MainSource>Project1.dpr</MainSource>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -65,10 +65,6 @@
 			<DCC_RemoteDebug>true</DCC_RemoteDebug>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-			<DCC_ExeOutput>..\bin\$(Platform)\$(Config)</DCC_ExeOutput>
-			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1033</VerInfo_Locale>
-			<DCC_DcuOutput>..\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
 			<DCC_RemoteDebug>false</DCC_RemoteDebug>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -81,20 +77,10 @@
 			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="lib\ThLayout.pas"/>
-			<DCCReference Include="component\ThShape.pas"/>
-			<DCCReference Include="form\MainForm.pas">
+			<DCCReference Include="Unit1.pas">
 				<Form>Form1</Form>
+				<FormType>fmx</FormType>
 			</DCCReference>
-			<DCCReference Include="component\ThCanvas.pas"/>
-			<DCCReference Include="common\ThTypes.pas"/>
-			<DCCReference Include="model\ThCommand.pas"/>
-			<DCCReference Include="model\ThInterface.pas"/>
-			<DCCReference Include="controller\ThCommandManager.pas"/>
-			<DCCReference Include="controller\ThMainController.pas"/>
-			<DCCReference Include="controller\ThObjectManager.pas"/>
-			<DCCReference Include="lib\ThItem.pas"/>
-			<DCCReference Include="component\ThControlPanel.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -144,7 +130,7 @@
 						<Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
 					</Excluded_Packages>
 					<Source>
-						<Source Name="MainSource">ThothCanvas.dpr</Source>
+						<Source Name="MainSource">Project1.dpr</Source>
 					</Source>
 				</Delphi.Personality>
 				<Deployment/>
