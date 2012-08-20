@@ -470,10 +470,8 @@ var
   I: Integer;
   SP: TSelectionPosition;
 begin
-//  for I := 0 to FSelectionPoints.Count - 1 do
-  for SP in Args do
-    if Length(Args) > I then
-      GetSelectionPoint(I).SelectionPosition := SP;
+  for I := 0 to FSelectionPoints.Count - 1 do
+    GetSelectionPoint(I).SelectionPosition := Args[I];
 end;
 
 procedure TThShape.DoMouseEnter;
@@ -882,6 +880,7 @@ end;
 procedure TThLineShape.PaintShadow;
 begin
 //  Canvas.Fill.Color := FShadowColor;
+  Canvas.StrokeCap := FStrokeCap;
   Canvas.StrokeThickness := FStrokeThickness;
   Canvas.Stroke.Kind := TBrushKind.bkSolid;
 end;

@@ -299,8 +299,8 @@ end;
 procedure TThContainer.Paint;
 begin
   // (Test) Background color
-//  Canvas.Fill.Color := claPink;
-//  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+  Canvas.Fill.Color := claPink;
+  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 
   inherited;
 end;
