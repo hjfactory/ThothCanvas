@@ -17,6 +17,8 @@ type
     procedure PaintChildren; override;
 
     procedure AddTrackingPos(const Value: TPointF);
+  public
+    test: Single;
   end;
 
   TThContainer = class(TStyledControl)
@@ -53,6 +55,8 @@ type
 
     function ZoomIn: Single;
     function ZoomOut: Single;
+
+    procedure Test(Value: Single);
   end;
 
 var
@@ -128,7 +132,7 @@ begin
                 M := Self.AbsoluteMatrix;
                 R := Self.ClipRect;
 
-                Debug('@ m31 %f m32 %f Pos %f %f R (%f, %f = %f)', [M.m31, M.m32, Position.X, Position.Y, R.Left, R.Right, R.Right - R.Left]);
+//                Debug('@ m31 %f m32 %f Pos %f %f R (%f, %f = %f)', [M.m31, M.m32, Position.X, Position.Y, R.Left, R.Right, R.Right - R.Left]);
                 ////////////////////////////////////////////////////////////////
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
                 //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
@@ -137,6 +141,7 @@ begin
 
                 // m31 := Paernt의 절대 좌표 + Content 이동거리
                 M.m31 := CanvasAbsP.X;
+                M.m31 := M.m31 + Test;
                 R.Left := 0;
                 R.Right := R.Left + (Self.Width / Self.Scale.X);
 
@@ -345,6 +350,11 @@ begin
     FContent.SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
     FContent.FRecalcUpdateRect := True; // need to recalc
   end;
+end;
+
+procedure TThContainer.Test(Value: Single);
+begin
+  FContent.test := VAlue;
 end;
 
 function TThContainer.ZoomIn: Single;

@@ -25,6 +25,9 @@ type
     Button7: TButton;
     Edit3: TEdit;
     Button6: TButton;
+    Button8: TButton;
+    Button9: TButton;
+    Edit1: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -36,6 +39,8 @@ type
     procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -106,7 +111,7 @@ end;
 
 procedure TForm1.Button6Click(Sender: TObject);
 begin
-  FThCanvas.RotateContent := 45;
+  FThCanvas.RotateContent := FThCanvas.RotateContent + 45;
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);
@@ -115,6 +120,16 @@ begin
   FThCanvas.Repaint;
 
   Panel2.Cursor := crDefault;
+end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+begin
+  FThCanvas.RotateContent := FThCanvas.RotateContent - 45;
+end;
+
+procedure TForm1.Button9Click(Sender: TObject);
+begin
+  FThCanvas.Test(StrToFloatDef(Edit1.Text, 0.0));
 end;
 
 end.

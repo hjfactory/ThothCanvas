@@ -77,28 +77,28 @@ object Form1: TForm1
       KeyboardType = vktDefault
       Password = False
     end
-    object Button7: TButton
-      Position.Point = '(704,32)'
-      Width = 80.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button7Click
-      TabOrder = 8
-      Text = 'Button7'
-    end
     object Edit3: TEdit
       Position.Point = '(704,8)'
       Width = 100.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 9
+      TabOrder = 8
       KeyboardType = vktDefault
       Password = False
       Text = '0'
     end
     object Button6: TButton
-      Position.Point = '(568,16)'
-      Width = 80.000000000000000000
+      Position.Point = '(552,16)'
+      Width = 41.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button6Click
+      TabOrder = 9
+      Text = 'Button6'
+    end
+    object Button8: TButton
+      Position.Point = '(600,16)'
+      Width = 41.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button8Click
       TabOrder = 11
       Text = 'Button6'
     end
@@ -124,6 +124,22 @@ object Form1: TForm1
     Width = 927.000000000000000000
     Height = 100.000000000000000000
     TabOrder = 3
+    object Button9: TButton
+      Position.Point = '(840,48)'
+      Width = 80.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button9Click
+      TabOrder = 1
+      Text = 'Button9'
+    end
+    object Edit1: TEdit
+      Position.Point = '(736,48)'
+      Width = 100.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 2
+      KeyboardType = vktDefault
+      Password = False
+    end
   end
   object pnlMain: TPanel
     Align = alClient
@@ -131,5 +147,13 @@ object Form1: TForm1
     Width = 744.000000000000000000
     Height = 352.000000000000000000
     TabOrder = 4
+  end
+  object Button7: TButton
+    Position.Point = '(704,32)'
+    Width = 80.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button7Click
+    TabOrder = 6
+    Text = 'Button7'
   end
 end

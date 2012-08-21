@@ -32,6 +32,7 @@ type
     procedure ClearSelection;
     function read: Single;
     procedure SetRotateContent(const Value: Single);
+    function GetRoteateContent: Single;
   protected
     procedure BlankClick; override;
     procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
@@ -49,7 +50,7 @@ type
     procedure DeleteSelection;
 
     property CurrentShapeClass: TThSahpeClass read FCurrentShapeClass write FCurrentShapeClass;
-    property RotateContent: Single read FRoteateContent write SetRotateContent;
+    property RotateContent: Single read GetRoteateContent write SetRotateContent;
 
     // OnSelectShape;
     // OnTracking
@@ -94,6 +95,11 @@ begin
   FSelectionShapes.Free;
 
   inherited;
+end;
+
+function TThCanvas.GetRoteateContent: Single;
+begin
+  Result := FContent.RotationAngle;
 end;
 
 procedure TThCanvas.SetRotateContent(const Value: Single);

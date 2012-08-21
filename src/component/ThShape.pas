@@ -597,11 +597,20 @@ begin
 end;
 
 procedure TThShape.Paint;
+var
+  S: string;
 begin
   if FHighlight or FSelected then
     PaintShadow;
 
   PaintShape;
+// Test Code
+  S := Format('Position(%f, %f)', [Position.X, Position.Y]);
+  S := S + Format(' W, H(%f, %f)', [Width, Height]);
+  Canvas.Fill.Color := claRed;
+  Canvas.Font.Size := 10;
+  Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
+// Test Code - End
 
   if FSelected and (FUpdating = 0) then
     ShowSelection;
