@@ -13,4 +13,17 @@ object Form1: TForm1
     Height = 50.000000000000000000
     EndAngle = -90.000000000000000000
   end
+  object GradientEdit1: TGradientEdit
+    Position.Point = '(384,432)'
+    Width = 200.000000000000000000
+    Height = 20.000000000000000000
+    TabOrder = 2
+    ColorPicker = ColorPicker1
+    object ColorPicker1: TColorPicker
+      Position.Point = '(8,-88)'
+      Width = 185.000000000000000000
+      Height = 81.000000000000000000
+      TabOrder = 0
+    end
+  end
 end
