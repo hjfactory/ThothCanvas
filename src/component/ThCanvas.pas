@@ -14,6 +14,7 @@ type
     FDrawShape: TThShape;
     FCurrentShapeClass: TThSahpeClass;
     FSelectionShapes: TList;
+    FRoteateContent: Single;
 
     procedure ShapeMove(Sender: TObject; const AStartPos: TPointF);
     procedure ShapeSelect(Sender: TObject);
@@ -29,6 +30,8 @@ type
     procedure MoveShapes(AShapes: TList; const ToPos: TPointF);
     procedure DeleteShapes(AShapes: TList);
     procedure ClearSelection;
+    function read: Single;
+    procedure SetRotateContent(const Value: Single);
   protected
     procedure BlankClick; override;
     procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
@@ -46,6 +49,7 @@ type
     procedure DeleteSelection;
 
     property CurrentShapeClass: TThSahpeClass read FCurrentShapeClass write FCurrentShapeClass;
+    property RotateContent: Single read FRoteateContent write SetRotateContent;
 
     // OnSelectShape;
     // OnTracking
@@ -59,7 +63,7 @@ type
 implementation
 
 uses
-  FMX.Platform,
+  FMX.Platform, System.Math,
   ThCommand;
 
 { TThCanvas }
@@ -92,6 +96,11 @@ begin
   inherited;
 end;
 
+procedure TThCanvas.SetRotateContent(const Value: Single);
+begin
+  FContent.RotationAngle := Value;
+end;
+
 procedure TThCanvas.SetSubject(ASubject: IThSubject);
 begin
   FSubject := ASubject;
@@ -117,6 +126,11 @@ begin
   else if ACommand is TThMoveShapeCommand then
     MoveShapes(TThShapeCommand(ACommand).List, TThMoveShapeCommand(ACommand).ToPos)
   ;
+end;
+
+function TThCanvas.read: Single;
+begin
+
 end;
 
 procedure TThCanvas.InsertShape(AShape: TThShape);

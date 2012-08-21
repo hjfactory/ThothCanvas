@@ -24,6 +24,7 @@ type
     Edit2: TEdit;
     Button7: TButton;
     Edit3: TEdit;
+    Button6: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -34,6 +35,7 @@ type
     procedure RedoClick(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -100,6 +102,11 @@ end;
 procedure TForm1.Button5Click(Sender: TObject);
 begin
   FThCanvas.DeleteSelection;
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);
+begin
+  FThCanvas.RotateContent := 45;
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);
