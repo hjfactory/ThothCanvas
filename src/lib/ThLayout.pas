@@ -247,6 +247,7 @@ begin
     FDownPos := PointF(X, Y);
     FCurrentPos := PointF(X, Y);
 //    FCurrentPos := ScalePoint(PointF(X, Y), FContentScale, FContentScale);
+//    Self.Cursor := crSizeAll;
   end;
 end;
 
@@ -277,6 +278,8 @@ begin
 }
   if FDownPos = PointF(X, Y) then
     BlankClick;
+
+//  Self.Cursor := crDefault;
 end;
 
 procedure TThContainer.BlankClick;

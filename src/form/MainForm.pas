@@ -106,6 +106,8 @@ procedure TForm1.Button7Click(Sender: TObject);
 begin
   MV := StrToFloatDef(Edit3.Text, 0.0);
   FThCanvas.Repaint;
+
+  Panel2.Cursor := crDefault;
 end;
 
 end.

@@ -37,7 +37,9 @@ type
     FGripSize: Single;
     FOnTrack: TNotifyEvent;
     FOnChange: TNotifyEvent;
+    procedure SetCursor;
     procedure SetGripSize(const Value: Single);
+    procedure SetSelectionPosition(const Value: TSelectionPosition);
   protected
     procedure Paint; override;
 
@@ -66,7 +68,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
 
-    property SelectionPosition: TSelectionPosition read FSelectionPosition write FSelectionPosition;
+    property SelectionPosition: TSelectionPosition read FSelectionPosition write SetSelectionPosition;
   end;
 
   TThShape = class(TControl, IThShape)
@@ -283,6 +285,7 @@ end;
 procedure TThSelectionPoint.DoMouseEnter;
 begin
   inherited;
+
   Repaint;
 end;
 
@@ -302,6 +305,8 @@ procedure TThSelectionPoint.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
 begin
   inherited;
+
+//  Cursor := crCross;
 end;
 
 procedure TThSelectionPoint.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -376,6 +381,16 @@ begin
     Result := True;
 end;
 
+procedure TThSelectionPoint.SetCursor;
+begin
+  case FSelectionPosition of
+    spTopLeft, spBottomRight: Cursor := crSizeNWSE;
+    spTopRight, spBottomLeft: Cursor := crSizeNESW;
+    spTop, spBottom: Cursor := crSizeWE;
+    spLeft, spRight: Cursor := crSizeNS;
+  end;
+end;
+
 procedure TThSelectionPoint.SetGripSize(const Value: Single);
 begin
   if FGripSize <> Value then
@@ -394,6 +409,14 @@ end;
 procedure TThSelectionPoint.SetHeight(const Value: Single);
 begin
   inherited SetHeight(FGripSize * 2);
+end;
+
+procedure TThSelectionPoint.SetSelectionPosition(
+  const Value: TSelectionPosition);
+begin
+  FSelectionPosition := Value;
+
+  SetCursor;
 end;
 
 procedure TThSelectionPoint.SetWidth(const Value: Single);
@@ -416,7 +439,8 @@ begin
   FHighlight  := False;
   FGripSize   := __GRIP_SIZE;
   FShadowSize := __SHADOW_SIZE;
-  FShadowColor  := claGray;
+  FShadowColor  := $DDAAAAAA;
+//  FShadowColor  := claRed;
   Opacity := 0.8;
 
   FSelectionPoints := TList.Create;
