@@ -130,6 +130,7 @@ end;
 procedure TForm1.Button9Click(Sender: TObject);
 begin
   FThCanvas.Test(StrToFloatDef(Edit1.Text, 0.0));
+  FThCanvas.Repaint;
 end;
 
 end.

@@ -12,7 +12,7 @@
 			<Projects Include="samples\Elements\ThShapes\ThothShapeSample.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="samples\Elements\ThControlPanel\Project1.dproj">
+			<Projects Include="samples\Elements\ThControlPanel\ThControlPanel.dproj">
 				<Dependencies/>
 			</Projects>
 		</ItemGroup>
@@ -50,23 +50,23 @@
 		<Target Name="ThothShapeSample:Make">
 			<MSBuild Projects="samples\Elements\ThShapes\ThothShapeSample.dproj" Targets="Make"/>
 		</Target>
-		<Target Name="Project1">
-			<MSBuild Projects="samples\Elements\ThControlPanel\Project1.dproj"/>
+		<Target Name="ThControlPanel">
+			<MSBuild Projects="samples\Elements\ThControlPanel\ThControlPanel.dproj"/>
 		</Target>
-		<Target Name="Project1:Clean">
-			<MSBuild Projects="samples\Elements\ThControlPanel\Project1.dproj" Targets="Clean"/>
+		<Target Name="ThControlPanel:Clean">
+			<MSBuild Projects="samples\Elements\ThControlPanel\ThControlPanel.dproj" Targets="Clean"/>
 		</Target>
-		<Target Name="Project1:Make">
-			<MSBuild Projects="samples\Elements\ThControlPanel\Project1.dproj" Targets="Make"/>
+		<Target Name="ThControlPanel:Make">
+			<MSBuild Projects="samples\Elements\ThControlPanel\ThControlPanel.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="ThothCanvas;ThCanvasSample;ThothShapeSample;Project1"/>
+			<CallTarget Targets="ThothCanvas;ThCanvasSample;ThothShapeSample;ThControlPanel"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="ThothCanvas:Clean;ThCanvasSample:Clean;ThothShapeSample:Clean;Project1:Clean"/>
+			<CallTarget Targets="ThothCanvas:Clean;ThCanvasSample:Clean;ThothShapeSample:Clean;ThControlPanel:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="ThothCanvas:Make;ThCanvasSample:Make;ThothShapeSample:Make;Project1:Make"/>
+			<CallTarget Targets="ThothCanvas:Make;ThCanvasSample:Make;ThothShapeSample:Make;ThControlPanel:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>
