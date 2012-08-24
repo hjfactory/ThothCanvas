@@ -1,0 +1,116 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 400
+  ClientWidth = 600
+  Visible = False
+  OnCreate = FormCreate
+  StyleLookup = 'backgroundstyle'
+  object Memo1: TMemo
+    Position.Point = '(424,232)'
+    Width = 169.000000000000000000
+    Height = 161.000000000000000000
+    TabOrder = 1
+    KeyboardType = vktDefault
+  end
+  object Image1: TImage
+    Position.Point = '(8,8)'
+    Width = 409.000000000000000000
+    Height = 385.000000000000000000
+  end
+  object Edit1: TEdit
+    Position.Point = '(464,16)'
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 3
+    KeyboardType = vktDefault
+    Password = False
+    Text = '100'
+  end
+  object Edit2: TEdit
+    Position.Point = '(504,16)'
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 4
+    KeyboardType = vktDefault
+    Password = False
+    Text = '100'
+  end
+  object Label1: TLabel
+    Position.Point = '(424,19)'
+    Width = 33.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 5
+    Text = 'X, Y'
+  end
+  object Button1: TButton
+    Position.Point = '(544,40)'
+    Width = 56.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button1Click
+    TabOrder = 6
+    Text = 'draw'
+  end
+  object edtH: TEdit
+    Position.Point = '(504,40)'
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 7
+    KeyboardType = vktDefault
+    Password = False
+    Text = '50'
+  end
+  object edtW: TEdit
+    Position.Point = '(464,40)'
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 8
+    KeyboardType = vktDefault
+    Password = False
+    Text = '100'
+  end
+  object Label2: TLabel
+    Position.Point = '(424,43)'
+    Width = 33.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 9
+    Text = 'W, H'
+  end
+  object Edit5: TEdit
+    Position.Point = '(464,64)'
+    Width = 73.000000000000000000
+    Height = 22.000000000000000000
+    TabOrder = 10
+    KeyboardType = vktDefault
+    Password = False
+    Text = '45'
+  end
+  object Label3: TLabel
+    Position.Point = '(424,68)'
+    Width = 41.000000000000000000
+    Height = 15.000000000000000000
+    TabOrder = 11
+    Text = 'Degree'
+  end
+  object Button2: TButton
+    Position.Point = '(464,88)'
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+    OnClick = Button2Click
+    TabOrder = 12
+    Text = 'Calc'
+  end
+  object ScrollBox1: TScrollBox
+    Position.Point = '(424,128)'
+    Width = 169.000000000000000000
+    Height = 97.000000000000000000
+    TabOrder = 13
+    object Rectangle1: TRectangle
+      Position.Point = '(-8,32)'
+      RotationAngle = 45.000000000000000000
+      Width = 97.000000000000000000
+      Height = 89.000000000000000000
+    end
+  end
+end
