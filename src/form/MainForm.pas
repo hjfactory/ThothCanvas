@@ -28,6 +28,7 @@ type
     Button8: TButton;
     Button9: TButton;
     Edit1: TEdit;
+    Edit4: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -129,7 +130,8 @@ end;
 
 procedure TForm1.Button9Click(Sender: TObject);
 begin
-  FThCanvas.Test(StrToFloatDef(Edit1.Text, 0.0));
+  FThCanvas.Test(StrToFloatDef(Edit1.Text, 0.0), StrToFloatDef(Edit4.Text, 0.0));
+  FThCanvas.Repaint;
 end;
 
 end.

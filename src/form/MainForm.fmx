@@ -92,15 +92,15 @@ object Form1: TForm1
       Height = 22.000000000000000000
       OnClick = Button6Click
       TabOrder = 9
-      Text = 'Button6'
+      Text = '45'
     end
     object Button8: TButton
       Position.Point = '(600,16)'
       Width = 41.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button8Click
-      TabOrder = 11
-      Text = 'Button6'
+      TabOrder = 10
+      Text = '-45'
     end
   end
   object pnlMenu: TPanel
@@ -129,14 +129,22 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button9Click
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Button9'
     end
     object Edit1: TEdit
-      Position.Point = '(736,48)'
-      Width = 100.000000000000000000
+      Position.Point = '(728,48)'
+      Width = 52.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 2
+      TabOrder = 1
+      KeyboardType = vktDefault
+      Password = False
+    end
+    object Edit4: TEdit
+      Position.Point = '(784,48)'
+      Width = 52.000000000000000000
+      Height = 22.000000000000000000
+      TabOrder = 3
       KeyboardType = vktDefault
       Password = False
     end
@@ -153,7 +161,7 @@ object Form1: TForm1
     Width = 80.000000000000000000
     Height = 22.000000000000000000
     OnClick = Button7Click
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Button7'
   end
 end

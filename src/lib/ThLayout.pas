@@ -13,12 +13,15 @@ type
     FTrackingPos: TPointF;
 
   protected
+    procedure Paint; override;
+
     function GetClipRect: TRectF; override;
     procedure PaintChildren; override;
 
     procedure AddTrackingPos(const Value: TPointF);
   public
     test: Single;
+    test2: Single;
   end;
 
   TThContainer = class(TStyledControl)
@@ -56,7 +59,7 @@ type
     function ZoomIn: Single;
     function ZoomOut: Single;
 
-    procedure Test(Value: Single);
+    procedure Test(A, B: Single);
   end;
 
 var
@@ -77,6 +80,14 @@ begin
 
 //  Debug('%f %f %f %f', [Result.Left, Result.Top, Result.Right, Result.Bottom]);
 //  Debug('UpdateRect %f %f %f %f', [UpdateRect.Left, UpdateRect.Top, UpdateRect.Right, UpdateRect.Bottom]);
+end;
+
+procedure TThContent.Paint;
+begin
+  inherited;
+
+  Canvas.Fill.Color := claGreen;
+  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 end;
 
 procedure TThContent.PaintChildren;
@@ -132,6 +143,7 @@ begin
                 M := Self.AbsoluteMatrix;
                 R := Self.ClipRect;
 
+                Debug('%f, (%f, %f)', [Self.RotationAngle, M.m31, M.m32]);
 //                Debug('@ m31 %f m32 %f Pos %f %f R (%f, %f = %f)', [M.m31, M.m32, Position.X, Position.Y, R.Left, R.Right, R.Right - R.Left]);
                 ////////////////////////////////////////////////////////////////
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
@@ -139,16 +151,26 @@ begin
                 //  - R.Right : 우측 보정
                 CanvasAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
 
-                // m31 := Paernt의 절대 좌표 + Content 이동거리
-                M.m31 := CanvasAbsP.X;
-                M.m31 := M.m31 + Test;
-                R.Left := 0;
-                R.Right := R.Left + (Self.Width / Self.Scale.X);
+                if Self.RotationAngle = 0 then
+                begin
+                  // m31 := Paernt의 절대 좌표 + Content 이동거리
+                  M.m31 := CanvasAbsP.X;
+                  R.Left := 0;
+                  R.Right := R.Left + (Self.Width / Self.Scale.X);
 
 
-                M.m32 := CanvasAbsP.Y;
-                R.Top := 0;
-                R.Bottom := R.Top + (Self.Height / Self.Scale.X);
+                  M.m32 := CanvasAbsP.Y;
+                  R.Top := 0;
+                  R.Bottom := R.Top + (Self.Height / Self.Scale.X);
+                end
+                else
+                begin
+//                  M.m31 := M.m31 + Test;
+//                  M.m32 := M.m32 + Test2;
+                  M.m31 := M.m31;
+                  M.m32 := M.m32;
+                end;
+
 
                 Canvas.SetMatrix(M);
                 Canvas.IntersectClipRect(R);
@@ -189,6 +211,8 @@ end;
 constructor TThContainer.Create(AOwner: TComponent);
 begin
   inherited;
+
+  ClipChildren := True;
 
   FContentScale := 1;
   FMouseTracking := True;
@@ -352,9 +376,10 @@ begin
   end;
 end;
 
-procedure TThContainer.Test(Value: Single);
+procedure TThContainer.Test(A, B: Single);
 begin
-  FContent.test := VAlue;
+  FContent.test := A;
+  FContent.test2 := B;
 end;
 
 function TThContainer.ZoomIn: Single;
