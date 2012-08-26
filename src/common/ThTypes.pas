@@ -8,6 +8,7 @@ uses
   function ScaleRect(const R: TRectF; dX, dY: Single): TRectF;
 
   procedure Debug(const Value: string; const Args: array of const); overload;
+  procedure Debug(const Args: array of const); overload;
   procedure Debug(Value: string); overload;
 
 implementation
@@ -28,13 +29,25 @@ begin
 //  WriteLn('test');
 
 {$IFDEF DEBUG}
-  OutputDebugString(PChar(FormatDateTime('SS.ZZZ', Now) + ' ' + Value));
+  OutputDebugString(PChar(FormatDateTime('SS.ZZZ', Now) + '> ' + Value));
 {$ENDIF}
 end;
 
 procedure Debug(const Value: string; const Args: array of const);
 begin
   Debug(Format(Value, Args));
+end;
+
+procedure Debug(const Args: array of const);
+var
+  s: string;
+  I: Integer;
+begin
+  s := '';
+  for I := 0 to Length(Args) - 1 do
+    s := s + ' %f';
+
+  Debug(s, Args);
 end;
 
 procedure AssertProc(const Message, Filename: string;

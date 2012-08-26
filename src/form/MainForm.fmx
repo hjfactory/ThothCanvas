@@ -102,6 +102,14 @@ object Form1: TForm1
       TabOrder = 10
       Text = '-45'
     end
+    object Button10: TButton
+      Position.Point = '(136,16)'
+      Width = 33.000000000000000000
+      Height = 22.000000000000000000
+      OnClick = Button10Click
+      TabOrder = 12
+      Text = 'Button10'
+    end
   end
   object pnlMenu: TPanel
     Align = alRight
@@ -144,7 +152,7 @@ object Form1: TForm1
       Position.Point = '(784,48)'
       Width = 52.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 3
+      TabOrder = 2
       KeyboardType = vktDefault
       Password = False
     end

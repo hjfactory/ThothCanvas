@@ -11,6 +11,8 @@ type
     // OffSet - Point(Position)
   private
     FTrackingPos: TPointF;
+    FContentScale: Single;
+    procedure SetContentScale(const Value: Single);
 
   protected
     procedure Paint; override;
@@ -20,8 +22,12 @@ type
 
     procedure AddTrackingPos(const Value: TPointF);
   public
+
     test: Single;
     test2: Single;
+
+    constructor Create(AOwner: TComponent); override;
+    property ContentScale: Single read FContentScale write SetContentScale;
   end;
 
   TThContainer = class(TStyledControl)
@@ -56,10 +62,16 @@ type
     procedure Realign; override;
     procedure Center;
 
-    function ZoomIn: Single;
-    function ZoomOut: Single;
+    procedure Zoom(AScale: Single); overload;
+    procedure Zoom(AScale: Single; AZoomPos: TPointF); overload;
+    procedure ZoomIn; overload;
+    procedure ZoomIn(AZoomPos: TPointF); overload;
+    procedure ZoomOut; overload;
+    procedure ZoomOut(AZoomPos: TPointF); overload;
 
     procedure Test(A, B: Single);
+
+    property ContentScale: Single read FContentScale;
   end;
 
 var
@@ -67,7 +79,17 @@ var
 
 implementation
 
+uses
+  FMX.Platform;
+
 { TThContent }
+
+constructor TThContent.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FContentScale := 1;
+end;
 
 function TThContent.GetClipRect: TRectF;
 begin
@@ -99,7 +121,9 @@ var
 
   M: TMatrix;
 
-  CanvasAbsP: TPointF;          // Form내 Canvas 절대 좌표
+  ParentAbsP: TPointF;          // Form내 Canvas 절대 좌표
+
+  P, RotateTopP, RotateLeftP: TPointF;
 begin
   if FScene = nil then
     Exit;
@@ -143,32 +167,47 @@ begin
                 M := Self.AbsoluteMatrix;
                 R := Self.ClipRect;
 
-                Debug('%f, (%f, %f)', [Self.RotationAngle, M.m31, M.m32]);
 //                Debug('@ m31 %f m32 %f Pos %f %f R (%f, %f = %f)', [M.m31, M.m32, Position.X, Position.Y, R.Left, R.Right, R.Right - R.Left]);
                 ////////////////////////////////////////////////////////////////
                 // Tracking 하면 Container 좌우측이 표시되지 않는 부분 개선
                 //  - M.m31 : 좌측 보정(Canvas 좌표는 Container 시작점부터)
                 //  - R.Right : 우측 보정
-                CanvasAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
 
                 if Self.RotationAngle = 0 then
                 begin
+                  ParentAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
                   // m31 := Paernt의 절대 좌표 + Content 이동거리
-                  M.m31 := CanvasAbsP.X;
+                  M.m31 := ParentAbsP.X;
+                  M.m32 := ParentAbsP.Y;
+
                   R.Left := 0;
                   R.Right := R.Left + (Self.Width / Self.Scale.X);
 
-
-                  M.m32 := CanvasAbsP.Y;
                   R.Top := 0;
                   R.Bottom := R.Top + (Self.Height / Self.Scale.X);
                 end
                 else
                 begin
-//                  M.m31 := M.m31 + Test;
-//                  M.m32 := M.m32 + Test2;
-                  M.m31 := M.m31;
-                  M.m32 := M.m32;
+                  P := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
+                  RotateTopP := Self.AbsoluteToLocal(P);
+                  RotateLeftP := Self.AbsoluteToLocal(P.Add(PointF(0, TControl(Self.Parent).Height)));
+                  Self.Canvas.DrawLine(
+                    RotateTopP,
+                    Self.AbsoluteToLocal(P.Add(PointF(TControl(Self.Parent).Width, TControl(Self.Parent).Height))),
+                    1);
+
+                    // 1차완료 - 확대 시 오류 있음
+//                  R.Top := R.Top - Abs(Self.Position.Y - RotateTopP.Y)/ Self.Scale.X;
+//                  R.Bottom := R.Bottom + Abs(Self.Position.Y - RotateTopP.Y)/ Self.Scale.X;
+//                  R.Left := R.Left - Abs(Self.Position.X - RotateLeftP.X)/ Self.Scale.X;
+//                  R.Right := R.Right + Abs(Self.Position.X - RotateLeftP.X)/ Self.Scale.X;
+
+                  R.Top := R.Top -  (Abs(Self.Position.Y - RotateTopP.Y)) / Self.Scale.X;
+                  R.Bottom := (R.Bottom + Abs(Self.Position.Y - RotateTopP.Y)) / Self.Scale.X;
+                  R.Left := R.Left - (Abs(Self.Position.X - RotateLeftP.X)) / Self.Scale.X;
+                  R.Right := (R.Right + Abs(Self.Position.X - RotateLeftP.X)) / Self.Scale.X;
+
+                  Debug('T: %f, B: %f, L: %f, R: %F', [R.Top, R.Bottom, R.Left, R.Right]);
                 end;
 
 
@@ -191,6 +230,17 @@ begin
           end;
         end;
   end;
+end;
+
+procedure TThContent.SetContentScale(const Value: Single);
+begin
+  if FContentScale = Value then
+    Exit;
+
+  FContentScale := Value;
+
+  Scale.X := Value;
+  Scale.Y := Value;
 end;
 
 procedure TThContent.AddTrackingPos(const Value: TPointF);
@@ -318,13 +368,18 @@ end;
 
 procedure TThContainer.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
   var Handled: Boolean);
+var
+  P: TPointF;
 begin
   inherited;
 
+  P := Platform.GetMousePos;
+  P := ScreenToLocal(P);
+
   if WheelDelta < 0 then
-    ZoomOut
+    ZoomOut(P)
   else
-    ZoomIn
+    ZoomIn(P)
   ;
 end;
 
@@ -382,26 +437,55 @@ begin
   FContent.test2 := B;
 end;
 
-function TThContainer.ZoomIn: Single;
+procedure TThContainer.Zoom(AScale: Single; AZoomPos: TPointF);
+var
+  P: TPointF;
 begin
-  FContentScale := FContentScale * 1.1;
+  // scale 적용필요
 
-  FContent.Scale.X := FContentScale;
-  FContent.Scale.Y := FContentScale;
+  P.X := Width / AScale - Width / FContent.ContentScale;
+  P.X := P.X * (AZoomPos.X / Width);
+  P.X := P.X * AScale;
+  P.Y := Height / AScale - Height / FContent.ContentScale;
+  P.Y := P.Y * (AZoomPos.Y / Height);
+  P.Y := P.Y * AScale;
 
-  Result := FContent.Scale.X;
-  
+  FContent.ContentScale := AScale;
+
+  FContent.Position.Point := FContent.Position.Point.Add(P);
+
+  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
+
 // 기준점 으로 이동하는 기능 추가 필요(마우스가 있는 좌표가 확대/축소 후에도 마우스 위치에 있도록)
 end;
 
-function TThContainer.ZoomOut: Single;
+procedure TThContainer.ZoomIn;
+begin
+  ZoomIn(ClipRect.CenterPoint);
+end;
+
+procedure TThContainer.Zoom(AScale: Single);
+begin
+  Zoom(AScale, ClipRect.CenterPoint);
+end;
+
+procedure TThContainer.ZoomIn(AZoomPos: TPointF);
+begin
+  FContentScale := FContentScale * 1.1;
+
+  Zoom(FContentScale, AZoomPos);
+end;
+
+procedure TThContainer.ZoomOut;
+begin
+  ZoomOut(ClipRect.CenterPoint);
+end;
+
+procedure TThContainer.ZoomOut(AZoomPos: TPointF);
 begin
   FContentScale := FContentScale * 0.9;
 
-  FContent.Scale.X := FContentScale;
-  FContent.Scale.Y := FContentScale;
-
-  Result := FContent.Scale.X;
+  Zoom(FContentScale, AZoomPos);
 end;
 
 procedure TThContainer.AddObject(AObject: TFmxObject);

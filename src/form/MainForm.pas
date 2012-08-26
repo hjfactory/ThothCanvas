@@ -29,6 +29,7 @@ type
     Button9: TButton;
     Edit1: TEdit;
     Edit4: TEdit;
+    Button10: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -42,6 +43,7 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
+    procedure Button10Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -85,6 +87,19 @@ begin
   FController.Undo;
 end;
 
+procedure TForm1.Button10Click(Sender: TObject);
+var
+  Shape: TThRectangle;
+  P: TPointF;
+begin
+  Shape := TThRectangle.Create(nil);
+  Shape.Parent := FThCanvas;
+  P := FThCanvas.ClipRect.CenterPoint;
+  Shape.Position.Point := P.Add(PointF(-100, -100));
+  Shape.Width := 200;
+  Shape.Height := 200;
+end;
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   FThCanvas.CurrentShapeClass := TThRectangle;
@@ -97,12 +112,16 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
-  Edit2.Text := FloatToStr(FThCanvas.ZoomOut);
+  FThCanvas.ZoomOut;
+//  FThCanvas.Zoom(1.1);
+  Edit2.Text := FloatToStr(FThCanvas.ContentScale);
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
-  Edit2.Text := FloatToStr(FThCanvas.ZoomIn);
+  FThCanvas.ZoomIn;
+//  FThCanvas.Zoom(0.9);
+  Edit2.Text := FloatToStr(FThCanvas.ContentScale);
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
