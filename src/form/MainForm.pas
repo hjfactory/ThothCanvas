@@ -30,6 +30,8 @@ type
     Edit1: TEdit;
     Edit4: TEdit;
     Button10: TButton;
+    Edit5: TEdit;
+    Button11: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -44,6 +46,7 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure Button10Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -100,6 +103,11 @@ begin
   Shape.Height := 200;
 end;
 
+procedure TForm1.Button11Click(Sender: TObject);
+begin
+  FThCanvas.test2(StrToFloatDef(Edit5.Text, 0.0));
+end;
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   FThCanvas.CurrentShapeClass := TThRectangle;
@@ -114,14 +122,14 @@ procedure TForm1.Button3Click(Sender: TObject);
 begin
   FThCanvas.ZoomOut;
 //  FThCanvas.Zoom(1.1);
-  Edit2.Text := FloatToStr(FThCanvas.ContentScale);
+  Edit2.Text := Format('%f', [FThCanvas.ContentScale]);
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   FThCanvas.ZoomIn;
 //  FThCanvas.Zoom(0.9);
-  Edit2.Text := FloatToStr(FThCanvas.ContentScale);
+  Edit2.Text := Format('%f', [FThCanvas.ContentScale]);
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);

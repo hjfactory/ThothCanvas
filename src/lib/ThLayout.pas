@@ -44,6 +44,7 @@ type
     FCurrentPos: TPointF;
 
     procedure Paint; override;
+    procedure AfterPaint; override;
     procedure BlankClick; virtual;
   public
     constructor Create(AOwner: TComponent); override;
@@ -110,6 +111,9 @@ begin
 
   Canvas.Fill.Color := claGreen;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+
+  Canvas.DrawLine(PointF(0, Height / 2), PointF(Width, Height / 2), 1);
+  Canvas.DrawLine(PointF(Width / 2, 0), PointF(Width / 2, Height), 1);
 end;
 
 procedure TThContent.PaintChildren;
@@ -177,14 +181,21 @@ begin
                 begin
                   ParentAbsP  := TControl(Self.Parent).LocalToAbsolute(PointF(0, 0));
                   // m31 := Paernt의 절대 좌표 + Content 이동거리
-                  M.m31 := ParentAbsP.X;
-                  M.m32 := ParentAbsP.Y;
+                  M.m31 := ParentAbsP.X - test;
+                  M.m32 := ParentAbsP.Y - test2;
 
                   R.Left := 0;
                   R.Right := R.Left + (Self.Width / Self.Scale.X);
 
                   R.Top := 0;
                   R.Bottom := R.Top + (Self.Height / Self.Scale.X);
+//
+//                  Debug('(%f, %f) (%f, %f) T: %f, B: %f, L: %f, R: %F',
+//                    [
+//                      Self.Position.X, Self.Position.Y,
+//                      M.m31, M.m32,
+//                      R.Top, R.Bottom, R.Left, R.Right
+//                    ]);
                 end
                 else
                 begin
@@ -361,6 +372,17 @@ begin
 //  Self.Cursor := crDefault;
 end;
 
+procedure TThContainer.AfterPaint;
+var
+  P, EP: TPointF;
+begin
+  inherited;
+
+  P := LocalToAbsolute(PointF(0, 0));
+  Canvas.DrawLine(P.Add(PointF(0, Height / 2)), P.Add(PointF(Width, Height / 2)), 1);
+  Canvas.DrawLine(P.Add(PointF(Width / 2, 0)), P.Add(PointF(Width / 2, Height)), 1);
+end;
+
 procedure TThContainer.BlankClick;
 begin
 
@@ -437,24 +459,48 @@ begin
   FContent.test2 := B;
 end;
 
+procedure TThContainer.Zoom(AScale: Single);
+begin
+  Zoom(AScale, ClipRect.CenterPoint);
+end;
+
 procedure TThContainer.Zoom(AScale: Single; AZoomPos: TPointF);
 var
   P: TPointF;
 begin
   // scale 적용필요
 
+  // Width    500
+  // Scale    0.9 -> 0.81
+  // ZX       250
+
+  // X = 500 / 0.81 - 500 / 0.9
+  // X = 617.28 - 555.55 = 61.72
+
+  // X = X * (250/500) = 30.86
+
+  // X = X * 0.81 = 24.99
+
+
   P.X := Width / AScale - Width / FContent.ContentScale;
+  Debug('W: %f, S: %f, CS: %f, 1: %f, 2:%f r: %f', [Width, AScale, FContent.ContentScale, Width / AScale, Width / FContent.ContentScale, P.X]);
   P.X := P.X * (AZoomPos.X / Width);
-  P.X := P.X * AScale;
+  Debug('ZX: %f, W: %f, 1: %f r: %f', [AZoomPos.X, Width, (AZoomPos.X / Width), P.X]);
+//  P.X := P.X * AScale;
+
   P.Y := Height / AScale - Height / FContent.ContentScale;
   P.Y := P.Y * (AZoomPos.Y / Height);
   P.Y := P.Y * AScale;
+
+
+  Debug([Width, AScale, FContent.ContentScale, AZoomPos.X, P.X]);
+//  Debug([AZoomPos.X / Width, FContent.Width, FContent.Position.X, FContent.Width / FContent.ContentScale, FContent.Width / AScale, P.X]);
 
   FContent.ContentScale := AScale;
 
   FContent.Position.Point := FContent.Position.Point.Add(P);
 
-  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
+//  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
 
 // 기준점 으로 이동하는 기능 추가 필요(마우스가 있는 좌표가 확대/축소 후에도 마우스 위치에 있도록)
 end;
@@ -462,11 +508,6 @@ end;
 procedure TThContainer.ZoomIn;
 begin
   ZoomIn(ClipRect.CenterPoint);
-end;
-
-procedure TThContainer.Zoom(AScale: Single);
-begin
-  Zoom(AScale, ClipRect.CenterPoint);
 end;
 
 procedure TThContainer.ZoomIn(AZoomPos: TPointF);
