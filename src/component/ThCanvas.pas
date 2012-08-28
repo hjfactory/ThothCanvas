@@ -211,7 +211,7 @@ begin
 
     FDrawShape := FCurrentShapeClass.Create(nil);
     FDrawShape.Parent := Self;
-    FDrawShape.Position.Point := ScalePoint(P, 1/FContentScale, 1/FContentScale);
+    FDrawShape.Position.Point := ScalePoint(P, 1/ContentScale, 1/ContentScale);
     FDrawShape.OnMove := ShapeMove;
     FDrawShape.OnSelect := ShapeSelect;
 //    FDrawShape.OnTrack := ShapeTrack;
@@ -222,8 +222,8 @@ procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
   if Assigned(FCurrentShapeClass) and Assigned(FDrawShape) then
   begin
-    FDrawShape.Width := (X - FCurrentPos.X) / FContentScale;
-    FDrawShape.Height := (Y - FCurrentPos.Y) / FContentScale;
+    FDrawShape.Width := (X - FCurrentPos.X) / ContentScale;
+    FDrawShape.Height := (Y - FCurrentPos.Y) / ContentScale;
   end
   else
     inherited;
