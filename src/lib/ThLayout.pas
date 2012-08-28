@@ -37,9 +37,10 @@ type
     function GetContentBounds: TRectF; virtual;
     procedure RealignContent(R: TRectF); virtual;
     function GetOffsetPos: TPointF;
+    function GetContentScale: Single;
   protected
     FContent: TThContent;
-    FContentScale: Single;
+//    FContentScale: Single;
     FDownPos,
     FCurrentPos: TPointF;
 
@@ -72,7 +73,7 @@ type
 
     procedure Test(A, B: Single);
 
-    property ContentScale: Single read FContentScale;
+    property ContentScale: Single read GetContentScale;
   end;
 
 var
@@ -275,7 +276,7 @@ begin
 
   ClipChildren := True;
 
-  FContentScale := 1;
+//  FContentScale := 1;
   FMouseTracking := True;
 
   AutoCapture := True;
@@ -320,6 +321,11 @@ begin
 
     Debug('ContentBound L T :%f, %f', [R.Left, R.Top]);
   end;
+end;
+
+function TThContainer.GetContentScale: Single;
+begin
+  Result := FContent.ContentScale;
 end;
 
 function TThContainer.GetOffsetPos: TPointF;
@@ -378,7 +384,7 @@ var
 begin
   inherited;
 
-  P := LocalToAbsolute(PointF(0, 0));
+//  P := LocalToAbsolute(PointF(0, 0));
   Canvas.DrawLine(P.Add(PointF(0, Height / 2)), P.Add(PointF(Width, Height / 2)), 1);
   Canvas.DrawLine(P.Add(PointF(Width / 2, 0)), P.Add(PointF(Width / 2, Height)), 1);
 end;
@@ -482,13 +488,18 @@ begin
   // X = X * 0.81 = 24.99
 
 
-  P.X := Width / AScale - Width / FContent.ContentScale;
-  Debug('W: %f, S: %f, CS: %f, 1: %f, 2:%f r: %f', [Width, AScale, FContent.ContentScale, Width / AScale, Width / FContent.ContentScale, P.X]);
+//  P.X := Width / AScale - Width;// / FContent.ContentScale;
+  P.X := Width * (1/AScale - 1);// / FContent.ContentScale;
+//  Debug('W: %f, S: %f, CS: %f, 1: %f, 2:%f r: %f', [Width, AScale, FContent.ContentScale, Width / AScale, Width / FContent.ContentScale, P.X]);
   P.X := P.X * (AZoomPos.X / Width);
-  Debug('ZX: %f, W: %f, 1: %f r: %f', [AZoomPos.X, Width, (AZoomPos.X / Width), P.X]);
-//  P.X := P.X * AScale;
+//  Debug('ZX: %f, W: %f, 1: %f r: %f', [AZoomPos.X, Width, (AZoomPos.X / Width), P.X]);
+  P.X := P.X * AScale;
 
-  P.Y := Height / AScale - Height / FContent.ContentScale;
+  P.Y := Height / AScale - Height;// / FContent.ContentScale;
+  // P.Y + H = H / S
+  // P.Y/H + 1 = 1/S
+  // P.Y/H = 1/s - 1
+  // P.Y = (1/s - 1) * H
   P.Y := P.Y * (AZoomPos.Y / Height);
   P.Y := P.Y * AScale;
 
@@ -498,9 +509,10 @@ begin
 
   FContent.ContentScale := AScale;
 
-  FContent.Position.Point := FContent.Position.Point.Add(P);
+//  FContent.Position.Point := FContent.Position.Point.Add(P);
+  FContent.Position.Point := P;
 
-//  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
+  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
 
 // 기준점 으로 이동하는 기능 추가 필요(마우스가 있는 좌표가 확대/축소 후에도 마우스 위치에 있도록)
 end;
@@ -512,9 +524,7 @@ end;
 
 procedure TThContainer.ZoomIn(AZoomPos: TPointF);
 begin
-  FContentScale := FContentScale * 1.1;
-
-  Zoom(FContentScale, AZoomPos);
+  Zoom(FContent.ContentScale * 1.1, AZoomPos);
 end;
 
 procedure TThContainer.ZoomOut;
@@ -524,9 +534,7 @@ end;
 
 procedure TThContainer.ZoomOut(AZoomPos: TPointF);
 begin
-  FContentScale := FContentScale * 0.9;
-
-  Zoom(FContentScale, AZoomPos);
+  Zoom(FContent.ContentScale * 0.9, AZoomPos);
 end;
 
 procedure TThContainer.AddObject(AObject: TFmxObject);
