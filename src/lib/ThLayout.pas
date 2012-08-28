@@ -71,6 +71,7 @@ type
     procedure ZoomOut(AZoomPos: TPointF); overload;
 
     procedure Test(A, B: Single);
+    procedure Test2(A: Single);
 
     property ContentScale: Single read FContentScale;
   end;
@@ -459,6 +460,11 @@ begin
   FContent.test2 := B;
 end;
 
+procedure TThContainer.Test2(A: Single);
+begin
+  FContent.Position.X := FContent.Position.X + A;
+end;
+
 procedure TThContainer.Zoom(AScale: Single);
 begin
   Zoom(AScale, ClipRect.CenterPoint);
@@ -487,18 +493,19 @@ begin
   P.X := P.X * (AZoomPos.X / Width);
   Debug('ZX: %f, W: %f, 1: %f r: %f', [AZoomPos.X, Width, (AZoomPos.X / Width), P.X]);
 //  P.X := P.X * AScale;
-
+//
   P.Y := Height / AScale - Height / FContent.ContentScale;
   P.Y := P.Y * (AZoomPos.Y / Height);
   P.Y := P.Y * AScale;
 
 
-  Debug([Width, AScale, FContent.ContentScale, AZoomPos.X, P.X]);
+  Debug([FContent.Position.X, FContent.ContentScale]);
 //  Debug([AZoomPos.X / Width, FContent.Width, FContent.Position.X, FContent.Width / FContent.ContentScale, FContent.Width / AScale, P.X]);
 
   FContent.ContentScale := AScale;
 
   FContent.Position.Point := FContent.Position.Point.Add(P);
+  Debug([FContent.Position.X, FContent.ContentScale]);
 
 //  Debug([AScale, FContent.Position.X, P.X, Width, Width / AScale, Width - Width / AScale]);
 

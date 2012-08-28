@@ -103,11 +103,6 @@ begin
   Shape.Height := 200;
 end;
 
-procedure TForm1.Button11Click(Sender: TObject);
-begin
-  FThCanvas.test2(StrToFloatDef(Edit5.Text, 0.0));
-end;
-
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   FThCanvas.CurrentShapeClass := TThRectangle;
@@ -159,6 +154,11 @@ procedure TForm1.Button9Click(Sender: TObject);
 begin
   FThCanvas.Test(StrToFloatDef(Edit1.Text, 0.0), StrToFloatDef(Edit4.Text, 0.0));
   FThCanvas.Repaint;
+end;
+
+procedure TForm1.Button11Click(Sender: TObject);
+begin
+  FThCanvas.test2(StrToFloatDef(Edit5.Text, 0.0));
 end;
 
 end.
