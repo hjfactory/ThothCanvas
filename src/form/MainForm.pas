@@ -29,9 +29,10 @@ type
     Button9: TButton;
     Edit1: TEdit;
     Edit4: TEdit;
-    Button10: TButton;
+    Rect: TButton;
     Edit5: TEdit;
     Button11: TButton;
+    Button12: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -45,8 +46,9 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
-    procedure Button10Click(Sender: TObject);
+    procedure RectClick(Sender: TObject);
     procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
   private
     { Private declarations }
     FThCanvas: TThCanvas;
@@ -90,7 +92,7 @@ begin
   FController.Undo;
 end;
 
-procedure TForm1.Button10Click(Sender: TObject);
+procedure TForm1.RectClick(Sender: TObject);
 var
   Shape: TThRectangle;
   P: TPointF;
@@ -105,7 +107,12 @@ end;
 
 procedure TForm1.Button11Click(Sender: TObject);
 begin
-  FThCanvas.test2(StrToFloatDef(Edit5.Text, 0.0));
+//  FThCanvas.test2(StrToFloatDef(Edit5.Text, 0.0));
+end;
+
+procedure TForm1.Button12Click(Sender: TObject);
+begin
+  FThCanvas.Zoom(StrToFloatDef(Edit2.Text, 0.0));
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
