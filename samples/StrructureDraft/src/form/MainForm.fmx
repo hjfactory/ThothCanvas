@@ -30,7 +30,7 @@ object Form1: TForm1
       Text = 'Line'
     end
     object Button3: TButton
-      Position.Point = '(280,16)'
+      Position.Point = '(256,16)'
       Width = 24.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button3Click
@@ -38,7 +38,7 @@ object Form1: TForm1
       Text = '-'
     end
     object Button4: TButton
-      Position.Point = '(304,16)'
+      Position.Point = '(280,16)'
       Width = 25.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button4Click
@@ -71,7 +71,7 @@ object Form1: TForm1
     end
     object Edit2: TEdit
       Position.Point = '(184,16)'
-      Width = 57.000000000000000000
+      Width = 65.000000000000000000
       Height = 22.000000000000000000
       TabOrder = 7
       KeyboardType = vktDefault
@@ -102,21 +102,13 @@ object Form1: TForm1
       TabOrder = 10
       Text = '-45'
     end
-    object Rect: TButton
+    object Button10: TButton
       Position.Point = '(136,16)'
       Width = 33.000000000000000000
       Height = 22.000000000000000000
-      OnClick = RectClick
+      OnClick = Button10Click
       TabOrder = 11
-      Text = 'Rect'
-    end
-    object Button12: TButton
-      Position.Point = '(240,16)'
-      Width = 41.000000000000000000
-      Height = 22.000000000000000000
-      OnClick = Button12Click
-      TabOrder = 13
-      Text = 'Zoom'
+      Text = 'Button10'
     end
   end
   object pnlMenu: TPanel
@@ -168,7 +160,7 @@ object Form1: TForm1
       Position.Point = '(528,24)'
       Width = 65.000000000000000000
       Height = 22.000000000000000000
-      TabOrder = 3
+      TabOrder = 4
       KeyboardType = vktDefault
       Password = False
     end
@@ -177,7 +169,7 @@ object Form1: TForm1
       Width = 80.000000000000000000
       Height = 22.000000000000000000
       OnClick = Button11Click
-      TabOrder = 4
+      TabOrder = 5
       Text = 'Button11'
     end
   end
