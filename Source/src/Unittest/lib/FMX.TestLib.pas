@@ -1,15 +1,30 @@
-unit FMX.TestLib.Mouse;
+unit FMX.TestLib;
 
 interface
 
 uses
   System.Types, System.UITypes, FMX.Types, FMX.Forms, FMX.Platform.Win;
 
+type
+  TTestLib = class
+
+  end;
+
 procedure MouseDown(const P: TPointF);
 procedure MouseUp(const P: TPointF);
 procedure MouseClick(const P: TPointF);
 
+function TestLib: TTestLib;
+
 implementation
+
+uses
+  FMX.Platform;
+
+function TestLib: TTestLib;
+begin
+
+end;
 
 function GetObjInPoint(const P: TPointF): IControl;
 begin

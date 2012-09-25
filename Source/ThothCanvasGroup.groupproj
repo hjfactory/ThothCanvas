@@ -6,7 +6,7 @@
 			<Projects Include="src\ThothCanvas.dproj">
 				<Dependencies/>
 			</Projects>
-			<Projects Include="src\Unittest\ThItem\Tests_ThItem.dproj">
+			<Projects Include="src\Unittest\ThShape\Tests_ThShape.dproj">
 				<Dependencies/>
 			</Projects>
 		</ItemGroup>
@@ -26,23 +26,23 @@
 		<Target Name="ThothCanvas:Make">
 			<MSBuild Projects="src\ThothCanvas.dproj" Targets="Make"/>
 		</Target>
-		<Target Name="Tests_ThItem">
-			<MSBuild Projects="src\Unittest\ThItem\Tests_ThItem.dproj"/>
+		<Target Name="Tests_ThShape">
+			<MSBuild Projects="src\Unittest\ThShape\Tests_ThShape.dproj"/>
 		</Target>
-		<Target Name="Tests_ThItem:Clean">
-			<MSBuild Projects="src\Unittest\ThItem\Tests_ThItem.dproj" Targets="Clean"/>
+		<Target Name="Tests_ThShape:Clean">
+			<MSBuild Projects="src\Unittest\ThShape\Tests_ThShape.dproj" Targets="Clean"/>
 		</Target>
-		<Target Name="Tests_ThItem:Make">
-			<MSBuild Projects="src\Unittest\ThItem\Tests_ThItem.dproj" Targets="Make"/>
+		<Target Name="Tests_ThShape:Make">
+			<MSBuild Projects="src\Unittest\ThShape\Tests_ThShape.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="ThothCanvas;Tests_ThItem"/>
+			<CallTarget Targets="ThothCanvas;Tests_ThShape"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="ThothCanvas:Clean;Tests_ThItem:Clean"/>
+			<CallTarget Targets="ThothCanvas:Clean;Tests_ThShape:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="ThothCanvas:Make;Tests_ThItem:Make"/>
+			<CallTarget Targets="ThothCanvas:Make;Tests_ThShape:Make"/>
 		</Target>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>

@@ -144,7 +144,7 @@
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 				<UnitTesting>
-					<TestProjectName>E:\hjFactory\ThothCanvas\Source\src\Unittest\ThItem\Tests_ThItem.dproj</TestProjectName>
+					<TestProjectName>E:\hjFactory\ThothCanvas\Source\src\Unittest\ThShape\Tests_ThShape.dproj</TestProjectName>
 				</UnitTesting>
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>

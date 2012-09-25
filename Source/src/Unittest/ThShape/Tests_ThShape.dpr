@@ -1,4 +1,4 @@
-program Tests_ThItem;
+program Tests_ThShape;
 {
 
   Delphi DUnit Test Project
@@ -19,11 +19,10 @@ uses
   TestFramework,
   GUITestRunner,
   TextTestRunner,
-  ThItem in '..\..\Libraries\ThItem.pas',
-  TestThItem in '..\TestThItem.pas',
-  FMX.TestLib.Mouse in '..\lib\FMX.TestLib.Mouse.pas';
+  FMX.TestLib in '..\lib\FMX.TestLib.pas',
+  ThShape in '..\..\Libraries\ThShape.pas';
 
-{$R *.RES}
+{R *.RES}
 
 begin
   Application.Initialize;
