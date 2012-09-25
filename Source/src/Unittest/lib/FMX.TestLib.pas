@@ -23,7 +23,11 @@ uses
 
 function TestLib: TTestLib;
 begin
+{$IFDEF MACOS}
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
+{$ENDIF}
 end;
 
 function GetObjInPoint(const P: TPointF): IControl;

@@ -20,7 +20,9 @@ uses
   GUITestRunner,
   TextTestRunner,
   FMX.TestLib in '..\lib\FMX.TestLib.pas',
-  ThShape in '..\..\Libraries\ThShape.pas';
+  ThShape in '..\..\Libraries\ThShape.pas',
+  FMX.TestLib.Win in '..\lib\FMX.TestLib.Win.pas',
+  FMX.TestLib.Mac in '..\lib\FMX.TestLib.Mac.pas';
 
 {R *.RES}
 
