@@ -15,14 +15,15 @@ program Tests_ThShape;
 {$ENDIF}
 
 uses
-  Forms,
+  FMX.Forms,
   TestFramework,
   GUITestRunner,
   TextTestRunner,
   FMX.TestLib in '..\lib\FMX.TestLib.pas',
-  ThShape in '..\..\Libraries\ThShape.pas',
   FMX.TestLib.Win in '..\lib\FMX.TestLib.Win.pas',
-  FMX.TestLib.Mac in '..\lib\FMX.TestLib.Mac.pas';
+  FMX.TestLib.Mac in '..\lib\FMX.TestLib.Mac.pas',
+  ThShape in '..\..\Libraries\ThShape.pas',
+  TestThLine in '..\TestThLine.pas';
 
 {R *.RES}
 

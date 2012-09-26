@@ -1,4 +1,4 @@
-unit TestThShape;
+unit TestThLine;
 {
 
   Delphi DUnit Test Case
@@ -12,32 +12,30 @@ unit TestThShape;
 interface
 
 uses
-  TestFramework, ThShape, FMX.Types;
+  TestFramework, ThShape, FMX.Types, FMX.Forms;
 
 type
   // Test methods for class TThLine
 
   TestTThLine = class(TTestCase)
   strict private
+    FForm: TForm;
     FThLine: TThLine;
   public
     procedure SetUp; override;
     procedure TearDown; override;
-  end;
-  // Test methods for class TThRectangle
-
-  TestTThRectangle = class(TTestCase)
-  strict private
-    FThRectangle: TThRectangle;
-  public
-    procedure SetUp; override;
-    procedure TearDown; override;
+  published
+    procedure TestAdd;
   end;
 
 implementation
 
 procedure TestTThLine.SetUp;
 begin
+  FForm := TForm.Create(nil);
+  FForm.Width := 600;
+  FForm.Height := 600;
+
   FThLine := TThLine.Create(nil);
 end;
 
@@ -45,22 +43,17 @@ procedure TestTThLine.TearDown;
 begin
   FThLine.Free;
   FThLine := nil;
+
+  FForm.Free;
 end;
 
-procedure TestTThRectangle.SetUp;
+procedure TestTThLine.TestAdd;
 begin
-  FThRectangle := TThRectangle.Create(nil);
-end;
 
-procedure TestTThRectangle.TearDown;
-begin
-  FThRectangle.Free;
-  FThRectangle := nil;
 end;
 
 initialization
   // Register any test cases with the test runner
   RegisterTest(TestTThLine.Suite);
-  RegisterTest(TestTThRectangle.Suite);
 end.
 

@@ -2,7 +2,9 @@ program ThothCanvas;
 
 uses
   FMX.Forms,
-  MainForm in 'Forms\MainForm.pas' {Form1};
+  MainForm in 'Forms\MainForm.pas' {Form1},
+  ThItem in 'Libraries\ThItem.pas',
+  ThShape in 'Libraries\ThShape.pas';
 
 {$R *.res}
 
