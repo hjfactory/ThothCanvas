@@ -11,3 +11,4 @@ __history
 *.elf
 bin/*
 win32/*
+*.plist
