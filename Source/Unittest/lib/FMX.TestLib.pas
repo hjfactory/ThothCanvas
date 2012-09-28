@@ -11,9 +11,9 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
-    procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); virtual; abstract;
-    procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); virtual; abstract;
-    procedure KeyUp(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); virtual; abstract;
+    procedure MouseWheel(WheelDelta: Integer); virtual; abstract;
+    procedure KeyDown(var Key: Word; var KeyChar: WideChar); virtual; abstract;
+    procedure KeyUp(var Key: Word; var KeyChar: WideChar); virtual; abstract;
   end;
 
   TTestLibClass = class of TTestLib;

@@ -4,7 +4,9 @@ uses
   FMX.Forms,
   MainForm in 'Forms\MainForm.pas' {Form1},
   ThItem in 'Libraries\ThItem.pas',
-  ThShape in 'Libraries\ThShape.pas';
+  ThShape in 'Libraries\ThShape.pas',
+  ThCanvasEditor in 'Components\ThCanvasEditor.pas',
+  ThContainer in 'Libraries\ThContainer.pas';
 
 {$R *.res}
 

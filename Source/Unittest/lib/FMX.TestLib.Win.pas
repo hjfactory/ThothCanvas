@@ -21,13 +21,17 @@ uses
 
 type
   TTestLibWin = class(TTestLib)
+  private
+    procedure LMouseDown(X, Y: Single);
+    procedure LMouseMove(X, Y: Single);
+    procedure LMouseUp(X, Y: Single);
   public
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-    procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
-    procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
-    procedure KeyUp(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
+    procedure MouseWheel(WheelDelta: Integer); override;
+    procedure KeyDown(var Key: Word; var KeyChar: WideChar); override;
+    procedure KeyUp(var Key: Word; var KeyChar: WideChar); override;
   end;
 
 function GetTestLibClass: TTestLibClass;
@@ -36,7 +40,7 @@ begin
 end;
 
 { TTestLibWin }
-
+{
 procedure TTestLibWin.KeyDown(var Key: Word; var KeyChar: WideChar;
   Shift: TShiftState);
 begin
@@ -87,6 +91,78 @@ end;
 procedure TTestLibWin.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
   var Handled: Boolean);
 begin
+
+end;
+}
+{ TTestLibWin }
+
+procedure TTestLibWin.LMouseDown(X, Y: Single);
+begin
+  SetCursorPos(Round(X), Round(Y));
+  mouse_event(MOUSEEVENTF_LEFTDOWN, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.LMouseUp(X, Y: Single);
+begin
+  SetCursorPos(Round(X), Round(Y));
+  mouse_event(MOUSEEVENTF_LEFTDOWN, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.LMouseMove(X, Y: Single);
+begin
+  mouse_event(MOUSEEVENTF_MOVE, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.MouseMove(Shift: TShiftState; X, Y: Single);
+begin
+  mouse_event(MOUSEEVENTF_MOVE, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+var
+  Flag: DWORD;
+begin
+  case Button of
+    TMouseButton.mbLeft: Flag := MOUSEEVENTF_LEFTDOWN;
+    TMouseButton.mbRight: Flag := MOUSEEVENTF_RIGHTDOWN;
+    TMouseButton.mbMiddle: Flag := MOUSEEVENTF_MIDDLEDOWN;
+  end;
+
+  SetCursorPos(Round(X), Round(Y));
+  mouse_event(Flag, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+var
+  Flag: DWORD;
+begin
+  case Button of
+    TMouseButton.mbLeft: Flag := MOUSEEVENTF_LEFTUP;
+    TMouseButton.mbRight: Flag := MOUSEEVENTF_RIGHTUP;
+    TMouseButton.mbMiddle: Flag := MOUSEEVENTF_MIDDLEUP;
+  end;
+
+  SetCursorPos(Round(X), Round(Y));
+  mouse_event(Flag, Round(X), Round(Y), 0, 0);
+end;
+
+procedure TTestLibWin.MouseWheel(WheelDelta: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TTestLibWin.KeyDown(var Key: Word; var KeyChar: WideChar);
+begin
+  inherited;
+
+end;
+
+procedure TTestLibWin.KeyUp(var Key: Word; var KeyChar: WideChar);
+begin
+  inherited;
 
 end;
 
