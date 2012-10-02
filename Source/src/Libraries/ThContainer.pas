@@ -12,6 +12,8 @@ type
     FTrackingPos: TPointF;
   protected
     procedure Paint; override;
+
+    function GetClipRect: TRectF; override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -60,11 +62,20 @@ begin
 
 end;
 
+function TThContent.GetClipRect: TRectF;
+begin
+  Result :=  TControl(Parent).ClipRect;
+  OffsetRect(Result, -Position.X, -Position.Y);
+
+//  Result.Right := Result.Right / Scale.X;
+//  Result.Bottom := Result.Bottom / Scale.Y;
+end;
+
 procedure TThContent.Paint;
 begin
   inherited;
 
-  Canvas.Fill.Color := claRed;
+  Canvas.Fill.Color := claWhite;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 end;
 
@@ -76,7 +87,7 @@ begin
 
 //  ClipChildren := True;
 
-//  AutoCapture := True;  // 왜 있지?
+  AutoCapture := True;  // 영역밖으로 나가도 컨트롤 되도록 처리
 
   FUseMouseTracking := True;
 

@@ -5,12 +5,13 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, ThCanvasEditor, FMX.Layouts,
-  FMX.Memo;
+  FMX.Memo, FMX.Objects;
 
 type
   TForm1 = class(TForm)
     Button1: TButton;
     Memo1: TMemo;
+    Rectangle1: TRectangle;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -34,6 +35,8 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
+var
+  Shape: TShape;
 begin
   FCanvas := TThCanvasEditor.Create(Self);
   FCanvas.Parent := Self;
