@@ -45,9 +45,10 @@ begin
 
   if FItemID <> -1 then
   begin
+    FSelectedItem := nil;
     FDrawItem := ItemFactory.Get(FItemID);
     FDrawItem.Parent := Self;
-    FDrawItem.Position.Point := PointF(X, Y);
+    FDrawItem.Position.Point := PointF(X, Y).Subtract(FContent.Position.Point);
   end;
 end;
 
