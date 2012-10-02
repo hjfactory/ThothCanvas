@@ -42,7 +42,6 @@ begin
   MousePath.Add(100, 150);
   MousePath.Add(150, 150);
   MousePath.Add(200, 200);
-
   TestLib.RunMousePath(MousePath.Path);
 
   Check(

@@ -21,8 +21,6 @@ uses
   ThCanvasEditor in '..\src\Components\ThCanvasEditor.pas',
   UnitTestForm in 'lib\UnitTestForm.pas' {frmUnitTest},
   FMX.TestLib in 'lib\FMX.TestLib.pas',
-  FMX.TestLib.Mac in 'lib\FMX.TestLib.Mac.pas',
-  FMX.TestLib.Win in 'lib\FMX.TestLib.Win.pas',
   ThItem in '..\src\Libraries\ThItem.pas',
   ThShape in '..\src\Libraries\ThShape.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',

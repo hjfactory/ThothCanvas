@@ -12,6 +12,7 @@ type
     FTrackingPos: TPointF;
   protected
     function GetClipRect: TRectF; override;
+//    procedure PaintChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -24,6 +25,8 @@ type
     FUseMouseTracking: Boolean;
 
     function GetContentPos: TPosition;
+    function GetContentBounds: TRectF; virtual;
+    procedure RealignContent(R: TRectF); virtual;
   protected
     FDownPos,
     FCurrentPos: TPointF;
@@ -41,6 +44,7 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
     property ContentPos: TPosition read GetContentPos;
+    procedure DoRealign; override;
   end;
 
 implementation
@@ -59,6 +63,7 @@ constructor TThContent.Create(AOwner: TComponent);
 begin
   inherited;
 
+//  ClipChildren := False;
 end;
 
 function TThContent.GetClipRect: TRectF;
@@ -70,14 +75,25 @@ begin
 //  Result.Bottom := Result.Bottom / Scale.Y;
 end;
 
+//procedure TThContent.PaintChildren;
+//var
+//  I, j: Integer;
+//  R: TRectF;
+//  AllowPaint: Boolean;
+//  Control: TControl;
+//begin
+//  ClipChildren := True;
+//  inherited PaintChildren;
+//  ClipChildren := False;
+//end;
+
 { TThContainer }
 
 constructor TThContainer.Create(AOwner: TComponent);
 begin
   inherited;
 
-//  ClipChildren := True;
-
+  ClipChildren := True; // 컨트롤이 영역밖에 표시되지 않도록 처리
   AutoCapture := True;  // 영역밖으로 나가도 컨트롤 되도록 처리
 
   FUseMouseTracking := True;
@@ -143,6 +159,68 @@ begin
 
   Canvas.Fill.Color := claGray;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+end;
+
+procedure TThContainer.DoRealign;
+  procedure IntAlign;
+  var
+    R: TRectF;
+  begin
+    R := GetContentBounds;
+    OffsetRect(R, FContent.Position.X, FContent.Position.Y);
+
+    RealignContent(R);
+  end;
+begin
+//Exit;
+
+  if csDestroying in ComponentState then
+    Exit;
+
+  if csLoading in ComponentState then
+    Exit;
+
+  if FDisableAlign then
+    Exit;
+  if FUpdating > 0 then
+    Exit;
+  IntAlign;
+end;
+
+procedure TThContainer.RealignContent(R: TRectF);
+begin
+  if (FContent <> nil) then
+  begin
+    FContent.SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
+    FContent.FRecalcUpdateRect := True; // need to recalc
+  end;
+end;
+
+function TThContainer.GetContentBounds: TRectF;
+var
+  I: Integer;
+  R, LocalR: TRectF;
+  C: TControl;
+begin
+  Result := RectF(0, 0, Width, Height);
+  if (FContent <> nil) then
+  begin
+    R := ClipRect;
+    for I := 0 to FContent.ChildrenCount - 1 do
+      if FContent.Children[I] is TControl then
+        if (TControl(FContent.Children[I]).Visible) then
+        begin
+          if (csDesigning in ComponentState) and not (csDesigning in FContent.Children[I].ComponentState) then Continue;
+          // Scale등의 크기와 관련된 항목 처리
+//          LocalR := TControl(FContent.Children[I]).ParentedRect;
+          C := TControl(FContent.Children[I]);
+          LocalR := RectF(0, 0, C.Width * C.Scale.X, C.Height * C.Scale.Y);
+          R := UnionRect(R, LocalR);
+        end;
+    Result := R;
+
+//    Debug('ContentBound L T :%f, %f', [R.Left, R.Top]);
+  end;
 end;
 
 function TThContainer.GetContentPos: TPosition;

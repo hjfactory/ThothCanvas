@@ -8,13 +8,6 @@ uses
 
 type
   TThShape = class(TThItem)
-  private
-    FSelected: Boolean;
-
-    FOnSelect: TNotifyEvent;
-    FOnTrack: TNotifyEvent;
-
-    procedure SetSelected(const Value: Boolean);
   strict private
     procedure Paint; override;
   protected
@@ -28,11 +21,6 @@ type
     function PtInShape(APt: TPointF): Boolean; virtual;
   public
     constructor Create(AOwner: TComponent); override;
-
-    property Selected: Boolean read FSelected write SetSelected;
-
-    property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
-    property OnSelect: TNotifyEvent read FOnSelect write FOnSelect;
   end;
 
   TThLineShape = class(TThShape)
@@ -68,8 +56,6 @@ begin
 
   FWidth := 0;
   FHeight := 0;
-
-  FSelected   := False;
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -82,6 +68,8 @@ procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
+  if (Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))) then
+    Selected := True;
 end;
 
 procedure TThShape.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -107,26 +95,6 @@ begin
   Result := PtInRect(GetShapeRect, APt);
 end;
 
-procedure TThShape.SetSelected(const Value: Boolean);
-begin
-  if FSelected = Value then
-    Exit;
-
-  FSelected := Value;
-
-  if FSelected then
-  begin
-//    ShowSelection;
-    if Assigned(FOnSelect) then
-      FOnSelect(Self);
-  end
-  else
-//    HideSelection;
-  ;
-
-  Repaint;
-end;
-
 { TThLineShape }
 
 constructor TThLineShape.Create(AOwner: TComponent);
@@ -142,6 +110,9 @@ var
   R: TRectF;
 begin
   R := GetShapeRect;
+
+  Canvas.Stroke.Color := claNull;
+  Canvas.Fill.Color := claGreen;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;

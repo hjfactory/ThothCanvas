@@ -5,8 +5,8 @@
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <TargetedPlatforms>1</TargetedPlatforms>
+        <Platform Condition="'$(Platform)'==''">OSX32</Platform>
+        <TargetedPlatforms>5</TargetedPlatforms>
         <AppType>Console</AppType>
         <MainSource>ThothCanvasTests.dpr</MainSource>
     </PropertyGroup>
@@ -33,6 +33,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='OSX32' and '$(Cfg_1)'=='true') or '$(Cfg_1_OSX32)'!=''">
+        <Cfg_1_OSX32>true</Cfg_1_OSX32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
         <Cfg_1_Win32>true</Cfg_1_Win32>
         <CfgParent>Cfg_1</CfgParent>
@@ -45,11 +51,12 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <Manifest_File>None</Manifest_File>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_Define>_CONSOLE_TESTRUNNER;$(DCC_Define)</DCC_Define>
-        <DCC_UnitSearchPath>$(BDS)\Source\DUnit\src;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <DCC_DcuOutput>.</DCC_DcuOutput>
-        <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_UnitSearchPath>$(BDS)\Source\DUnit\src;lib;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_DcuOutput>..\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_ExeOutput>..\bin\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
@@ -57,6 +64,7 @@
         <DCC_K>false</DCC_K>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_OSX32)'!=''">
+        <VerInfo_Keys>CFBundleName=$(MSBuildProjectName);CFBundleDisplayName=$(MSBuildProjectName);CFBundleIdentifier=$(MSBuildProjectName);CFBundleVersion=1.0.0;CFBundlePackageType=APPL;CFBundleSignature=????;CFBundleAllowMixedLocalizations=YES;CFBundleExecutable=$(MSBuildProjectName);NSHighResolutionCapable=true;LSApplicationCategoryType=public.app-category.utilities</VerInfo_Keys>
         <DCC_UsePackage>bindcompfmx;fmx;rtl;dbrtl;DbxClientDriver;IndySystem;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;xmlrtl;DbxCommonDriver;IndyProtocols;dbxcds;DBXMySQLDriver;bindengine;soaprtl;bindcompdbx;CustomIPTransport;dsnap;IndyIPServer;fmxase;IndyCore;IndyIPCommon;inet;fmxobj;inetdbxpress;fmxdae;dbexpress;IndyIPClient;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -75,6 +83,12 @@
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_OSX32)'!=''">
+        <Manifest_File>None</Manifest_File>
+        <Debugger_Launcher>/usr/X11/bin/xterm -e &quot;%debuggee%&quot;</Debugger_Launcher>
+        <DCC_DcuOutput>..\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_ExeOutput>..\bin\$(Platform)\$(Config)</DCC_ExeOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
@@ -96,8 +110,6 @@
             <Form>frmUnitTest</Form>
         </DCCReference>
         <DCCReference Include="lib\FMX.TestLib.pas"/>
-        <DCCReference Include="lib\FMX.TestLib.Mac.pas"/>
-        <DCCReference Include="lib\FMX.TestLib.Win.pas"/>
         <DCCReference Include="..\src\Libraries\ThItem.pas"/>
         <DCCReference Include="..\src\Libraries\ThShape.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
@@ -158,10 +170,14 @@
                 <Source>
                     <Source Name="MainSource">ThothCanvasTests.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Deployment/>
             <Platforms>
-                <Platform value="OSX32">False</Platform>
+                <Platform value="OSX32">True</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
             </Platforms>

@@ -12,6 +12,8 @@ type
     FDrawItem: TThItem;
     FItemID: Integer;
     FSelecteditem: TThItem;
+
+    procedure SelectItem(Sender: TObject);
   public
     constructor Create(AOwner: TComponent);
 
@@ -21,7 +23,7 @@ type
 
     property ItemID: Integer read FItemID write FItemID;
 
-    property SelectedItem: TThItem read FSelecteditem;
+    property SelectedItem: TThItem read FSelectedItem;
   end;
 
 implementation
@@ -49,6 +51,7 @@ begin
     FDrawItem := ItemFactory.Get(FItemID);
     FDrawItem.Parent := Self;
     FDrawItem.Position.Point := PointF(X, Y).Subtract(FContent.Position.Point);
+    FDrawItem.OnSelected := SelectItem;
   end;
 end;
 
@@ -68,10 +71,15 @@ procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-//  FDrawItem := nil;
-  FItemID := -1;
+//  FSelectedItem := FDrawItem;
 
-  FSelectedItem := FDrawItem;
+  FDrawItem := nil;
+  FItemID := -1;
+end;
+
+procedure TThCanvasEditor.SelectItem(Sender: TObject);
+begin
+  FSelectedItem := TThItem(Sender);
 end;
 
 end.
