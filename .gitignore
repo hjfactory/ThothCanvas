@@ -12,3 +12,4 @@ __history
 bin/*
 win32/*
 *.plist
+*.vlb
