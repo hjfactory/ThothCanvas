@@ -61,6 +61,12 @@ begin
   begin
     FDrawItem.Width := X - FCurrentPos.X;
     FDrawItem.Height := Y - FCurrentPos.Y;
+
+    if FDrawItem.Width = FDrawItem.Height then
+    begin
+
+    end;
+
   end
   else
     inherited;
