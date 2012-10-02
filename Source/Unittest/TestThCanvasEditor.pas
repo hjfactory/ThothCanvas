@@ -12,29 +12,20 @@ unit TestThCanvasEditor;
 interface
 
 uses
-  TestFramework, ThContainer, ThCanvasEditor,
-  System.Types, System.Classes, System.SysUtils, System.UITypes, FMX.Forms,
-  FMX.Types;
+  TestFramework, BaseTestUnit, ThContainer, ThCanvasEditor,
+  System.Types, System.SysUtils;
 
 type
-  // Test methods for class TThCanvasEditor
-
-  TestTThCanvasEditor = class(TTestCase)
-  strict private
-    FForm: TForm;
-    FCanvas: TThCanvasEditor;
-  public
-    procedure SetUp; override;
-    procedure TearDown; override;
+  TestTThCanvasEditor = class(TBaseTestUnit)
   published
     // #50 드래그하여 캔버스를 이동할 수 있어야 한다.
-    procedure TestTracking50To200;
+    procedure TestTracking;
 
     // #44 음수영역의 좌표로도 이동가능해야 한다.
-    procedure TestTracking150To0;
+    procedure TestTrackingMinusArea;
 
     // #51 영역밖으로 드래그 시 캔버스 이동이 계속 되어야 한다.
-    procedure TestTracking50To_300;
+    procedure TestTrackingOutOfArea;
   end;
 
 implementation
@@ -42,69 +33,35 @@ implementation
 uses
   UnitTestForm, FMX.TestLib;
 
-procedure TestTThCanvasEditor.SetUp;
+procedure TestTThCanvasEditor.TestTracking;
 begin
-  FForm := TfrmUnitTest.Create(nil);
-  FForm.Width := 600;
-  FForm.Height := 600;
-  FForm.Top := 300;
-  FForm.Left := 300;
-  FForm.Show;
+  MousePath.Clear;
+  MousePath.SetInitialPoint(GetInitialPoint);
+  MousePath.Add(50, 50);
+  MousePath.Add(100, 100);
+  MousePath.Add(100, 150);
+  MousePath.Add(150, 150);
+  MousePath.Add(200, 200);
 
-  FCanvas := TThCanvasEditor.Create(FForm);
-  FCanvas.Parent := FForm;
-  FCanvas.Width := 300;
-  FCanvas.Height := 300;
-  FCanvas.Position.Point := PointF(50, 50);
-
-  Application.ProcessMessages;
-end;
-
-procedure TestTThCanvasEditor.TearDown;
-begin
-  FCanvas.Free;
-  FForm.Free;
-end;
-
-procedure TestTThCanvasEditor.TestTracking50To200;
-var
-  P: TPointF;
-  Path: array of TPointF;
-begin
-  SetLength(Path, 5);
-
-  P := IControl(FCanvas).LocalToScreen(PointF(0, 0));
-
-  Path[0] := P.Add(PointF(50, 50));
-  Path[1] := P.Add(PointF(100, 100));
-  Path[2] := P.Add(PointF(100, 150));
-  Path[3] := P.Add(PointF(150, 150));
-  Path[4] := P.Add(PointF(200, 200));
-
-  TestLib.MousePath(Path);
+  TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ContentPos.X = (Path[High(Path)].X - Path[Low(Path)].X)) and (FCanvas.ContentPos.X = (Path[High(Path)].Y - Path[Low(Path)].Y))
+    (FCanvas.ContentPos.X = 150) and (FCanvas.ContentPos.X = 150)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.X])
   );
 end;
 
-procedure TestTThCanvasEditor.TestTracking150To0;
-var
-  P: TPointF;
-  Path: array of TPointF;
+procedure TestTThCanvasEditor.TestTrackingMinusArea;
 begin
-  SetLength(Path, 5);
+  MousePath.Clear;
+  MousePath.SetInitialPoint(GetInitialPoint);
+  MousePath.Add(150, 150);
+  MousePath.Add(100, 100);
+  MousePath.Add(100, 150);
+  MousePath.Add(150, 100);
+  MousePath.Add(0, 0);
 
-  P := IControl(FCanvas).LocalToScreen(PointF(0, 0));
-
-  Path[0] := P.Add(PointF(150, 150));
-  Path[1] := P.Add(PointF(100, 100));
-  Path[2] := P.Add(PointF(100, 150));
-  Path[3] := P.Add(PointF(150, 150));
-  Path[4] := P.Add(PointF(0, 0));
-
-  TestLib.MousePath(Path);
+  TestLib.RunMousePath(MousePath.Path);
 
   Check(
     (FCanvas.ContentPos.X = -150) and (FCanvas.ContentPos.X = -150)
@@ -112,20 +69,16 @@ begin
   );
 end;
 
-procedure TestTThCanvasEditor.TestTracking50To_300;
-var
-  P: TPointF;
-  Path: array of TPointF;
+procedure TestTThCanvasEditor.TestTrackingOutOfArea;
 begin
-  SetLength(Path, 3);
+  // 50 to -200
+  MousePath.Clear;
+  MousePath.SetInitialPoint(GetInitialPoint);
+  MousePath.Add(50, 50);
+  MousePath.Add(0, 50);
+  MousePath.Add(-200, 50);
 
-  P := IControl(FCanvas).LocalToScreen(PointF(0, 0));
-
-  Path[0] := P.Add(PointF(50, 50));
-  Path[1] := P.Add(PointF(0, 50));
-  Path[2] := P.Add(PointF(-200, 50));
-
-  TestLib.MousePath(Path);
+  TestLib.RunMousePath(MousePath.Path);
 
   Check(
     (FCanvas.ContentPos.X = -250)
@@ -134,7 +87,7 @@ begin
 end;
 
 initialization
-  // Register any test cases with the test runner
   RegisterTest(TestTThCanvasEditor.Suite);
+
 end.
 

@@ -15,6 +15,8 @@ type
 
   end;
 
+  TThItemClass = class of TThItem;
+
 implementation
 
 end.

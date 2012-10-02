@@ -11,10 +11,12 @@ type
   TForm1 = class(TForm)
     Button1: TButton;
     Memo1: TMemo;
-    Rectangle1: TRectangle;
+    Panel1: TPanel;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvasEditor;
@@ -34,15 +36,18 @@ begin
   Memo1.Lines.Add(Format('%f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.Y]));
 end;
 
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  FCanvas.ItemID := 1100;
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 var
   Shape: TShape;
 begin
   FCanvas := TThCanvasEditor.Create(Self);
-  FCanvas.Parent := Self;
-  FCanvas.Position.Point := PointF(50, 50);
-  FCanvas.Width := 600;
-  FCanvas.Height := 600;
+  FCanvas.Parent := Panel1;
+  FCanvas.Align := TAlignLayout.alClient;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

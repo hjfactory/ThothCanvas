@@ -98,6 +98,11 @@
         <DCCReference Include="lib\FMX.TestLib.pas"/>
         <DCCReference Include="lib\FMX.TestLib.Mac.pas"/>
         <DCCReference Include="lib\FMX.TestLib.Win.pas"/>
+        <DCCReference Include="..\src\Libraries\ThItem.pas"/>
+        <DCCReference Include="..\src\Libraries\ThShape.pas"/>
+        <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
+        <DCCReference Include="TestThShape.pas"/>
+        <DCCReference Include="lib\BaseTestUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -164,6 +169,7 @@
                 <TestFramework>DUnit / Delphi Win32</TestFramework>
                 <TestRunner>GUI</TestRunner>
                 <SourceProjectName>E:\hjFactory\ThothCanvas\Source\src\ThothCanvas.dproj</SourceProjectName>
+                <TestProjectName/>
             </UnitTesting>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

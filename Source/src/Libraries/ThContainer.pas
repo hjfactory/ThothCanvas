@@ -11,8 +11,6 @@ type
   private
     FTrackingPos: TPointF;
   protected
-    procedure Paint; override;
-
     function GetClipRect: TRectF; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -23,16 +21,17 @@ type
   TThContainer = class(TControl)
   private
     FContentPos: TPosition;
-    FDownPos,
-    FCurrentPos: TPointF;
     FUseMouseTracking: Boolean;
 
-    procedure SetContentPos(const Value: TPosition);
     function GetContentPos: TPosition;
   protected
+    FDownPos,
+    FCurrentPos: TPointF;
     FContent: TThContent;
 
     procedure Paint; override;
+
+    procedure DoAddObject(AObject: TFmxObject); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -41,7 +40,7 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    property ContentPos: TPosition read GetContentPos write SetContentPos;
+    property ContentPos: TPosition read GetContentPos;
   end;
 
 implementation
@@ -71,14 +70,6 @@ begin
 //  Result.Bottom := Result.Bottom / Scale.Y;
 end;
 
-procedure TThContent.Paint;
-begin
-  inherited;
-
-  Canvas.Fill.Color := claWhite;
-  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
-end;
-
 { TThContainer }
 
 constructor TThContainer.Create(AOwner: TComponent);
@@ -105,12 +96,12 @@ begin
   inherited;
 end;
 
-procedure TThContainer.Paint;
+procedure TThContainer.DoAddObject(AObject: TFmxObject);
 begin
-  inherited;
-
-  Canvas.Fill.Color := claGreen;
-  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+  if Assigned(FContent) and (AObject <> FContent) then
+    FContent.AddObject(AObject)
+  else
+    inherited;
 end;
 
 procedure TThContainer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -146,14 +137,17 @@ begin
 
 end;
 
+procedure TThContainer.Paint;
+begin
+  inherited;
+
+  Canvas.Fill.Color := claGray;
+  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+end;
+
 function TThContainer.GetContentPos: TPosition;
 begin
   Result := FContent.Position;
-end;
-
-procedure TThContainer.SetContentPos(const Value: TPosition);
-begin
-  FContentPos.Assign(Value);
 end;
 
 end.
