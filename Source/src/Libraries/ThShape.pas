@@ -54,7 +54,7 @@ begin
   inherited;
 
   AutoCapture := True;
-  FOpacity := 0.8;
+//  FOpacity := 0.8;
 
   FWidth := 1;
   FHeight := 1;

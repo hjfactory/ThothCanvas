@@ -947,6 +947,7 @@ begin
   R := GetShapeRect;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+Debug(Format('R : %f %f %f %f', [R.Left, R.Top, R.Right, R.Bottom]));
 end;
 
 { TThLine }
