@@ -29,7 +29,7 @@ type
 implementation
 
 uses
-  ThItemFactory;
+  ThItemFactory, CommonUtils;
 
 { TThCanvasEditor }
 
@@ -50,7 +50,7 @@ begin
     FSelectedItem := nil;
     FDrawItem := ItemFactory.Get(FItemID);
     FDrawItem.Parent := Self;
-    FDrawItem.Position.Point := PointF(X, Y).Subtract(FContent.Position.Point);
+    FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
     FDrawItem.OnSelected := SelectItem;
   end;
 end;
@@ -61,12 +61,6 @@ begin
   begin
     FDrawItem.Width := X - FCurrentPos.X;
     FDrawItem.Height := Y - FCurrentPos.Y;
-
-    if FDrawItem.Width = FDrawItem.Height then
-    begin
-
-    end;
-
   end
   else
     inherited;
@@ -76,8 +70,6 @@ procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
-
-//  FSelectedItem := FDrawItem;
 
   FDrawItem := nil;
   FItemID := -1;

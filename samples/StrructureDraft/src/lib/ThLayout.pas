@@ -429,6 +429,7 @@ procedure TThContainer.Realign;
   begin
     R := GetContentBounds;
     OffsetRect(R, FContent.Position.X, FContent.Position.Y);
+Debug(Format('R : %f %f %f %f', [R.Left, R.Top, R.Right, R.Bottom]));
 
     RealignContent(R);
   end;

@@ -3,11 +3,18 @@ unit FMX.TestLib;
 interface
 
 uses
-  System.Types, System.UITypes, System.Classes, FMX.Types, FMX.Forms;
+  System.Types, System.UITypes, System.Classes, FMX.Types, FMX.Forms, FMX.Objects;
 
 type
+  PointFArray = array of array[0..1] of Single;
+
+
   TTestLib = class(TObject)
+  private
+    FInitialMousePoint: TPointF;
   public
+    procedure SetInitialMousePoint(Pos: TPointF);
+
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
@@ -15,7 +22,12 @@ type
     procedure KeyDown(var Key: Word; var KeyChar: WideChar); virtual; abstract;
     procedure KeyUp(var Key: Word; var KeyChar: WideChar); virtual; abstract;
 
+    procedure MouseClick(X, Y: Single);
+
     procedure RunMousePath(Path: array of TPointF);
+    procedure RunMouseArray(PathArray: PointFArray);
+
+    function GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
   end;
 
   TTestLibClass = class of TTestLib;
@@ -24,14 +36,13 @@ type
   TMousePathData = array of TPointF;
   TTestMousePath = class
   private
-    FInitialPoint: TPointF;
     FPaths: array of TPointF;
     function GetPath: TMousePathData;
   public
-    procedure SetInitialPoint(Pos: TPointF);
     procedure Clear;
-    procedure Add(const X, Y: Single); overload;
-    procedure Add(Pos: TPointF); overload;
+    function New: TTestMousePath;
+    function Add(const X, Y: Single): TTestMousePath; overload;
+    function Add(Pos: TPointF): TTestMousePath; overload;
     property Path: TMousePathData read GetPath;
   end;
 
@@ -52,21 +63,61 @@ uses
 
 { TTestLib }
 
+procedure TTestLib.SetInitialMousePoint(Pos: TPointF);
+begin
+  FInitialMousePoint := Pos;
+end;
+
+function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
+var
+  Image: TImage;
+  Map: TBitmapData;
+begin
+  Image := TImage.Create(nil);
+  try
+    Image.Bitmap.Create(Round(Control.Width), Round(Control.Height));
+    Image.Bitmap.Canvas.BeginScene;
+    Image.Bitmap.Canvas.EndScene;
+
+    Image.Bitmap.Assign(Control.MakeScreenshot);
+    Image.Bitmap.Map(TMapAccess.maRead, Map);
+
+    Result := Map.GetPixel(X, Y);
+  finally
+    Image.Free;
+  end;
+end;
+
+procedure TTestLib.MouseClick(X, Y: Single);
+begin
+  MouseDown(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
+  MouseUp(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
+  Application.ProcessMessages;
+end;
+
 procedure TTestLib.RunMousePath(Path: array of TPointF);
 var
   I: Integer;
+  Pos: TPointF;
 begin
   for I := Low(Path) to High(Path) do
   begin
+    Pos := FInitialMousePoint.Add(Path[I]);
+
     if I = Low(Path) then
-      MouseDown(TMouseButton.mbLeft, [], Path[I].X, Path[I].Y)
+      MouseDown(TMouseButton.mbLeft, [], Pos.X, Pos.Y)
     else if I = High(Path) then
-      MouseUp(TMouseButton.mbLeft, [], Path[I].X, Path[I].Y)
+      MouseUp(TMouseButton.mbLeft, [], Pos.X, Pos.Y)
     else
-      MouseMove([], Path[I].X, Path[I].Y)
+      MouseMove([], Pos.X, Pos.Y)
     ;
     Application.ProcessMessages;
   end;
+end;
+
+procedure TTestLib.RunMouseArray(PathArray: PointFArray);
+begin
+
 end;
 
 { TTestMousePath }
@@ -76,15 +127,19 @@ begin
   SetLength(FPaths, 0);
 end;
 
-procedure TTestMousePath.Add(const X, Y: Single);
+function TTestMousePath.Add(const X, Y: Single): TTestMousePath;
 begin
   Add(PointF(X, Y));
+
+  Result := Self;
 end;
 
-procedure TTestMousePath.Add(Pos: TPointF);
+function TTestMousePath.Add(Pos: TPointF): TTestMousePath;
 begin
   SetLength(Fpaths, Length(FPaths) + 1);
-  FPaths[High(FPaths)] := FInitialPoint.Add(Pos);
+  FPaths[High(FPaths)] := Pos;
+
+  Result := Self;
 end;
 
 function TTestMousePath.GetPath: TMousePathData;
@@ -92,9 +147,10 @@ begin
   Result := TMousePathData(FPaths);
 end;
 
-procedure TTestMousePath.SetInitialPoint(Pos: TPointF);
+function TTestMousePath.New: TTestMousePath;
 begin
-  FInitialPoint := Pos;
+  Clear;
+  Result := Self;
 end;
 
 initialization

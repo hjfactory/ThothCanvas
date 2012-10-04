@@ -3,7 +3,7 @@ unit ThShape;
 interface
 
 uses
-  System.Types, System.Classes, System.UITypes,
+  System.Types, System.Classes, System.UITypes, System.SysUtils,
   FMX.Types, ThItem;
 
 type
@@ -12,6 +12,7 @@ type
     procedure Paint; override;
   protected
     procedure PaintShape; virtual; abstract;
+    procedure PaintHighlight; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -44,7 +45,7 @@ type
 implementation
 
 uses
-  ThItemFactory, System.UIConsts;
+  ThItemFactory, System.UIConsts, CommonUtils;
 
 { TThShape }
 
@@ -53,9 +54,10 @@ begin
   inherited;
 
   AutoCapture := True;
+//  FOpacity := 0.8;
 
-  FWidth := 0;
-  FHeight := 0;
+  FWidth := 1;
+  FHeight := 1;
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -68,8 +70,7 @@ procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if (Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))) then
-    Selected := True;
+  SetSelected((Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))));
 end;
 
 procedure TThShape.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -86,8 +87,23 @@ begin
 end;
 
 procedure TThShape.Paint;
+var
+  S: string;
 begin
   PaintShape;
+
+{$IFDEF DEBUG}
+  S := Format('Position(%f, %f)', [Position.X, Position.Y]);
+  S := S + Format(' W, H(%f, %f)', [Width, Height]);
+  Canvas.Fill.Color := claRed;
+  Canvas.Font.Size := 10;
+  Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
+{$ENDIF}
+end;
+
+procedure TThShape.PaintHighlight;
+begin
+
 end;
 
 function TThShape.PtInShape(APt: TPointF): Boolean;
@@ -115,6 +131,7 @@ begin
   Canvas.Fill.Color := claGreen;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+//  Debug(Format('Rectangle - R : %f %f %f %f', [R.Left, R.Top, R.Right, R.Bottom]));
 end;
 
 { TThLine }

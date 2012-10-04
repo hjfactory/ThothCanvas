@@ -13,6 +13,7 @@ type
     Memo1: TMemo;
     Panel1: TPanel;
     Button2: TButton;
+    Button4: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -34,6 +35,7 @@ implementation
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Memo1.Lines.Add(Format('%f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.Y]));
+  FCanvas.Repaint;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);

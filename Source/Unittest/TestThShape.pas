@@ -12,8 +12,8 @@ unit TestThShape;
 interface
 
 uses
-  TestFramework, BaseTestUnit, ThContainer, ThCanvasEditor,
-  System.UITypes, System.Types, System.SysUtils, FMX.Controls, FMX.Forms;
+  TestFramework, BaseTestUnit,
+  System.UITypes, System.Types, System.SysUtils, FMX.Controls;
 
 type
   TestTThShape = class(TBaseTestUnit)
@@ -35,8 +35,8 @@ type
     // #53 캔버스 Tracking 시 Rectangle이 Canvas 영역 밖으로 나오지 않는다.
     procedure TestRectangleOutOfCanvas;
 
-    // #55 사각형 그리고 처음 사각형 그려진 범위 위로 캔버스 트래킹 하면 사각형이 감춰짐
-    procedure TestDisappearsUpward;
+    // #37 끝점이 시작점 앞에 있어도 그려져야 한다.
+    procedure TestDrawRactangleRightToLeft;
   end;
 
 implementation
@@ -76,17 +76,13 @@ begin
   // Draw
   FCanvas.ItemID := 1100;   // 1100 is Rectangles ID
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
+//  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(50, 50);
   MousePath.Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(100, 100);
-  MousePath.Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  TestLib.MouseClick(100, 100);
 
   Item := FCanvas.SelectedItem;
 
@@ -105,7 +101,7 @@ var
 begin
   // Tracking
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
+//  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(0, 0);
   MousePath.Add(10, 0);
   MousePath.Add(100, 50);
@@ -113,31 +109,25 @@ begin
 
   Check(FCanvas.ContentPos.X = 100);
 
-  Application.ProcessMessages;
-
   // Draw Rectangle
   FCanvas.ItemID := 1100;
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(0, 0);
-  MousePath.Add(10, 0);
+//  MousePath.SetInitialPoint(GetInitialPoint);
+  MousePath.Add(10, 10);
+  MousePath.Add(10, 20);
   MousePath.Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
-  Application.ProcessMessages;
+  Check(FCanvas.ItemCount = 1);
 
   // Select
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(50, 50);
-  MousePath.Add(50, 50);
-  TestLib.RunMousePath(MousePath.Path);
+  TestLib.MouseClick(50, 50);
 
   Item := FCanvas.SelectedItem;
 
   Check(Assigned(Item), 'not assigned');
-  Check(Item.Position.X = -100, Format('Postion.X : %f', [Item.Position.X]));
-  Check(Item.Position.Y = -50, Format('Postion.Y : %f', [Item.Position.Y]));
+  Check(Item.Position.X = -90, Format('Postion.X : %f', [Item.Position.X]));
+  Check(Item.Position.Y = -40, Format('Postion.Y : %f', [Item.Position.Y]));
 end;
 
 procedure TestTThShape.TestRectangleSelect;
@@ -145,17 +135,13 @@ begin
   // Draw Rectangle
   FCanvas.ItemID := 1100;
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
+//  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(50, 50);
   MousePath.Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(60, 60);
-  MousePath.Add(60, 60);
-  TestLib.RunMousePath(MousePath.Path);
+  TestLib.MouseClick(60, 60);
 
   Check(Assigned(FCanvas.SelectedItem));
 end;
@@ -177,65 +163,30 @@ begin
   // Draw Rectangle
   FCanvas.ItemID := 1100;
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
+//  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(10, 10);
   MousePath.Add(100, 100);
   MousePath.Add(150, 150);
   TestLib.RunMousePath(MousePath.Path);
 
-  Application.ProcessMessages;
-
   // Canvas Tracking
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
+//  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(160, 160);
   MousePath.Add(80, 80);
   MousePath.Add(60, 60);
   TestLib.RunMousePath(MousePath.Path);
 
-  Application.ProcessMessages;
-
   // Button Click
-  FTestClick := False;
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(-30, -30);
-  MousePath.Add(-30, -30);
-  TestLib.RunMousePath(MousePath.Path);
+  TestLib.MouseClick(-30, -30);
 
 //  Check(FCanvas.SelectedItem.LocalToAbsolute(PointF(0, 0)).X = -30, Format('Postion.X : %f', [FCanvas.SelectedItem.LocalToAbsolute(PointF(0, 0)).X]));
   Check(FTestClick, '버튼이 클릭되지 않음');
 end;
 
-procedure TestTThShape.TestDisappearsUpward;
+procedure TestTThShape.TestDrawRactangleRightToLeft;
 begin
-  // Draw Rectangle
-  FCanvas.ItemID := 1100;
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(10, 10);
-  MousePath.Add(100, 100);
-  MousePath.Add(150, 150);
-  TestLib.RunMousePath(MousePath.Path);
 
-  Application.ProcessMessages;
-
-  // Canvas Tracking
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(160, 160);
-  MousePath.Add(160, 80);
-  MousePath.Add(160, 60);
-  TestLib.RunMousePath(MousePath.Path);
-
-  // Select
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(10, 10);
-  MousePath.Add(10, 10);
-  TestLib.RunMousePath(MousePath.Path);
-
-  Check(Assigned(FCanvas.SelectedItem));
 end;
 
 procedure TestTThShape._Test(Sender: TObject);

@@ -12,8 +12,8 @@ unit TestThCanvasEditor;
 interface
 
 uses
-  TestFramework, BaseTestUnit, ThContainer, ThCanvasEditor,
-  System.Types, System.SysUtils;
+  TestFramework, BaseTestUnit,
+  System.Types, System.SysUtils, FMX.Types, FMX.Objects, System.UIConsts;
 
 type
   TestTThCanvasEditor = class(TBaseTestUnit)
@@ -26,17 +26,20 @@ type
 
     // #51 영역밖으로 드래그 시 캔버스 이동이 계속 되어야 한다.
     procedure TestTrackingOutOfArea;
+
+    // #59 Tracking으로 캔버스 영역을 벗어나면 도형등이 표시되지 않음
+    procedure TestTrackingOutOfCanvasAreaNotDisplayed;
   end;
 
 implementation
 
 uses
-  UnitTestForm, FMX.TestLib;
+  UnitTestForm, FMX.TestLib, ThContainer, ThCanvasEditor,
+  ThItem, ThShape, ThItemFactory;
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
   MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
   MousePath.Add(50, 50);
   MousePath.Add(100, 100);
   MousePath.Add(100, 150);
@@ -52,13 +55,7 @@ end;
 
 procedure TestTThCanvasEditor.TestTrackingMinusArea;
 begin
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(150, 150);
-  MousePath.Add(100, 100);
-  MousePath.Add(100, 150);
-  MousePath.Add(150, 100);
-  MousePath.Add(0, 0);
+  MousePath.New.Add(150, 150).Add(100, 100).Add(100, 150).Add(150, 100).Add(0, 0);
 
   TestLib.RunMousePath(MousePath.Path);
 
@@ -71,11 +68,7 @@ end;
 procedure TestTThCanvasEditor.TestTrackingOutOfArea;
 begin
   // 50 to -200
-  MousePath.Clear;
-  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(50, 50);
-  MousePath.Add(0, 50);
-  MousePath.Add(-200, 50);
+  MousePath.New.Add(50, 50).Add(0, 50).Add(-200, 50);
 
   TestLib.RunMousePath(MousePath.Path);
 
@@ -83,6 +76,32 @@ begin
     (FCanvas.ContentPos.X = -250)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.X])
   );
+end;
+
+// S 아래쪽에 걸치게 도형을 그리고
+//    캔버스 높이 이상을 Tracking하여 이동
+//    도형의 색상을 추출하여 색상비교
+procedure TestTThCanvasEditor.TestTrackingOutOfCanvasAreaNotDisplayed;
+var
+  Image: TImage;
+  Map: TBitmapData;
+begin
+  // Draw Rectangle
+  FCanvas.ItemID := 1100;
+  MousePath.New.Add(100, 150).Add(150, 300).Add(210, 400);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // Canvas Tracking
+  MousePath.New.Add(10, 290).Add(10, 200).Add(10, -50);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // Select
+  TestLib.MouseClick(150, 10);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned');  // 안보여도 선택은 됨
+
+  // 색상비교
+  Check(TestLib.GetControlPixelColor(FCanvas, 150, 10) = claGreen);
 end;
 
 initialization

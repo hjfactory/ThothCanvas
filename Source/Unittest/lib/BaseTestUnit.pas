@@ -10,12 +10,11 @@ type
   // Test methods for class TThCanvasEditor
 
   TBaseTestUnit = class(TTestCase)
-  private
-    FPos: TPointF;
   protected
     FForm: TForm;
     FCanvas: TThCanvasEditor;
     function GetInitialPoint: TPointF;
+    procedure SetTestControl(var FormRect, CanvasRect: TRectF); virtual;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -24,7 +23,7 @@ type
 implementation
 
 uses
-  UnitTestForm, FMX.Platform;
+  UnitTestForm, FMX.Platform, FMX.TestLib;
 
 { TBastTestUnit }
 
@@ -33,21 +32,36 @@ begin
   Result := IControl(FCanvas).LocalToScreen(PointF(0, 0));
 end;
 
-procedure TBaseTestUnit.SetUp;
+procedure TBaseTestUnit.SetTestControl(var FormRect, CanvasRect: TRectF);
 begin
+  FormRect.Top := 300;
+  FormRect.Left := 300;
+  FormRect.Width := 600;
+  FormRect.Height := 600;
+
+  CanvasRect := RectF(50, 50, 350, 350);
+end;
+
+procedure TBaseTestUnit.SetUp;
+var
+  FormRect, CanvasRect: TRectF;
+begin
+  SetTestControl(FormRect, CanvasRect);
+
   FForm := TfrmUnitTest.Create(nil);
-  FForm.Width := 600;
-  FForm.Height := 600;
-  FForm.Top := 300;
-  FForm.Left := 300;
+  FForm.Top     := Round(FormRect.Top);
+  FForm.Left    := Round(FormRect.Left);
+  FForm.Width   := Round(FormRect.Width);
+  FForm.Height  := Round(FormRect.Height);
   FForm.Show;
 
   FCanvas := TThCanvasEditor.Create(FForm);
   FCanvas.Parent := FForm;
-  FCanvas.Width := 300;
-  FCanvas.Height := 300;
-  FCanvas.Position.Point := PointF(50, 50);
+  FCanvas.Position.Point  := CanvasRect.TopLeft;
+  FCanvas.Width           := CanvasRect.Width;
+  FCanvas.Height          := CanvasRect.Height;
 
+  TestLib.SetInitialMousePoint(GetInitialPoint);
   Application.ProcessMessages;
 end;
 
