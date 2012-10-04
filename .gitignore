@@ -1,0 +1,17 @@
+*.dcu
+*.~*
+*.local
+*.identcache
+__history
+*.drc
+*.map
+*.zip
+*.exe
+*.dll
+*.elf
+bin/*
+win32/*
+*.plist
+*.vlb
+*.pas.cbk
+dunit.ini
