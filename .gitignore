@@ -13,3 +13,5 @@ bin/*
 win32/*
 *.plist
 *.vlb
+*.pas.cbk
+dunit.ini

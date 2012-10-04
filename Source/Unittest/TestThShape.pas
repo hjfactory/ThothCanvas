@@ -119,13 +119,14 @@ begin
   FCanvas.ItemID := 1100;
   MousePath.Clear;
   MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(0, 0);
-  MousePath.Add(10, 0);
+  MousePath.Add(10, 10);
+  MousePath.Add(10, 20);
   MousePath.Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
-  Application.ProcessMessages;
+  Check(FCanvas.ItemCount = 1);
 
+  Application.ProcessMessages;
   // Select
   MousePath.Clear;
   MousePath.SetInitialPoint(GetInitialPoint);
@@ -136,8 +137,8 @@ begin
   Item := FCanvas.SelectedItem;
 
   Check(Assigned(Item), 'not assigned');
-  Check(Item.Position.X = -100, Format('Postion.X : %f', [Item.Position.X]));
-  Check(Item.Position.Y = -50, Format('Postion.Y : %f', [Item.Position.Y]));
+  Check(Item.Position.X = -90, Format('Postion.X : %f', [Item.Position.X]));
+  Check(Item.Position.Y = -40, Format('Postion.Y : %f', [Item.Position.Y]));
 end;
 
 procedure TestTThShape.TestRectangleSelect;

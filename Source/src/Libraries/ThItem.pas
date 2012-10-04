@@ -24,7 +24,6 @@ type
 
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
-
   end;
 
   TThItemClass = class of TThItem;

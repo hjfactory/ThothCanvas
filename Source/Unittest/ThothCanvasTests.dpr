@@ -25,7 +25,8 @@ uses
   ThShape in '..\src\Libraries\ThShape.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
   TestThShape in 'TestThShape.pas',
-  BaseTestUnit in 'lib\BaseTestUnit.pas';
+  BaseTestUnit in 'lib\BaseTestUnit.pas',
+  CommonUtils in '..\src\Utils\CommonUtils.pas';
 
 {$R *.RES}
 

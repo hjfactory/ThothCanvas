@@ -7,7 +7,8 @@ uses
   ThShape in 'Libraries\ThShape.pas',
   ThCanvasEditor in 'Components\ThCanvasEditor.pas',
   ThContainer in 'Libraries\ThContainer.pas',
-  ThItemFactory in 'Components\ThItemFactory.pas';
+  ThItemFactory in 'Components\ThItemFactory.pas',
+  CommonUtils in 'Utils\CommonUtils.pas';
 
 {$R *.res}
 
