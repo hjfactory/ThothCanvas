@@ -13,7 +13,7 @@ interface
 
 uses
   TestFramework, BaseTestUnit,
-  System.UITypes, System.Types, System.SysUtils, FMX.Controls;
+  System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
   TestTThShape = class(TBaseTestUnit)
@@ -34,6 +34,9 @@ type
 
     // #53 캔버스 Tracking 시 Rectangle이 Canvas 영역 밖으로 나오지 않는다.
     procedure TestRectangleOutOfCanvas;
+
+    // #38 도형에 마우스 오버시 하이라이트 효과가 나타난다.
+    procedure TestRectangleShowHighlight;
 
     // #37 끝점이 시작점 앞에 있어도 그려져야 한다.
     procedure TestDrawRactangleRightToLeft;
@@ -75,10 +78,10 @@ var
 begin
   // Draw
   FCanvas.ItemID := 1100;   // 1100 is Rectangles ID
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(50, 50);
-  MousePath.Add(200, 200);
+
+  MousePath.New
+  .Add(50, 50)
+  .Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
@@ -90,7 +93,7 @@ begin
   Check(Item.ClassType = TThRectangle, 'Check Class type');
 
   Check(Item.Position.X = 50, Format('X = %f', [Item.Position.X]));
-  Check(Item.Width = 150, Format('Width = %f', [Item.Width]));
+  Check(Item.Width = 150,     Format('Width = %f', [Item.Width]));
 end;
 
 // S1.100,50 으로 Canvas 이동 후 0,0 > 100, 100 Rectangle 그리면
@@ -100,22 +103,20 @@ var
   Item: TThItem;
 begin
   // Tracking
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(0, 0);
-  MousePath.Add(10, 0);
-  MousePath.Add(100, 50);
+  MousePath.New
+  .Add(0, 0)
+  .Add(10, 0)
+  .Add(100, 50);
   TestLib.RunMousePath(MousePath.Path);
 
   Check(FCanvas.ContentPos.X = 100);
 
   // Draw Rectangle
   FCanvas.ItemID := 1100;
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(10, 10);
-  MousePath.Add(10, 20);
-  MousePath.Add(100, 100);
+  MousePath.New
+  .Add(10, 10)
+  .Add(10, 20)
+  .Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
   Check(FCanvas.ItemCount = 1);
@@ -134,10 +135,9 @@ procedure TestTThShape.TestRectangleSelect;
 begin
   // Draw Rectangle
   FCanvas.ItemID := 1100;
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(50, 50);
-  MousePath.Add(100, 100);
+  MousePath.New
+  .Add(50, 50)
+  .Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
@@ -162,19 +162,17 @@ begin
 
   // Draw Rectangle
   FCanvas.ItemID := 1100;
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(10, 10);
-  MousePath.Add(100, 100);
-  MousePath.Add(150, 150);
+  MousePath.New
+  .Add(10, 10)
+  .Add(100, 100)
+  .Add(150, 150);
   TestLib.RunMousePath(MousePath.Path);
 
   // Canvas Tracking
-  MousePath.Clear;
-//  MousePath.SetInitialPoint(GetInitialPoint);
-  MousePath.Add(160, 160);
-  MousePath.Add(80, 80);
-  MousePath.Add(60, 60);
+  MousePath.New
+  .Add(160, 160)
+  .Add(80, 80)
+  .Add(60, 60);
   TestLib.RunMousePath(MousePath.Path);
 
   // Button Click
@@ -182,6 +180,38 @@ begin
 
 //  Check(FCanvas.SelectedItem.LocalToAbsolute(PointF(0, 0)).X = -30, Format('Postion.X : %f', [FCanvas.SelectedItem.LocalToAbsolute(PointF(0, 0)).X]));
   Check(FTestClick, '버튼이 클릭되지 않음');
+end;
+
+procedure TestTThShape.TestRectangleShowHighlight;
+var
+  R: TThRectangle;
+  AC: TAlphaColor;
+begin
+  // Hightlight size 10
+
+  // 10,10,100,100 그리기
+  FCanvas.ItemID := 1100;
+  MousePath.New
+  .Add(10, 10)
+  .Add(50, 50)
+  .Add(100, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // 50,50 클릭 선택
+  TestLib.MouseClick(50, 50);
+
+  R := TThRectangle(FCanvas.SelectedItem);
+
+  Check(Assigned(R), 'Not assigned');
+
+  R.Opacity := 1;
+  R.HighlightColor := claGray;
+  R.HighlightSize := 10;
+
+  // 105.105 색상확인
+  AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);
+  Check(AC = claGray, 'Not matching Color');
+//  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
 procedure TestTThShape.TestDrawRactangleRightToLeft;

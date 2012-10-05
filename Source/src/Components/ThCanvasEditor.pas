@@ -78,6 +78,7 @@ end;
 procedure TThCanvasEditor.SelectItem(Sender: TObject);
 begin
   FSelectedItem := TThItem(Sender);
+  Repaint;
 end;
 
 end.

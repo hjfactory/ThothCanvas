@@ -3,7 +3,8 @@ unit FMX.TestLib;
 interface
 
 uses
-  System.Types, System.UITypes, System.Classes, FMX.Types, FMX.Forms, FMX.Objects;
+  System.Types, System.UITypes, System.Classes, FMX.Types, FMX.Forms, FMX.Objects,
+  System.UIConsts;
 
 type
   PointFArray = array of array[0..1] of Single;
@@ -53,6 +54,7 @@ var
 implementation
 
 uses
+  CommonUtils,
 {$IFDEF MACOS}
   FMX.TestLib.Mac;
 {$ENDIF}
@@ -70,21 +72,27 @@ end;
 
 function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
 var
-  Image: TImage;
+  Bitmap: TBitmap;
   Map: TBitmapData;
 begin
-  Image := TImage.Create(nil);
+Application.ProcessMessages;
+
+  Result := claBlack;
+  Bitmap := Control.MakeScreenshot;
   try
-    Image.Bitmap.Create(Round(Control.Width), Round(Control.Height));
-    Image.Bitmap.Canvas.BeginScene;
-    Image.Bitmap.Canvas.EndScene;
+    if not Assigned(Bitmap) then
+      Exit;
+Debug('1');
+    try
+      Bitmap.Map(TMapAccess.maRead, Map);
+      Result := Map.GetPixel(X, Y);
+    except
 
-    Image.Bitmap.Assign(Control.MakeScreenshot);
-    Image.Bitmap.Map(TMapAccess.maRead, Map);
-
-    Result := Map.GetPixel(X, Y);
+    end;
+Debug('2');
+Debug('3');
   finally
-    Image.Free;
+    Bitmap.Free;
   end;
 end;
 

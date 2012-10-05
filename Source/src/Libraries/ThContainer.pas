@@ -24,8 +24,6 @@ type
     FUseMouseTracking: Boolean;
 
     function GetContentPos: TPosition;
-    function GetContentBounds: TRectF; virtual;
-    procedure RealignContent(R: TRectF); virtual;
     function GetItemCount: Integer;
   protected
     FDownPos,
@@ -46,7 +44,6 @@ type
 
     property ContentPos: TPosition read GetContentPos;
     property ItemCount: Integer read GetItemCount;
-    procedure DoRealign; override;
   end;
 
 implementation
@@ -75,12 +72,15 @@ begin
   if not Assigned(Parent) then
     Exit;
 
+//Result := inherited GetUpdateRect;
+//Exit;
 {
    ClipClildren := True 설정 시 Canvas 영역을 빠져나가면 Contents 표시 멈춤
       TControl.GetUpdateRect 11 line
           if TControl(P).ClipChildren or TControl(P).SmallSizeControl then
             IntersectRect(FUpdateRect, FUpdateRect, TControl(P).UpdateRect);
 }
+
   TControl(Parent).ClipChildren := False;
   try
     Result := inherited GetUpdateRect;
@@ -171,7 +171,7 @@ begin
   inherited;
 
 {$IFDEF DEBUG}
-  Canvas.Fill.Color := claGray;
+  Canvas.Fill.Color := $FFDDDDDD;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 {$ELSE}
   Canvas.Fill.Color := $FFDDDDDD;
@@ -184,13 +184,13 @@ begin
   inherited;
 
 end;
-
+{
 procedure TThContainer.DoRealign;
 var
   R: TRectF;
 begin
   inherited;
-
+Exit;
   R := GetContentBounds;
   OffsetRect(R, FContents.Position.X, FContents.Position.Y);
   OffsetRect(R, FContents.Position.X, FContents.Position.Y);
@@ -231,7 +231,7 @@ begin
     Result := R;
   end;
 end;
-
+}
 function TThContainer.GetContentPos: TPosition;
 begin
   Result := FContents.Position;

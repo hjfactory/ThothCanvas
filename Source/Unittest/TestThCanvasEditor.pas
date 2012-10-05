@@ -39,12 +39,12 @@ uses
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
-  MousePath.Clear;
-  MousePath.Add(50, 50);
-  MousePath.Add(100, 100);
-  MousePath.Add(100, 150);
-  MousePath.Add(150, 150);
-  MousePath.Add(200, 200);
+  MousePath.New
+  .Add(50, 50)
+  .Add(100, 100)
+  .Add(100, 150)
+  .Add(150, 150)
+  .Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
@@ -55,7 +55,12 @@ end;
 
 procedure TestTThCanvasEditor.TestTrackingMinusArea;
 begin
-  MousePath.New.Add(150, 150).Add(100, 100).Add(100, 150).Add(150, 100).Add(0, 0);
+  MousePath.New
+  .Add(150, 150)
+  .Add(100, 100)
+  .Add(100, 150)
+  .Add(150, 100)
+  .Add(0, 0);
 
   TestLib.RunMousePath(MousePath.Path);
 
@@ -68,7 +73,10 @@ end;
 procedure TestTThCanvasEditor.TestTrackingOutOfArea;
 begin
   // 50 to -200
-  MousePath.New.Add(50, 50).Add(0, 50).Add(-200, 50);
+  MousePath.New
+  .Add(50, 50)
+  .Add(0, 50)
+  .Add(-200, 50);
 
   TestLib.RunMousePath(MousePath.Path);
 
@@ -88,20 +96,28 @@ var
 begin
   // Draw Rectangle
   FCanvas.ItemID := 1100;
-  MousePath.New.Add(100, 150).Add(150, 300).Add(210, 400);
+  MousePath.New
+  .Add(100, 150)
+  .Add(150, 300)
+  .Add(210, 400);
   TestLib.RunMousePath(MousePath.Path);
 
   // Canvas Tracking
-  MousePath.New.Add(10, 290).Add(10, 200).Add(10, -50);
+  MousePath.New
+  .Add(10, 290)
+  .Add(10, 200)
+  .Add(10, -50);
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
   TestLib.MouseClick(150, 10);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');  // 안보여도 선택은 됨
+  TThShape(FCanvas.SelectedItem).BackgroundColor := claRed;
+  FCanvas.SelectedItem.Opacity := 1;
 
   // 색상비교
-  Check(TestLib.GetControlPixelColor(FCanvas, 150, 10) = claGreen);
+  Check(TestLib.GetControlPixelColor(FCanvas, 150, 10) = claRed);
 end;
 
 initialization

@@ -67,6 +67,7 @@ end;
 
 procedure TBaseTestUnit.TearDown;
 begin
+//Exit;
   FCanvas.Free;
   FForm.Free;
 end;

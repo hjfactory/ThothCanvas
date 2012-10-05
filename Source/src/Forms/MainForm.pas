@@ -9,14 +9,10 @@ uses
 
 type
   TForm1 = class(TForm)
-    Button1: TButton;
-    Memo1: TMemo;
     Panel1: TPanel;
     Button2: TButton;
-    Button4: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
@@ -30,13 +26,10 @@ var
 
 implementation
 
-{$R *.fmx}
+uses
+  ThItem;
 
-procedure TForm1.Button1Click(Sender: TObject);
-begin
-  Memo1.Lines.Add(Format('%f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.Y]));
-  FCanvas.Repaint;
-end;
+{$R *.fmx}
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
