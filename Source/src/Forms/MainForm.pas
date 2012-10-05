@@ -11,9 +11,12 @@ type
   TForm1 = class(TForm)
     Panel1: TPanel;
     Button2: TButton;
+    Button1: TButton;
+    Button3: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvasEditor;
@@ -31,9 +34,14 @@ uses
 
 {$R *.fmx}
 
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  FCanvas.Repaint;
+end;
+
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  FCanvas.ItemID := 1100;
+  FCanvas.ItemID := TButton(Sender).Tag;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);

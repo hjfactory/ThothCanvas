@@ -49,9 +49,12 @@ begin
   begin
     FSelectedItem := nil;
     FDrawItem := ItemFactory.Get(FItemID);
-    FDrawItem.Parent := Self;
-    FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
-    FDrawItem.OnSelected := SelectItem;
+    if Assigned(FDrawItem) then
+    begin
+      FDrawItem.Parent := Self;
+      FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
+      FDrawItem.OnSelected := SelectItem;
+    end;
   end;
 end;
 
@@ -78,7 +81,7 @@ end;
 procedure TThCanvasEditor.SelectItem(Sender: TObject);
 begin
   FSelectedItem := TThItem(Sender);
-  Repaint;
+//  Repaint;
 end;
 
 end.

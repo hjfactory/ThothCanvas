@@ -15,3 +15,5 @@ win32/*
 *.vlb
 *.pas.cbk
 dunit.ini
+*/OSX32/*
+*.deployproj

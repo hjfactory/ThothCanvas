@@ -2,14 +2,15 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Thoth Canvas'
-  ClientHeight = 729
-  ClientWidth = 830
+  ClientHeight = 641
+  ClientWidth = 802
   FormFactor.Width = 1600
   FormFactor.Height = 1200
   FormFactor.Devices = [dkDesktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   object Button2: TButton
+    Tag = 1100
     DisableFocusEffect = False
     Height = 22.000000000000000000
     Position.X = 8.000000000000000000
@@ -20,9 +21,28 @@ object Form1: TForm1
   end
   object Panel1: TPanel
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Height = 681.000000000000000000
+    Height = 593.000000000000000000
     Position.X = 8.000000000000000000
     Position.Y = 40.000000000000000000
-    Width = 817.000000000000000000
+    Width = 789.000000000000000000
+    object Button1: TButton
+      DisableFocusEffect = False
+      Height = 22.000000000000000000
+      Position.X = 392.000000000000000000
+      Position.Y = -32.000000000000000000
+      Text = 'Button1'
+      Width = 80.000000000000000000
+      OnClick = Button1Click
+    end
+  end
+  object Button3: TButton
+    Tag = 1200
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 96.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'Line'
+    Width = 80.000000000000000000
+    OnClick = Button2Click
   end
 end

@@ -16,14 +16,7 @@ type
   protected
     procedure DrawShape; virtual; abstract;
 
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-
-    function GetShapeRect: TRectF; virtual; abstract;
-    function PtInShape(APt: TPointF): Boolean; virtual;
-
-    procedure DoRealign; override; //hjf
+    function GetShapeRect: TRectF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -31,8 +24,6 @@ type
   end;
 
   TThLineShape = class(TThShape)
-  public
-    constructor Create(AOwner: TComponent); override;
   end;
 
   TThFillShape = class(TThShape)
@@ -40,9 +31,7 @@ type
 
   TThRectangle = class(TThFillShape)
   protected
-    function GetClipRect: TRectF; override;
-
-    function GetShapeRect: TRectF; override;
+    function PtInItem(Pt: TPointF): Boolean; override;
 
     procedure DrawShape; override;
     procedure DrawHighlight; override;
@@ -50,7 +39,10 @@ type
 
   TThLine = class(TThLineShape)
   protected
+    function PtInItem(Pt: TPointF): Boolean; override;
+
     procedure DrawShape; override;
+    procedure DrawHighlight; override;
   end;
 
 implementation
@@ -64,9 +56,6 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
-  ClipChildren := False;
-  AutoCapture := True;
-
   FWidth := 1;
   FHeight := 1;
 
@@ -74,41 +63,15 @@ begin
   FBackgroundColor := claGreen;
 end;
 
-procedure TThShape.DoRealign;
+function TThShape.GetShapeRect: TRectF;
 begin
-  SetBounds(0, 0, Width + 10, Height + 10);
-  FRecalcUpdateRect := True; // need to recalc
-  Realign;
-end;
-
-procedure TThShape.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
-  Y: Single);
-begin
-  inherited;
-
-  SetSelected((Button = TMouseButton.mbLeft) and (PtInShape(PointF(X, Y))));
-end;
-
-procedure TThShape.MouseMove(Shift: TShiftState; X, Y: Single);
-begin
-  inherited;
-
-end;
-
-procedure TThShape.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
-  Y: Single);
-begin
-  inherited;
-
+  Result := LocalRect;
 end;
 
 procedure TThShape.Paint;
 var
   S: string;
 begin
-  if FSelected then
-    DrawHighlight;
-
   DrawShape;
 
 {$IFDEF DEBUG}
@@ -120,11 +83,6 @@ begin
 {$ENDIF}
 end;
 
-function TThShape.PtInShape(APt: TPointF): Boolean;
-begin
-  Result := PtInRect(GetShapeRect, APt);
-end;
-
 procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);
 begin
   if FBackgroundColor = Value then
@@ -134,59 +92,53 @@ begin
   Repaint;
 end;
 
-{ TThLineShape }
-
-constructor TThLineShape.Create(AOwner: TComponent);
-begin
-  inherited;
-end;
-
 { TThRectangle }
-
-function TThRectangle.GetClipRect: TRectF;
-begin
-  Result := inherited GetClipRect;
-  Result.Bottom := Result.Bottom + 10;
-  Result.Right := Result.Right + 10;
-end;
-
-function TThRectangle.GetShapeRect: TRectF;
-begin
-  Result := LocalRect;
-//  Result.Right := Result.Right - FHighlightSize;
-//  Result.Bottom := Result.Bottom - FHighlightSize;
-end;
-
-procedure TThRectangle.DrawShape;
-var
-  R: TRectF;
-begin
-//Exit;
-  R := GetShapeRect;
-
-  Canvas.Stroke.Color := claNull;
-  Canvas.Fill.Color := FBackgroundColor;
-  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-//  Debug(Format('Rectangle - R : %f %f %f %f', [R.Left, R.Top, R.Right, R.Bottom]));
-end;
 
 procedure TThRectangle.DrawHighlight;
 var
   R: TRectF;
 begin
-  R := GetShapeRect;
-  R.Offset(HighlightSize, HighlightSize);
+  R := GetHighlightRect;
 
+  Canvas.StrokeThickness := 0;
   Canvas.Stroke.Color := claNull;
   Canvas.Fill.Color := HighlightColor;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
+procedure TThRectangle.DrawShape;
+var
+  R: TRectF;
+begin
+  R := GetShapeRect;
+
+  Canvas.StrokeThickness := 0;
+  Canvas.Stroke.Color := claNull;
+  Canvas.Fill.Color := FBackgroundColor;
+  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+end;
+
+function TThRectangle.PtInItem(Pt: TPointF): Boolean;
+begin
+  Result := PtInRect(GetShapeRect, Pt);
+end;
+
 { TThLine }
 
+procedure TThLine.DrawHighlight;
+begin
+  inherited;
+
+end;
+
 procedure TThLine.DrawShape;
+begin
+
+end;
+
+function TThLine.PtInItem(Pt: TPointF): Boolean;
 begin
 
 end;

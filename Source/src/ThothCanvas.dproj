@@ -154,10 +154,31 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment>
-                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.rsm" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.rsm" Configuration="Release" Class="DebugSymbols">
                     <Platform Name="OSX32">
                         <RemoteDir>Contents\MacOS\</RemoteDir>
                         <RemoteName>ThothCanvas.rsm</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="OSX32"/>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.entitlements" Configuration="Debug" Class="ProjectOSXEntitlements">
+                    <Platform Name="OSX32">
+                        <RemoteName>Entitlements.plist</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
+                    <Platform Name="OSX32"/>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.entitlements" Configuration="Release" Class="ProjectOSXEntitlements">
+                    <Platform Name="OSX32">
+                        <RemoteName>Entitlements.plist</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.info.plist" Configuration="Release" Class="ProjectOSXInfoPList">
+                    <Platform Name="OSX32">
+                        <RemoteName>Info.plist</RemoteName>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
@@ -165,20 +186,21 @@
                     <Platform Name="iOSSimulator"/>
                     <Platform Name="iOSDevice"/>
                 </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.entitlements" Configuration="Debug" Class="ProjectOSXEntitlements">
-                    <Platform Name="OSX32">
-                        <RemoteName>Entitlements.plist</RemoteName>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.info.plist" Configuration="Debug" Class="ProjectOSXInfoPList">
                     <Platform Name="OSX32">
                         <RemoteName>Info.plist</RemoteName>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.icns" Configuration="Debug" Class="ProjectOSXResource">
                     <Platform Name="OSX32"/>
                 </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.icns" Configuration="Debug" Class="ProjectOSXResource">
+                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS\</RemoteDir>
+                        <RemoteName>ThothCanvas.rsm</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvas" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="OSX32"/>
                 </DeployFile>
                 <DeployClass Required="true" Name="DependencyPackage">
