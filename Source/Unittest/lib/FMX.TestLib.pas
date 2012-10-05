@@ -73,24 +73,22 @@ end;
 function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
 var
   Bitmap: TBitmap;
-  Map: TBitmapData;
+  BitmapData: TBitmapData;
 begin
-Application.ProcessMessages;
-
   Result := claBlack;
+
+//  Control.PaintTo();
+
   Bitmap := Control.MakeScreenshot;
   try
     if not Assigned(Bitmap) then
       Exit;
-Debug('1');
+    Bitmap.Map(TMapAccess.maRead, BitmapData);
     try
-      Bitmap.Map(TMapAccess.maRead, Map);
-      Result := Map.GetPixel(X, Y);
-    except
-
+      Result := BitmapData.GetPixel(X, Y);
+    finally
+      Bitmap.Unmap(BitmapData);
     end;
-Debug('2');
-Debug('3');
   finally
     Bitmap.Free;
   end;
