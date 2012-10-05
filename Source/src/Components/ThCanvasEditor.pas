@@ -3,7 +3,7 @@ unit ThCanvasEditor;
 interface
 
 uses
-  System.UITypes, System.Classes, System.Types,
+  System.UITypes, System.Classes, System.Types, System.SysUtils,
   ThContainer, ThItem;
 
 type
@@ -59,11 +59,15 @@ begin
 end;
 
 procedure TThCanvasEditor.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  R: TRectF;
 begin
   if (FItemID <> -1) and Assigned(FDrawItem) then
   begin
-    FDrawItem.Width := X - FCurrentPos.X;
-    FDrawItem.Height := Y - FCurrentPos.Y;
+    R := RectF(FDownPos.X, FDownPos.Y, X, Y);
+    R.Offset(-FContents.Position.X, -FContents.Position.Y);
+    R.NormalizeRect;
+    FDrawItem.BoundsRect := R;
   end
   else
     inherited;

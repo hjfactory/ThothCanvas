@@ -12,7 +12,7 @@ unit TestThShape;
 interface
 
 uses
-  TestFramework, BaseTestUnit,
+  TestFramework, BaseTestUnit, FMX.Types,
   System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
@@ -39,7 +39,10 @@ type
     procedure TestRectangleShowHighlight;
 
     // #37 끝점이 시작점 앞에 있어도 그려져야 한다.
-    procedure TestDrawRactangleRightToLeft;
+    procedure TestDrawRectangleBRToTL;  // BottomRight > TopLeft
+    procedure TestDrawRectangleTRToBL;  // TopRight > BottomLeft
+    procedure TestDrawRectangleBLToTR;  // BottomLeft > TopRight
+
   end;
 
 implementation
@@ -214,9 +217,52 @@ begin
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
-procedure TestTThShape.TestDrawRactangleRightToLeft;
+// BottomRight > TopLeft
+procedure TestTThShape.TestDrawRectangleBRToTL;
 begin
+  FCanvas.ItemID := 1100;
+  MousePath.New
+  .Add(100, 100)
+  .Add(50, 50)
+  .Add(10, 10);
+  TestLib.RunMousePath(MousePath.Path);
 
+  TestLib.MouseClick(50, 50);
+
+  Check(Assigned(FCanvas.SelectedItem));
+  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
+end;
+
+// TopRight > BottomLeft
+procedure TestTThShape.TestDrawRectangleTRToBL;
+begin
+  FCanvas.ItemID := 1100;
+  MousePath.New
+  .Add(100, 10)
+  .Add(50, 50)
+  .Add(10, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.MouseClick(50, 50);
+
+  Check(Assigned(FCanvas.SelectedItem));
+  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
+end;
+
+// BottomLeft > TopRight
+procedure TestTThShape.TestDrawRectangleBLToTR;
+begin
+  FCanvas.ItemID := 1100;
+  MousePath.New
+  .Add(10, 100)
+  .Add(50, 50)
+  .Add(100, 10);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.MouseClick(50, 50);
+
+  Check(Assigned(FCanvas.SelectedItem));
+  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThShape._Test(Sender: TObject);

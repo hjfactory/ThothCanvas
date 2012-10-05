@@ -11,6 +11,7 @@ type
 
   TBaseTestUnit = class(TTestCase)
   protected
+    FClosing: Boolean;
     FForm: TForm;
     FCanvas: TThCanvasEditor;
     function GetInitialPoint: TPointF;
@@ -46,6 +47,8 @@ procedure TBaseTestUnit.SetUp;
 var
   FormRect, CanvasRect: TRectF;
 begin
+  FClosing := True;
+
   SetTestControl(FormRect, CanvasRect);
 
   FForm := TfrmUnitTest.Create(nil);
@@ -67,7 +70,9 @@ end;
 
 procedure TBaseTestUnit.TearDown;
 begin
-//Exit;
+  if not FClosing then
+    Exit;
+
   FCanvas.Free;
   FForm.Free;
 end;
