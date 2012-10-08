@@ -80,7 +80,7 @@ var
   Item: TThItem;
 begin
   // Draw
-  FCanvas.ItemID := 1100;   // 1100 is Rectangles ID
+  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
 
   MousePath.New
   .Add(50, 50)
@@ -115,7 +115,7 @@ begin
   Check(FCanvas.ContentPos.X = 100);
 
   // Draw Rectangle
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 10)
   .Add(10, 20)
@@ -137,7 +137,7 @@ end;
 procedure TestTThShape.TestRectangleSelect;
 begin
   // Draw Rectangle
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(50, 50)
   .Add(100, 100);
@@ -164,7 +164,7 @@ begin
   Button.SendToBack;
 
   // Draw Rectangle
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 10)
   .Add(100, 100)
@@ -193,7 +193,7 @@ begin
   // Hightlight size 10
 
   // 10,10,100,100 ±×¸®±â
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 10)
   .Add(50, 50)
@@ -220,7 +220,7 @@ end;
 // BottomRight > TopLeft
 procedure TestTThShape.TestDrawRectangleBRToTL;
 begin
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(100, 100)
   .Add(50, 50)
@@ -236,7 +236,7 @@ end;
 // TopRight > BottomLeft
 procedure TestTThShape.TestDrawRectangleTRToBL;
 begin
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(100, 10)
   .Add(50, 50)
@@ -252,7 +252,7 @@ end;
 // BottomLeft > TopRight
 procedure TestTThShape.TestDrawRectangleBLToTR;
 begin
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 100)
   .Add(50, 50)

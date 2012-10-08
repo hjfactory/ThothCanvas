@@ -95,7 +95,7 @@ end;
 procedure TestTThCanvasEditor.TestTrackingOutOfCanvasAreaNotDisplayed;
 begin
   // Draw Rectangle
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(100, 150)
   .Add(150, 300)
@@ -125,7 +125,7 @@ var
   Item: TThItem;
 begin
   // Draw Rectangle
-  FCanvas.ItemID := 1100;
+  FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 10)
   .Add(50, 50)

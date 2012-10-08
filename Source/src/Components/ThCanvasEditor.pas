@@ -15,10 +15,10 @@ type
   TThCanvasEditor = class(TThContainer)
   private
     FDrawItem: TThItem;
-    FItemID: Integer;
+    FDrawItemID: Integer;
     FIsDrawingItem: Boolean;
 
-    procedure SetItemID(const Value: Integer);
+    procedure SetDrawItemID(const Value: Integer);
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -26,7 +26,7 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    property ItemID: Integer read FItemID write SetItemID;
+    property DrawItemID: Integer read FDrawItemID write SetDrawItemID;
     property IsDrawingItem: Boolean read FIsDrawingItem;
   end;
 
@@ -41,7 +41,7 @@ constructor TThCanvasEditor.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FItemID := -1;
+  FDrawItemID := -1;
 end;
 
 procedure TThCanvasEditor.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -52,7 +52,7 @@ begin
   if FIsDrawingItem then
   begin
     ClearSelection;
-    FDrawItem := InsertItem(FItemID);
+    FDrawItem := InsertItem(FDrawItemID);
     if Assigned(FDrawItem) then
     begin
       FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
@@ -82,12 +82,12 @@ begin
 
   FIsDrawingItem := False;
   FDrawItem := nil;
-  FItemID := -1;
+  FDrawItemID := -1;
 end;
 
-procedure TThCanvasEditor.SetItemID(const Value: Integer);
+procedure TThCanvasEditor.SetDrawItemID(const Value: Integer);
 begin
-  FItemID := Value;
+  FDrawItemID := Value;
 
   FIsDrawingItem := True;
 end;
