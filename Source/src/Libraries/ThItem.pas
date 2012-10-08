@@ -16,8 +16,11 @@ type
     FOnUnselected: TNotifyEvent;
   protected
     FHighlighter: IItemHighlighter;
+
     FSelected,
     FHighlight: Boolean;
+
+    FMouseDownPos: TPointF;
 
     FOnSelected: TNotifyEvent;
     FOnTrack: TNotifyEvent;
@@ -33,6 +36,8 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
   public
+    constructor Create(AOwner: TComponent); override;
+
     property Selected: Boolean read FSelected write SetSelected;
 
     procedure Painting; override;
@@ -50,6 +55,13 @@ type
 implementation
 
 { TThItem }
+
+constructor TThItem.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  AutoCapture := True;
+end;
 
 procedure TThItem.DoMouseEnter;
 begin
@@ -82,14 +94,25 @@ procedure TThItem.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  case Button of
-    TMouseButton.mbLeft: Selected := True;
+  if Button = TMouseButton.mbLeft then
+  begin
+   Selected := True;
+   FMouseDownPos := PointF(X, Y);
   end;
 end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
   inherited;
+
+  if FPressed then
+  begin
+    //  잔상을 지우기 위해 기존 영역을 다시 그린다.
+    InvalidateRect(ClipRect);
+
+    Position.X := Position.X + (X - FMouseDownPos.X);
+    Position.Y := Position.Y + (Y - FMouseDownPos.Y);
+  end;
 end;
 
 procedure TThItem.Painting;

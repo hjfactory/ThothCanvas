@@ -28,7 +28,8 @@ uses
   BaseTestUnit in 'lib\BaseTestUnit.pas',
   CommonUtils in '..\src\Utils\CommonUtils.pas',
   ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
-  ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas';
+  ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
+  ThConsts in '..\src\Libraries\ThConsts.pas';
 
 {$R *.RES}
 

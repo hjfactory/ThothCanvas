@@ -46,12 +46,15 @@ type
 
     // #42 최소 크기를 갖으며 그리거나 크기 조정시 반영된다.
     procedure TestDrawRectangleMinSize;
+
+    // #72 캔버스 영역 밖으로 이동이 가능해야 한다.
+    procedure TestMoveRectangleOutOfCanvas;
   end;
 
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
 
 { TestTThShape }
 
@@ -190,7 +193,7 @@ end;
 
 procedure TestTThRectangle.TestRectangleSelectionHighlight;
 var
-  R: TThRectangle;
+  R: TThItem;
   AC: TAlphaColor;
 begin
   // 그리기
@@ -204,17 +207,15 @@ begin
   // 클릭 선택
   TestLib.RunMouseClick(50, 50);
 
-  R := TThRectangle(FCanvas.SelectedItem);
+  R := FCanvas.SelectedItem;
 
   Check(Assigned(R), 'Not assigned');
 
   R.Opacity := 1;
-  R.Highlighter.HighlightColor := claGray;
-  R.Highlighter.HighlightSize := 10;
 
   // 105.105 색상확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);
-  Check(AC = claGray, 'Not matching Color');
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
+  Check(AC = ITEM_HIGHLIGHT_COLOR, 'Not matching Color');
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
@@ -239,13 +240,11 @@ begin
 
   FCanvas.BackgroundColor := claPink;
   R.Opacity := 1;
-  R.Highlighter.HighlightColor := claGray;
-  R.Highlighter.HighlightSize := 10;
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);
-  AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);
-  Check(AC <> claGray, 'Canvas color is not gray');
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
+  Check(AC <> ITEM_HIGHLIGHT_COLOR, 'Canvas color is not gray');
 
   MousePath.New
   .Add(150, 150)
@@ -253,8 +252,9 @@ begin
   TestLib.RunMouseMove(MousePath.Path);
 
   // 그림자 확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);
-  Check(AC = claGray, 'Not matching Color');
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
+  Check(AC = ITEM_HIGHLIGHT_COLOR, 'Not matching Color');
+//  Check(AC = claGray, 'Not matching Color');
 end;
 
 procedure TestTThRectangle.TestDrawRectangleEx;
@@ -343,6 +343,33 @@ begin
 
   TestLib.RunMouseClick(55, 55);  // MinSize 30, 30 : 0,0 > 30, 30
   Check(Assigned(FCanvas.SelectedItem), 'BRToTL');
+end;
+
+procedure TestTThRectangle.TestMoveRectangleOutOfCanvas;
+var
+  Item: TThItem;
+begin
+  FClosing := False;
+
+  // 추가
+  FCanvas.DrawItemID := 1100;
+  MousePath.New
+  .Add(0, 0)
+  .Add(70, 20)
+  .Add(100, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // 밖에서 안으로 드래그
+  MousePath.New
+  .Add(50, 50)
+  .Add(-100, 200)
+  .Add(200, 200);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // 선택
+  TestLib.RunMouseClick(200, 200);
+  Item := FCanvas.SelectedItem;
+  Check(Assigned(Item), 'Assigned');
 end;
 
 procedure TestTThRectangle._Test(Sender: TObject);
