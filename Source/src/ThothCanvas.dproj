@@ -101,7 +101,7 @@
         <DCCReference Include="Libraries\ThContainer.pas"/>
         <DCCReference Include="Components\ThItemFactory.pas"/>
         <DCCReference Include="Utils\CommonUtils.pas"/>
-        <DCCReference Include="Models\ThItemHighlighterIF.pas"/>
+        <DCCReference Include="Interfaces\ThItemHighlighterIF.pas"/>
         <DCCReference Include="Components\ThItemHighlighter.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

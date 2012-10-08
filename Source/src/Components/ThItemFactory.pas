@@ -31,7 +31,7 @@ type
 
   TThItemFactory = class(TObject)
   private
-    FItems: TThItems;
+    FItemClasses: TThItems;
   public
     constructor Create;
     destructor Destroy; override;
@@ -111,19 +111,19 @@ end;
 
 constructor TThItemFactory.Create;
 begin
-  FItems := TThItems.Create;
+  FItemClasses := TThItems.Create;
 end;
 
 destructor TThItemFactory.Destroy;
 begin
-  FItems.Free;
+  FItemClasses.Free;
 
   inherited;
 end;
 
 procedure TThItemFactory.AddItem(ID: Integer; ItemClass: TThItemClass);
 begin
-  FItems.AddItem(ID, ItemClass);
+  FItemClasses.AddItem(ID, ItemClass);
 end;
 
 function TThItemFactory.Get(AID: Integer): TThItem;
@@ -132,7 +132,7 @@ var
 begin
   Result := nil;
 
-  ItemClass := FItems.GetItemClass(AID);
+  ItemClass := FItemClasses.GetItemClass(AID);
 
   if Assigned(ItemClass) then
     Result := ItemClass.Create(nil);

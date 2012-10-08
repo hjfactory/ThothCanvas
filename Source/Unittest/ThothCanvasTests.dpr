@@ -27,7 +27,7 @@ uses
   TestThShape in 'TestThShape.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
   CommonUtils in '..\src\Utils\CommonUtils.pas',
-  ThItemHighlighterIF in '..\src\Models\ThItemHighlighterIF.pas',
+  ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas';
 
 {$R *.RES}

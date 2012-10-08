@@ -9,7 +9,7 @@ uses
   ThContainer in 'Libraries\ThContainer.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
   CommonUtils in 'Utils\CommonUtils.pas',
-  ThItemHighlighterIF in 'Models\ThItemHighlighterIF.pas',
+  ThItemHighlighterIF in 'Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas';
 
 {$R *.res}

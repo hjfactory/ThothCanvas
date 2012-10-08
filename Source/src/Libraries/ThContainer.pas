@@ -212,8 +212,7 @@ end;
 procedure TThContainer.ItemSelect(Sender: TObject);
 begin
   // List처리 필요
-  if Assigned(FSelectedItem) then
-    FSelectedItem.Selected := False;
+  ClearSelection;
 
   FSelectedItem := TThItem(Sender);
 end;

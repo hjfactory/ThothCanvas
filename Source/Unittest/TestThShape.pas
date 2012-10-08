@@ -46,6 +46,8 @@ type
     procedure TestDrawRectangleTRToBL;  // TopRight > BottomLeft
     procedure TestDrawRectangleBLToTR;  // BottomLeft > TopRight
 
+    // #42 최소 크기를 갖으며 그리거나 크기 조정시 반영된다.
+    procedure TestRectangleMinSize;
   end;
 
 implementation
@@ -216,6 +218,15 @@ begin
   AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);
   Check(AC = claGray, 'Not matching Color');
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
+end;
+
+procedure TestTThShape.TestRectangleMinSize;
+begin
+  // Minsize 설정
+
+  // Minsize 미만으로 그리기
+
+  // MinSize로 그려진것 확인
 end;
 
 procedure TestTThShape.TestRectangleMouseOverHighlight;

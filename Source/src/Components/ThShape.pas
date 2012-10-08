@@ -15,6 +15,7 @@ type
   TThShape = class(TThItem, IItemHighlitObject)
   private
     FBackgroundColor: TAlphaColor;
+//    FMinSize: TPointF;
     procedure SetBackgroundColor(const Value: TAlphaColor);
     function GetHighlighter: TThItemShadowHighlighter;
   strict protected
@@ -29,6 +30,7 @@ type
 
     property Highlighter: TThItemShadowHighlighter read GetHighlighter;
     property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
+//    property MinSize: TPointF read FMinSize write FMinSize;
   end;
 {
   TThLineShape = class(TThShape)
@@ -38,11 +40,15 @@ type
   end;
 }
   TThRectangle = class(TThShape)
+  private
+    class function GetMinSize: TPointF; static;
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
     procedure DrawShape; override;
     procedure DrawHighlight; override;
+
+    class property MinSize: TPointF read GetMinSize;
   end;
 
   TThLine = class(TThShape)
@@ -136,6 +142,11 @@ begin
   Canvas.Fill.Color := FBackgroundColor;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+end;
+
+class function TThRectangle.GetMinSize: TPointF;
+begin
+  Result := PointF(50, 50);
 end;
 
 function TThRectangle.PtInItem(Pt: TPointF): Boolean;

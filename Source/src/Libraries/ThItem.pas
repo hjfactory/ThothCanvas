@@ -7,11 +7,11 @@ uses
   FMX.Types, ThItemHighlighterIF;
 
 type
-  IThItem = interface
+//  IThItem = interface
+//
+//  end;
 
-  end;
-
-  TThItem = class(TControl, IThItem)
+  TThItem = class(TControl)
   private
     FOnUnselected: TNotifyEvent;
   protected
