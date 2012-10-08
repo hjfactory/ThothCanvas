@@ -15,5 +15,6 @@ win32/*
 *.vlb
 *.pas.cbk
 dunit.ini
-*/OSX32/*
+Source/bin/OSX32/*
 *.deployproj
+*.tvsconfig
