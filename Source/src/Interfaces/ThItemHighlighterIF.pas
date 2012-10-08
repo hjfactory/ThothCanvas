@@ -3,7 +3,7 @@ unit ThItemHighlighterIF;
 interface
 
 uses
-  System.Types, FMX.Types;
+  System.Types, FMX.Types, System.UITypes;
 
 type
   IItemHighlitObject = interface;
@@ -18,7 +18,7 @@ type
   end;
 
   IItemHighlitObject = interface
-    procedure DrawHighlight;
+    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
   end;
 
 implementation

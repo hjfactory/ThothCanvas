@@ -113,7 +113,7 @@
         <DCCReference Include="..\src\Libraries\ThItem.pas"/>
         <DCCReference Include="..\src\Components\ThShape.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
-        <DCCReference Include="TestThShape.pas"/>
+        <DCCReference Include="TestThRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>
         <DCCReference Include="..\src\Utils\CommonUtils.pas"/>
         <DCCReference Include="..\src\Interfaces\ThItemHighlighterIF.pas"/>

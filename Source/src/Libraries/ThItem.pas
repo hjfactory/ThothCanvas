@@ -26,6 +26,7 @@ type
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
     procedure SetSelected(const Value: Boolean);
+    function GetMinimumSize: TPointF; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -41,6 +42,7 @@ type
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
+    property MinimumSize: TPointF read GetMinimumSize;
   end;
 
   TThItemClass = class of TThItem;
@@ -68,6 +70,11 @@ begin
   Result := inherited GetClipRect;
   if Assigned(FHighlighter) then
     Result := UnionRect(Result, FHighlighter.HighlightRect);
+end;
+
+function TThItem.GetMinimumSize: TPointF;
+begin
+  Result := PointF(30, 30);
 end;
 
 procedure TThItem.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -113,7 +120,6 @@ begin
     FOnSelected(Self);
 
   InvalidateRect(ClipRect);
-  Repaint;
 end;
 
 end.

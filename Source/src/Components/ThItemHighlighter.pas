@@ -42,12 +42,12 @@ begin
 
   FHighlight := False;
   FHighlightColor := claGray;
-  FHighlightSize := 10;
+  FHighlightSize := 5;
 end;
 
 procedure TThItemShadowHighlighter.DrawHighlight;
 begin
-  FParent.DrawHighlight;
+  FParent.DrawItem(GetHighlightRect, FHighlightColor);
 end;
 
 function TThItemShadowHighlighter.GetHighlightRect: TRectF;

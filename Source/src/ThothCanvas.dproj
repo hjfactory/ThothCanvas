@@ -170,13 +170,13 @@
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
+                    <Platform Name="OSX32"/>
+                </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.entitlements" Configuration="Release" Class="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
-                </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
-                    <Platform Name="OSX32"/>
                 </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.info.plist" Configuration="Release" Class="ProjectOSXInfoPList">
                     <Platform Name="OSX32">

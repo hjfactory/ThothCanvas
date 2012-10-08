@@ -15,20 +15,16 @@ type
   TThShape = class(TThItem, IItemHighlitObject)
   private
     FBackgroundColor: TAlphaColor;
-//    FMinSize: TPointF;
     procedure SetBackgroundColor(const Value: TAlphaColor);
-    function GetHighlighter: TThItemShadowHighlighter;
   strict protected
     procedure Paint; override;
   protected
-    procedure DrawShape; virtual; abstract;
-    procedure DrawHighlight; virtual; abstract;
+    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
 
     function GetShapeRect: TRectF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
 
-    property Highlighter: TThItemShadowHighlighter read GetHighlighter;
     property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
 //    property MinSize: TPointF read FMinSize write FMinSize;
   end;
@@ -41,22 +37,18 @@ type
 }
   TThRectangle = class(TThShape)
   private
-    class function GetMinSize: TPointF; static;
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
-    procedure DrawShape; override;
-    procedure DrawHighlight; override;
-
-    class property MinSize: TPointF read GetMinSize;
+    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); override;
+//    procedure DrawHighlight; override;
   end;
 
   TThLine = class(TThShape)
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
-    procedure DrawShape; override;
-    procedure DrawHighlight; override;
+    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   end;
 
 implementation
@@ -72,16 +64,11 @@ begin
 
   FHighlighter := TThItemShadowHighlighter.Create(Self);
 
-  FWidth := 1;
-  FHeight := 1;
+  FWidth := MinimumSize.X;
+  FHeight := MinimumSize.Y;
 
   FOpacity := 0.8;
   FBackgroundColor := claGreen;
-end;
-
-function TThShape.GetHighlighter: TThItemShadowHighlighter;
-begin
-  Result := TThItemShadowHighlighter(FHighlighter);
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -93,7 +80,7 @@ procedure TThShape.Paint;
 var
   S: string;
 begin
-  DrawShape;
+  DrawItem(GetShapeRect, FBackgroundColor);
 
 {$IFDEF DEBUG}
   S := Format('Position(%f, %f)', [Position.X, Position.Y]);
@@ -115,38 +102,17 @@ end;
 
 { TThRectangle }
 
-procedure TThRectangle.DrawHighlight;
+procedure TThRectangle.DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   R: TRectF;
 begin
-  if not Assigned(FHighlighter) then
-    Exit;
-
-  R := FHighlighter.HighlightRect;
+  R := ARect;
 
   Canvas.StrokeThickness := 0;
   Canvas.Stroke.Color := claNull;
-  Canvas.Fill.Color := Highlighter.HighlightColor;
+  Canvas.Fill.Color := AFillColor;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-end;
-
-procedure TThRectangle.DrawShape;
-var
-  R: TRectF;
-begin
-  R := GetShapeRect;
-
-  Canvas.StrokeThickness := 0;
-  Canvas.Stroke.Color := claNull;
-  Canvas.Fill.Color := FBackgroundColor;
-  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
-end;
-
-class function TThRectangle.GetMinSize: TPointF;
-begin
-  Result := PointF(50, 50);
 end;
 
 function TThRectangle.PtInItem(Pt: TPointF): Boolean;
@@ -156,13 +122,7 @@ end;
 
 { TThLine }
 
-procedure TThLine.DrawHighlight;
-begin
-  inherited;
-
-end;
-
-procedure TThLine.DrawShape;
+procedure TThLine.DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
 begin
 
 end;

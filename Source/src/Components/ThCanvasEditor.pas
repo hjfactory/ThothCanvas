@@ -33,7 +33,7 @@ type
 implementation
 
 uses
-  CommonUtils;
+  Math, CommonUtils;
 
 { TThCanvasEditor }
 
@@ -66,6 +66,12 @@ var
 begin
   if FIsDrawingItem and Assigned(FDrawItem) then
   begin
+    // Minimum size
+    if Abs(FMouseDownPos.X - X) < FDrawItem.MinimumSize.X then
+      X := FMouseDownPos.X + IfThen(FMouseDownPos.X < X, 1, -1) * FDrawItem.MinimumSize.X;
+    if Abs(FMouseDownPos.Y - Y) < FDrawItem.MinimumSize.Y then
+      Y := FMouseDownPos.Y + IfThen(FMouseDownPos.Y < Y, 1, -1) * FDrawItem.MinimumSize.Y;
+
     R := RectF(FMouseDownPos.X, FMouseDownPos.Y, X, Y);
     R.Offset(-FContents.Position.X, -FContents.Position.Y);
     R.NormalizeRect;

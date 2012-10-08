@@ -1,4 +1,4 @@
-unit TestThShape;
+unit TestThRectangle;
 {
 
   Delphi DUnit Test Case
@@ -16,7 +16,7 @@ uses
   System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
-  TestTThShape = class(TBaseTestUnit)
+  TestTThRectangle = class(TBaseTestUnit)
   private
     FTestClick: Boolean;
     procedure _Test(Sender: TObject);
@@ -42,12 +42,10 @@ type
     procedure TestRectangleMouseOverHighlight;
 
     // #37 끝점이 시작점 앞에 있어도 그려져야 한다.
-    procedure TestDrawRectangleBRToTL;  // BottomRight > TopLeft
-    procedure TestDrawRectangleTRToBL;  // TopRight > BottomLeft
-    procedure TestDrawRectangleBLToTR;  // BottomLeft > TopRight
+    procedure TestDrawRectangleEx;
 
     // #42 최소 크기를 갖으며 그리거나 크기 조정시 반영된다.
-    procedure TestRectangleMinSize;
+    procedure TestDrawRectangleMinSize;
   end;
 
 implementation
@@ -57,7 +55,7 @@ uses
 
 { TestTThShape }
 
-procedure TestTThShape.TestItemFactory;
+procedure TestTThRectangle.TestItemFactory;
 var
   Item: TThItem;
 begin
@@ -80,7 +78,7 @@ begin
   end;
 end;
 
-procedure TestTThShape.TestDrawRectangle;
+procedure TestTThRectangle.TestDrawRectangle;
 var
   Item: TThItem;
 begin
@@ -106,7 +104,7 @@ end;
 
 // S1.100,50 으로 Canvas 이동 후 0,0 > 100, 100 Rectangle 그리면
 //    Rectangle의 좌표는 -100, -50 이어야 한다.
-procedure TestTThShape.TestCanvasTrackingAndDrawRectangle;
+procedure TestTThRectangle.TestCanvasTrackingAndDrawRectangle;
 var
   Item: TThItem;
 begin
@@ -139,7 +137,7 @@ begin
   Check(Item.Position.Y = -40, Format('Postion.Y : %f', [Item.Position.Y]));
 end;
 
-procedure TestTThShape.TestRectangleSelect;
+procedure TestTThRectangle.TestRectangleSelect;
 begin
   // Draw Rectangle
   FCanvas.DrawItemID := 1100;
@@ -156,7 +154,7 @@ end;
 
 // S1.0,0에 Rectangle을 그리고 -100, -100 이동한 후
 //    -30, -30을 클릭하면 그영역에 있는 버튼이 클릭되야 한다.
-procedure TestTThShape.TestRectangleOutOfCanvas;
+procedure TestTThRectangle.TestRectangleOutOfCanvas;
 var
   Button: TButton;
 begin
@@ -190,12 +188,12 @@ begin
   Check(FTestClick, '버튼이 클릭되지 않음');
 end;
 
-procedure TestTThShape.TestRectangleSelectionHighlight;
+procedure TestTThRectangle.TestRectangleSelectionHighlight;
 var
   R: TThRectangle;
   AC: TAlphaColor;
 begin
-  // 10,10,100,100 그리기
+  // 그리기
   FCanvas.DrawItemID := 1100;
   MousePath.New
   .Add(10, 10)
@@ -203,7 +201,7 @@ begin
   .Add(100, 100);
   TestLib.RunMousePath(MousePath.Path);
 
-  // 50,50 클릭 선택
+  // 클릭 선택
   TestLib.RunMouseClick(50, 50);
 
   R := TThRectangle(FCanvas.SelectedItem);
@@ -220,16 +218,7 @@ begin
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
-procedure TestTThShape.TestRectangleMinSize;
-begin
-  // Minsize 설정
-
-  // Minsize 미만으로 그리기
-
-  // MinSize로 그려진것 확인
-end;
-
-procedure TestTThShape.TestRectangleMouseOverHighlight;
+procedure TestTThRectangle.TestRectangleMouseOverHighlight;
 var
   R: TThRectangle;
   AC: TAlphaColor;
@@ -268,61 +257,101 @@ begin
   Check(AC = claGray, 'Not matching Color');
 end;
 
-// BottomRight > TopLeft
-procedure TestTThShape.TestDrawRectangleBRToTL;
+procedure TestTThRectangle.TestDrawRectangleEx;
 begin
+  // BRToTL
   FCanvas.DrawItemID := 1100;
   MousePath.New
-  .Add(100, 100)
-  .Add(50, 50)
-  .Add(10, 10);
+  .Add(200, 100)
+  .Add(150, 50)
+  .Add(110, 10);
   TestLib.RunMousePath(MousePath.Path);
 
-  TestLib.RunMouseClick(50, 50);
+  TestLib.RunMouseClick(150, 50);
 
   Check(Assigned(FCanvas.SelectedItem));
-  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
-end;
+  Check(FCanvas.SelectedItem.Position.X = 110, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
-// TopRight > BottomLeft
-procedure TestTThShape.TestDrawRectangleTRToBL;
-begin
+  // TRToBL
   FCanvas.DrawItemID := 1100;
   MousePath.New
-  .Add(100, 10)
-  .Add(50, 50)
-  .Add(10, 100);
+  .Add(100, 110)
+  .Add(50, 150)
+  .Add(10, 200);
   TestLib.RunMousePath(MousePath.Path);
 
-  TestLib.RunMouseClick(50, 50);
+  TestLib.RunMouseClick(50, 150);
 
   Check(Assigned(FCanvas.SelectedItem));
-  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
-end;
+  Check(FCanvas.SelectedItem.Position.X = 10, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
-// BottomLeft > TopRight
-procedure TestTThShape.TestDrawRectangleBLToTR;
-begin
+  // BLToTR
   FCanvas.DrawItemID := 1100;
   MousePath.New
-  .Add(10, 100)
-  .Add(50, 50)
-  .Add(100, 10);
+  .Add(110, 200)
+  .Add(150, 150)
+  .Add(200, 110);
   TestLib.RunMousePath(MousePath.Path);
 
-  TestLib.RunMouseClick(50, 50);
+  TestLib.RunMouseClick(150, 150);
 
   Check(Assigned(FCanvas.SelectedItem));
-  Check(FCanvas.SelectedItem.Position.X = 10, Format('X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = 110, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
-procedure TestTThShape._Test(Sender: TObject);
+procedure TestTThRectangle.TestDrawRectangleMinSize;
+begin
+  // TLToBR
+  FCanvas.DrawItemID := 1100;
+  MousePath.New.Add(10, 10)
+  .Add(20, 20)
+  .Add(30, 30);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.RunMouseClick(35, 35);  // MinSize 30, 30 : 10,10 > 40, 40
+  Check(Assigned(FCanvas.SelectedItem), 'TLToBR');
+
+  // TRToBL
+  FCanvas.DrawItemID := 1100;
+  MousePath.New
+  .Add(60, 30)
+  .Add(70, 20)
+  .Add(80, 10);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.RunMouseClick(85, 5);  // MinSize 30, 30 : 10,0 > 40, 30
+  Check(Assigned(FCanvas.SelectedItem), 'TRToBL');
+
+  // BLToTR
+  FCanvas.DrawItemID := 1100;
+  MousePath.New
+  .Add(30, 60)
+  .Add(20, 70)
+  .Add(10, 80);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.RunMouseClick(5, 85);  // MinSize 30, 30 : 0,10 > 30, 40
+  Check(Assigned(FCanvas.SelectedItem), 'BLToTR');
+
+  // BRToTL
+  FCanvas.DrawItemID := 1100;
+  MousePath.New
+  .Add(80, 80)
+  .Add(70, 70)
+  .Add(60, 60);
+  TestLib.RunMousePath(MousePath.Path);
+
+  TestLib.RunMouseClick(55, 55);  // MinSize 30, 30 : 0,0 > 30, 30
+  Check(Assigned(FCanvas.SelectedItem), 'BRToTL');
+end;
+
+procedure TestTThRectangle._Test(Sender: TObject);
 begin
   FTestClick := True;
 end;
 
 initialization
-  RegisterTest(TestTThShape.Suite);
+  RegisterTest(TestTThRectangle.Suite);
 
 end.
 

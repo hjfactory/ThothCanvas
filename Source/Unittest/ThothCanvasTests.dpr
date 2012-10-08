@@ -24,7 +24,7 @@ uses
   ThItem in '..\src\Libraries\ThItem.pas',
   ThShape in '..\src\Components\ThShape.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
-  TestThShape in 'TestThShape.pas',
+  TestThRectangle in 'TestThRectangle.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
   CommonUtils in '..\src\Utils\CommonUtils.pas',
   ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
