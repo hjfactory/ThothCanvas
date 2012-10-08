@@ -7,29 +7,33 @@ uses
   ThContainer, ThItem;
 
 type
+{
+  Features
+    - ThContainers features
+    - ThItem control(add, modify, delete)
+}
   TThCanvasEditor = class(TThContainer)
   private
     FDrawItem: TThItem;
     FItemID: Integer;
-    FSelecteditem: TThItem;
+    FIsDrawingItem: Boolean;
 
-    procedure SelectItem(Sender: TObject);
+    procedure SetItemID(const Value: Integer);
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    property ItemID: Integer read FItemID write FItemID;
-
-    property SelectedItem: TThItem read FSelectedItem;
+    property ItemID: Integer read FItemID write SetItemID;
+    property IsDrawingItem: Boolean read FIsDrawingItem;
   end;
 
 implementation
 
 uses
-  ThItemFactory, CommonUtils;
+  CommonUtils;
 
 { TThCanvasEditor }
 
@@ -45,15 +49,13 @@ procedure TThCanvasEditor.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FItemID <> -1 then
+  if FIsDrawingItem then
   begin
-    FSelectedItem := nil;
-    FDrawItem := ItemFactory.Get(FItemID);
+    ClearSelection;
+    FDrawItem := InsertItem(FItemID);
     if Assigned(FDrawItem) then
     begin
-      FDrawItem.Parent := Self;
       FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
-      FDrawItem.OnSelected := SelectItem;
     end;
   end;
 end;
@@ -62,7 +64,7 @@ procedure TThCanvasEditor.MouseMove(Shift: TShiftState; X, Y: Single);
 var
   R: TRectF;
 begin
-  if (FItemID <> -1) and Assigned(FDrawItem) then
+  if FIsDrawingItem and Assigned(FDrawItem) then
   begin
     R := RectF(FDownPos.X, FDownPos.Y, X, Y);
     R.Offset(-FContents.Position.X, -FContents.Position.Y);
@@ -78,14 +80,16 @@ procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
+  FIsDrawingItem := False;
   FDrawItem := nil;
   FItemID := -1;
 end;
 
-procedure TThCanvasEditor.SelectItem(Sender: TObject);
+procedure TThCanvasEditor.SetItemID(const Value: Integer);
 begin
-  FSelectedItem := TThItem(Sender);
-//  Repaint;
+  FItemID := Value;
+
+  FIsDrawingItem := True;
 end;
 
 end.

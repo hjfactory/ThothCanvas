@@ -29,6 +29,9 @@ type
 
     // #59 Tracking으로 캔버스 영역을 벗어나면 도형등이 표시되지 않음
     procedure TestTrackingOutOfCanvasAreaNotDisplayed;
+
+    // #49 캔버스를 클릭하면 (도형)선택이 취소되어야 한다.
+    procedure TestUnselectingItem;
   end;
 
 implementation
@@ -90,9 +93,6 @@ end;
 //    캔버스 높이 이상을 Tracking하여 이동
 //    도형의 색상을 추출하여 색상비교
 procedure TestTThCanvasEditor.TestTrackingOutOfCanvasAreaNotDisplayed;
-var
-  Image: TImage;
-  Map: TBitmapData;
 begin
   // Draw Rectangle
   FCanvas.ItemID := 1100;
@@ -118,6 +118,31 @@ begin
 
   // 색상비교
   Check(TestLib.GetControlPixelColor(FCanvas, 150, 10) = claRed);
+end;
+
+procedure TestTThCanvasEditor.TestUnselectingItem;
+var
+  Item: TThItem;
+begin
+  // Draw Rectangle
+  FCanvas.ItemID := 1100;
+  MousePath.New
+  .Add(10, 10)
+  .Add(50, 50)
+  .Add(100, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // Select
+  TestLib.MouseClick(50, 50);
+
+  Item := FCanvas.SelectedItem;
+  Check(Assigned(Item), 'Corrent select');
+
+  // Select
+  TestLib.MouseClick(150, 150);
+
+  Check(not Assigned(FCanvas.SelectedItem), 'Incorrent select');
+  Check(not Item.Selected, 'Item unselected');
 end;
 
 initialization

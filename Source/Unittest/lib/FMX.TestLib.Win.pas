@@ -51,6 +51,8 @@ begin
     TMouseButton.mbLeft: Flag := MOUSEEVENTF_LEFTDOWN;
     TMouseButton.mbRight: Flag := MOUSEEVENTF_RIGHTDOWN;
     TMouseButton.mbMiddle: Flag := MOUSEEVENTF_MIDDLEDOWN;
+    else
+      Flag := MOUSEEVENTF_LEFTDOWN;
   end;
 
   SetCursorPos(Round(X), Round(Y));
@@ -66,6 +68,8 @@ begin
     TMouseButton.mbLeft: Flag := MOUSEEVENTF_LEFTUP;
     TMouseButton.mbRight: Flag := MOUSEEVENTF_RIGHTUP;
     TMouseButton.mbMiddle: Flag := MOUSEEVENTF_MIDDLEUP;
+    else
+      Flag := MOUSEEVENTF_LEFTDOWN;
   end;
 
   SetCursorPos(Round(X), Round(Y));

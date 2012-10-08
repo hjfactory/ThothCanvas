@@ -12,6 +12,8 @@ type
   end;
 
   TThItem = class(TControl, IThItem)
+  private
+    FOnUnselected: TNotifyEvent;
   protected
     FSelected: Boolean;
 
@@ -19,19 +21,20 @@ type
     FOnTrack: TNotifyEvent;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
-    function PointInObject(X, Y: Single): Boolean; override;
     procedure SetSelected(const Value: Boolean);
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-//    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
-//    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   public
     property Selected: Boolean read FSelected write SetSelected;
 
+    function PointInObject(X, Y: Single): Boolean; override;
+
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
+    property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
   end;
 
+  // With shadow
   TThHighlightItem = class(TThItem)
   private
     FHighlight: Boolean;
@@ -41,13 +44,12 @@ type
     procedure SetHighlightColor(const Value: TAlphaColor);
     procedure SetHighlightSize(const Value: Single);
   protected
-    procedure Painting; override;
-
     function GetClipRect: TRectF; override;
     function GetHighlightRect: TRectF; virtual;
     procedure DrawHighlight; virtual;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure Painting; override;
 
     property HighlightColor: TAlphaColor read FHighlightColor write SetHighlightColor;
     property HighlightSize: Single read FHighlightSize write SetHighlightSize;
@@ -79,8 +81,6 @@ begin
 end;
 
 procedure TThItem.SetSelected(const Value: Boolean);
-var
-  R: TRectF;
 begin
   if FSelected = Value then
     Exit;

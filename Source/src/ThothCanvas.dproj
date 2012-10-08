@@ -96,7 +96,7 @@
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="Libraries\ThItem.pas"/>
-        <DCCReference Include="Libraries\ThShape.pas"/>
+        <DCCReference Include="Components\ThShape.pas"/>
         <DCCReference Include="Components\ThCanvasEditor.pas"/>
         <DCCReference Include="Libraries\ThContainer.pas"/>
         <DCCReference Include="Components\ThItemFactory.pas"/>
@@ -168,13 +168,13 @@
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
-                    <Platform Name="OSX32"/>
-                </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.entitlements" Configuration="Release" Class="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
+                    <Platform Name="OSX32"/>
                 </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.info.plist" Configuration="Release" Class="ProjectOSXInfoPList">
                     <Platform Name="OSX32">

@@ -3,7 +3,7 @@ unit ThContainer;
 interface
 
 uses
-  System.Classes, System.SysUtils,
+  System.Classes, System.SysUtils, ThItem,
   System.Types, System.UITypes, System.UIConsts, FMX.Types;
 
 type
@@ -20,11 +20,14 @@ type
 
   TThContainer = class(TControl)
   private
-    FContentPos: TPosition;
     FUseMouseTracking: Boolean;
+    FSelecteditem: TThItem;
 
     function GetContentPos: TPosition;
     function GetItemCount: Integer;
+
+    procedure ItemSelect(Sender: TObject);
+    procedure ItemUnselect(Sender: TObject);
   protected
     FDownPos,
     FCurrentPos: TPointF;
@@ -42,14 +45,19 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
+    function InsertItem(const ItemID: Integer): TThItem;
+    procedure ClearSelection;
+
     property ContentPos: TPosition read GetContentPos;
     property ItemCount: Integer read GetItemCount;
+
+    property SelectedItem: TThItem read FSelectedItem;
   end;
 
 implementation
 
 uses
-  CommonUtils;
+  ThItemFactory, CommonUtils;
 
 { TThContent }
 
@@ -102,6 +110,11 @@ begin
 end;
 
 { TThContainer }
+
+procedure TThContainer.ClearSelection;
+begin
+  FSelectedItem := nil;
+end;
 
 constructor TThContainer.Create(AOwner: TComponent);
 begin
@@ -164,6 +177,11 @@ procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
+  if FDownPos = PointF(X, Y) then
+  begin
+    FSelectedItem.Selected := False;
+    FSelectedItem := nil;
+  end;
 end;
 
 procedure TThContainer.Paint;
@@ -184,54 +202,7 @@ begin
   inherited;
 
 end;
-{
-procedure TThContainer.DoRealign;
-var
-  R: TRectF;
-begin
-  inherited;
-Exit;
-  R := GetContentBounds;
-  OffsetRect(R, FContents.Position.X, FContents.Position.Y);
-  OffsetRect(R, FContents.Position.X, FContents.Position.Y);
 
-  RealignContent(R);
-end;
-
-procedure TThContainer.RealignContent(R: TRectF);
-begin
-  if (FContents <> nil) then
-  begin
-    FContents.SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
-    FContents.FRecalcUpdateRect := True; // need to recalc
-    FContents.Realign;
-  end;
-end;
-
-function TThContainer.GetContentBounds: TRectF;
-var
-  I: Integer;
-  R, LocalR: TRectF;
-  C: TControl;
-begin
-  Result := RectF(0, 0, Width, Height);
-  if (FContents <> nil) then
-  begin
-    R := ClipRect;
-    for I := 0 to FContents.ChildrenCount - 1 do
-      if (TControl(FContents.Children[I]).Visible) then
-      begin
-        if (csDesigning in ComponentState) and not (csDesigning in FContents.Children[I].ComponentState) then
-          Continue;
-
-        C := TControl(FContents.Children[I]);
-        LocalR := RectF(0, 0, C.Width * C.Scale.X, C.Height * C.Scale.Y);
-        R := UnionRect(R, LocalR);
-      end;
-    Result := R;
-  end;
-end;
-}
 function TThContainer.GetContentPos: TPosition;
 begin
   Result := FContents.Position;
@@ -240,6 +211,29 @@ end;
 function TThContainer.GetItemCount: Integer;
 begin
   Result := FContents.ChildrenCount;
+end;
+
+function TThContainer.InsertItem(const ItemID: Integer): TThItem;
+begin
+  Result := ItemFactory.Get(ItemID);
+  if Assigned(Result) then
+  begin
+    Result.Parent := Self;
+    Result.OnSelected := ItemSelect;
+    Result.OnUnselected := ItemUnselect;
+  end;
+end;
+
+procedure TThContainer.ItemSelect(Sender: TObject);
+begin
+  // List贸府 鞘夸
+  FSelectedItem := TThItem(Sender);
+end;
+
+procedure TThContainer.ItemUnselect(Sender: TObject);
+begin
+  FSelectedItem := nil;
+  // List贸府 鞘夸
 end;
 
 end.
