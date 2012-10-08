@@ -208,8 +208,8 @@ begin
   Check(Assigned(R), 'Not assigned');
 
   R.Opacity := 1;
-  R.HighlightColor := claGray;
-  R.HighlightSize := 10;
+  R.Highlighter.HighlightColor := claGray;
+  R.Highlighter.HighlightSize := 10;
 
   // 105.105 색상확인
   AC := TestLib.GetControlPixelColor(FCanvas, 105, 105);

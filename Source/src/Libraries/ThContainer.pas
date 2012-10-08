@@ -23,18 +23,15 @@ type
     FUseMouseTracking: Boolean;
     FSelecteditem: TThItem;
 
-    function GetContentPos: TPosition;
-    function GetItemCount: Integer;
-
     procedure ItemSelect(Sender: TObject);
     procedure ItemUnselect(Sender: TObject);
   protected
-    FDownPos,
-    FCurrentPos: TPointF;
     FContents: TThContents;
+    FMouseDownPos,          // MouseDown 시 좌표
+    FMouseCurrPos: TPointF; // MouseMove 시 좌표
 
     procedure Paint; override;
-    procedure PaintChildren; override;
+//    procedure PaintChildren; override;
 
     procedure DoAddObject(AObject: TFmxObject); override;
   public
@@ -47,9 +44,6 @@ type
 
     function InsertItem(const ItemID: Integer): TThItem;
     procedure ClearSelection;
-
-    property ContentPos: TPosition read GetContentPos;
-    property ItemCount: Integer read GetItemCount;
 
     property SelectedItem: TThItem read FSelectedItem;
   end;
@@ -80,14 +74,10 @@ begin
   if not Assigned(Parent) then
     Exit;
 
-//Result := inherited GetUpdateRect;
-//Exit;
-{
-   ClipClildren := True 설정 시 Canvas 영역을 빠져나가면 Contents 표시 멈춤
+{   ClipClildren := True 설정 시 Canvas 영역을 빠져나가면 Contents 표시 멈춤
       TControl.GetUpdateRect 11 line
           if TControl(P).ClipChildren or TControl(P).SmallSizeControl then
-            IntersectRect(FUpdateRect, FUpdateRect, TControl(P).UpdateRect);
-}
+            IntersectRect(FUpdateRect, FUpdateRect, TControl(P).UpdateRect);}
 
   TControl(Parent).ClipChildren := False;
   try
@@ -110,11 +100,6 @@ begin
 end;
 
 { TThContainer }
-
-procedure TThContainer.ClearSelection;
-begin
-  FSelectedItem := nil;
-end;
 
 constructor TThContainer.Create(AOwner: TComponent);
 begin
@@ -152,10 +137,10 @@ procedure TThContainer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if (FPressed) and FUseMouseTracking then
+  if FPressed and FUseMouseTracking then
   begin
-    FDownPos := PointF(X, Y);
-    FCurrentPos := PointF(X, Y);
+    FMouseDownPos := PointF(X, Y);
+    FMouseCurrPos := PointF(X, Y);
   end;
 end;
 
@@ -165,8 +150,8 @@ var
 begin
   if FPressed and FUseMouseTracking then
   begin
-    TrackingPos := PointF(X - FCurrentPos.X, Y - FCurrentPos.Y);
-    FCurrentPos := PointF(X, Y);
+    TrackingPos := PointF(X - FMouseCurrPos.X, Y - FMouseCurrPos.Y);
+    FMouseCurrPos := PointF(X, Y);
 
     FContents.AddTrackingPos(TrackingPos);
   end;
@@ -177,11 +162,8 @@ procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FDownPos = PointF(X, Y) then
-  begin
-    FSelectedItem.Selected := False;
-    FSelectedItem := nil;
-  end;
+  if FMouseDownPos = PointF(X, Y) then
+    ClearSelection;
 end;
 
 procedure TThContainer.Paint;
@@ -195,22 +177,6 @@ begin
   Canvas.Fill.Color := $FFDDDDDD;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
 {$ENDIF}
-end;
-
-procedure TThContainer.PaintChildren;
-begin
-  inherited;
-
-end;
-
-function TThContainer.GetContentPos: TPosition;
-begin
-  Result := FContents.Position;
-end;
-
-function TThContainer.GetItemCount: Integer;
-begin
-  Result := FContents.ChildrenCount;
 end;
 
 function TThContainer.InsertItem(const ItemID: Integer): TThItem;
@@ -227,6 +193,9 @@ end;
 procedure TThContainer.ItemSelect(Sender: TObject);
 begin
   // List처리 필요
+  if Assigned(FSelectedItem) then
+    FSelectedItem.Selected := False;
+
   FSelectedItem := TThItem(Sender);
 end;
 
@@ -234,6 +203,13 @@ procedure TThContainer.ItemUnselect(Sender: TObject);
 begin
   FSelectedItem := nil;
   // List처리 필요
+end;
+
+procedure TThContainer.ClearSelection;
+begin
+  if Assigned(FSelectedItem) then
+    FSelectedItem.Selected := False;
+  FSelectedItem := nil;
 end;
 
 end.

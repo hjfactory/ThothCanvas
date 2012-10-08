@@ -8,7 +8,9 @@ uses
   ThCanvasEditor in 'Components\ThCanvasEditor.pas',
   ThContainer in 'Libraries\ThContainer.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
-  CommonUtils in 'Utils\CommonUtils.pas';
+  CommonUtils in 'Utils\CommonUtils.pas',
+  ThItemHighlighterIF in 'Models\ThItemHighlighterIF.pas',
+  ThItemHighlighter in 'Components\ThItemHighlighter.pas';
 
 {$R *.res}
 

@@ -26,7 +26,9 @@ uses
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
   TestThShape in 'TestThShape.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
-  CommonUtils in '..\src\Utils\CommonUtils.pas';
+  CommonUtils in '..\src\Utils\CommonUtils.pas',
+  ThItemHighlighterIF in '..\src\Models\ThItemHighlighterIF.pas',
+  ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas';
 
 {$R *.RES}
 

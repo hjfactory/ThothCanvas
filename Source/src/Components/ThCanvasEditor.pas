@@ -66,7 +66,7 @@ var
 begin
   if FIsDrawingItem and Assigned(FDrawItem) then
   begin
-    R := RectF(FDownPos.X, FDownPos.Y, X, Y);
+    R := RectF(FMouseDownPos.X, FMouseDownPos.Y, X, Y);
     R.Offset(-FContents.Position.X, -FContents.Position.Y);
     R.NormalizeRect;
     FDrawItem.BoundsRect := R;

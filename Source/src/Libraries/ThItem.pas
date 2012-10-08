@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types;
+  FMX.Types, ThItemHighlighterIF;
 
 type
   IThItem = interface
@@ -15,10 +15,13 @@ type
   private
     FOnUnselected: TNotifyEvent;
   protected
+    FHighlighter: IThItemHighlighter;
     FSelected: Boolean;
 
     FOnSelected: TNotifyEvent;
     FOnTrack: TNotifyEvent;
+
+    function GetClipRect: TRectF; override;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
     procedure SetSelected(const Value: Boolean);
@@ -27,6 +30,8 @@ type
   public
     property Selected: Boolean read FSelected write SetSelected;
 
+    procedure Painting; override;
+
     function PointInObject(X, Y: Single): Boolean; override;
 
     property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
@@ -34,32 +39,18 @@ type
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
   end;
 
-  // With shadow
-  TThHighlightItem = class(TThItem)
-  private
-    FHighlight: Boolean;
-    FHighlightColor: TAlphaColor;
-    FHighlightSize: Single;
-
-    procedure SetHighlightColor(const Value: TAlphaColor);
-    procedure SetHighlightSize(const Value: Single);
-  protected
-    function GetClipRect: TRectF; override;
-    function GetHighlightRect: TRectF; virtual;
-    procedure DrawHighlight; virtual;
-  public
-    constructor Create(AOwner: TComponent); override;
-    procedure Painting; override;
-
-    property HighlightColor: TAlphaColor read FHighlightColor write SetHighlightColor;
-    property HighlightSize: Single read FHighlightSize write SetHighlightSize;
-  end;
-
   TThItemClass = class of TThItem;
 
 implementation
 
 { TThItem }
+
+function TThItem.GetClipRect: TRectF;
+begin
+  Result := inherited GetClipRect;
+  if Assigned(FHighlighter) then
+    Result := UnionRect(Result, FHighlighter.HighlightRect);
+end;
 
 procedure TThItem.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
@@ -69,6 +60,14 @@ begin
   case Button of
     TMouseButton.mbLeft: Selected := True;
   end;
+end;
+
+procedure TThItem.Painting;
+begin
+  inherited;
+
+  if FSelected and Assigned(FHighlighter) then
+    FHighlighter.DrawHighlight;
 end;
 
 function TThItem.PointInObject(X, Y: Single): Boolean;
@@ -91,63 +90,6 @@ begin
     FOnSelected(Self);
 
   InvalidateRect(ClipRect);
-  Repaint;
-end;
-
-{ TThHighlightItem }
-
-constructor TThHighlightItem.Create(AOwner: TComponent);
-begin
-  inherited;
-
-  ClipParent := False;
-
-  FHighlight := False;
-  FhighlightColor := claGray;
-  FHighlightSize := 10;
-end;
-
-procedure TThHighlightItem.DrawHighlight;
-begin
-end;
-
-// 그림자 영역을 더해야 한다.
-function TThHighlightItem.GetClipRect: TRectF;
-begin
-  Result := inherited GetClipRect;
-  Result.Bottom := Result.Bottom + FHighlightSize;
-  Result.Right := Result.Right + FHighlightSize;
-end;
-
-function TThHighlightItem.GetHighlightRect: TRectF;
-begin
-  Result := LocalRect;
-  Result.Offset(HighlightSize, HighlightSize);
-end;
-
-procedure TThHighlightItem.Painting;
-begin
-  inherited;
-
-  if FSelected then
-    DrawHighlight;
-end;
-
-procedure TThHighlightItem.SetHighlightColor(const Value: TAlphaColor);
-begin
-  if FHighlightColor = Value then
-    Exit;
-
-  FHighlightColor := Value;
-  Repaint;
-end;
-
-procedure TThHighlightItem.SetHighlightSize(const Value: Single);
-begin
-  if FHighlightSize = Value then
-    Exit;
-
-  FHighlightSize := Value;
   Repaint;
 end;
 

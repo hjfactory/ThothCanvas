@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils,
-  FMX.Types, ThItem;
+  FMX.Types, ThItem, ThItemHighlighterIF, ThItemHighlighter;
 
 type
 {
@@ -12,29 +12,32 @@ type
   ClipRect  : ShapeRect + ShadowRect
 }
 
-  TThShape = class(TThHighlightItem)
+  TThShape = class(TThItem, IThItemHighlitObject)
   private
     FBackgroundColor: TAlphaColor;
     procedure SetBackgroundColor(const Value: TAlphaColor);
+    function GetHighlighter: TThItemShadowHighlighter;
   strict protected
     procedure Paint; override;
   protected
     procedure DrawShape; virtual; abstract;
+    procedure DrawHighlight; virtual; abstract;
 
     function GetShapeRect: TRectF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
 
+    property Highlighter: TThItemShadowHighlighter read GetHighlighter;
     property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
   end;
-
+{
   TThLineShape = class(TThShape)
   end;
 
   TThFillShape = class(TThShape)
   end;
-
-  TThRectangle = class(TThFillShape)
+}
+  TThRectangle = class(TThShape)
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
@@ -42,7 +45,7 @@ type
     procedure DrawHighlight; override;
   end;
 
-  TThLine = class(TThLineShape)
+  TThLine = class(TThShape)
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
@@ -61,11 +64,18 @@ constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
 
+  FHighlighter := TThItemShadowHighlighter.Create(Self);
+
   FWidth := 1;
   FHeight := 1;
 
   FOpacity := 0.8;
   FBackgroundColor := claGreen;
+end;
+
+function TThShape.GetHighlighter: TThItemShadowHighlighter;
+begin
+  Result := TThItemShadowHighlighter(FHighlighter);
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -103,11 +113,14 @@ procedure TThRectangle.DrawHighlight;
 var
   R: TRectF;
 begin
-  R := GetHighlightRect;
+  if not Assigned(FHighlighter) then
+    Exit;
+
+  R := FHighlighter.HighlightRect;
 
   Canvas.StrokeThickness := 0;
   Canvas.Stroke.Color := claNull;
-  Canvas.Fill.Color := HighlightColor;
+  Canvas.Fill.Color := Highlighter.HighlightColor;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;

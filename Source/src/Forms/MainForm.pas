@@ -41,12 +41,10 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  FCanvas.ItemID := TButton(Sender).Tag;
+  FCanvas.DrawItemID := TButton(Sender).Tag;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-var
-  Shape: TShape;
 begin
   FCanvas := TThCanvasEditor.Create(Self);
   FCanvas.Parent := Panel1;
