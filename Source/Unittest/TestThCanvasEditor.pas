@@ -110,7 +110,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
-  TestLib.MouseClick(150, 10);
+  TestLib.RunMouseClick(150, 10);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');  // 안보여도 선택은 됨
   TThShape(FCanvas.SelectedItem).BackgroundColor := claRed;
@@ -133,13 +133,13 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   // Select
-  TestLib.MouseClick(50, 50);
+  TestLib.RunMouseClick(50, 50);
 
   Item := FCanvas.SelectedItem;
   Check(Assigned(Item), 'Corrent select');
 
   // Select
-  TestLib.MouseClick(150, 150);
+  TestLib.RunMouseClick(150, 150);
 
   Check(not Assigned(FCanvas.SelectedItem), 'Incorrent select');
   Check(not Item.Selected, 'Item unselected');

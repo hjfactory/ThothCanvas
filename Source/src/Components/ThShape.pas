@@ -12,7 +12,7 @@ type
   ClipRect  : ShapeRect + ShadowRect
 }
 
-  TThShape = class(TThItem, IThItemHighlitObject)
+  TThShape = class(TThItem, IItemHighlitObject)
   private
     FBackgroundColor: TAlphaColor;
     procedure SetBackgroundColor(const Value: TAlphaColor);

@@ -21,11 +21,12 @@ uses
 
 type
   TTestLibWin = class(TTestLib)
-  public
+  protected
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseWheel(WheelDelta: Integer); override;
+  public
     procedure KeyDown(var Key: Word; var KeyChar: WideChar); override;
     procedure KeyUp(var Key: Word; var KeyChar: WideChar); override;
   end;
@@ -39,7 +40,8 @@ end;
 
 procedure TTestLibWin.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
-  mouse_event(MOUSEEVENTF_MOVE, Round(X), Round(Y), 0, 0);
+  SetCursorPos(Round(X), Round(Y));
+//  mouse_event(MOUSEEVENTF_MOVE, Round(X), Round(Y), 0, 0);
 end;
 
 procedure TTestLibWin.MouseDown(Button: TMouseButton; Shift: TShiftState; X,

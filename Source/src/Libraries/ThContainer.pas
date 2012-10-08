@@ -22,9 +22,13 @@ type
   private
     FUseMouseTracking: Boolean;
     FSelecteditem: TThItem;
+    FBackgroundColor: TAlphaColor;
 
     procedure ItemSelect(Sender: TObject);
     procedure ItemUnselect(Sender: TObject);
+    function GetContentPos: TPosition;
+    function GetItemCount: Integer;
+    procedure SetBackgroundColor(const Value: TAlphaColor);
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
@@ -46,7 +50,12 @@ type
     procedure ClearSelection;
 
     property SelectedItem: TThItem read FSelectedItem;
-  end;
+
+    property ContentPos: TPosition read GetContentPos;
+    property ItemCount: Integer read GetItemCount;
+
+    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
+   end;
 
 implementation
 
@@ -115,6 +124,12 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
+
+{$IFDEF DEBUG}
+  FBackgroundColor := $FFDDDDDD;
+{$ELSE}
+  FBackgroundColor := $FFFFFFFF;
+{$ENDIF}
 end;
 
 destructor TThContainer.Destroy;
@@ -170,13 +185,17 @@ procedure TThContainer.Paint;
 begin
   inherited;
 
-{$IFDEF DEBUG}
-  Canvas.Fill.Color := $FFDDDDDD;
+  Canvas.Fill.Color := FBackgroundColor;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
-{$ELSE}
-  Canvas.Fill.Color := $FFDDDDDD;
-  Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
-{$ENDIF}
+end;
+
+procedure TThContainer.SetBackgroundColor(const Value: TAlphaColor);
+begin
+  if FBackgroundColor = Value then
+    Exit;
+
+  FBackgroundColor := Value;
+  Repaint;
 end;
 
 function TThContainer.InsertItem(const ItemID: Integer): TThItem;
@@ -210,6 +229,16 @@ begin
   if Assigned(FSelectedItem) then
     FSelectedItem.Selected := False;
   FSelectedItem := nil;
+end;
+
+function TThContainer.GetContentPos: TPosition;
+begin
+  Result := FContents.Position;
+end;
+
+function TThContainer.GetItemCount: Integer;
+begin
+  Result := FContents.ChildrenCount;
 end;
 
 end.

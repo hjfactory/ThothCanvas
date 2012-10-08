@@ -11,22 +11,22 @@ type
 
 
   TTestLib = class(TObject)
-  private
+  protected
     FInitialMousePoint: TPointF;
-  public
-    procedure SetInitialMousePoint(Pos: TPointF);
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseWheel(WheelDelta: Integer); virtual; abstract;
+  public
+    procedure SetInitialMousePoint(Pos: TPointF);
     procedure KeyDown(var Key: Word; var KeyChar: WideChar); virtual; abstract;
     procedure KeyUp(var Key: Word; var KeyChar: WideChar); virtual; abstract;
 
-    procedure MouseClick(X, Y: Single);
+    procedure RunMouseClick(X, Y: Single);
 
     procedure RunMousePath(Path: array of TPointF);
-    procedure RunMouseArray(PathArray: PointFArray);
+    procedure RunMouseMove(Path: array of TPointF);
 
     function GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
   end;
@@ -94,7 +94,7 @@ begin
   end;
 end;
 
-procedure TTestLib.MouseClick(X, Y: Single);
+procedure TTestLib.RunMouseClick(X, Y: Single);
 begin
   MouseDown(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
   MouseUp(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
@@ -121,9 +121,18 @@ begin
   end;
 end;
 
-procedure TTestLib.RunMouseArray(PathArray: PointFArray);
+procedure TTestLib.RunMouseMove(Path: array of TPointF);
+var
+  I: Integer;
+  Pos: TPointF;
 begin
+  for I := Low(Path) to High(Path) do
+  begin
+    Pos := FInitialMousePoint.Add(Path[I]);
 
+    MouseMove([], Pos.X, Pos.Y);
+    Application.ProcessMessages;
+  end;
 end;
 
 { TTestMousePath }

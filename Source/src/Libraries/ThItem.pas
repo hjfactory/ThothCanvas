@@ -15,8 +15,9 @@ type
   private
     FOnUnselected: TNotifyEvent;
   protected
-    FHighlighter: IThItemHighlighter;
-    FSelected: Boolean;
+    FHighlighter: IItemHighlighter;
+    FSelected,
+    FHighlight: Boolean;
 
     FOnSelected: TNotifyEvent;
     FOnTrack: TNotifyEvent;
@@ -27,6 +28,9 @@ type
     procedure SetSelected(const Value: Boolean);
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
+    procedure DoMouseEnter; override;
+    procedure DoMouseLeave; override;
   public
     property Selected: Boolean read FSelected write SetSelected;
 
@@ -45,6 +49,20 @@ implementation
 
 { TThItem }
 
+procedure TThItem.DoMouseEnter;
+begin
+  inherited;
+
+  InvalidateRect(ClipRect);
+end;
+
+procedure TThItem.DoMouseLeave;
+begin
+  inherited;
+
+  InvalidateRect(ClipRect);
+end;
+
 function TThItem.GetClipRect: TRectF;
 begin
   Result := inherited GetClipRect;
@@ -62,11 +80,16 @@ begin
   end;
 end;
 
+procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
+begin
+  inherited;
+end;
+
 procedure TThItem.Painting;
 begin
   inherited;
 
-  if FSelected and Assigned(FHighlighter) then
+  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
     FHighlighter.DrawHighlight;
 end;
 

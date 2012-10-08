@@ -6,18 +6,18 @@ uses
   System.Types, FMX.Types;
 
 type
-  IThItemHighlitObject = interface;
-  IThItemHighlighter = interface
-    function GetParent: IThItemHighlitObject;
-    procedure SetParent(Parent: IThItemHighlitObject);
+  IItemHighlitObject = interface;
+  IItemHighlighter = interface
+    function GetParent: IItemHighlitObject;
+    procedure SetParent(Parent: IItemHighlitObject);
     function GetHighlightRect: TRectF;
     procedure DrawHighlight;
 
-    property Parent: IThItemHighlitObject read GetParent write SetParent;
+    property Parent: IItemHighlitObject read GetParent write SetParent;
     property HighlightRect: TRectF read GetHighlightRect;
   end;
 
-  IThItemHighlitObject = interface
+  IItemHighlitObject = interface
     procedure DrawHighlight;
   end;
 
