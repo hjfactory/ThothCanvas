@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  System.UIConsts;
+  System.UIConsts, ThConsts;
 
 { TThItemShadowHighligher }
 
@@ -41,8 +41,8 @@ begin
   FParent := AOwner;
 
   FHighlight := False;
-  FHighlightColor := claGray;
-  FHighlightSize := 5;
+  FHighlightColor := ITEM_HIGHLIGHT_COLOR;
+  FHighlightSize := ITEM_HIGHLIGHT_MIN;
 end;
 
 procedure TThItemShadowHighlighter.DrawHighlight;

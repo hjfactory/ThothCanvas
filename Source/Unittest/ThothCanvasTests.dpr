@@ -29,7 +29,9 @@ uses
   CommonUtils in '..\src\Utils\CommonUtils.pas',
   ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
-  ThConsts in '..\src\Libraries\ThConsts.pas';
+  ThConsts in '..\src\Libraries\ThConsts.pas',
+  ThItemResizablerIF in '..\src\Interfaces\ThItemResizablerIF.pas',
+  ThItemResizabler in '..\src\Components\ThItemResizabler.pas';
 
 {$R *.RES}
 

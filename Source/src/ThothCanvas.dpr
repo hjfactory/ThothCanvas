@@ -10,7 +10,10 @@ uses
   ThItemFactory in 'Components\ThItemFactory.pas',
   CommonUtils in 'Utils\CommonUtils.pas',
   ThItemHighlighterIF in 'Interfaces\ThItemHighlighterIF.pas',
-  ThItemHighlighter in 'Components\ThItemHighlighter.pas';
+  ThItemHighlighter in 'Components\ThItemHighlighter.pas',
+  ThConsts in 'Libraries\ThConsts.pas',
+  ThItemResizablerIF in 'Interfaces\ThItemResizablerIF.pas',
+  ThItemResizabler in 'Components\ThItemResizabler.pas';
 
 {$R *.res}
 

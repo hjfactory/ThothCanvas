@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils,
-  FMX.Types, ThItem, ThItemHighlighterIF, ThItemHighlighter;
+  FMX.Types, ThItem, ThItemHighlighterIF, ThItemResizabler;
 
 type
 {
@@ -20,10 +20,16 @@ type
     procedure Paint; override;
   protected
     procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
+    procedure ShowResizableSpots; virtual;
+    procedure HideResizableSpots;
+
+    procedure DoSelected(Selected: Boolean); override;
 
     function GetShapeRect: TRectF; virtual;
+    function Resizabler: TThItemFillResizabler;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
     property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
 //    property MinSize: TPointF read FMinSize write FMinSize;
@@ -54,7 +60,7 @@ type
 implementation
 
 uses
-  ThItemFactory, System.UIConsts, CommonUtils;
+  ThItemFactory, System.UIConsts, CommonUtils, ThItemHighlighter, ThItemResizablerIF;
 
 { TThShape }
 
@@ -63,12 +69,77 @@ begin
   inherited;
 
   FHighlighter := TThItemShadowHighlighter.Create(Self);
+  FResizabler := TThItemFillResizabler.Create(Self, TThItemCircleResizableSpot);
+  Resizabler.SetResizableSpots([rsdTopLeft, rsdTopRight, rsdBottomLeft, rsdBottomRight]);
+  Resizabler.OnTrack := nil;
 
   FWidth := MinimumSize.X;
   FHeight := MinimumSize.Y;
 
   FOpacity := 0.8;
   FBackgroundColor := claGreen;
+end;
+
+destructor TThShape.Destroy;
+begin
+  FHighlighter := nil;
+  FResizabler := nil; // Interface destory
+
+  inherited;
+end;
+
+procedure TThShape.DoSelected(Selected: Boolean);
+begin
+  inherited;
+
+  if Selected then
+    ShowResizableSpots
+  else
+    HideResizableSpots;
+end;
+
+procedure TThShape.ShowResizableSpots;
+var
+  I: Integer;
+  P: TPointF;
+  R: TRectF;
+  Spot: TItemResizableSpot;
+begin
+  R := GetShapeRect;
+
+  for I := 0 to Resizabler.Count - 1 do
+  begin
+    Spot := Resizabler[I];
+
+    case Spot.Direction of
+      rsdTopLeft:      P := PointF(R.Left, R.Top);
+      rsdTop:          P := PointF(RectWidth(R) / 2, R.Top);
+      rsdTopRight:     P := PointF(R.Right, R.Top);
+      rsdLeft:         P := PointF(R.Left, RectHeight(R) / 2);
+      rsdRight:        P := PointF(R.Right, RectHeight(R) / 2);
+      rsdBottomLeft:   P := PointF(R.Left, R.Bottom);
+      rsdBottom:       P := PointF(RectWidth(R) / 2, R.Bottom);
+      rsdBottomRight:  P := PointF(R.Right, R.Bottom);
+    end;
+
+    Spot.Position.Point := P;
+    Spot.Visible := True;
+  end;
+
+  Repaint;
+end;
+
+procedure TThShape.HideResizableSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to Resizabler.Count - 1 do
+    TControl(Resizabler[I]).Visible := False;
+end;
+
+function TThShape.Resizabler: TThItemFillResizabler;
+begin
+  Result := TThItemFillResizabler(FResizabler);
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -89,6 +160,9 @@ begin
   Canvas.Font.Size := 10;
   Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
 {$ENDIF}
+
+  if FSelected and (FUpdating = 0) then
+    ShowResizableSpots;
 end;
 
 procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);

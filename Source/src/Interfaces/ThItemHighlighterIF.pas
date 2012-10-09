@@ -8,10 +8,11 @@ uses
 type
   IItemHighlitObject = interface;
   IItemHighlighter = interface
-    function GetParent: IItemHighlitObject;
-    procedure SetParent(Parent: IItemHighlitObject);
     function GetHighlightRect: TRectF;
     procedure DrawHighlight;
+
+    function GetParent: IItemHighlitObject;
+    procedure SetParent(Parent: IItemHighlitObject);
 
     property Parent: IItemHighlitObject read GetParent write SetParent;
     property HighlightRect: TRectF read GetHighlightRect;

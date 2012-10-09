@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types, ThItemHighlighterIF;
+  FMX.Types, ThItemHighlighterIF, ThItemResizablerIF;
 
 type
 //  IThItem = interface
@@ -14,27 +14,30 @@ type
   TThItem = class(TControl)
   private
     FOnUnselected: TNotifyEvent;
+    FOnSelected: TNotifyEvent;
+
+    procedure SetSelected(const Value: Boolean);
   protected
     FHighlighter: IItemHighlighter;
+    FResizabler: IItemResizabler;
 
-    FSelected,
-    FHighlight: Boolean;
+    FSelected: Boolean;
 
     FMouseDownPos: TPointF;
-
-    FOnSelected: TNotifyEvent;
-    FOnTrack: TNotifyEvent;
+//    FOnTrack: TNotifyEvent;
 
     function GetClipRect: TRectF; override;
-
-    function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
-    procedure SetSelected(const Value: Boolean);
-    function GetMinimumSize: TPointF; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
+
+    procedure DoSelected(Selected: Boolean); virtual;
+
+    function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
+
+    function GetMinimumSize: TPointF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -44,7 +47,7 @@ type
 
     function PointInObject(X, Y: Single): Boolean; override;
 
-    property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
+//    property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
     property MinimumSize: TPointF read GetMinimumSize;
@@ -77,11 +80,23 @@ begin
   InvalidateRect(ClipRect);
 end;
 
+procedure TThItem.DoSelected(Selected: Boolean);
+begin
+  if FSelected then
+    if Assigned(FOnSelected) then
+      FOnSelected(Self)
+  else
+    if Assigned(FOnUnselected) then
+      FOnUnselected(Self);
+end;
+
 function TThItem.GetClipRect: TRectF;
 begin
   Result := inherited GetClipRect;
   if Assigned(FHighlighter) then
     Result := UnionRect(Result, FHighlighter.HighlightRect);
+  if Assigned(FResizabler) then
+    Result := UnionRect(Result, FResizabler.ResizablerRect);
 end;
 
 function TThItem.GetMinimumSize: TPointF;
@@ -107,11 +122,10 @@ begin
 
   if FPressed then
   begin
-    //  잔상을 지우기 위해 기존 영역을 다시 그린다.
-    InvalidateRect(ClipRect);
-
+    InvalidateRect(ClipRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
     Position.X := Position.X + (X - FMouseDownPos.X);
     Position.Y := Position.Y + (Y - FMouseDownPos.Y);
+    InvalidateRect(ClipRect);     //  이동 시 하이라이트 표시 지원
   end;
 end;
 
@@ -139,8 +153,7 @@ begin
 
   FSelected := Value;
 
-  if FSelected and Assigned(FOnSelected) then
-    FOnSelected(Self);
+  DoSelected(FSelected);
 
   InvalidateRect(ClipRect);
 end;

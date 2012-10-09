@@ -49,6 +49,12 @@ type
 
     // #72 캔버스 영역 밖으로 이동이 가능해야 한다.
     procedure TestMoveRectangleOutOfCanvas;
+
+    // #81 사각형 선택 시 4개의 ResizableSpot이 표시되야 한다.
+    procedure TestShowResizableSpot;
+
+    // #41 ResizableSpot을 드래그하여 크기를 변경 할 수 있다.
+    procedure TestResizableRectangle;
   end;
 
 implementation
@@ -349,8 +355,6 @@ procedure TestTThRectangle.TestMoveRectangleOutOfCanvas;
 var
   Item: TThItem;
 begin
-  FClosing := False;
-
   // 추가
   FCanvas.DrawItemID := 1100;
   MousePath.New
@@ -370,6 +374,30 @@ begin
   TestLib.RunMouseClick(200, 200);
   Item := FCanvas.SelectedItem;
   Check(Assigned(Item), 'Assigned');
+end;
+
+procedure TestTThRectangle.TestShowResizableSpot;
+begin
+  // 그리기
+  FCanvas.DrawItemID := 1100;
+  MousePath.New
+  .Add(10, 10)
+  .Add(70, 20)
+  .Add(160, 160);
+  TestLib.RunMousePath(MousePath.Path);
+
+  // 선택
+  TestLib.RunMouseClick(100, 100);
+FClosing := False;
+  // ResizableSpot 표시 확인
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ITEM_RESIZABLESPOT_OUTCOLOR, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ITEM_RESIZABLESPOT_OUTCOLOR]));
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color BottomLeft');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color TopRight');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color BottomRight');
+end;
+
+procedure TestTThRectangle.TestResizableRectangle;
+begin
 end;
 
 procedure TestTThRectangle._Test(Sender: TObject);
