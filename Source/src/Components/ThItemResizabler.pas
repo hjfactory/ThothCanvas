@@ -155,8 +155,10 @@ begin
 
   R.Empty;
   InflateRect(R, ITEM_RESIZABLESPOT_SIZE, ITEM_RESIZABLESPOT_SIZE);
-  Canvas.FillEllipse(R, AbsoluteOpacity);
-  Canvas.DrawEllipse(R, AbsoluteOpacity);
+//  Canvas.FillEllipse(R, AbsoluteOpacity);
+//  Canvas.DrawEllipse(R, AbsoluteOpacity);
+  Canvas.FillEllipse(R, 1);
+  Canvas.DrawEllipse(R, 1);
 end;
 
 { TItemFillResizabler }
@@ -176,7 +178,7 @@ var
 begin
   Result := False;
   P := AbsoluteToLocal(PointF(X, Y));
-  if (Abs(P.X) < (ITEM_RESIZABLESPOT_SIZE/2)) and (Abs(P.Y) < (ITEM_RESIZABLESPOT_SIZE/2)) then
+  if (Abs(P.X) < (ITEM_RESIZABLESPOT_SIZE)) and (Abs(P.Y) < (ITEM_RESIZABLESPOT_SIZE)) then
     Result := True;
 end;
 
