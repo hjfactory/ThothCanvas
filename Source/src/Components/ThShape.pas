@@ -69,7 +69,8 @@ begin
   inherited;
 
   FHighlighter := TThItemShadowHighlighter.Create(Self);
-  FResizabler := TThItemFillResizabler.Create(Self, TThItemCircleResizableSpot);
+  FResizabler := TThItemFillResizabler.Create(Self);
+  Resizabler.SetSpotClass(TThItemCircleResizableSpot);
   Resizabler.SetResizableSpots([rsdTopLeft, rsdTopRight, rsdBottomLeft, rsdBottomRight]);
   Resizabler.OnTrack := nil;
 

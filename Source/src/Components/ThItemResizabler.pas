@@ -11,7 +11,7 @@ type
   private
     FDirection: TResizableSpotDirection;
   public
-    constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection);
+    constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection); reintroduce; virtual;
 
     property Direction: TResizableSpotDirection read FDirection;
   end;
@@ -29,8 +29,9 @@ type
     FParent: TControl;
     function GetResizablerRect: TRectF; virtual; abstract;
   public
-    constructor Create(AOwner: TComponent; ASpotClass: TResizableSpotClass);
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
+    procedure SetSpotClass(ASpotClass: TResizableSpotClass);
     procedure SetResizableSpots(Spots: array of TResizableSpotDirection);
 
     property Spots[Index: Integer] : TItemResizableSpot read GetSpots; default;
@@ -42,9 +43,13 @@ type
   protected
     procedure Paint; override;
     function GetUpdateRect: TRectF; override;
+//    function GetClipRect: TRectF; override;
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
+
+    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
   public
+    constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection); override;
     function PointInObject(X, Y: Single): Boolean; override;
   end;
 
@@ -74,10 +79,9 @@ end;
 
 { TItemResizabler }
 
-constructor TItemResizabler.Create(AOwner: TComponent; ASpotClass: TResizableSpotClass);
+constructor TItemResizabler.Create(AOwner: TComponent);
 begin
   FParent := TControl(AOwner);
-  FSpotClass := ASpotClass;
   FList := TList.Create;
 end;
 
@@ -107,6 +111,8 @@ var
   I: Integer;
   Spot: TItemResizableSpot;
 begin
+  assert(Assigned(FSpotClass), 'Not assigned items Spot class');
+
   for I := 0 to Length(Spots) - 1 do
   begin
     Spot := FSpotClass.Create(FParent, Spots[I]);
@@ -116,7 +122,22 @@ begin
   end;
 end;
 
+procedure TItemResizabler.SetSpotClass(ASpotClass: TResizableSpotClass);
+begin
+  FSpotClass := ASpotClass;
+end;
+
 { TThItemCircleResizableSpot }
+
+constructor TThItemCircleResizableSpot.Create(AOwner: TComponent; ADirection: TResizableSpotDirection);
+begin
+  inherited;
+
+  AutoCapture := True;
+
+  Width := ITEM_RESIZABLESPOT_SIZE * 2;
+  Height := ITEM_RESIZABLESPOT_SIZE * 2;
+end;
 
 procedure TThItemCircleResizableSpot.DoMouseEnter;
 begin
@@ -130,8 +151,8 @@ procedure TThItemCircleResizableSpot.DoMouseLeave;
 begin
   inherited;
 
-  Repaint;
 //  InvalidateRect(ClipRect);
+  Repaint;
 end;
 
 function TThItemCircleResizableSpot.GetUpdateRect: TRectF;
@@ -140,14 +161,38 @@ begin
   InflateRect(Result, ITEM_RESIZABLESPOT_SIZE + 1, ITEM_RESIZABLESPOT_SIZE + 1);
 end;
 
+procedure TThItemCircleResizableSpot.MouseMove(Shift: TShiftState; X,
+  Y: Single);
+var
+  P: TPointF;
+//  R: TRectF;
+begin
+  inherited;
+
+  if FPressed and (Parent <> nil) and (Parent is TControl) then
+  begin
+    P := LocalToAbsolute(PointF(X, Y));
+    if (Parent <> nil) and (Parent is TControl) then
+      P := TControl(Parent).AbsoluteToLocal(P);
+
+//        P.X := Min(P.X, Canvas.Width);
+//        P.Y := Min(P.Y, Canvas.Height);
+
+    Position.Point := P;
+
+//    if Assigned(FOnTrack) then
+//      FOnTrack(Self);
+  end;
+end;
+
 procedure TThItemCircleResizableSpot.Paint;
 var
   R: TRectF;
 begin
   inherited;
 
-  Canvas.StrokeThickness := 1;
-//  Canvas.Stroke.Assign(FStroke);
+  Canvas.StrokeThickness := 0;
+  Canvas.Stroke.Color := $FF222222;
   if IsMouseOver then
     Canvas.Fill.Color := ITEM_RESIZABLESPOT_OVERCOLOR
   else
@@ -155,8 +200,6 @@ begin
 
   R.Empty;
   InflateRect(R, ITEM_RESIZABLESPOT_SIZE, ITEM_RESIZABLESPOT_SIZE);
-//  Canvas.FillEllipse(R, AbsoluteOpacity);
-//  Canvas.DrawEllipse(R, AbsoluteOpacity);
   Canvas.FillEllipse(R, 1);
   Canvas.DrawEllipse(R, 1);
 end;
