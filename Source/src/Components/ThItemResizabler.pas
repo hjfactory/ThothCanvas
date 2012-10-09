@@ -7,34 +7,38 @@ uses
   System.Generics.Collections;
 
 type
+//  TItemResizableSpot = class;
+//  TResizableSpotTrackEvent = procedure(Spot: TItemResizableSpot) of object;
   TItemResizableSpot = class(TControl, IItemResizableSpot)
   private
     FDirection: TResizableSpotDirection;
+    FOnTracking: TNotifyEvent;
   public
     constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection); reintroduce; virtual;
 
     property Direction: TResizableSpotDirection read FDirection;
+    property OnTrack: TNotifyEvent read FOnTracking write FOnTracking;
   end;
 
   TResizableSpotClass = class of TItemResizableSpot;
-
   TItemResizabler = class(TInterfacedObject, IItemResizabler)
   private
     FSpotClass: TResizableSpotClass;
     FList: TList;
     FOnTracking: TNotifyEvent;
-    function GetSpots(Index: Integer): TItemResizableSpot;
+    function GetSpots(Index: Integer): IItemResizableSpot;
     function GetCount: Integer;
   protected
     FParent: TControl;
     function GetResizablerRect: TRectF; virtual; abstract;
+    procedure DoResizableSpotTrack(Sender: TObject);
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
     procedure SetSpotClass(ASpotClass: TResizableSpotClass);
     procedure SetResizableSpots(Spots: array of TResizableSpotDirection);
 
-    property Spots[Index: Integer] : TItemResizableSpot read GetSpots; default;
+    property Spots[Index: Integer] : IItemResizableSpot read GetSpots; default;
     property Count: Integer read GetCount;
     property OnTrack: TNotifyEvent read FOnTracking write FOnTracking;
   end;
@@ -63,7 +67,7 @@ type
 implementation
 
 uses
-  ThConsts, System.UIConsts;
+  ThConsts, System.UIConsts, CommonUtils;
 
 
 { TItemResizableSpot }
@@ -95,14 +99,21 @@ begin
   inherited;
 end;
 
+procedure TItemResizabler.DoResizableSpotTrack(Sender: TObject);
+begin
+  if Assigned(OnTrack) then
+    OnTrack(Sender);
+end;
+
 function TItemResizabler.GetCount: Integer;
 begin
   Result := FList.Count;
 end;
 
-function TItemResizabler.GetSpots(Index: Integer): TItemResizableSpot;
+function TItemResizabler.GetSpots(Index: Integer): IItemResizableSpot;
 begin
-  Result := FList[Index];
+  if FList.Count > Index then
+    Result := IItemResizableSpot(TItemResizableSpot(FList[Index]));
 end;
 
 procedure TItemResizabler.SetResizableSpots(
@@ -117,6 +128,7 @@ begin
   begin
     Spot := FSpotClass.Create(FParent, Spots[I]);
     Spot.Parent := FParent;
+    Spot.OnTrack := DoResizableSpotTrack;
     Spot.Visible := False;
     FList.Add(Spot);
   end;
@@ -135,8 +147,8 @@ begin
 
   AutoCapture := True;
 
-  Width := ITEM_RESIZABLESPOT_SIZE * 2;
-  Height := ITEM_RESIZABLESPOT_SIZE * 2;
+  Width := ItemResizableSpotRadius * 2;
+  Height := ItemResizableSpotRadius * 2;
 end;
 
 procedure TThItemCircleResizableSpot.DoMouseEnter;
@@ -158,7 +170,9 @@ end;
 function TThItemCircleResizableSpot.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
-  InflateRect(Result, ITEM_RESIZABLESPOT_SIZE + 1, ITEM_RESIZABLESPOT_SIZE + 1);
+  InflateRect(Result,
+    ItemResizableSpotRadius + Canvas.StrokeThickness,
+    ItemResizableSpotRadius + Canvas.StrokeThickness);
 end;
 
 procedure TThItemCircleResizableSpot.MouseMove(Shift: TShiftState; X,
@@ -175,13 +189,12 @@ begin
     if (Parent <> nil) and (Parent is TControl) then
       P := TControl(Parent).AbsoluteToLocal(P);
 
-//        P.X := Min(P.X, Canvas.Width);
-//        P.Y := Min(P.Y, Canvas.Height);
+Debug('%f, %f', [P.X, P.Y]);
 
     Position.Point := P;
 
-//    if Assigned(FOnTrack) then
-//      FOnTrack(Self);
+    if Assigned(OnTrack) then
+      OnTrack(Self);
   end;
 end;
 
@@ -191,15 +204,15 @@ var
 begin
   inherited;
 
-  Canvas.StrokeThickness := 0;
+  Canvas.StrokeThickness := 1;
   Canvas.Stroke.Color := $FF222222;
   if IsMouseOver then
-    Canvas.Fill.Color := ITEM_RESIZABLESPOT_OVERCOLOR
+    Canvas.Fill.Color := ItemResizableSpotOverColor
   else
-    Canvas.Fill.Color := ITEM_RESIZABLESPOT_OUTCOLOR;
+    Canvas.Fill.Color := ItemResizableSpotOutColor;
 
-  R.Empty;
-  InflateRect(R, ITEM_RESIZABLESPOT_SIZE, ITEM_RESIZABLESPOT_SIZE);
+  R := RectF(0, 0, 0, 0);
+  InflateRect(R, ItemResizableSpotRadius, ItemResizableSpotRadius);
   Canvas.FillEllipse(R, 1);
   Canvas.DrawEllipse(R, 1);
 end;
@@ -221,7 +234,7 @@ var
 begin
   Result := False;
   P := AbsoluteToLocal(PointF(X, Y));
-  if (Abs(P.X) < (ITEM_RESIZABLESPOT_SIZE)) and (Abs(P.Y) < (ITEM_RESIZABLESPOT_SIZE)) then
+  if (Abs(P.X) < ItemResizableSpotRadius) and (Abs(P.Y) < ItemResizableSpotRadius) then
     Result := True;
 end;
 

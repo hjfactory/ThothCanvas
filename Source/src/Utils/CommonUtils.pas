@@ -2,18 +2,20 @@ unit CommonUtils;
 
 interface
 
-procedure Debug(ALog: string);
+procedure Debug(ALog: string); overload;
+procedure Debug(ALog: string; args: array of const); overload;
 
 implementation
+  uses
+    System.SysUtils
 {$IFDEF MACOS}
 
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
-  uses
-    WinAPI.Windows;
+    , WinAPI.Windows
 {$ENDIF}
-
+  ;
 
 
 procedure Debug(ALog: string);
@@ -29,6 +31,11 @@ begin
 {$IFDEF MSWINDOWS}
   OutputDebugString(PChar(ALog));
 {$ENDIF}
+end;
+
+procedure Debug(ALog: string; args: array of const);
+begin
+  Debug(Format(ALog, args));
 end;
 
 end.

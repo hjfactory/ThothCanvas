@@ -3,7 +3,7 @@ unit ThItemHighlighter;
 interface
 
 uses
-  ThItemHighlighterIF, System.Types, FMX.Types, System.UITypes;
+  ThItemHighlighterIF, System.Types, System.SysUtils, FMX.Types, System.UITypes;
 
 type
   TThItemShadowHighlighter = class(TInterfacedObject, IItemHighlighter)
@@ -41,8 +41,6 @@ begin
   FParent := AOwner;
 
   FHighlight := False;
-  FHighlightColor := ITEM_HIGHLIGHT_COLOR;
-  FHighlightSize := ITEM_HIGHLIGHT_MIN;
 end;
 
 procedure TThItemShadowHighlighter.DrawHighlight;

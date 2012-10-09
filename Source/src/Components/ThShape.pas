@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils,
-  FMX.Types, ThItem, ThItemHighlighterIF, ThItemResizabler;
+  FMX.Types, ThItem, ThItemHighlighterIF, ThItemResizablerIF, System.UIConsts;
 
 type
 {
@@ -19,6 +19,9 @@ type
   strict protected
     procedure Paint; override;
   protected
+    function CreateHighlighter: IItemHighlighter; override;
+    function CreateResizabler: IItemResizabler; override;
+
     procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     procedure ShowResizableSpots; virtual;
     procedure HideResizableSpots;
@@ -26,7 +29,7 @@ type
     procedure DoSelected(Selected: Boolean); override;
 
     function GetShapeRect: TRectF; virtual;
-    function Resizabler: TThItemFillResizabler;
+    procedure ResizableSpotTrack(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -60,19 +63,13 @@ type
 implementation
 
 uses
-  ThItemFactory, System.UIConsts, CommonUtils, ThItemHighlighter, ThItemResizablerIF;
+  CommonUtils, ThConsts, ThItemFactory, ThItemHighlighter, ThItemResizabler;
 
 { TThShape }
 
 constructor TThShape.Create(AOwner: TComponent);
 begin
   inherited;
-
-  FHighlighter := TThItemShadowHighlighter.Create(Self);
-  FResizabler := TThItemFillResizabler.Create(Self);
-  Resizabler.SetSpotClass(TThItemCircleResizableSpot);
-  Resizabler.SetResizableSpots([rsdTopLeft, rsdTopRight, rsdBottomLeft, rsdBottomRight]);
-  Resizabler.OnTrack := nil;
 
   FWidth := MinimumSize.X;
   FHeight := MinimumSize.Y;
@@ -83,10 +80,31 @@ end;
 
 destructor TThShape.Destroy;
 begin
-  FHighlighter := nil;
-  FResizabler := nil; // Interface destory
 
   inherited;
+end;
+
+function TThShape.CreateHighlighter: IItemHighlighter;
+var
+  Highlighter: TThItemShadowHighlighter;
+begin
+  Highlighter := TThItemShadowHighlighter.Create(Self);
+  Highlighter.HighlightColor := ItemHighlightColor;
+  Highlighter.HighlightSize := ItemHighlightMin;
+
+  Result := Highlighter;
+end;
+
+function TThShape.CreateResizabler: IItemResizabler;
+var
+  Resizabler: TThItemFillResizabler;
+begin
+  Resizabler := TThItemFillResizabler.Create(Self);
+  Resizabler.SetSpotClass(TThItemCircleResizableSpot);
+  Resizabler.SetResizableSpots([rsdTopLeft, rsdTopRight, rsdBottomLeft, rsdBottomRight]);
+  Resizabler.OnTrack := ResizableSpotTrack;
+
+  Result := Resizabler;
 end;
 
 procedure TThShape.DoSelected(Selected: Boolean);
@@ -108,9 +126,9 @@ var
 begin
   R := GetShapeRect;
 
-  for I := 0 to Resizabler.Count - 1 do
+  for I := 0 to FResizabler.Count - 1 do
   begin
-    Spot := Resizabler[I];
+    Spot := TItemResizableSpot(FResizabler.Spots[I]);
 
     case Spot.Direction of
       rsdTopLeft:      P := PointF(R.Left, R.Top);
@@ -126,7 +144,6 @@ begin
     Spot.Position.Point := P;
     Spot.Visible := True;
   end;
-
   Repaint;
 end;
 
@@ -134,13 +151,8 @@ procedure TThShape.HideResizableSpots;
 var
   I: Integer;
 begin
-  for I := 0 to Resizabler.Count - 1 do
-    TControl(Resizabler[I]).Visible := False;
-end;
-
-function TThShape.Resizabler: TThItemFillResizabler;
-begin
-  Result := TThItemFillResizabler(FResizabler);
+  for I := 0 to FResizabler.Count - 1 do
+    TControl(FResizabler.Spots[I]).Visible := False;
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -164,6 +176,45 @@ begin
 
   if FSelected and (FUpdating = 0) then
     ShowResizableSpots;
+end;
+
+procedure TThShape.ResizableSpotTrack(Sender: TObject);
+var
+  R: TRectF;
+  P: TPointF;
+  Spot: TThItemCircleResizableSpot absolute Sender;
+begin
+  Debug('');
+  R := GetShapeRect;
+  R.Offset(Position.Point);
+//  R.TopLeft := LocalTo
+  P := Spot.Position.Point;
+  P.Offset(Position.Point);
+
+  /////////////////////
+  // Refactoring ÇÊ¿ä
+  /////////////////////
+
+  if Spot.Direction = rsdBottomRight then
+  begin
+    if P.X < R.Left then
+    begin
+      R.Right := R.Left;
+      R.Left := P.X;
+    end
+    else
+      R.Right := P.X;
+
+    if P.Y < R.Top then
+    begin
+      R.Bottom := R.Top;
+      R.Top := R.Bottom;
+    end
+    else
+      R.Bottom := P.Y
+    ;
+  end;
+  SetBoundsRect(R);
 end;
 
 procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);

@@ -6,12 +6,14 @@ uses
   System.UIConsts;
 
 const
-  ITEM_HIGHLIGHT_MIN = 5;
-  ITEM_HIGHLIGHT_COLOR = $FFAAAAAA;
+  ItemDefaultOpacity  = 0.8;
 
-  ITEM_RESIZABLESPOT_OVERCOLOR = claRed;
-  ITEM_RESIZABLESPOT_OUTCOLOR = claWhite;
-  ITEM_RESIZABLESPOT_SIZE = 8;
+  ItemHighlightMin = 5;
+  ItemHighlightColor = $FFAAAAAA;
+
+  ItemResizableSpotOverColor = claRed;
+  ItemResizableSpotOutColor = claWhite;
+  ItemResizableSpotRadius = 8;
 
 implementation
 

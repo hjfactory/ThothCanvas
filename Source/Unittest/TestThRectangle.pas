@@ -219,9 +219,9 @@ begin
 
   R.Opacity := 1;
 
-  // 105.105 색상확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
-  Check(AC = ITEM_HIGHLIGHT_COLOR, 'Not matching Color');
+  // 105.50 색상확인
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 50);
+  Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
@@ -249,8 +249,8 @@ begin
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
-  Check(AC <> ITEM_HIGHLIGHT_COLOR, 'Canvas color is not gray');
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 100 + (ItemHighlightMin - 1));
+  Check(AC <> ItemHighlightColor, 'Canvas color is not gray');
 
   MousePath.New
   .Add(150, 150)
@@ -258,8 +258,8 @@ begin
   TestLib.RunMouseMove(MousePath.Path);
 
   // 그림자 확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ITEM_HIGHLIGHT_MIN - 1), 100 + (ITEM_HIGHLIGHT_MIN - 1));
-  Check(AC = ITEM_HIGHLIGHT_COLOR, 'Not matching Color');
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 100 + (ItemHighlightMin - 1));
+  Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(AC = claGray, 'Not matching Color');
 end;
 
@@ -388,12 +388,12 @@ begin
 
   // 선택
   TestLib.RunMouseClick(100, 100);
-FClosing := False;
+
   // ResizableSpot 표시 확인
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ITEM_RESIZABLESPOT_OUTCOLOR, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ITEM_RESIZABLESPOT_OUTCOLOR]));
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color BottomLeft');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color TopRight');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ITEM_RESIZABLESPOT_OUTCOLOR, 'Not matching color BottomRight');
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizableSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizableSpotOutColor]));
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ItemResizableSpotOutColor, 'Not matching color BottomLeft');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ItemResizableSpotOutColor, 'Not matching color TopRight');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ItemResizableSpotOutColor, 'Not matching color BottomRight');
 end;
 
 procedure TestTThRectangle.TestResizableRectangle;

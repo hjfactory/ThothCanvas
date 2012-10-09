@@ -20,11 +20,12 @@ type
   protected
     FHighlighter: IItemHighlighter;
     FResizabler: IItemResizabler;
-
     FSelected: Boolean;
-
     FMouseDownPos: TPointF;
 //    FOnTrack: TNotifyEvent;
+
+    function CreateHighlighter: IItemHighlighter; virtual;
+    function CreateResizabler: IItemResizabler; virtual;
 
     function GetClipRect: TRectF; override;
 
@@ -40,6 +41,7 @@ type
     function GetMinimumSize: TPointF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
     property Selected: Boolean read FSelected write SetSelected;
 
@@ -64,6 +66,25 @@ begin
   inherited;
 
   AutoCapture := True;
+
+  FHighlighter := CreateHighlighter;
+  FResizabler := CreateResizabler;
+end;
+
+destructor TThItem.Destroy;
+begin
+  FHighlighter := nil;
+  FResizabler := nil; // Interface destory
+
+  inherited;
+end;
+
+function TThItem.CreateHighlighter: IItemHighlighter;
+begin
+end;
+
+function TThItem.CreateResizabler: IItemResizabler;
+begin
 end;
 
 procedure TThItem.DoMouseEnter;
