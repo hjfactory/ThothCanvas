@@ -125,8 +125,8 @@
         <DCCReference Include="Interfaces\ThItemHighlighterIF.pas"/>
         <DCCReference Include="Components\ThItemHighlighter.pas"/>
         <DCCReference Include="Libraries\ThConsts.pas"/>
-        <DCCReference Include="Interfaces\ThItemResizablerIF.pas"/>
-        <DCCReference Include="Components\ThItemResizabler.pas"/>
+        <DCCReference Include="Interfaces\ThItemResizerIF.pas"/>
+        <DCCReference Include="Components\ThItemResizer.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -194,13 +194,13 @@
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
-                    <Platform Name="OSX32"/>
-                </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.entitlements" Configuration="Release" Class="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
                         <RemoteName>Entitlements.plist</RemoteName>
                     </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.icns" Configuration="Release" Class="ProjectOSXResource">
+                    <Platform Name="OSX32"/>
                 </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Release\ThothCanvas.info.plist" Configuration="Release" Class="ProjectOSXInfoPList">
                     <Platform Name="OSX32">

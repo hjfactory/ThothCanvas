@@ -1,4 +1,4 @@
-unit TestThItemResizabler;
+unit TestThItemResizer;
 {
 
   Delphi DUnit Test Case
@@ -17,25 +17,25 @@ uses
 
 
 type
-  TestTThItemResizabler = class(TBaseTestUnit)
+  TestTThItemResizer = class(TBaseTestUnit)
   private
     procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawRectangle(R: TRectF); overload;
   published
-    // #81 사각형 선택 시 4개의 ResizableSpot이 표시되야 한다.
-    procedure TestShowResizableSpot;
+    // #81 사각형 선택 시 4개의 ResizeSpot이 표시되야 한다.
+    procedure TestShowResizeSpot;
 
-    // #41 ResizableSpot을 드래그하여 크기를 변경 할 수 있다.
-    procedure TestResizableRectangle;
-    procedure TestResizableRectangleTLtoBROver;
-    procedure TestResizableRectangleTLtoRightOver;
-    procedure TestResizableRectangleTLtoBottomOver;
-    procedure TestResizableRectangleTRtoBLOver;
-    procedure TestResizableRectangleBLtoTROver;
-    procedure TestResizableRectangleBRtoTLOver;
+    // #41 ResizeSpot을 드래그하여 크기를 변경 할 수 있다.
+    procedure TestResizeRectangle;
+    procedure TestResizeRectangleTLtoBROver;
+    procedure TestResizeRectangleTLtoRightOver;
+    procedure TestResizeRectangleTLtoBottomOver;
+    procedure TestResizeRectangleTRtoBLOver;
+    procedure TestResizeRectangleBLtoTROver;
+    procedure TestResizeRectangleBRtoTLOver;
 
-    // #83 ResizableSpot의 이동 전후 마우스커서 위치가 ResizableSpot한해 동일 해야 한다.
-    procedure TestResizableSpotSamePosition;
+    // #83 ResizeSpot의 이동 전후 마우스커서 위치가 ResizeSpot한해 동일 해야 한다.
+    procedure TestResizeSpotSamePosition;
 
   end;
 implementation
@@ -43,14 +43,14 @@ implementation
 uses
   FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
 
-{ TestTThItemResizabler }
+{ TestTThItemResizer }
 
-procedure TestTThItemResizabler.DrawRectangle(Left, Top, Right, Bottom: Single);
+procedure TestTThItemResizer.DrawRectangle(Left, Top, Right, Bottom: Single);
 begin
   DrawRectangle(RectF(Left, Top, Right, Bottom));
 end;
 
-procedure TestTThItemResizabler.DrawRectangle(R: TRectF);
+procedure TestTThItemResizer.DrawRectangle(R: TRectF);
 begin
   FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
   MousePath.New
@@ -60,19 +60,19 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 end;
 
-procedure TestTThItemResizabler.TestShowResizableSpot;
+procedure TestTThItemResizer.TestShowResizeSpot;
 begin
   DrawRectangle(RectF(10, 10, 160, 160));
   TestLib.RunMouseClick(100, 100);
 
-  // ResizableSpot 표시 확인
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizableSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizableSpotOutColor]));
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ItemResizableSpotOutColor, 'Not matching color BottomLeft');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ItemResizableSpotOutColor, 'Not matching color TopRight');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ItemResizableSpotOutColor, 'Not matching color BottomRight');
+  // ResizeSpot 표시 확인
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizeSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotOutColor]));
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ItemResizeSpotOutColor, 'Not matching color BottomLeft');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ItemResizeSpotOutColor, 'Not matching color TopRight');
+  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ItemResizeSpotOutColor, 'Not matching color BottomRight');
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangle;
+procedure TestTThItemResizer.TestResizeRectangle;
 begin
   // 그리기
   DrawRectangle(RectF(50, 50, 150, 150));
@@ -90,7 +90,7 @@ begin
   Check(FCanvas.SelectedItem.Width = 150, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleTLtoBROver;
+procedure TestTThItemResizer.TestResizeRectangleTLtoBROver;
 begin
   // 그리기
   DrawRectangle(RectF(50, 50, 150, 150));
@@ -111,7 +111,7 @@ begin
   );
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleTLtoRightOver;
+procedure TestTThItemResizer.TestResizeRectangleTLtoRightOver;
 begin
   // 그리기
   DrawRectangle(RectF(50, 50, 150, 150));
@@ -132,7 +132,7 @@ begin
   );
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleTLtoBottomOver;
+procedure TestTThItemResizer.TestResizeRectangleTLtoBottomOver;
 begin
   // 그리기
   DrawRectangle(RectF(50, 50, 150, 150));
@@ -153,7 +153,7 @@ begin
   );
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleTRtoBLOver;
+procedure TestTThItemResizer.TestResizeRectangleTRtoBLOver;
 begin
   // 그리기
   DrawRectangle(RectF(150, 50, 250, 150));
@@ -174,7 +174,7 @@ begin
   );
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleBLtoTROver;
+procedure TestTThItemResizer.TestResizeRectangleBLtoTROver;
 begin
   // 그리기
   DrawRectangle(RectF(50, 150, 150, 250));
@@ -196,7 +196,7 @@ begin
   );
 end;
 
-procedure TestTThItemResizabler.TestResizableRectangleBRtoTLOver;
+procedure TestTThItemResizer.TestResizeRectangleBRtoTLOver;
 begin
   // 그리기
   DrawRectangle(RectF(150, 150, 250, 250));
@@ -221,7 +221,7 @@ end;
 // S1 - Spot의 최좌측을 이용해 크기조정
 //      1> 이동된 포인터의 X-1 좌표의 색상 확인
 //      2> Width 크기변화 확인 100에서 10이동
-procedure TestTThItemResizabler.TestResizableSpotSamePosition;
+procedure TestTThItemResizer.TestResizeSpotSamePosition;
 var
   SP, EP: TPointF;
   C: TAlphaColor;
@@ -233,11 +233,11 @@ begin
   TestLib.RunMouseClick(100, 100);
 
   TestLib.RunMouseMove([PointF(150, 150)]);
-  SP := PointF(150 - ItemResizableSpotRadius+1, 150);
+  SP := PointF(150 - ItemResizeSpotRadius+1, 150);
   EP := SP;
   EP.Offset(10, 10);
 
-  Check(TestLib.GetControlPixelColor(FCanvas, SP.X, SP.Y) = ItemResizableSpotOverColor, 'Spot color');
+  Check(TestLib.GetControlPixelColor(FCanvas, SP.X, SP.Y) = ItemResizeSpotOverColor, 'Spot color');
   //크기 조정
   MousePath.New
   .Add(SP)
@@ -245,9 +245,9 @@ begin
   .Add(EP);
   TestLib.RunMousePath(MousePath.Path);
 
-  // 1> 색상확인
+  // 1> 색상확인                                         a
   C := TestLib.GetControlPixelColor(FCanvas, EP.X-1, EP.Y);
-  Check(C <> ItemResizableSpotOverColor);
+  Check(C <> ItemResizeSpotOverColor);
 
   // 2> 크기확인
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
@@ -255,7 +255,7 @@ begin
 end;
 
 initialization
-  RegisterTest(TestTThItemResizabler.Suite);
+  RegisterTest(TestTThItemResizer.Suite);
 
 end.
 

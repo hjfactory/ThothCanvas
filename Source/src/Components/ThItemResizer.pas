@@ -1,9 +1,9 @@
-unit ThItemResizabler;
+unit ThItemResizer;
 
 interface
 
 uses
-  ThItemResizablerIF, System.Classes, System.Types, FMX.Types, System.UITypes,
+  ThItemResizerIF, System.Classes, System.Types, FMX.Types, System.UITypes,
   System.Generics.Collections, ThConsts;
 
 type
@@ -24,9 +24,9 @@ const
 function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
 
 type
-//  TItemResizableSpot = class;
-//  TResizableSpotTrackEvent = procedure(Spot: TItemResizableSpot) of object;
-  TItemResizableSpot = class(TControl, IItemResizableSpot)
+//  TItemResizeSpot = class;
+//  TResizeSpotTrackEvent = procedure(Spot: TItemResizeSpot) of object;
+  TAbstractItemResizeSpot = class(TControl, IItemResizeSpot)
   private
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackEvent;
@@ -38,30 +38,30 @@ type
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
-  TResizableSpotClass = class of TItemResizableSpot;
-  TItemResizabler = class(TInterfacedObject, IItemResizabler)
+  TResizeSpotClass = class of TAbstractItemResizeSpot;
+  TAbstractItemResizer = class(TInterfacedObject, IItemResizer)
   private
-    FSpotClass: TResizableSpotClass;
+    FSpotClass: TResizeSpotClass;
     FList: TList;
     FOnTracking: TTrackEvent;
-    function GetSpots(Index: Integer): IItemResizableSpot;
+    function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
   protected
     FParent: TControl;
-    function GetResizablerRect: TRectF; virtual; abstract;
-    procedure DoResizableSpotTrack(Sender: TObject; X, Y: Single);
+    function GetResizerRect: TRectF; virtual; abstract;
+    procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
-    procedure SetSpotClass(ASpotClass: TResizableSpotClass);
-    procedure SetResizableSpots(Spots: array of TSpotCorner);
+    procedure SetSpotClass(ASpotClass: TResizeSpotClass);
+    procedure SetResizeSpots(Spots: array of TSpotCorner);
 
-    property Spots[Index: Integer] : IItemResizableSpot read GetSpots; default;
+    property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
-  TThItemCircleResizableSpot = class(TItemResizableSpot)
+  TThItemCircleResizeSpot = class(TAbstractItemResizeSpot)
   private
     FMouseDownPos: TPointF;
   protected
@@ -79,9 +79,9 @@ type
     function PointInObject(X, Y: Single): Boolean; override;
   end;
 
-  TThItemFillResizabler = class(TItemResizabler)
+  TThItemFillResizer = class(TAbstractItemResizer)
   protected
-    function GetResizablerRect: TRectF; override;
+    function GetResizerRect: TRectF; override;
   public
     property OnTrack;
   end;
@@ -96,9 +96,9 @@ begin
   Result := TSpotCorner(Ord(D1) and Ord(D2))
 end;
 
-{ TItemResizableSpot }
+{ TItemResizeSpot }
 
-constructor TItemResizableSpot.Create(AOwner: TComponent;
+constructor TAbstractItemResizeSpot.Create(AOwner: TComponent;
   ASpotCorner: TSpotCorner);
 begin
   inherited Create(AOwner);
@@ -107,20 +107,20 @@ begin
   FSpotCorner := ASpotCorner;
 end;
 
-procedure TItemResizableSpot.SetSpotCorner(const Value: TSpotCorner);
+procedure TAbstractItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
 begin
   FSpotCorner := Value;
 end;
 
-{ TItemResizabler }
+{ TItemResizer }
 
-constructor TItemResizabler.Create(AOwner: TComponent);
+constructor TAbstractItemResizer.Create(AOwner: TComponent);
 begin
   FParent := TControl(AOwner);
   FList := TList.Create;
 end;
 
-destructor TItemResizabler.Destroy;
+destructor TAbstractItemResizer.Destroy;
 var
   I: Integer;
 begin
@@ -130,28 +130,28 @@ begin
   inherited;
 end;
 
-procedure TItemResizabler.DoResizableSpotTrack(Sender: TObject; X, Y: Single);
+procedure TAbstractItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
 begin
   if Assigned(OnTrack) then
     OnTrack(Sender, X, Y);
 end;
 
-function TItemResizabler.GetCount: Integer;
+function TAbstractItemResizer.GetCount: Integer;
 begin
   Result := FList.Count;
 end;
 
-function TItemResizabler.GetSpots(Index: Integer): IItemResizableSpot;
+function TAbstractItemResizer.GetSpots(Index: Integer): IItemResizeSpot;
 begin
   if FList.Count > Index then
-    Result := IItemResizableSpot(TItemResizableSpot(FList[Index]));
+    Result := IItemResizeSpot(TAbstractItemResizeSpot(FList[Index]));
 end;
 
-procedure TItemResizabler.SetResizableSpots(
+procedure TAbstractItemResizer.SetResizeSpots(
   Spots: array of TSpotCorner);
 var
   I: Integer;
-  Spot: TItemResizableSpot;
+  Spot: TAbstractItemResizeSpot;
 begin
   assert(Assigned(FSpotClass), 'Not assigned items Spot class');
 
@@ -159,30 +159,30 @@ begin
   begin
     Spot := FSpotClass.Create(FParent, Spots[I]);
     Spot.Parent := FParent;
-    Spot.OnTrack := DoResizableSpotTrack;
+    Spot.OnTrack := DoResizeSpotTrack;
     Spot.Visible := False;
     FList.Add(Spot);
   end;
 end;
 
-procedure TItemResizabler.SetSpotClass(ASpotClass: TResizableSpotClass);
+procedure TAbstractItemResizer.SetSpotClass(ASpotClass: TResizeSpotClass);
 begin
   FSpotClass := ASpotClass;
 end;
 
-{ TThItemCircleResizableSpot }
+{ TThItemCircleResizeSpot }
 
-constructor TThItemCircleResizableSpot.Create(AOwner: TComponent; ADirection: TSpotCorner);
+constructor TThItemCircleResizeSpot.Create(AOwner: TComponent; ADirection: TSpotCorner);
 begin
   inherited;
 
   AutoCapture := True;
 
-  Width := ItemResizableSpotRadius * 2;
-  Height := ItemResizableSpotRadius * 2;
+  Width := ItemResizeSpotRadius * 2;
+  Height := ItemResizeSpotRadius * 2;
 end;
 
-procedure TThItemCircleResizableSpot.DoMouseEnter;
+procedure TThItemCircleResizeSpot.DoMouseEnter;
 begin
   inherited;
 
@@ -190,7 +190,7 @@ begin
 //  InvalidateRect(ClipRect);
 end;
 
-procedure TThItemCircleResizableSpot.DoMouseLeave;
+procedure TThItemCircleResizeSpot.DoMouseLeave;
 begin
   inherited;
 
@@ -198,15 +198,15 @@ begin
   Repaint;
 end;
 
-function TThItemCircleResizableSpot.GetUpdateRect: TRectF;
+function TThItemCircleResizeSpot.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
   InflateRect(Result,
-    ItemResizableSpotRadius + Canvas.StrokeThickness,
-    ItemResizableSpotRadius + Canvas.StrokeThickness);
+    ItemResizeSpotRadius + Canvas.StrokeThickness,
+    ItemResizeSpotRadius + Canvas.StrokeThickness);
 end;
 
-procedure TThItemCircleResizableSpot.MouseDown(Button: TMouseButton;
+procedure TThItemCircleResizeSpot.MouseDown(Button: TMouseButton;
   Shift: TShiftState; X, Y: Single);
 begin
   inherited;
@@ -217,7 +217,7 @@ begin
   end;
 end;
 
-procedure TThItemCircleResizableSpot.MouseMove(Shift: TShiftState; X,
+procedure TThItemCircleResizeSpot.MouseMove(Shift: TShiftState; X,
   Y: Single);
 var
   Gap: TPointF;
@@ -235,14 +235,14 @@ begin
   end;
 end;
 
-procedure TThItemCircleResizableSpot.MouseUp(Button: TMouseButton;
+procedure TThItemCircleResizeSpot.MouseUp(Button: TMouseButton;
   Shift: TShiftState; X, Y: Single);
 begin
   inherited;
 
 end;
 
-procedure TThItemCircleResizableSpot.Paint;
+procedure TThItemCircleResizeSpot.Paint;
 var
   R: TRectF;
 begin
@@ -251,34 +251,34 @@ begin
   Canvas.StrokeThickness := 1;
   Canvas.Stroke.Color := $FF222222;
   if IsMouseOver then
-    Canvas.Fill.Color := ItemResizableSpotOverColor
+    Canvas.Fill.Color := ItemResizeSpotOverColor
   else
-    Canvas.Fill.Color := ItemResizableSpotOutColor;
+    Canvas.Fill.Color := ItemResizeSpotOutColor;
 
   R := RectF(0, 0, 0, 0);
-  InflateRect(R, ItemResizableSpotRadius, ItemResizableSpotRadius);
+  InflateRect(R, ItemResizeSpotRadius, ItemResizeSpotRadius);
   Canvas.FillEllipse(R, 1);
   Canvas.DrawEllipse(R, 1);
 end;
 
-{ TItemFillResizabler }
+{ TItemFillResizer }
 
-function TThItemFillResizabler.GetResizablerRect: TRectF;
+function TThItemFillResizer.GetResizerRect: TRectF;
 var
   I: Integer;
 begin
   Result.Empty;
   for I := 0 to FList.Count - 1 do
-    Result := UnionRect(Result, TThItemCircleResizableSpot(FList[I]).ClipRect);
+    Result := UnionRect(Result, TThItemCircleResizeSpot(FList[I]).ClipRect);
 end;
 
-function TThItemCircleResizableSpot.PointInObject(X, Y: Single): Boolean;
+function TThItemCircleResizeSpot.PointInObject(X, Y: Single): Boolean;
 var
   P: TPointF;
 begin
   Result := False;
   P := AbsoluteToLocal(PointF(X, Y));
-  if (Abs(P.X) < ItemResizableSpotRadius) and (Abs(P.Y) < ItemResizableSpotRadius) then
+  if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
     Result := True;
 end;
 

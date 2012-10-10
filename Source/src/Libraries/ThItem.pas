@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types, ThItemHighlighterIF, ThItemResizablerIF;
+  FMX.Types, ThItemHighlighterIF, ThItemResizerIF;
 
 type
 //  IThItem = interface
@@ -19,13 +19,13 @@ type
     procedure SetSelected(const Value: Boolean);
   protected
     FHighlighter: IItemHighlighter;
-    FResizabler: IItemResizabler;
+    FResizer: IItemResizer;
     FSelected: Boolean;
     FMouseDownPos: TPointF;
 //    FOnTrack: TNotifyEvent;
 
     function CreateHighlighter: IItemHighlighter; virtual;
-    function CreateResizabler: IItemResizabler; virtual;
+    function CreateResizer: IItemResizer; virtual;
 
     function GetClipRect: TRectF; override;
 
@@ -68,13 +68,13 @@ begin
   AutoCapture := True;
 
   FHighlighter := CreateHighlighter;
-  FResizabler := CreateResizabler;
+  FResizer := CreateResizer;
 end;
 
 destructor TThItem.Destroy;
 begin
   FHighlighter := nil;
-  FResizabler := nil; // Interface destory
+  FResizer := nil; // Interface destory
 
   inherited;
 end;
@@ -83,7 +83,7 @@ function TThItem.CreateHighlighter: IItemHighlighter;
 begin
 end;
 
-function TThItem.CreateResizabler: IItemResizabler;
+function TThItem.CreateResizer: IItemResizer;
 begin
 end;
 
@@ -116,8 +116,8 @@ begin
   Result := inherited GetClipRect;
   if Assigned(FHighlighter) then
     Result := UnionRect(Result, FHighlighter.HighlightRect);
-  if Assigned(FResizabler) then
-    Result := UnionRect(Result, FResizabler.ResizablerRect);
+  if Assigned(FResizer) then
+    Result := UnionRect(Result, FResizer.ResizerRect);
 end;
 
 function TThItem.GetMinimumSize: TPointF;

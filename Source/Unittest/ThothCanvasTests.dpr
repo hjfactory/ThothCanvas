@@ -30,9 +30,9 @@ uses
   ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Libraries\ThConsts.pas',
-  ThItemResizablerIF in '..\src\Interfaces\ThItemResizablerIF.pas',
-  ThItemResizabler in '..\src\Components\ThItemResizabler.pas',
-  TestThItemResizabler in 'TestThItemResizabler.pas';
+  ThItemResizerIF in '..\src\Interfaces\ThItemResizerIF.pas',
+  ThItemResizer in '..\src\Components\ThItemResizer.pas',
+  TestThItemResizer in 'TestThItemResizer.pas';
 
 {$R *.RES}
 

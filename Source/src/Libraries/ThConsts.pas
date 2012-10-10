@@ -11,9 +11,9 @@ const
   ItemHighlightSize = 5;
   ItemHighlightColor = $FFAAAAAA;
 
-  ItemResizableSpotOverColor = claRed;
-  ItemResizableSpotOutColor = claWhite;
-  ItemResizableSpotRadius = 8;
+  ItemResizeSpotOverColor = claRed;
+  ItemResizeSpotOutColor = claWhite;
+  ItemResizeSpotRadius = 8;
 
 type
   TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;

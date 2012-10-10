@@ -12,8 +12,8 @@ uses
   ThItemHighlighterIF in 'Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
   ThConsts in 'Libraries\ThConsts.pas',
-  ThItemResizablerIF in 'Interfaces\ThItemResizablerIF.pas',
-  ThItemResizabler in 'Components\ThItemResizabler.pas';
+  ThItemResizerIF in 'Interfaces\ThItemResizerIF.pas',
+  ThItemResizer in 'Components\ThItemResizer.pas';
 
 {$R *.res}
 

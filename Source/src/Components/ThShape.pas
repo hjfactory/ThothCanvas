@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils,
-  FMX.Types, ThItem, ThItemHighlighterIF, ThItemResizablerIF, System.UIConsts;
+  FMX.Types, ThItem, ThItemHighlighterIF, ThItemResizerIF, System.UIConsts;
 
 type
 {
@@ -20,17 +20,17 @@ type
     procedure Paint; override;
   protected
     function CreateHighlighter: IItemHighlighter; override;
-    function CreateResizabler: IItemResizabler; override;
+    function CreateResizer: IItemResizer; override;
 
     procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
-    procedure ShowResizableSpots; virtual;
-    procedure HideResizableSpots;
+    procedure ShowResizeSpots; virtual;
+    procedure HideResizeSpots;
 
     procedure DoSelected(Selected: Boolean); override;
 
     function GetShapeRect: TRectF; virtual;
-    procedure ResizableSpotTrack(Sender: TObject; X, Y: Single);
-    procedure NormalizeSpotCorner(ASpot: IItemResizableSpot);
+    procedure ResizeSpotTrack(Sender: TObject; X, Y: Single);
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -64,7 +64,7 @@ type
 implementation
 
 uses
-  CommonUtils, ThConsts, ThItemFactory, ThItemHighlighter, ThItemResizabler;
+  CommonUtils, ThConsts, ThItemFactory, ThItemHighlighter, ThItemResizer;
 
 { TThShape }
 
@@ -96,16 +96,16 @@ begin
   Result := Highlighter;
 end;
 
-function TThShape.CreateResizabler: IItemResizabler;
+function TThShape.CreateResizer: IItemResizer;
 var
-  Resizabler: TThItemFillResizabler;
+  Resizer: TThItemFillResizer;
 begin
-  Resizabler := TThItemFillResizabler.Create(Self);
-  Resizabler.SetSpotClass(TThItemCircleResizableSpot);
-  Resizabler.SetResizableSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
-  Resizabler.OnTrack := ResizableSpotTrack;
+  Resizer := TThItemFillResizer.Create(Self);
+  Resizer.SetSpotClass(TThItemCircleResizeSpot);
+  Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+  Resizer.OnTrack := ResizeSpotTrack;
 
-  Result := Resizabler;
+  Result := Resizer;
 end;
 
 procedure TThShape.DoSelected(Selected: Boolean);
@@ -113,23 +113,23 @@ begin
   inherited;
 
   if Selected then
-    ShowResizableSpots
+    ShowResizeSpots
   else
-    HideResizableSpots;
+    HideResizeSpots;
 end;
 
-procedure TThShape.ShowResizableSpots;
+procedure TThShape.ShowResizeSpots;
 var
   I: Integer;
   P: TPointF;
   R: TRectF;
-  Spot: TItemResizableSpot;
+  Spot: TAbstractItemResizeSpot;
 begin
   R := GetShapeRect;
 
-  for I := 0 to FResizabler.Count - 1 do
+  for I := 0 to FResizer.Count - 1 do
   begin
-    Spot := TItemResizableSpot(FResizabler.Spots[I]);
+    Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
 
     case Spot.SpotCorner of
       scTopLeft:      P := PointF(R.Left, R.Top);
@@ -148,15 +148,15 @@ begin
   Repaint;
 end;
 
-procedure TThShape.HideResizableSpots;
+procedure TThShape.HideResizeSpots;
 var
   I: Integer;
 begin
-  for I := 0 to FResizabler.Count - 1 do
-    TControl(FResizabler.Spots[I]).Visible := False;
+  for I := 0 to FResizer.Count - 1 do
+    TControl(FResizer.Spots[I]).Visible := False;
 end;
 
-procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizableSpot);
+procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizeSpot);
   function _IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
   begin
     Result := AndSpotCorner(D1, HORIZONTAL_CORNERS) <> AndSpotCorner(D2, HORIZONTAL_CORNERS);
@@ -180,13 +180,13 @@ procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizableSpot);
 var
   I: Integer;
   R: TRectF;
-  Spot: TItemResizableSpot;
-  ActiveSpot: TItemResizableSpot;
+  Spot: TAbstractItemResizeSpot;
+  ActiveSpot: TAbstractItemResizeSpot;
   SpotCorner: TSpotCorner;
 begin
   R := GetShapeRect;
 
-  ActiveSpot := TItemResizableSpot(ASpot);
+  ActiveSpot := TAbstractItemResizeSpot(ASpot);
   SpotCorner := ActiveSpot.SpotCorner;
 
 // 1, ActiveSpot(변경중인)의 변경 할 SpotCorner 계산
@@ -219,9 +219,9 @@ begin
       SpotCorner := _VertialExchange(SpotCorner);
 
 {2, }
-  for I := 0 to FResizabler.Count - 1 do
+  for I := 0 to FResizer.Count - 1 do
   begin
-    Spot := TItemResizableSpot(FResizabler.Spots[I]);
+    Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
 
     if Spot = ActiveSpot then
       Continue;
@@ -263,15 +263,15 @@ begin
 {$ENDIF}
 
   if FSelected and (FUpdating = 0) then
-    ShowResizableSpots;
+    ShowResizeSpots;
 end;
 
-procedure TThShape.ResizableSpotTrack(Sender: TObject; X, Y: Single);
+procedure TThShape.ResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ShapeR, BeforeR: TRectF;
   SpotPos: TPointF;
   Exchanged: Boolean;
-  Spot: TThItemCircleResizableSpot absolute Sender;
+  Spot: TThItemCircleResizeSpot absolute Sender;
 begin
   ShapeR := GetShapeRect;
   BeforeR := ClipRect;;
