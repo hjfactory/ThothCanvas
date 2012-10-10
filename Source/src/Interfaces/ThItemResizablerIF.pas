@@ -6,9 +6,6 @@ uses
   System.Types;
 
 type
-  TResizableSpotDirection = (rsdTopLeft, rsdTop, rsdTopRight, rsdLeft, rsdRight,
-    rsdBottomLeft, rsdBottom, rsdBottomRight{, spCustom});
-
   IItemResizableSpot = interface
   end;
 

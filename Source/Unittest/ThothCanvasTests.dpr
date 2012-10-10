@@ -31,7 +31,8 @@ uses
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Libraries\ThConsts.pas',
   ThItemResizablerIF in '..\src\Interfaces\ThItemResizablerIF.pas',
-  ThItemResizabler in '..\src\Components\ThItemResizabler.pas';
+  ThItemResizabler in '..\src\Components\ThItemResizabler.pas',
+  TestThItemResizabler in 'TestThItemResizabler.pas';
 
 {$R *.RES}
 

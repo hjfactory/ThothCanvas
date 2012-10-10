@@ -4,20 +4,38 @@ interface
 
 uses
   ThItemResizablerIF, System.Classes, System.Types, FMX.Types, System.UITypes,
-  System.Generics.Collections;
+  System.Generics.Collections, ThConsts;
+
+type
+  TSpotCorner = (
+                              scTop          = 1,
+                              scLeft         = 2,
+                              scRight        = 4,
+                              scBottom       = 8,
+                              scTopLeft      = 3{rsdTop or rsdLeft},
+                              scTopRight     = 5{rsdTop or rsdRight},
+                              scBottomLeft   = 10{rsdBottom or rsdLeft},
+                              scBottomRight  = 12{rsdBottom or rsdRight}{, spCustom});
+
+const
+  HORIZONTAL_CORNERS  = TSpotCorner(Ord(scLeft) or Ord(scRight));
+  VERTICAL_CORNERS    = TSpotCorner(Ord(scTop) or Ord(scBottom));
+
+function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
 
 type
 //  TItemResizableSpot = class;
 //  TResizableSpotTrackEvent = procedure(Spot: TItemResizableSpot) of object;
   TItemResizableSpot = class(TControl, IItemResizableSpot)
   private
-    FDirection: TResizableSpotDirection;
-    FOnTracking: TNotifyEvent;
+    FSpotCorner: TSpotCorner;
+    FOnTracking: TTrackEvent;
+    procedure SetSpotCorner(const Value: TSpotCorner);
   public
-    constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection); reintroduce; virtual;
+    constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
 
-    property Direction: TResizableSpotDirection read FDirection;
-    property OnTrack: TNotifyEvent read FOnTracking write FOnTracking;
+    property SpotCorner: TSpotCorner read FSpotCorner write SetSpotCorner;
+    property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
   TResizableSpotClass = class of TItemResizableSpot;
@@ -25,25 +43,27 @@ type
   private
     FSpotClass: TResizableSpotClass;
     FList: TList;
-    FOnTracking: TNotifyEvent;
+    FOnTracking: TTrackEvent;
     function GetSpots(Index: Integer): IItemResizableSpot;
     function GetCount: Integer;
   protected
     FParent: TControl;
     function GetResizablerRect: TRectF; virtual; abstract;
-    procedure DoResizableSpotTrack(Sender: TObject);
+    procedure DoResizableSpotTrack(Sender: TObject; X, Y: Single);
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
     procedure SetSpotClass(ASpotClass: TResizableSpotClass);
-    procedure SetResizableSpots(Spots: array of TResizableSpotDirection);
+    procedure SetResizableSpots(Spots: array of TSpotCorner);
 
     property Spots[Index: Integer] : IItemResizableSpot read GetSpots; default;
     property Count: Integer read GetCount;
-    property OnTrack: TNotifyEvent read FOnTracking write FOnTracking;
+    property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
   TThItemCircleResizableSpot = class(TItemResizableSpot)
+  private
+    FMouseDownPos: TPointF;
   protected
     procedure Paint; override;
     function GetUpdateRect: TRectF; override;
@@ -51,9 +71,11 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   public
-    constructor Create(AOwner: TComponent; ADirection: TResizableSpotDirection); override;
+    constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
     function PointInObject(X, Y: Single): Boolean; override;
   end;
 
@@ -67,18 +89,27 @@ type
 implementation
 
 uses
-  ThConsts, System.UIConsts, CommonUtils;
+  System.UIConsts, CommonUtils;
 
+function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
+begin
+  Result := TSpotCorner(Ord(D1) and Ord(D2))
+end;
 
 { TItemResizableSpot }
 
 constructor TItemResizableSpot.Create(AOwner: TComponent;
-  ADirection: TResizableSpotDirection);
+  ASpotCorner: TSpotCorner);
 begin
   inherited Create(AOwner);
 
   Opacity := 1;
-  FDirection := ADirection;
+  FSpotCorner := ASpotCorner;
+end;
+
+procedure TItemResizableSpot.SetSpotCorner(const Value: TSpotCorner);
+begin
+  FSpotCorner := Value;
 end;
 
 { TItemResizabler }
@@ -99,10 +130,10 @@ begin
   inherited;
 end;
 
-procedure TItemResizabler.DoResizableSpotTrack(Sender: TObject);
+procedure TItemResizabler.DoResizableSpotTrack(Sender: TObject; X, Y: Single);
 begin
   if Assigned(OnTrack) then
-    OnTrack(Sender);
+    OnTrack(Sender, X, Y);
 end;
 
 function TItemResizabler.GetCount: Integer;
@@ -117,7 +148,7 @@ begin
 end;
 
 procedure TItemResizabler.SetResizableSpots(
-  Spots: array of TResizableSpotDirection);
+  Spots: array of TSpotCorner);
 var
   I: Integer;
   Spot: TItemResizableSpot;
@@ -141,7 +172,7 @@ end;
 
 { TThItemCircleResizableSpot }
 
-constructor TThItemCircleResizableSpot.Create(AOwner: TComponent; ADirection: TResizableSpotDirection);
+constructor TThItemCircleResizableSpot.Create(AOwner: TComponent; ADirection: TSpotCorner);
 begin
   inherited;
 
@@ -175,27 +206,40 @@ begin
     ItemResizableSpotRadius + Canvas.StrokeThickness);
 end;
 
-procedure TThItemCircleResizableSpot.MouseMove(Shift: TShiftState; X,
-  Y: Single);
-var
-  P: TPointF;
-//  R: TRectF;
+procedure TThItemCircleResizableSpot.MouseDown(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Single);
 begin
   inherited;
 
-  if FPressed and (Parent <> nil) and (Parent is TControl) then
+  if FPressed then
   begin
-    P := LocalToAbsolute(PointF(X, Y));
-    if (Parent <> nil) and (Parent is TControl) then
-      P := TControl(Parent).AbsoluteToLocal(P);
-
-Debug('%f, %f', [P.X, P.Y]);
-
-    Position.Point := P;
-
-    if Assigned(OnTrack) then
-      OnTrack(Self);
+    FMouseDownPos := PointF(X, Y);
   end;
+end;
+
+procedure TThItemCircleResizableSpot.MouseMove(Shift: TShiftState; X,
+  Y: Single);
+var
+  Gap: TPointF;
+begin
+  inherited;
+
+  if FPressed then
+  begin
+    Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
+    Position.Point := Position.Point.Add(Gap);
+
+//    Debug('X: %f, Parent.X: %f, Down: %f, Curr: %f, Gap: %f, Pos: %f', [X, TControl(Parent).Position.X, FMouseDownPos.X, FMouseCurrPos.X, Gap.X, Position.X]);
+    if Assigned(OnTrack) then
+      OnTrack(Self, Gap.X, Gap.Y);
+  end;
+end;
+
+procedure TThItemCircleResizableSpot.MouseUp(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Single);
+begin
+  inherited;
+
 end;
 
 procedure TThItemCircleResizableSpot.Paint;

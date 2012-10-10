@@ -8,12 +8,15 @@ uses
 const
   ItemDefaultOpacity  = 0.8;
 
-  ItemHighlightMin = 5;
+  ItemHighlightSize = 5;
   ItemHighlightColor = $FFAAAAAA;
 
   ItemResizableSpotOverColor = claRed;
   ItemResizableSpotOutColor = claWhite;
   ItemResizableSpotRadius = 8;
+
+type
+  TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;
 
 implementation
 

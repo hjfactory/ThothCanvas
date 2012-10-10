@@ -20,6 +20,8 @@ type
   private
     FTestClick: Boolean;
     procedure _Test(Sender: TObject);
+    procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
+    procedure DrawRectangle(R: TRectF); overload;
   published
     procedure TestItemFactory;
 
@@ -49,12 +51,6 @@ type
 
     // #72 캔버스 영역 밖으로 이동이 가능해야 한다.
     procedure TestMoveRectangleOutOfCanvas;
-
-    // #81 사각형 선택 시 4개의 ResizableSpot이 표시되야 한다.
-    procedure TestShowResizableSpot;
-
-    // #41 ResizableSpot을 드래그하여 크기를 변경 할 수 있다.
-    procedure TestResizableRectangle;
   end;
 
 implementation
@@ -63,6 +59,21 @@ uses
   FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
 
 { TestTThShape }
+
+procedure TestTThRectangle.DrawRectangle(Left, Top, Right, Bottom: Single);
+begin
+  DrawRectangle(RectF(Left, Top, Right, Bottom));
+end;
+
+procedure TestTThRectangle.DrawRectangle(R: TRectF);
+begin
+  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
+  MousePath.New
+  .Add(R.TopLeft)
+  .Add(R.CenterPoint)
+  .Add(R.BottomRight);
+  TestLib.RunMousePath(MousePath.Path);
+end;
 
 procedure TestTThRectangle.TestItemFactory;
 var
@@ -92,12 +103,7 @@ var
   Item: TThItem;
 begin
   // Draw
-  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
-
-  MousePath.New
-  .Add(50, 50)
-  .Add(200, 200);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(50, 50, 200, 200);
 
   // Select
   TestLib.RunMouseClick(100, 100);
@@ -127,12 +133,7 @@ begin
   Check(FCanvas.ContentPos.X = 100);
 
   // Draw Rectangle
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(10, 10)
-  .Add(10, 20)
-  .Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(10, 10, 100, 100);
 
   Check(FCanvas.ItemCount = 1);
 
@@ -149,11 +150,7 @@ end;
 procedure TestTThRectangle.TestRectangleSelect;
 begin
   // Draw Rectangle
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(50, 50)
-  .Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(50, 50, 100, 100);
 
   // Select
   TestLib.RunMouseClick(60, 60);
@@ -176,12 +173,7 @@ begin
   Button.SendToBack;
 
   // Draw Rectangle
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(10, 10)
-  .Add(100, 100)
-  .Add(150, 150);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(10, 10, 150, 150);
 
   // Canvas Tracking
   MousePath.New
@@ -203,12 +195,7 @@ var
   AC: TAlphaColor;
 begin
   // 그리기
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(10, 10)
-  .Add(50, 50)
-  .Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(10, 10, 100, 100);
 
   // 클릭 선택
   TestLib.RunMouseClick(50, 50);
@@ -220,7 +207,7 @@ begin
   R.Opacity := 1;
 
   // 105.50 색상확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 50);
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 50);
   Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
@@ -231,12 +218,7 @@ var
   AC: TAlphaColor;
 begin
   // 추가
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(10, 10)
-  .Add(50, 50)
-  .Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(10, 10, 100, 100);
 
   // 선택
   TestLib.RunMouseClick(50, 50);
@@ -249,7 +231,7 @@ begin
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 100 + (ItemHighlightMin - 1));
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
   Check(AC <> ItemHighlightColor, 'Canvas color is not gray');
 
   MousePath.New
@@ -258,7 +240,7 @@ begin
   TestLib.RunMouseMove(MousePath.Path);
 
   // 그림자 확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightMin - 1), 100 + (ItemHighlightMin - 1));
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
   Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(AC = claGray, 'Not matching Color');
 end;
@@ -266,87 +248,46 @@ end;
 procedure TestTThRectangle.TestDrawRectangleEx;
 begin
   // BRToTL
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(200, 100)
-  .Add(150, 50)
-  .Add(110, 10);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(200, 100, 110, 10);
   TestLib.RunMouseClick(150, 50);
 
-  Check(Assigned(FCanvas.SelectedItem));
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned BRToTL');
   Check(FCanvas.SelectedItem.Position.X = 110, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // TRToBL
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(100, 110)
-  .Add(50, 150)
-  .Add(10, 200);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(100, 110, 10, 200);
   TestLib.RunMouseClick(50, 150);
 
-  Check(Assigned(FCanvas.SelectedItem));
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned TRToBL');
   Check(FCanvas.SelectedItem.Position.X = 10, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // BLToTR
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(110, 200)
-  .Add(150, 150)
-  .Add(200, 110);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(110, 200, 200, 110);
   TestLib.RunMouseClick(150, 150);
 
-  Check(Assigned(FCanvas.SelectedItem));
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned BLToTR');
   Check(FCanvas.SelectedItem.Position.X = 110, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThRectangle.TestDrawRectangleMinSize;
 begin
   // TLToBR
-  FCanvas.DrawItemID := 1100;
-  MousePath.New.Add(10, 10)
-  .Add(20, 20)
-  .Add(30, 30);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(10, 10, 30, 30);
   TestLib.RunMouseClick(35, 35);  // MinSize 30, 30 : 10,10 > 40, 40
   Check(Assigned(FCanvas.SelectedItem), 'TLToBR');
 
   // TRToBL
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(60, 30)
-  .Add(70, 20)
-  .Add(80, 10);
-  TestLib.RunMousePath(MousePath.Path);
-
-  TestLib.RunMouseClick(85, 5);  // MinSize 30, 30 : 10,0 > 40, 30
+  DrawRectangle(60, 30, 80, 10);
+ TestLib.RunMouseClick(85, 5);  // MinSize 30, 30 : 10,0 > 40, 30
   Check(Assigned(FCanvas.SelectedItem), 'TRToBL');
 
   // BLToTR
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(30, 60)
-  .Add(20, 70)
-  .Add(10, 80);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(30, 60, 10, 80);
   TestLib.RunMouseClick(5, 85);  // MinSize 30, 30 : 0,10 > 30, 40
   Check(Assigned(FCanvas.SelectedItem), 'BLToTR');
 
   // BRToTL
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(80, 80)
-  .Add(70, 70)
-  .Add(60, 60);
-  TestLib.RunMousePath(MousePath.Path);
-
+  DrawRectangle(80, 80, 60, 60);
   TestLib.RunMouseClick(55, 55);  // MinSize 30, 30 : 0,0 > 30, 30
   Check(Assigned(FCanvas.SelectedItem), 'BRToTL');
 end;
@@ -356,12 +297,7 @@ var
   Item: TThItem;
 begin
   // 추가
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(0, 0)
-  .Add(70, 20)
-  .Add(100, 100);
-  TestLib.RunMousePath(MousePath.Path);
+  DrawRectangle(0, 0, 100, 100);
 
   // 밖에서 안으로 드래그
   MousePath.New
@@ -373,31 +309,7 @@ begin
   // 선택
   TestLib.RunMouseClick(200, 200);
   Item := FCanvas.SelectedItem;
-  Check(Assigned(Item), 'Assigned');
-end;
-
-procedure TestTThRectangle.TestShowResizableSpot;
-begin
-  // 그리기
-  FCanvas.DrawItemID := 1100;
-  MousePath.New
-  .Add(10, 10)
-  .Add(70, 20)
-  .Add(160, 160);
-  TestLib.RunMousePath(MousePath.Path);
-
-  // 선택
-  TestLib.RunMouseClick(100, 100);
-
-  // ResizableSpot 표시 확인
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizableSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizableSpotOutColor]));
-  Check(TestLib.GetControlPixelColor(FCanvas, 10, 160) = ItemResizableSpotOutColor, 'Not matching color BottomLeft');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 10) = ItemResizableSpotOutColor, 'Not matching color TopRight');
-  Check(TestLib.GetControlPixelColor(FCanvas, 160, 160) = ItemResizableSpotOutColor, 'Not matching color BottomRight');
-end;
-
-procedure TestTThRectangle.TestResizableRectangle;
-begin
+  Check(Assigned(Item), 'Not assigned');
 end;
 
 procedure TestTThRectangle._Test(Sender: TObject);

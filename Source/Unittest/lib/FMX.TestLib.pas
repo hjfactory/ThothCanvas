@@ -28,7 +28,7 @@ type
     procedure RunMousePath(Path: array of TPointF);
     procedure RunMouseMove(Path: array of TPointF);
 
-    function GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
+    function GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;
   end;
 
   TTestLibClass = class of TTestLib;
@@ -70,7 +70,7 @@ begin
   FInitialMousePoint := Pos;
 end;
 
-function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Integer): TAlphaColor;
+function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;
 var
   Bitmap: TBitmap;
   BitmapData: TBitmapData;
@@ -85,7 +85,7 @@ begin
       Exit;
     Bitmap.Map(TMapAccess.maRead, BitmapData);
     try
-      Result := BitmapData.GetPixel(X, Y);
+      Result := BitmapData.GetPixel(Round(X), Round(Y));
     finally
       Bitmap.Unmap(BitmapData);
     end;

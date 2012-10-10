@@ -138,15 +138,18 @@ begin
 end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  R, BeforeR: TRectF;
 begin
   inherited;
 
   if FPressed then
   begin
-    InvalidateRect(ClipRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
+    BeforeR := ClipRect;
     Position.X := Position.X + (X - FMouseDownPos.X);
     Position.Y := Position.Y + (Y - FMouseDownPos.Y);
-    InvalidateRect(ClipRect);     //  이동 시 하이라이트 표시 지원
+    R := UnionRect(BeforeR, ClipRect);
+    InvalidateRect(R);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
   end;
 end;
 

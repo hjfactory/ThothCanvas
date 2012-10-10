@@ -128,7 +128,7 @@ begin
 {$IFDEF DEBUG}
   FBackgroundColor := $FFDDDDDD;
 {$ELSE}
-  FBackgroundColor := $FFFFFFFF;
+  FBackgroundColor := $FFAAAAAA;
 {$ENDIF}
 end;
 

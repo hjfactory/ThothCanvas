@@ -29,7 +29,8 @@ type
     procedure DoSelected(Selected: Boolean); override;
 
     function GetShapeRect: TRectF; virtual;
-    procedure ResizableSpotTrack(Sender: TObject);
+    procedure ResizableSpotTrack(Sender: TObject; X, Y: Single);
+    procedure NormalizeSpotCorner(ASpot: IItemResizableSpot);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -90,7 +91,7 @@ var
 begin
   Highlighter := TThItemShadowHighlighter.Create(Self);
   Highlighter.HighlightColor := ItemHighlightColor;
-  Highlighter.HighlightSize := ItemHighlightMin;
+  Highlighter.HighlightSize := ItemHighlightSize;
 
   Result := Highlighter;
 end;
@@ -101,7 +102,7 @@ var
 begin
   Resizabler := TThItemFillResizabler.Create(Self);
   Resizabler.SetSpotClass(TThItemCircleResizableSpot);
-  Resizabler.SetResizableSpots([rsdTopLeft, rsdTopRight, rsdBottomLeft, rsdBottomRight]);
+  Resizabler.SetResizableSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
   Resizabler.OnTrack := ResizableSpotTrack;
 
   Result := Resizabler;
@@ -130,15 +131,15 @@ begin
   begin
     Spot := TItemResizableSpot(FResizabler.Spots[I]);
 
-    case Spot.Direction of
-      rsdTopLeft:      P := PointF(R.Left, R.Top);
-      rsdTop:          P := PointF(RectWidth(R) / 2, R.Top);
-      rsdTopRight:     P := PointF(R.Right, R.Top);
-      rsdLeft:         P := PointF(R.Left, RectHeight(R) / 2);
-      rsdRight:        P := PointF(R.Right, RectHeight(R) / 2);
-      rsdBottomLeft:   P := PointF(R.Left, R.Bottom);
-      rsdBottom:       P := PointF(RectWidth(R) / 2, R.Bottom);
-      rsdBottomRight:  P := PointF(R.Right, R.Bottom);
+    case Spot.SpotCorner of
+      scTopLeft:      P := PointF(R.Left, R.Top);
+      scTop:          P := PointF(RectWidth(R) / 2, R.Top);
+      scTopRight:     P := PointF(R.Right, R.Top);
+      scLeft:         P := PointF(R.Left, RectHeight(R) / 2);
+      scRight:        P := PointF(R.Right, RectHeight(R) / 2);
+      scBottomLeft:   P := PointF(R.Left, R.Bottom);
+      scBottom:       P := PointF(RectWidth(R) / 2, R.Bottom);
+      scBottomRight:  P := PointF(R.Right, R.Bottom);
     end;
 
     Spot.Position.Point := P;
@@ -155,14 +156,101 @@ begin
     TControl(FResizabler.Spots[I]).Visible := False;
 end;
 
+procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizableSpot);
+  function _IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
+  begin
+    Result := AndSpotCorner(D1, HORIZONTAL_CORNERS) <> AndSpotCorner(D2, HORIZONTAL_CORNERS);
+  end;
+
+  function _IsVertialExchange(D1, D2: TSpotCorner): Boolean;
+  begin
+    Result := AndSpotCorner(D1, VERTICAL_CORNERS) <> AndSpotCorner(D2, VERTICAL_CORNERS);
+  end;
+
+  function _HorizontalExchange(D: TSpotCorner): TSpotCorner;
+  begin
+    Result := TSpotCorner(Ord(D) xor Ord(HORIZONTAL_CORNERS))
+  end;
+
+  function _VertialExchange(D: TSpotCorner): TSpotCorner;
+  begin
+    Result := TSpotCorner(Ord(D) xor Ord(VERTICAL_CORNERS))
+  end;
+
+var
+  I: Integer;
+  R: TRectF;
+  Spot: TItemResizableSpot;
+  ActiveSpot: TItemResizableSpot;
+  SpotCorner: TSpotCorner;
+begin
+  R := GetShapeRect;
+
+  ActiveSpot := TItemResizableSpot(ASpot);
+  SpotCorner := ActiveSpot.SpotCorner;
+
+// 1, ActiveSpot(변경중인)의 변경 할 SpotCorner 계산
+
+// 2, 본인 제외한 Spot에 대해 (1)에서
+  // 2-1, 가로가 변경된 경우 가로 SpotCorner 변경
+  // 2-2, 세로가 변경된 경우 세로 SpotCorner 변경
+
+// 3, 본인 SpotCorner 적용
+
+{1, }
+  // Left to Right
+  if scLeft = AndSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+    if ActiveSpot.Position.X > R.Right then
+      SpotCorner := _HorizontalExchange(SpotCorner);
+
+  // Top to Bottom
+  if scTop = AndSpotCorner(ActiveSpot.SpotCorner, scTop) then
+    if ActiveSpot.Position.Y > R.Bottom then
+      SpotCorner := _VertialExchange(SpotCorner);
+
+  // Right to Left
+  if scRight = AndSpotCorner(ActiveSpot.SpotCorner, scRight) then
+    if ActiveSpot.Position.X < R.Left then
+      SpotCorner := _HorizontalExchange(SpotCorner);
+
+  // Bottom to Top
+  if scBottom = AndSpotCorner(ActiveSpot.SpotCorner, scBottom) then
+    if ActiveSpot.Position.Y < R.Top then
+      SpotCorner := _VertialExchange(SpotCorner);
+
+{2, }
+  for I := 0 to FResizabler.Count - 1 do
+  begin
+    Spot := TItemResizableSpot(FResizabler.Spots[I]);
+
+    if Spot = ActiveSpot then
+      Continue;
+
+{2.1, }
+    // Switch width spot
+    if _IsHorizontalExchange(ActiveSpot.SpotCorner, SpotCorner) then
+      Spot.SpotCorner := _HorizontalExchange(Spot.SpotCorner);
+
+{2.2, }
+    // Switch height spot
+    if _IsVertialExchange(ActiveSpot.SpotCorner, SpotCorner) then
+      Spot.SpotCorner := _VertialExchange(Spot.SpotCorner);
+  end;
+
+{3, }
+  ActiveSpot.SpotCorner := SpotCorner;
+end;
+
 function TThShape.GetShapeRect: TRectF;
 begin
   Result := LocalRect;
 end;
 
 procedure TThShape.Paint;
+{$IFDEF DEBUG}
 var
   S: string;
+{$ENDIF}
 begin
   DrawItem(GetShapeRect, FBackgroundColor);
 
@@ -178,43 +266,96 @@ begin
     ShowResizableSpots;
 end;
 
-procedure TThShape.ResizableSpotTrack(Sender: TObject);
+procedure TThShape.ResizableSpotTrack(Sender: TObject; X, Y: Single);
 var
-  R: TRectF;
-  P: TPointF;
+  ShapeR, BeforeR: TRectF;
+  SpotPos: TPointF;
+  Exchanged: Boolean;
   Spot: TThItemCircleResizableSpot absolute Sender;
 begin
-  Debug('');
-  R := GetShapeRect;
-  R.Offset(Position.Point);
-//  R.TopLeft := LocalTo
-  P := Spot.Position.Point;
-  P.Offset(Position.Point);
+  ShapeR := GetShapeRect;
+  BeforeR := ClipRect;;
+  SpotPos := Spot.Position.Point;
 
-  /////////////////////
-  // Refactoring 필요
-  /////////////////////
+  Exchanged := False;
 
-  if Spot.Direction = rsdBottomRight then
+  // Spot이 변경된 영역을 계산
+
+  // Left to Right
+  if scLeft = AndSpotCorner(Spot.SpotCorner, scLeft) then
   begin
-    if P.X < R.Left then
+    if SpotPos.X > ShapeR.Right then
     begin
-      R.Right := R.Left;
-      R.Left := P.X;
+      ShapeR.Left := ShapeR.Right;
+      ShapeR.Right := SpotPos.X;
+      Exchanged := True;
     end
     else
-      R.Right := P.X;
-
-    if P.Y < R.Top then
     begin
-      R.Bottom := R.Top;
-      R.Top := R.Bottom;
-    end
-    else
-      R.Bottom := P.Y
-    ;
+      ShapeR.Left := SpotPos.X;
+      if ShapeR.Width < MinimumSize.X then
+        ShapeR.Left := ShapeR.Left - (MinimumSize.X - ShapeR.Width);
+    end;
   end;
-  SetBoundsRect(R);
+
+  // Top to Bottom
+  if scTop = AndSpotCorner(Spot.SpotCorner, scTop) then
+  begin
+
+    if SpotPos.Y > ShapeR.Bottom then
+    begin
+      ShapeR.Top := ShapeR.Bottom;
+      ShapeR.Bottom := SpotPos.Y;
+      Exchanged := True;
+    end
+    else
+    begin
+      ShapeR.Top := SpotPos.Y;
+      if ShapeR.Height < MinimumSize.Y then
+        ShapeR.Top := ShapeR.Top - (MinimumSize.Y - ShapeR.Height);
+    end;
+  end;
+
+  // Right to Left
+  if scRight = AndSpotCorner(Spot.SpotCorner, scRight) then
+  begin
+    if SpotPos.X < ShapeR.Left then
+    begin
+      ShapeR.Right := ShapeR.Left;
+      ShapeR.Left := SpotPos.X;
+      Exchanged := True;
+    end
+    else
+    begin
+      ShapeR.Right := SpotPos.X;
+      if ShapeR.Width < MinimumSize.X then
+        ShapeR.Width := MinimumSize.X;
+    end;
+  end;
+
+  // Bottom to Top
+  if scBottom = AndSpotCorner(Spot.SpotCorner, scBottom) then
+  begin
+    if SpotPos.Y < ShapeR.Top then
+    begin
+      ShapeR.Bottom := ShapeR.Top;
+      ShapeR.Top := ShapeR.Bottom;
+      Exchanged := True;
+    end
+    else
+    begin
+      ShapeR.Bottom := SpotPos.Y;
+      if ShapeR.Height < MinimumSize.Y then
+        ShapeR.Height := MinimumSize.Y;
+    end;
+  end;
+
+  ShapeR.Offset(Position.Point);
+  SetBoundsRect(ShapeR);
+
+  if Exchanged then
+    NormalizeSpotCorner(Spot);
+  InvalidateRect(UnionRect(BeforeR, ClipRect));
 end;
 
 procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);
