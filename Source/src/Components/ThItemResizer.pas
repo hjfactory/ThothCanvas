@@ -31,6 +31,9 @@ type
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackEvent;
     procedure SetSpotCorner(const Value: TSpotCorner);
+  protected
+    procedure DoMatrixChanged(Sender: TObject); override;
+    procedure DoRepositioning; virtual;
   public
     constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
 
@@ -41,20 +44,23 @@ type
   TResizeSpotClass = class of TAbstractItemResizeSpot;
   TAbstractItemResizer = class(TInterfacedObject, IItemResizer)
   private
+    FParentObject: IItemResizerObject;
     FSpotClass: TResizeSpotClass;
     FList: TList;
     FOnTracking: TTrackEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
   protected
-    FParent: TControl;
+    FParent: IItemResizerObject;
     function GetResizerRect: TRectF; virtual; abstract;
     procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: IItemResizerObject);
     destructor Destroy; override;
     procedure SetSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
+
+    procedure RealignSpot;
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
@@ -65,6 +71,8 @@ type
   private
     FMouseDownPos: TPointF;
   protected
+    procedure DoRepositioning; override;
+
     procedure Paint; override;
     function GetUpdateRect: TRectF; override;
 //    function GetClipRect: TRectF; override;
@@ -107,6 +115,17 @@ begin
   FSpotCorner := ASpotCorner;
 end;
 
+procedure TAbstractItemResizeSpot.DoMatrixChanged(Sender: TObject);
+begin
+  inherited;
+
+  DoRepositioning;
+end;
+
+procedure TAbstractItemResizeSpot.DoRepositioning;
+begin
+end;
+
 procedure TAbstractItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
 begin
   FSpotCorner := Value;
@@ -114,9 +133,9 @@ end;
 
 { TItemResizer }
 
-constructor TAbstractItemResizer.Create(AOwner: TComponent);
+constructor TAbstractItemResizer.Create(AOwner: IItemResizerObject);
 begin
-  FParent := TControl(AOwner);
+  FParent := AOwner;
   FList := TList.Create;
 end;
 
@@ -147,6 +166,11 @@ begin
     Result := IItemResizeSpot(TAbstractItemResizeSpot(FList[Index]));
 end;
 
+procedure TAbstractItemResizer.RealignSpot;
+begin
+  FParent.RealignSpot;
+end;
+
 procedure TAbstractItemResizer.SetResizeSpots(
   Spots: array of TSpotCorner);
 var
@@ -157,8 +181,8 @@ begin
 
   for I := 0 to Length(Spots) - 1 do
   begin
-    Spot := FSpotClass.Create(FParent, Spots[I]);
-    Spot.Parent := FParent;
+    Spot := FSpotClass.Create(TControl(FParent), Spots[I]);
+    Spot.Parent := TControl(FParent);
     Spot.OnTrack := DoResizeSpotTrack;
     Spot.Visible := False;
     FList.Add(Spot);
@@ -180,6 +204,9 @@ begin
 
   Width := ItemResizeSpotRadius * 2;
   Height := ItemResizeSpotRadius * 2;
+
+  Left := - ItemResizeSpotRadius;
+  Top := - ItemResizeSpotRadius;
 end;
 
 procedure TThItemCircleResizeSpot.DoMouseEnter;
@@ -187,15 +214,19 @@ begin
   inherited;
 
   Repaint;
-//  InvalidateRect(ClipRect);
 end;
 
 procedure TThItemCircleResizeSpot.DoMouseLeave;
 begin
   inherited;
 
-//  InvalidateRect(ClipRect);
   Repaint;
+end;
+
+procedure TThItemCircleResizeSpot.DoRepositioning;
+begin
+  Left := - ItemResizeSpotRadius;
+  Top := - ItemResizeSpotRadius;
 end;
 
 function TThItemCircleResizeSpot.GetUpdateRect: TRectF;
@@ -229,7 +260,6 @@ begin
     Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
     Position.Point := Position.Point.Add(Gap);
 
-//    Debug('X: %f, Parent.X: %f, Down: %f, Curr: %f, Gap: %f, Pos: %f', [X, TControl(Parent).Position.X, FMouseDownPos.X, FMouseCurrPos.X, Gap.X, Position.X]);
     if Assigned(OnTrack) then
       OnTrack(Self, Gap.X, Gap.Y);
   end;
@@ -266,10 +296,20 @@ end;
 function TThItemFillResizer.GetResizerRect: TRectF;
 var
   I: Integer;
+  R: TRectF;
+  Spot: TThItemCircleResizeSpot;
 begin
-  Result.Empty;
+  Result := Result.Empty;
   for I := 0 to FList.Count - 1 do
-    Result := UnionRect(Result, TThItemCircleResizeSpot(FList[I]).ClipRect);
+  begin
+//    R := TThItemCircleResizeSpot(FList[I]).ParentedRect;
+    Spot := TThItemCircleResizeSpot(FList[I]);
+    R := Spot.ClipRect;
+    R.Offset(Spot.Left, Spot.Top);
+//    Debug('Spot %d> %f, %f / %f, %f', [I, R.Left, R.Width, TThItemCircleResizeSpot(FList[I]).Position.X, TThItemCircleResizeSpot(FList[I]).Width]);
+//    InflateRect(R, 3, 3);
+    Result := UnionRect(Result, R);
+  end;
 end;
 
 function TThItemCircleResizeSpot.PointInObject(X, Y: Single): Boolean;

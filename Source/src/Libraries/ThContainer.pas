@@ -126,9 +126,9 @@ begin
   FContents.Locked := True;
 
 {$IFDEF DEBUG}
-  FBackgroundColor := $FFDDDDDD;
+  FBackgroundColor := $FFDDFFDD;
 {$ELSE}
-  FBackgroundColor := $FFAAAAAA;
+  FBackgroundColor := $FFAADDAA;
 {$ENDIF}
 end;
 

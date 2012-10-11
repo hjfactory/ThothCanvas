@@ -12,7 +12,7 @@ type
   ClipRect  : ShapeRect + ShadowRect
 }
 
-  TThShape = class(TThItem, IItemHighlitObject)
+  TThShape = class(TThItem, IItemHighlitObject, IItemResizerObject)
   private
     FBackgroundColor: TAlphaColor;
     procedure SetBackgroundColor(const Value: TAlphaColor);
@@ -23,7 +23,8 @@ type
     function CreateResizer: IItemResizer; override;
 
     procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
-    procedure ShowResizeSpots; virtual;
+    procedure RealignSpot; virtual;
+    procedure ShowResizeSpots;
     procedure HideResizeSpots;
 
     procedure DoSelected(Selected: Boolean); override;
@@ -108,6 +109,25 @@ begin
   Result := Resizer;
 end;
 
+procedure TThShape.Paint;
+{$IFDEF DEBUG}
+var
+  S: string;
+{$ENDIF}
+begin
+  DrawItem(GetShapeRect, FBackgroundColor);
+
+{$IFDEF DEBUG}
+  S := Format('Position(%f, %f)', [Position.X, Position.Y]);
+  S := S + Format(' W, H(%f, %f)', [Width, Height]);
+  Canvas.Fill.Color := claRed;
+  Canvas.Font.Size := 10;
+  Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
+{$ENDIF}
+
+  if FSelected and (FUpdating = 0) then
+    RealignSpot;
+end;
 procedure TThShape.DoSelected(Selected: Boolean);
 begin
   inherited;
@@ -118,33 +138,44 @@ begin
     HideResizeSpots;
 end;
 
-procedure TThShape.ShowResizeSpots;
+procedure TThShape.RealignSpot;
 var
   I: Integer;
-  P: TPointF;
-  R: TRectF;
+  SpotP: TPointF;
+  ShapeR: TRectF;
   Spot: TAbstractItemResizeSpot;
 begin
-  R := GetShapeRect;
+  ShapeR := GetShapeRect;
 
   for I := 0 to FResizer.Count - 1 do
   begin
     Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
 
     case Spot.SpotCorner of
-      scTopLeft:      P := PointF(R.Left, R.Top);
-      scTop:          P := PointF(RectWidth(R) / 2, R.Top);
-      scTopRight:     P := PointF(R.Right, R.Top);
-      scLeft:         P := PointF(R.Left, RectHeight(R) / 2);
-      scRight:        P := PointF(R.Right, RectHeight(R) / 2);
-      scBottomLeft:   P := PointF(R.Left, R.Bottom);
-      scBottom:       P := PointF(RectWidth(R) / 2, R.Bottom);
-      scBottomRight:  P := PointF(R.Right, R.Bottom);
+      scTopLeft:      SpotP := PointF(ShapeR.Left, ShapeR.Top);
+      scTop:          SpotP := PointF(RectWidth(ShapeR) / 2, ShapeR.Top);
+      scTopRight:     SpotP := PointF(ShapeR.Right, ShapeR.Top);
+      scLeft:         SpotP := PointF(ShapeR.Left, RectHeight(ShapeR) / 2);
+      scRight:        SpotP := PointF(ShapeR.Right, RectHeight(ShapeR) / 2);
+      scBottomLeft:   SpotP := PointF(ShapeR.Left, ShapeR.Bottom);
+      scBottom:       SpotP := PointF(RectWidth(ShapeR) / 2, ShapeR.Bottom);
+      scBottomRight:  SpotP := PointF(ShapeR.Right, ShapeR.Bottom);
     end;
 
-    Spot.Position.Point := P;
-    Spot.Visible := True;
+    Spot.Position.Point := SpotP;
+//    Spot.Visible := True;
   end;
+
+  Repaint;
+end;
+
+procedure TThShape.ShowResizeSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to FResizer.Count - 1 do
+    TControl(FResizer.Spots[I]).Visible := True;
+
   Repaint;
 end;
 
@@ -154,8 +185,11 @@ var
 begin
   for I := 0 to FResizer.Count - 1 do
     TControl(FResizer.Spots[I]).Visible := False;
+
+  Repaint;
 end;
 
+// Spot 목록의 Spot의 위치 재조정
 procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizeSpot);
   function _IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
   begin
@@ -246,26 +280,6 @@ begin
   Result := LocalRect;
 end;
 
-procedure TThShape.Paint;
-{$IFDEF DEBUG}
-var
-  S: string;
-{$ENDIF}
-begin
-  DrawItem(GetShapeRect, FBackgroundColor);
-
-{$IFDEF DEBUG}
-  S := Format('Position(%f, %f)', [Position.X, Position.Y]);
-  S := S + Format(' W, H(%f, %f)', [Width, Height]);
-  Canvas.Fill.Color := claRed;
-  Canvas.Font.Size := 10;
-  Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
-{$ENDIF}
-
-  if FSelected and (FUpdating = 0) then
-    ShowResizeSpots;
-end;
-
 procedure TThShape.ResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ShapeR, BeforeR: TRectF;
@@ -279,7 +293,7 @@ begin
 
   Exchanged := False;
 
-  // Spot이 변경된 영역을 계산
+// Spot이 변경된 영역을 계산
 
   // Left to Right
   if scLeft = AndSpotCorner(Spot.SpotCorner, scLeft) then
@@ -355,7 +369,6 @@ begin
 
   if Exchanged then
     NormalizeSpotCorner(Spot);
-  InvalidateRect(UnionRect(BeforeR, ClipRect));
 end;
 
 procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);

@@ -13,7 +13,8 @@ uses
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
   ThConsts in 'Libraries\ThConsts.pas',
   ThItemResizerIF in 'Interfaces\ThItemResizerIF.pas',
-  ThItemResizer in 'Components\ThItemResizer.pas';
+  ThItemResizer in 'Components\ThItemResizer.pas',
+  ThTypes in 'Libraries\ThTypes.pas';
 
 {$R *.res}
 

@@ -27,7 +27,7 @@ type
     function CreateHighlighter: IItemHighlighter; virtual;
     function CreateResizer: IItemResizer; virtual;
 
-    function GetClipRect: TRectF; override;
+    function GetUpdateRect: TRectF; override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -58,6 +58,9 @@ type
   TThItemClass = class of TThItem;
 
 implementation
+
+uses
+  CommonUtils;
 
 { TThItem }
 
@@ -91,14 +94,16 @@ procedure TThItem.DoMouseEnter;
 begin
   inherited;
 
-  InvalidateRect(ClipRect);
+//  InvalidateRect(UpdateRect);
+  Repaint;
 end;
 
 procedure TThItem.DoMouseLeave;
 begin
   inherited;
 
-  InvalidateRect(ClipRect);
+//  InvalidateRect(UpdateRect);
+  Repaint;
 end;
 
 procedure TThItem.DoSelected(Selected: Boolean);
@@ -111,18 +116,38 @@ begin
       FOnUnselected(Self);
 end;
 
-function TThItem.GetClipRect: TRectF;
-begin
-  Result := inherited GetClipRect;
-  if Assigned(FHighlighter) then
-    Result := UnionRect(Result, FHighlighter.HighlightRect);
-  if Assigned(FResizer) then
-    Result := UnionRect(Result, FResizer.ResizerRect);
-end;
-
 function TThItem.GetMinimumSize: TPointF;
 begin
   Result := PointF(30, 30);
+end;
+
+function TThItem.GetUpdateRect: TRectF;
+var
+  C: TControl;
+  R: TRectF;
+begin
+  Result := inherited GetUpdateRect;
+
+//  if Assigned(FHighlighter) then
+//    Result := UnionRect(Result, FHighlighter.HighlightRect);
+//  if Assigned(FResizer) then
+//    Result := UnionRect(Result, FResizer.ResizerRect);
+
+  if Assigned(FHighlighter) then
+  begin
+    R := FHighlighter.HighlightRect;
+    R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
+    Result := UnionRect(Result, R);
+  end;
+  if Assigned(FResizer) then
+  begin
+    R := FResizer.ResizerRect;
+    FResizer.RealignSpot;
+    R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
+    Result := UnionRect(Result, R);
+  end;
+
+  InflateRect(R, 1, 1);
 end;
 
 procedure TThItem.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -135,21 +160,21 @@ begin
    Selected := True;
    FMouseDownPos := PointF(X, Y);
   end;
+
+  InvalidateRect(UpdateRect);
+  Repaint;
 end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
-var
-  R, BeforeR: TRectF;
 begin
   inherited;
 
   if FPressed then
   begin
-    BeforeR := ClipRect;
     Position.X := Position.X + (X - FMouseDownPos.X);
     Position.Y := Position.Y + (Y - FMouseDownPos.Y);
-    R := UnionRect(BeforeR, ClipRect);
-    InvalidateRect(R);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
+
+    InvalidateRect(UpdateRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
   end;
 end;
 
@@ -179,7 +204,8 @@ begin
 
   DoSelected(FSelected);
 
-  InvalidateRect(ClipRect);
+//  InvalidateRect(UpdateRect);
+  Repaint;
 end;
 
 end.
