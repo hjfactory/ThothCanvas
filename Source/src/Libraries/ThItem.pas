@@ -46,6 +46,8 @@ type
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
 
+    procedure DrawItem(AFrom, ATo, AOffset: TPointF); virtual;
+
     property Selected: Boolean read FSelected write SetSelected;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
@@ -116,6 +118,10 @@ begin
     FResizer.ShowSpots
   else
     FResizer.HideSpots;
+end;
+
+procedure TThItem.DrawItem(AFrom, ATo, AOffset: TPointF);
+begin
 end;
 
 function TThItem.GetMinimumSize: TPointF;

@@ -19,6 +19,8 @@ uses
 type
   // #39 사각형 모서리를 드레그 하여 크기를 변경한다.
   TestTThItemRectangleResizer = class(TBaseTestUnit)
+  protected
+    procedure SetTestControl(var FormRect, CanvasRect: TRectF); override;
   published
     // #81 사각형 선택 시 4개의 ResizeSpot이 표시되야 한다.
     procedure TestShowResizeSpot;
@@ -39,13 +41,18 @@ type
 
     // #84 크기 변경 시 최소 크기 미만으로 축소 할 수 없어야 한다.
     procedure TestResizeMinimum;
+    procedure TestResizeMinimum2;
 
+    // #96 크기 조정 시 Minsize가 적용되지 않고 겹치는 경우 발생
     procedure BugTestResizeSpotOverlap;
+
+    // #95 크기 조정 시 대상이 아닌 Spot의 위치가 변함
+    procedure BugTestResizeAnotherSpotMove;
   end;
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, CommonUtils;
 
 { TestTThItemResizer }
 
@@ -173,14 +180,14 @@ begin
   MousePath.New
   .Add(50, 250)
   .Add(50, 100)
-  .Add(40, 250)
+  .Add(40, 240)
   .Add(250, 60);
   TestLib.RunMousePath(MousePath.Path);
 
   TestLib.RunMouseClick(200, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (FCanvas.SelectedItem.Width = 100) and (FCanvas.SelectedItem.Height = 190),
+    (FCanvas.SelectedItem.Width = 100) and (FCanvas.SelectedItem.Height = 90),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -258,21 +265,68 @@ begin
   Check(FCanvas.SelectedItem.Width = 30, Format('W: %f', [FCanvas.SelectedItem.Width]));
 end;
 
-procedure TestTThItemRectangleResizer.BugTestResizeSpotOverlap;
+procedure TestTThItemRectangleResizer.TestResizeMinimum2;
 begin
-  DebugShowForm;
-
-  FCanvas.Canvas.DrawLine(PointF(100, 0), PointF(100, FCanvas.Height), 1);
-  FCanvas.Canvas.DrawLine(PointF(0, 100), PointF(FCanvas.Width, 100), 1);
-
   DrawRectangle(100, 100, 200, 200);
   TestLib.RunMouseClick(150, 150);
 
   MousePath.New
   .Add(200, 200)
-  .Add(80, 120)
-  .Add(100, 120);
+  .Add(80, 120);
   TestLib.RunMousePath(MousePath.Path);
+
+  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
+  Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
+  Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
+end;
+
+procedure TestTThItemRectangleResizer.BugTestResizeSpotOverlap;
+begin
+  DrawRectangle(100, 100, 200, 200);
+  TestLib.RunMouseClick(150, 150);
+
+  MousePath.New
+  .Add(200, 200)
+  .Add(99, 120);
+  TestLib.RunMousePath(MousePath.Path);
+
+  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
+  Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
+  Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
+end;
+
+procedure TestTThItemRectangleResizer.SetTestControl(var FormRect,
+  CanvasRect: TRectF);
+begin
+  FormRect.Top := 10;
+  FormRect.Left := 10;
+  FormRect.Width := 1000;
+  FormRect.Height := 800;
+
+  CanvasRect := RectF(10,10,799,603);
+end;
+
+procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMove;
+begin
+  DebugShowForm;
+
+  DrawRectangle(395, 294, 595, 444);
+  TestLib.RunMouseClick(500, 350);
+
+  MousePath.New
+  .Add(595, 444)
+  .Add(250, 105)
+  .Add(366,324)
+  .Add(453,401)
+  ;
+  TestLib.RunMousePath(MousePath.Path);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
+  Check(FCanvas.SelectedItem.Position.X = 395, Format('X: %F', [FCanvas.SelectedItem.Position.X]));
+
+
 end;
 
 initialization

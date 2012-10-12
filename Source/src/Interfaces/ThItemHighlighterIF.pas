@@ -7,7 +7,7 @@ uses
 
 type
   IItemHighlitObject = interface
-    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
   end;
 
   IItemHighlighter = interface

@@ -43,7 +43,7 @@ end;
 
 procedure TThItemShadowHighlighter.DrawHighlight;
 begin
-  FParent.DrawItem(GetHighlightRect, FHighlightColor);
+  FParent.PaintItem(GetHighlightRect, FHighlightColor);
 end;
 
 function TThItemShadowHighlighter.GetHighlightRect: TRectF;

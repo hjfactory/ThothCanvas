@@ -24,10 +24,10 @@ type
     function CreateResizer: IItemResizer; override;
 
     // Abstract method
-    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
     procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); virtual; abstract;   // Spot 이동 시 Shape 크기 조정
-    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); virtual; abstract; // Spot의 SpotCorner 조정
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); virtual; abstract; // Spot의 SpotCorner 조정
 
     procedure RealignSpot; virtual;
 
@@ -42,29 +42,32 @@ type
 
   TThRectangle = class(TThShape)
   private
+    FSpotPosEx: TPointF;
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
-    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); override;
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
 
     procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); override;
-    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); override;
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
+  public
+    procedure DrawItem(AFrom, ATo, AOffset: TPointF); override;
   end;
 
   TThLine = class(TThShape)
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
-    procedure DrawItem(ARect: TRectF; AFillColor: TAlphaColor); override;
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
 
     procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); override;
-    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); override;
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
   end;
 
 implementation
 
 uses
-  CommonUtils, ThConsts, ThItemFactory, ThItemHighlighter, ThItemResizer;
+  CommonUtils, System.Math, ThConsts, ThItemFactory, ThItemHighlighter, ThItemResizer;
 
 { TThShape }
 
@@ -114,7 +117,7 @@ var
   S: string;
 {$ENDIF}
 begin
-  DrawItem(GetShapeRect, FBackgroundColor);
+  PaintItem(GetShapeRect, FBackgroundColor);
 
 {$IFDEF DEBUG}
   S := Format('Position(%f, %f)', [Position.X, Position.Y]);
@@ -184,7 +187,7 @@ begin
   Result := PtInRect(GetShapeRect, Pt);
 end;
 
-procedure TThRectangle.DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
+procedure TThRectangle.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   R: TRectF;
 begin
@@ -200,17 +203,30 @@ end;
 procedure TThRectangle.ResizeShapeBySpot(ASpot: IItemResizeSpot);
 var
   ShapeR, BeforeR: TRectF;
-  SpotPos: TPointF;
+  SpotPos, SpotPosEx: TPointF;
   ActiveSpot: TThItemCircleResizeSpot;
-  Exchanged: Boolean;
+  ExchangedHorizontal, ExchangedVertical: Boolean;
+  BeforeSC: TSpotCorner;
+
+  TestP: TPointF;
 begin
   ActiveSpot := TThItemCircleResizeSpot(ASpot);
 
   ShapeR := GetShapeRect;
-  BeforeR := ClipRect;;
   SpotPos := ActiveSpot.Position.Point;
+  SpotPosEx := SpotPos;
+  SpotPosEx.Offset(Position.Point);
 
-  Exchanged := False;
+  FSpotPosEx := SpotPosEx;
+
+//  Debug('SpotPos : %f, %f', [SpotPos.X, SPotPosEx.X]);
+
+  BeforeR := ShapeR;;
+  BeforeR.Offset(Position.Point);
+  BeforeSC := ActiveSpot.SpotCorner;
+
+  ExchangedHorizontal := False;
+  ExchangedVertical   := False;
 
 // Spot이 변경된 영역을 계산
 
@@ -221,7 +237,9 @@ begin
     begin
       ShapeR.Left := ShapeR.Right;
       ShapeR.Right := SpotPos.X;
-      Exchanged := True;
+      if ShapeR.Width < MinimumSize.X then
+        ShapeR.Width := MinimumSize.X;
+      ExchangedHorizontal := True;
     end
     else
     begin
@@ -239,7 +257,9 @@ begin
     begin
       ShapeR.Top := ShapeR.Bottom;
       ShapeR.Bottom := SpotPos.Y;
-      Exchanged := True;
+      if ShapeR.Height < MinimumSize.Y then
+        ShapeR.Height := MinimumSize.Y;
+      ExchangedVertical := True;
     end
     else
     begin
@@ -256,7 +276,9 @@ begin
     begin
       ShapeR.Right := ShapeR.Left;
       ShapeR.Left := SpotPos.X;
-      Exchanged := True;
+      if ShapeR.Width < MinimumSize.X then
+        ShapeR.Left := ShapeR.Left - (MinimumSize.X - ShapeR.Width);
+      ExchangedHorizontal := True;
     end
     else
     begin
@@ -272,8 +294,10 @@ begin
     if SpotPos.Y < ShapeR.Top then
     begin
       ShapeR.Bottom := ShapeR.Top;
-      ShapeR.Top := ShapeR.Bottom;
-      Exchanged := True;
+      ShapeR.Top := SpotPos.Y;
+      if ShapeR.Height < MinimumSize.Y then
+        ShapeR.Top := ShapeR.Top - (MinimumSize.Y - ShapeR.Height);
+      ExchangedVertical := True;
     end
     else
     begin
@@ -283,27 +307,68 @@ begin
     end;
   end;
 
+
+  TestP := SpotPos;
+  TestP.Offset(Position.Point);
+
+
   ShapeR.Offset(Position.Point);
   SetBoundsRect(ShapeR);
 
 {$IFDEF DEBUG}
-  if Width < 30 then
+//  if Width < 30 then
+{
+  if ((ShapeR.Left <> 395) and ((ShapeR.Left + ShapeR.Width) <> 395)) then
   begin
-    Debug('[SpotCorner: %d] ShapeR: %f,%f,%f,%f / Shp : %f,%f,%f,%f',
-      [
-        Ord(ActiveSpot.SpotCorner),
-        ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom,
-        Position.X, Position.Y, Width, Height
-      ]);
+    Debug('#########################################################################');
   end;
+
+  begin
+    SpotPos := LocalToAbsolute(SpotPos);
+    SpotPos := TControl(FParent).AbsoluteToLocal(SpotPos);
+
+    Debug('[SpotCorner: %d > %d] Spot: %f, %f / ShapeR: %f,%f,%f,%f / Before : %f,%f,%f,%f',
+      [
+        Ord(BeforeSC), Ord(ActiveSpot.SpotCorner), SpotPos.X, SpotPos.Y,
+        ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom,
+        BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom
+      ]);
+//    Debug('[SpotCorner: %d] Spot: %f, %f / ShapeR: %f,%f,%f,%f / Shp : %f,%f,%f,%f',
+//      [
+//        Ord(ActiveSpot.SpotCorner), SpotPos.X, SpotPos.Y,
+//        ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom,
+//        Position.X, Position.Y, Width, Height
+//      ]);
+
+  end;
+}
 
 {$ENDIF}
 
-  if Exchanged then
-    NormalizeSpotCorner(ActiveSpot);
+  Debug('B %d> %f, %f /  %f, %f   %f, %f /  %f, %f   %f, %f', [Ord(ActiveSpot.SpotCorner), TestP.X, TestP.Y,
+    BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom, ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom]);
+  if ExchangedHorizontal or ExchangedVertical then
+    NormalizeSpotCorner(ActiveSpot, ExchangedHorizontal, ExchangedVertical);
+  Debug('A %d> %f, %f /  %f, %f   %f, %f /  %f, %f   %f, %f', [Ord(ActiveSpot.SpotCorner), TestP.X, TestP.Y,
+    BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom, ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom]);
 end;
 
-procedure TThRectangle.NormalizeSpotCorner(ASpot: IItemResizeSpot);
+procedure TThRectangle.DrawItem(AFrom, ATo, AOffset: TPointF);
+var
+  R: TRectF;
+begin
+  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
+    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
+  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
+
+  R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
+  R.Offset(AOffset.X, AOffset.Y);
+  R.NormalizeRect;
+  BoundsRect := R;
+end;
+
+procedure TThRectangle.NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean);
   function _IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
   begin
     Result := AndSpotCorner(D1, HORIZONTAL_CORNERS) <> AndSpotCorner(D2, HORIZONTAL_CORNERS);
@@ -329,11 +394,15 @@ var
   R: TRectF;
   Spot: TAbstractItemResizeSpot;
   ActiveSpot: TAbstractItemResizeSpot;
+  ActiveSpotP: TPointF;
   SpotCorner: TSpotCorner;
 begin
   R := GetShapeRect;
+  R.Offset(Position.X, Position.Y);
 
   ActiveSpot := TAbstractItemResizeSpot(ASpot);
+  ActiveSpotP := ActiveSpot.Position.Point;
+  ActiveSpotP.Offset(Position.Point);
   SpotCorner := ActiveSpot.SpotCorner;
 
 // 1, ActiveSpot(변경중인)의 변경 할 SpotCorner 계산
@@ -345,25 +414,35 @@ begin
 // 3, 본인 SpotCorner 적용
 
 {1, }
-  // Left to Right
-  if scLeft = AndSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-    if ActiveSpot.Position.X > R.Right then
-      SpotCorner := _HorizontalExchange(SpotCorner);
 
-  // Top to Bottom
-  if scTop = AndSpotCorner(ActiveSpot.SpotCorner, scTop) then
-    if ActiveSpot.Position.Y > R.Bottom then
-      SpotCorner := _VertialExchange(SpotCorner);
+Debug('L to R %d> X %f(%f)  R %f', [Ord(ActiveSpot.SpotCorner), ActiveSpotP.X, Position.X, R.Right]);
 
-  // Right to Left
-  if scRight = AndSpotCorner(ActiveSpot.SpotCorner, scRight) then
-    if ActiveSpot.Position.X < R.Left then
-      SpotCorner := _HorizontalExchange(SpotCorner);
+  if ExchangedHorz then
+  begin
+    // Left to Right
+    if scLeft = AndSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+  //    if ActiveSpot.Position.X > R.Right then
+      if ActiveSpotP.X > R.Right then
+  //    if FSpotPosEx.X > R.Right then
+        SpotCorner := _HorizontalExchange(SpotCorner);
 
-  // Bottom to Top
-  if scBottom = AndSpotCorner(ActiveSpot.SpotCorner, scBottom) then
-    if ActiveSpot.Position.Y < R.Top then
-      SpotCorner := _VertialExchange(SpotCorner);
+    // Right to Left
+    if scRight = AndSpotCorner(ActiveSpot.SpotCorner, scRight) then
+      if ActiveSpotP.X < R.Left then
+        SpotCorner := _HorizontalExchange(SpotCorner);
+  end;
+  if ExchangedVert then
+  begin
+    // Top to Bottom
+    if scTop = AndSpotCorner(ActiveSpot.SpotCorner, scTop) then
+      if ActiveSpotP.Y > R.Bottom then
+        SpotCorner := _VertialExchange(SpotCorner);
+
+    // Bottom to Top
+    if scBottom = AndSpotCorner(ActiveSpot.SpotCorner, scBottom) then
+      if ActiveSpotP.Y < R.Top then
+        SpotCorner := _VertialExchange(SpotCorner);
+  end;
 
 {2, }
   for I := 0 to FResizer.Count - 1 do
@@ -395,11 +474,17 @@ begin
   Result := False;
 end;
 
-procedure TThLine.DrawItem(ARect: TRectF; AFillColor: TAlphaColor);
+procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
+var
+  P1, P2: TPointF;
 begin
   Canvas.StrokeThickness := 7;
   Canvas.Stroke.Color := AFillColor;
   Canvas.StrokeCap := TStrokeCap.scRound;
+
+//  if True then
+
+
   Canvas.DrawLine(ARect.TopLeft, ARect.BottomRight, 1);
 
 //  Canvas.draw
@@ -410,7 +495,7 @@ begin
 
 end;
 
-procedure TThLine.NormalizeSpotCorner(ASpot: IItemResizeSpot);
+procedure TThLine.NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean);
 begin
 
 end;

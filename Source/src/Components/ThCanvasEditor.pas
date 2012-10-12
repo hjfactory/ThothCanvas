@@ -66,6 +66,8 @@ var
 begin
   if FIsDrawingItem and Assigned(FDrawItem) then
   begin
+    FDrawItem.DrawItem(FMouseDownPos, PointF(X, Y), PointF(-FContents.Position.X, -FContents.Position.Y));
+{
     // Minimum size
     if Abs(FMouseDownPos.X - X) < FDrawItem.MinimumSize.X then
       X := FMouseDownPos.X + IfThen(FMouseDownPos.X < X, 1, -1) * FDrawItem.MinimumSize.X;
@@ -76,6 +78,7 @@ begin
     R.Offset(-FContents.Position.X, -FContents.Position.Y);
     R.NormalizeRect;
     FDrawItem.BoundsRect := R;
+}
   end
   else
     inherited;

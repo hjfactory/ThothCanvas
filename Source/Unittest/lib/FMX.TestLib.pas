@@ -150,6 +150,7 @@ begin
       MouseMove([], Pos.X, Pos.Y)
     ;
     Application.ProcessMessages;
+//    Sleep(500);
   end;
 end;
 
