@@ -19,6 +19,11 @@ type
   public
     procedure SetUp; override;
     procedure TearDown; override;
+
+    procedure DebugShowForm;
+
+    procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
+    procedure DrawRectangle(R: TRectF); overload;
   end;
 
 implementation
@@ -75,6 +80,26 @@ begin
 
   FCanvas.Free;
   FForm.Free;
+end;
+
+procedure TBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single);
+begin
+  DrawRectangle(RectF(Left, Top, Right, Bottom));
+end;
+
+procedure TBaseTestUnit.DebugShowForm;
+begin
+  FClosing := False;
+end;
+
+procedure TBaseTestUnit.DrawRectangle(R: TRectF);
+begin
+  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
+  MousePath.New
+  .Add(R.TopLeft)
+  .Add(R.CenterPoint)
+  .Add(R.BottomRight);
+  TestLib.RunMousePath(MousePath.Path);
 end;
 
 end.

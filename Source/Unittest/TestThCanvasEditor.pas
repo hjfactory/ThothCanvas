@@ -16,6 +16,7 @@ uses
   System.Types, System.SysUtils, FMX.Types, FMX.Objects, System.UIConsts;
 
 type
+  // #22 캔버스를 자유롭게 이동한다.
   TestTThCanvasEditor = class(TBaseTestUnit)
   published
     // #50 드래그하여 캔버스를 이동할 수 있어야 한다.

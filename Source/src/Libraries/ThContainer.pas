@@ -35,7 +35,6 @@ type
     FMouseCurrPos: TPointF; // MouseMove ½Ã ÁÂÇ¥
 
     procedure Paint; override;
-//    procedure PaintChildren; override;
 
     procedure DoAddObject(AObject: TFmxObject); override;
   public
@@ -187,6 +186,13 @@ begin
 
   Canvas.Fill.Color := FBackgroundColor;
   Canvas.FillRect(ClipRect, 0, 0, AllCorners, 1);
+
+{$IFDEF DEBUG}
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := claBlack;
+  Canvas.DrawLine(PointF(Width/2, Top), PointF(Width/2, Height), 1);
+  Canvas.DrawLine(PointF(Left, Height/2), PointF(Width, Height/2), 1);
+{$ENDIF}
 end;
 
 procedure TThContainer.SetBackgroundColor(const Value: TAlphaColor);

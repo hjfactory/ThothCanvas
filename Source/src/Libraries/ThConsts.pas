@@ -6,7 +6,13 @@ uses
   System.UIConsts;
 
 const
+{$IFDEF RELEASE}
   ItemDefaultOpacity  = 0.8;
+{$ELSE}
+  ItemDefaultOpacity  = 1;
+{$ENDIF}
+
+  ItemShapeDefaultColor = claGreen;
 
   ItemHighlightSize = 5;
   ItemHighlightColor = $FFAAAAAA;

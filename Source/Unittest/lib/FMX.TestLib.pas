@@ -3,7 +3,7 @@ unit FMX.TestLib;
 interface
 
 uses
-  System.Types, System.UITypes, System.Classes, FMX.Types, FMX.Forms, FMX.Objects,
+  System.Types, System.UITypes, System.SysUtils, System.Classes, FMX.Types, FMX.Forms, FMX.Objects,
   System.UIConsts;
 
 type
@@ -18,10 +18,11 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseWheel(WheelDelta: Integer); virtual; abstract;
-  public
-    procedure SetInitialMousePoint(Pos: TPointF);
+
     procedure KeyDown(var Key: Word; var KeyChar: WideChar); virtual; abstract;
     procedure KeyUp(var Key: Word; var KeyChar: WideChar); virtual; abstract;
+  public
+    procedure SetInitialMousePoint(Pos: TPointF);
 
     procedure RunMouseClick(X, Y: Single);
 
@@ -29,6 +30,9 @@ type
     procedure RunMouseMove(Path: array of TPointF);
 
     function GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;
+    function GetBitmapPixelColor(const X, Y: Single): TAlphaColor;
+
+    procedure TakeScreenshot(Dest: TBitmap); virtual; abstract;
   end;
 
   TTestLibClass = class of TTestLib;
@@ -68,6 +72,34 @@ uses
 procedure TTestLib.SetInitialMousePoint(Pos: TPointF);
 begin
   FInitialMousePoint := Pos;
+end;
+
+function TTestLib.GetBitmapPixelColor(const X,
+  Y: Single): TAlphaColor;
+var
+  Bitmap: TBitmap;
+  BitmapData: TBitmapData;
+begin
+  Result := claBlack;
+
+  Bitmap := TBitmap.Create(0, 0);
+  TakeScreenshot(Bitmap);
+
+  Application.ProcessMessages;
+  Sleep(0);
+  try
+    if not Assigned(Bitmap) then
+      Exit;
+//    Bitmap.SaveToFile('C:\Users\hjFactory\Downloads\test.bmp');
+    Bitmap.Map(TMapAccess.maRead, BitmapData);
+    try
+      Result := BitmapData.GetPixel(Round(X), Round(Y));
+    finally
+      Bitmap.Unmap(BitmapData);
+    end;
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 function TTestLib.GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;

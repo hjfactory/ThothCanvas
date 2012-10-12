@@ -32,7 +32,8 @@ uses
   ThConsts in '..\src\Libraries\ThConsts.pas',
   ThItemResizerIF in '..\src\Interfaces\ThItemResizerIF.pas',
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
-  TestThItemResizer in 'TestThItemResizer.pas';
+  TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
+  TestThLine in 'TestThLine.pas';
 
 {$R *.RES}
 

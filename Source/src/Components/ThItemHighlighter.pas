@@ -17,11 +17,9 @@ type
     procedure SetHighlightColor(const Value: TAlphaColor);
     procedure SetHighlightSize(const Value: Single);
   protected
-    function GetParent: IItemHighlitObject;
-    procedure SetParent(Parent: IItemHighlitObject);
     function GetHighlightRect: TRectF;
   public
-    constructor Create(AOwner: IItemHighlitObject);
+    constructor Create(AParent: IItemHighlitObject);
 
     procedure DrawHighlight;
 
@@ -36,9 +34,9 @@ uses
 
 { TThItemShadowHighligher }
 
-constructor TThItemShadowHighlighter.Create(AOwner: IItemHighlitObject);
+constructor TThItemShadowHighlighter.Create(AParent: IItemHighlitObject);
 begin
-  FParent := AOwner;
+  FParent := AParent;
 
   FHighlight := False;
 end;
@@ -50,18 +48,8 @@ end;
 
 function TThItemShadowHighlighter.GetHighlightRect: TRectF;
 begin
-  Result := TControl(FParent).LocalRect;
+  Result := TControl(FParent).ClipRect;
   Result.Offset(HighlightSize, HighlightSize);
-end;
-
-function TThItemShadowHighlighter.GetParent: IItemHighlitObject;
-begin
-  Result := FParent;
-end;
-
-procedure TThItemShadowHighlighter.SetParent(Parent: IItemHighlitObject);
-begin
-  FParent := Parent;
 end;
 
 procedure TThItemShadowHighlighter.SetHighlightColor(const Value: TAlphaColor);

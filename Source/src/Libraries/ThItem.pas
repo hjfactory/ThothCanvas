@@ -43,13 +43,10 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    property Selected: Boolean read FSelected write SetSelected;
-
     procedure Painting; override;
-
     function PointInObject(X, Y: Single): Boolean; override;
 
-//    property OnTrack: TNotifyEvent read FOnTrack write FOnTrack;
+    property Selected: Boolean read FSelected write SetSelected;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
     property MinimumSize: TPointF read GetMinimumSize;
@@ -94,7 +91,7 @@ procedure TThItem.DoMouseEnter;
 begin
   inherited;
 
-//  InvalidateRect(UpdateRect);
+  // TControl.IsMouseOver 참고하여 Repaint만 수행
   Repaint;
 end;
 
@@ -102,7 +99,7 @@ procedure TThItem.DoMouseLeave;
 begin
   inherited;
 
-//  InvalidateRect(UpdateRect);
+  // TControl.IsMouseOver 참고하여 Repaint만 수행
   Repaint;
 end;
 
@@ -114,6 +111,11 @@ begin
   else
     if Assigned(FOnUnselected) then
       FOnUnselected(Self);
+
+  if Selected then
+    FResizer.ShowSpots
+  else
+    FResizer.HideSpots;
 end;
 
 function TThItem.GetMinimumSize: TPointF;
@@ -123,15 +125,9 @@ end;
 
 function TThItem.GetUpdateRect: TRectF;
 var
-  C: TControl;
   R: TRectF;
 begin
   Result := inherited GetUpdateRect;
-
-//  if Assigned(FHighlighter) then
-//    Result := UnionRect(Result, FHighlighter.HighlightRect);
-//  if Assigned(FResizer) then
-//    Result := UnionRect(Result, FResizer.ResizerRect);
 
   if Assigned(FHighlighter) then
   begin
@@ -142,7 +138,6 @@ begin
   if Assigned(FResizer) then
   begin
     R := FResizer.ResizerRect;
-    FResizer.RealignSpot;
     R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
     Result := UnionRect(Result, R);
   end;
@@ -162,7 +157,7 @@ begin
   end;
 
   InvalidateRect(UpdateRect);
-  Repaint;
+//  Repaint;
 end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);

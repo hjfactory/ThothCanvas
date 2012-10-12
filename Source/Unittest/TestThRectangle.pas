@@ -16,12 +16,11 @@ uses
   System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
+  // #18 캔버스에 사각형을 추가한다.
   TestTThRectangle = class(TBaseTestUnit)
   private
     FTestClick: Boolean;
     procedure _Test(Sender: TObject);
-    procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
-    procedure DrawRectangle(R: TRectF); overload;
   published
     procedure TestItemFactory;
 
@@ -51,6 +50,12 @@ type
 
     // #72 캔버스 영역 밖으로 이동이 가능해야 한다.
     procedure TestMoveRectangleOutOfCanvas;
+
+    // #69 도형 선택 후 다른 도형 선택 시 이전 도형의 하이라이트 효과는 없어져야 한다.
+    procedure TestHideHighlightFromBeforeSelections;
+
+    // #94 아이템 추가 후 바로 이동 시 TopLeft Spot의 잔상이 남음
+    procedure BugTestCreateAndMoveAfterPaint;
   end;
 
 implementation
@@ -60,19 +65,9 @@ uses
 
 { TestTThShape }
 
-procedure TestTThRectangle.DrawRectangle(Left, Top, Right, Bottom: Single);
+procedure TestTThRectangle._Test(Sender: TObject);
 begin
-  DrawRectangle(RectF(Left, Top, Right, Bottom));
-end;
-
-procedure TestTThRectangle.DrawRectangle(R: TRectF);
-begin
-  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
-  MousePath.New
-  .Add(R.TopLeft)
-  .Add(R.CenterPoint)
-  .Add(R.BottomRight);
-  TestLib.RunMousePath(MousePath.Path);
+  FTestClick := True;
 end;
 
 procedure TestTThRectangle.TestItemFactory;
@@ -191,7 +186,6 @@ end;
 
 procedure TestTThRectangle.TestRectangleSelectionHighlight;
 var
-  R: TThItem;
   AC: TAlphaColor;
 begin
   // 그리기
@@ -200,21 +194,13 @@ begin
   // 클릭 선택
   TestLib.RunMouseClick(50, 50);
 
-  R := FCanvas.SelectedItem;
-
-  Check(Assigned(R), 'Not assigned');
-
-  R.Opacity := 1;
-
   // 105.50 색상확인
   AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 50);
   Check(AC = ItemHighlightColor, 'Not matching Color');
-//  Check(TestLib.GetControlPixelColor(FCanvas, 105, 105) = claGray);
 end;
 
 procedure TestTThRectangle.TestRectangleMouseOverHighlight;
 var
-  R: TThRectangle;
   AC: TAlphaColor;
 begin
   // 추가
@@ -223,11 +209,7 @@ begin
   // 선택
   TestLib.RunMouseClick(50, 50);
 
-  R := TThRectangle(FCanvas.SelectedItem);
-  Check(Assigned(R), 'Not assigned');
-
   FCanvas.BackgroundColor := claPink;
-  R.Opacity := 1;
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);
@@ -312,9 +294,73 @@ begin
   Check(Assigned(Item), 'Not assigned');
 end;
 
-procedure TestTThRectangle._Test(Sender: TObject);
+procedure TestTThRectangle.TestHideHighlightFromBeforeSelections;
+var
+  AC: TAlphaColor;
 begin
-  FTestClick := True;
+  // 2개 그리기
+  DrawRectangle(10, 10, 40, 40);  // A
+  DrawRectangle(60, 60, 90, 90);  // B
+
+  // 선택 B
+  TestLib.RunMouseClick(75, 75);
+
+  // B 선택 그림자 확인
+  AC := TestLib.GetControlPixelColor(FCanvas, 90 + (ItemHighlightSize - 1), 75);
+  Check(AC = ItemHighlightColor, 'Check Show Highlight(B)');
+
+  // 선택 A
+  TestLib.RunMouseClick(25, 25);
+
+  // B 그림자 없어짐
+  AC := TestLib.GetControlPixelColor(FCanvas, 90 + (ItemHighlightSize - 1), 75);
+  Check(AC <> ItemHighlightColor, 'Check Hide Highlight(B)');
+
+  // A 선택 그림자 확인
+  AC := TestLib.GetControlPixelColor(FCanvas, 40 + (ItemHighlightSize - 1), 25);
+  Check(AC = ItemHighlightColor, 'Check Show Highlight(A)');
+end;
+
+procedure TestTThRectangle.BugTestCreateAndMoveAfterPaint;
+var
+  ExceptL: Integer;
+  AC: TAlphaColor;
+  X, Y: Single;
+  P: TPointF;
+begin
+  FCanvas.BackgroundColor := claRed;
+
+{ Screen shot을 위해 폼 활성화 체크 }
+  ExceptL := 0;
+  P := IControl(FCanvas).LocalToScreen(PointF(100, 100));
+  while TestLib.GetBitmapPixelColor(P.X, P.Y) <> claRed do
+  begin
+    Application.ProcessMessages;
+    Sleep(0);
+
+    Inc(ExceptL);
+
+    if ExceptL > 2 then
+    begin
+      Check(False, 'Checking Testcase - Activate Form');
+    end;
+  end;
+{ Screen shot을 위해 폼 활성화 체크 }
+
+  DrawRectangle(10, 10, 100, 100);
+
+  MousePath.New
+  .Add(50, 50)
+  .Add(100, 100)
+  .Add(150, 150);
+  TestLib.RunMousePath(MousePath.Path);
+
+  X := 10-ItemHighlightSize+2;
+  Y := 10-ItemHighlightSize+2;
+  P := IControl(FCanvas).LocalToScreen(PointF(X, Y));
+
+  AC := TestLib.GetBitmapPixelColor(P.X, P.Y);
+  Check(AC = claRed, 'Showing Afterpaint');
 end;
 
 initialization

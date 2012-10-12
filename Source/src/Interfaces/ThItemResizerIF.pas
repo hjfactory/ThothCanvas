@@ -6,11 +6,10 @@ uses
   System.Types;
 
 type
-  IItemResizeSpot = interface
+  IItemResizerObject = interface
   end;
 
-  IItemResizerObject = interface
-    procedure RealignSpot;
+  IItemResizeSpot = interface
   end;
 
   IItemResizer = interface
@@ -21,12 +20,8 @@ type
     function GetSpots(Index: Integer): IItemResizeSpot;
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots;
 
-    procedure RealignSpot;
-
-//    function GetParent: IItemResizerObject;
-//    procedure SetParent(Parent: IItemResizerObject);
-//
-//    property Parent: IItemResizerObject read GetParent write SetParent;
+    procedure ShowSpots;
+    procedure HideSpots;
   end;
 
 implementation

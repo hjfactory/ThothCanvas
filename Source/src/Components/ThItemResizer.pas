@@ -39,28 +39,31 @@ type
 
     property SpotCorner: TSpotCorner read FSpotCorner write SetSpotCorner;
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
+
+    class function InflateSize: Integer;
   end;
 
   TResizeSpotClass = class of TAbstractItemResizeSpot;
   TAbstractItemResizer = class(TInterfacedObject, IItemResizer)
   private
-    FParentObject: IItemResizerObject;
-    FSpotClass: TResizeSpotClass;
     FList: TList;
     FOnTracking: TTrackEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
   protected
     FParent: IItemResizerObject;
+    FSpotClass: TResizeSpotClass;
     function GetResizerRect: TRectF; virtual; abstract;
     procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
   public
-    constructor Create(AOwner: IItemResizerObject);
+    constructor Create(AParent: IItemResizerObject);
     destructor Destroy; override;
+
     procedure SetSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
 
-    procedure RealignSpot;
+    procedure ShowSpots;
+    procedure HideSpots;
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
@@ -71,7 +74,6 @@ type
   private
     FMouseDownPos: TPointF;
   protected
-    procedure DoRepositioning; override;
 
     procedure Paint; override;
     function GetUpdateRect: TRectF; override;
@@ -126,6 +128,11 @@ procedure TAbstractItemResizeSpot.DoRepositioning;
 begin
 end;
 
+class function TAbstractItemResizeSpot.InflateSize: Integer;
+begin
+  Result := ItemResizeSpotRadius;
+end;
+
 procedure TAbstractItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
 begin
   FSpotCorner := Value;
@@ -133,9 +140,9 @@ end;
 
 { TItemResizer }
 
-constructor TAbstractItemResizer.Create(AOwner: IItemResizerObject);
+constructor TAbstractItemResizer.Create(AParent: IItemResizerObject);
 begin
-  FParent := AOwner;
+  FParent := AParent;
   FList := TList.Create;
 end;
 
@@ -166,9 +173,20 @@ begin
     Result := IItemResizeSpot(TAbstractItemResizeSpot(FList[Index]));
 end;
 
-procedure TAbstractItemResizer.RealignSpot;
+procedure TAbstractItemResizer.ShowSpots;
+var
+  I: Integer;
 begin
-  FParent.RealignSpot;
+  for I := 0 to FList.Count - 1 do
+    TControl(FList[I]).Visible := True;
+end;
+
+procedure TAbstractItemResizer.HideSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TControl(FList[I]).Visible := False;
 end;
 
 procedure TAbstractItemResizer.SetResizeSpots(
@@ -177,7 +195,7 @@ var
   I: Integer;
   Spot: TAbstractItemResizeSpot;
 begin
-  assert(Assigned(FSpotClass), 'Not assigned items Spot class');
+  Assert(Assigned(FSpotClass), 'Not assigned items Spot class');
 
   for I := 0 to Length(Spots) - 1 do
   begin
@@ -204,9 +222,6 @@ begin
 
   Width := ItemResizeSpotRadius * 2;
   Height := ItemResizeSpotRadius * 2;
-
-  Left := - ItemResizeSpotRadius;
-  Top := - ItemResizeSpotRadius;
 end;
 
 procedure TThItemCircleResizeSpot.DoMouseEnter;
@@ -223,18 +238,31 @@ begin
   Repaint;
 end;
 
-procedure TThItemCircleResizeSpot.DoRepositioning;
-begin
-  Left := - ItemResizeSpotRadius;
-  Top := - ItemResizeSpotRadius;
-end;
-
 function TThItemCircleResizeSpot.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
   InflateRect(Result,
     ItemResizeSpotRadius + Canvas.StrokeThickness,
     ItemResizeSpotRadius + Canvas.StrokeThickness);
+end;
+
+procedure TThItemCircleResizeSpot.Paint;
+var
+  R: TRectF;
+begin
+  inherited;
+
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := $FF222222;
+  if IsMouseOver then
+    Canvas.Fill.Color := ItemResizeSpotOverColor
+  else
+    Canvas.Fill.Color := ItemResizeSpotOutColor;
+
+  R := R.Empty;
+  InflateRect(R, ItemResizeSpotRadius, ItemResizeSpotRadius);
+  Canvas.FillEllipse(R, 1);
+  Canvas.DrawEllipse(R, 1);
 end;
 
 procedure TThItemCircleResizeSpot.MouseDown(Button: TMouseButton;
@@ -272,44 +300,12 @@ begin
 
 end;
 
-procedure TThItemCircleResizeSpot.Paint;
-var
-  R: TRectF;
-begin
-  inherited;
-
-  Canvas.StrokeThickness := 1;
-  Canvas.Stroke.Color := $FF222222;
-  if IsMouseOver then
-    Canvas.Fill.Color := ItemResizeSpotOverColor
-  else
-    Canvas.Fill.Color := ItemResizeSpotOutColor;
-
-  R := RectF(0, 0, 0, 0);
-  InflateRect(R, ItemResizeSpotRadius, ItemResizeSpotRadius);
-  Canvas.FillEllipse(R, 1);
-  Canvas.DrawEllipse(R, 1);
-end;
-
 { TItemFillResizer }
 
 function TThItemFillResizer.GetResizerRect: TRectF;
-var
-  I: Integer;
-  R: TRectF;
-  Spot: TThItemCircleResizeSpot;
 begin
-  Result := Result.Empty;
-  for I := 0 to FList.Count - 1 do
-  begin
-//    R := TThItemCircleResizeSpot(FList[I]).ParentedRect;
-    Spot := TThItemCircleResizeSpot(FList[I]);
-    R := Spot.ClipRect;
-    R.Offset(Spot.Left, Spot.Top);
-//    Debug('Spot %d> %f, %f / %f, %f', [I, R.Left, R.Width, TThItemCircleResizeSpot(FList[I]).Position.X, TThItemCircleResizeSpot(FList[I]).Width]);
-//    InflateRect(R, 3, 3);
-    Result := UnionRect(Result, R);
-  end;
+  Result := TControl(FParent).ClipRect;
+  InflateRect(Result, FSpotClass.InflateSize + 1, FSpotClass.InflateSize + 1);
 end;
 
 function TThItemCircleResizeSpot.PointInObject(X, Y: Single): Boolean;
