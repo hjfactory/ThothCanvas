@@ -52,7 +52,7 @@ begin
   if FIsDrawingItem then
   begin
     ClearSelection;
-    FDrawItem := InsertItem(FDrawItemID);
+    FDrawItem := AddItem(FDrawItemID);
     if Assigned(FDrawItem) then
     begin
       FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
@@ -62,23 +62,14 @@ end;
 
 procedure TThCanvasEditor.MouseMove(Shift: TShiftState; X, Y: Single);
 var
-  R: TRectF;
+  FromP, ToP: TPointF;
 begin
   if FIsDrawingItem and Assigned(FDrawItem) then
   begin
-    FDrawItem.DrawItem(FMouseDownPos, PointF(X, Y), PointF(-FContents.Position.X, -FContents.Position.Y));
-{
-    // Minimum size
-    if Abs(FMouseDownPos.X - X) < FDrawItem.MinimumSize.X then
-      X := FMouseDownPos.X + IfThen(FMouseDownPos.X < X, 1, -1) * FDrawItem.MinimumSize.X;
-    if Abs(FMouseDownPos.Y - Y) < FDrawItem.MinimumSize.Y then
-      Y := FMouseDownPos.Y + IfThen(FMouseDownPos.Y < Y, 1, -1) * FDrawItem.MinimumSize.Y;
+    FromP := FMouseDownPos.Subtract(FContents.Position.Point);
+    ToP   := PointF(X, Y).Subtract(FContents.Position.Point);
 
-    R := RectF(FMouseDownPos.X, FMouseDownPos.Y, X, Y);
-    R.Offset(-FContents.Position.X, -FContents.Position.Y);
-    R.NormalizeRect;
-    FDrawItem.BoundsRect := R;
-}
+    FDrawItem.DrawItem(FromP, ToP);
   end
   else
     inherited;

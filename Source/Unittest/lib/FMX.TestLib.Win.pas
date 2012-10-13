@@ -131,8 +131,8 @@ procedure TTestLibWin.TakeScreenshot(Dest: FMX.Types.TBitmap);
 var
   Stream: TMemoryStream;
 begin
+  Stream := TMemoryStream.Create;
   try
-    Stream := TMemoryStream.Create;
     WriteWindowsToStream(Stream);
     Stream.Position := 0;
     Dest.LoadFromStream(Stream);

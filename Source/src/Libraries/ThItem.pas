@@ -46,7 +46,8 @@ type
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
 
-    procedure DrawItem(AFrom, ATo, AOffset: TPointF); virtual;
+    // 이름 변경 필요
+    procedure DrawItem(AFrom, ATo: TPointF); virtual;
 
     property Selected: Boolean read FSelected write SetSelected;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
@@ -120,7 +121,7 @@ begin
     FResizer.HideSpots;
 end;
 
-procedure TThItem.DrawItem(AFrom, ATo, AOffset: TPointF);
+procedure TThItem.DrawItem(AFrom, ATo: TPointF);
 begin
 end;
 

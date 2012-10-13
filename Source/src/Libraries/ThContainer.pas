@@ -45,7 +45,7 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    function InsertItem(const ItemID: Integer): TThItem;
+    function AddItem(const ItemID: Integer): TThItem;
     procedure ClearSelection;
 
     property SelectedItem: TThItem read FSelectedItem;
@@ -204,7 +204,7 @@ begin
   Repaint;
 end;
 
-function TThContainer.InsertItem(const ItemID: Integer): TThItem;
+function TThContainer.AddItem(const ItemID: Integer): TThItem;
 begin
   Result := ItemFactory.Get(ItemID);
   if Assigned(Result) then

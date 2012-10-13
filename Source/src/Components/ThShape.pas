@@ -26,7 +26,7 @@ type
     // Abstract method
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
-    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); virtual; abstract;   // Spot 이동 시 Shape 크기 조정
+    procedure ResizeShapeAtSpot(ASpot: IItemResizeSpot); virtual; abstract;   // Spot 이동 시 Shape 크기 조정
     procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); virtual; abstract; // Spot의 SpotCorner 조정
 
     procedure RealignSpot; virtual;
@@ -41,17 +41,15 @@ type
   end;
 
   TThRectangle = class(TThShape)
-  private
-    FSpotPosEx: TPointF;
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
 
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
 
-    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); override;
+    procedure ResizeShapeAtSpot(ASpot: IItemResizeSpot); override;
     procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
   public
-    procedure DrawItem(AFrom, ATo, AOffset: TPointF); override;
+    procedure DrawItem(AFrom, ATo: TPointF); override;
   end;
 
   TThLine = class(TThShape)
@@ -60,7 +58,7 @@ type
 
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
 
-    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); override;
+    procedure ResizeShapeAtSpot(ASpot: IItemResizeSpot); override;
     procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
   end;
 
@@ -163,7 +161,7 @@ end;
 
 procedure TThShape.ResizeSpotTrack(Sender: TObject; X, Y: Single);
 begin
-  ResizeShapeBySpot(TThItemCircleResizeSpot(Sender));
+  ResizeShapeAtSpot(TThItemCircleResizeSpot(Sender));
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -200,30 +198,32 @@ begin
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
-procedure TThRectangle.ResizeShapeBySpot(ASpot: IItemResizeSpot);
+procedure TThRectangle.DrawItem(AFrom, ATo: TPointF);
 var
-  ShapeR, BeforeR: TRectF;
-  SpotPos, SpotPosEx: TPointF;
+  R: TRectF;
+begin
+  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
+    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
+  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
+
+  R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
+//  R.Offset(AOffset.X, AOffset.Y);
+  R.NormalizeRect;
+  BoundsRect := R;
+end;
+
+procedure TThRectangle.ResizeShapeAtSpot(ASpot: IItemResizeSpot);
+var
+  ShapeR: TRectF;
+  SpotPos: TPointF;
   ActiveSpot: TThItemCircleResizeSpot;
   ExchangedHorizontal, ExchangedVertical: Boolean;
-  BeforeSC: TSpotCorner;
-
-  TestP: TPointF;
 begin
   ActiveSpot := TThItemCircleResizeSpot(ASpot);
 
   ShapeR := GetShapeRect;
   SpotPos := ActiveSpot.Position.Point;
-  SpotPosEx := SpotPos;
-  SpotPosEx.Offset(Position.Point);
-
-  FSpotPosEx := SpotPosEx;
-
-//  Debug('SpotPos : %f, %f', [SpotPos.X, SPotPosEx.X]);
-
-  BeforeR := ShapeR;;
-  BeforeR.Offset(Position.Point);
-  BeforeSC := ActiveSpot.SpotCorner;
 
   ExchangedHorizontal := False;
   ExchangedVertical   := False;
@@ -307,65 +307,11 @@ begin
     end;
   end;
 
-
-  TestP := SpotPos;
-  TestP.Offset(Position.Point);
-
-
   ShapeR.Offset(Position.Point);
   SetBoundsRect(ShapeR);
 
-{$IFDEF DEBUG}
-//  if Width < 30 then
-{
-  if ((ShapeR.Left <> 395) and ((ShapeR.Left + ShapeR.Width) <> 395)) then
-  begin
-    Debug('#########################################################################');
-  end;
-
-  begin
-    SpotPos := LocalToAbsolute(SpotPos);
-    SpotPos := TControl(FParent).AbsoluteToLocal(SpotPos);
-
-    Debug('[SpotCorner: %d > %d] Spot: %f, %f / ShapeR: %f,%f,%f,%f / Before : %f,%f,%f,%f',
-      [
-        Ord(BeforeSC), Ord(ActiveSpot.SpotCorner), SpotPos.X, SpotPos.Y,
-        ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom,
-        BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom
-      ]);
-//    Debug('[SpotCorner: %d] Spot: %f, %f / ShapeR: %f,%f,%f,%f / Shp : %f,%f,%f,%f',
-//      [
-//        Ord(ActiveSpot.SpotCorner), SpotPos.X, SpotPos.Y,
-//        ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom,
-//        Position.X, Position.Y, Width, Height
-//      ]);
-
-  end;
-}
-
-{$ENDIF}
-
-  Debug('B %d> %f, %f /  %f, %f   %f, %f /  %f, %f   %f, %f', [Ord(ActiveSpot.SpotCorner), TestP.X, TestP.Y,
-    BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom, ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom]);
   if ExchangedHorizontal or ExchangedVertical then
     NormalizeSpotCorner(ActiveSpot, ExchangedHorizontal, ExchangedVertical);
-  Debug('A %d> %f, %f /  %f, %f   %f, %f /  %f, %f   %f, %f', [Ord(ActiveSpot.SpotCorner), TestP.X, TestP.Y,
-    BeforeR.Left, BeforeR.Top, BeforeR.Right, BeforeR.Bottom, ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom]);
-end;
-
-procedure TThRectangle.DrawItem(AFrom, ATo, AOffset: TPointF);
-var
-  R: TRectF;
-begin
-  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
-  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
-
-  R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
-  R.Offset(AOffset.X, AOffset.Y);
-  R.NormalizeRect;
-  BoundsRect := R;
 end;
 
 procedure TThRectangle.NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean);
@@ -415,15 +361,11 @@ begin
 
 {1, }
 
-Debug('L to R %d> X %f(%f)  R %f', [Ord(ActiveSpot.SpotCorner), ActiveSpotP.X, Position.X, R.Right]);
-
   if ExchangedHorz then
   begin
     // Left to Right
     if scLeft = AndSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-  //    if ActiveSpot.Position.X > R.Right then
       if ActiveSpotP.X > R.Right then
-  //    if FSpotPosEx.X > R.Right then
         SpotCorner := _HorizontalExchange(SpotCorner);
 
     // Right to Left
@@ -475,8 +417,8 @@ begin
 end;
 
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
-var
-  P1, P2: TPointF;
+//var
+//  P1, P2: TPointF;
 begin
   Canvas.StrokeThickness := 7;
   Canvas.Stroke.Color := AFillColor;
@@ -490,7 +432,7 @@ begin
 //  Canvas.draw
 end;
 
-procedure TThLine.ResizeShapeBySpot(ASpot: IItemResizeSpot);
+procedure TThLine.ResizeShapeAtSpot(ASpot: IItemResizeSpot);
 begin
 
 end;
