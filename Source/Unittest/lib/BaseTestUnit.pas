@@ -24,6 +24,9 @@ type
 
     procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawRectangle(R: TRectF); overload;
+
+    procedure DrawLine(Left, Top, Right, Bottom: Single); overload;
+    procedure DrawLine(R: TRectF); overload;
   end;
 
 implementation
@@ -82,14 +85,24 @@ begin
   FForm.Free;
 end;
 
-procedure TBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single);
-begin
-  DrawRectangle(RectF(Left, Top, Right, Bottom));
-end;
-
 procedure TBaseTestUnit.DebugShowForm;
 begin
   FClosing := False;
+end;
+
+procedure TBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single);
+begin
+
+end;
+
+procedure TBaseTestUnit.DrawLine(R: TRectF);
+begin
+
+end;
+
+procedure TBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single);
+begin
+  DrawRectangle(RectF(Left, Top, Right, Bottom));
 end;
 
 procedure TBaseTestUnit.DrawRectangle(R: TRectF);

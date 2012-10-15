@@ -7,6 +7,7 @@ uses
 
 type
   IItemResizerObject = interface
+    procedure RealignSpot;
   end;
 
   IItemResizeSpot = interface

@@ -37,6 +37,7 @@ procedure TestTThLIne.TestItemFactory;
 var
   Item: TThItem;
 begin
+
   // Not assigned number 0
   Item := ItemFactory.Get(0);
   try
@@ -58,7 +59,17 @@ end;
 
 procedure TestTThLIne.TestDrawLine;
 begin
+  DebugShowForm;
 
+  DrawLine(10, 10, 100, 100);
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 20) = ItemShapeDefaultColor, 'TopLeft To BottomRight - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'TopLeft To BottomRight - 2');
+
+  DrawLine(200, 10, 110, 100);
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 190, 20) = ItemShapeDefaultColor, 'TopRight To BottomLeft - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 120, 90) = ItemShapeDefaultColor, 'TopRight To BottomLeft - 2');
 end;
 
 initialization

@@ -22,6 +22,10 @@ const
   VERTICAL_CORNERS    = TSpotCorner(Ord(scTop) or Ord(scBottom));
 
 function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
+function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
+function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
+function HorizontalExchange(D: TSpotCorner): TSpotCorner;
+function VertialExchange(D: TSpotCorner): TSpotCorner;
 
 type
 //  TItemResizeSpot = class;
@@ -106,6 +110,26 @@ begin
   Result := TSpotCorner(Ord(D1) and Ord(D2))
 end;
 
+function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
+begin
+  Result := AndSpotCorner(D1, HORIZONTAL_CORNERS) <> AndSpotCorner(D2, HORIZONTAL_CORNERS);
+end;
+
+function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
+begin
+  Result := AndSpotCorner(D1, VERTICAL_CORNERS) <> AndSpotCorner(D2, VERTICAL_CORNERS);
+end;
+
+function HorizontalExchange(D: TSpotCorner): TSpotCorner;
+begin
+  Result := TSpotCorner(Ord(D) xor Ord(HORIZONTAL_CORNERS))
+end;
+
+function VertialExchange(D: TSpotCorner): TSpotCorner;
+begin
+  Result := TSpotCorner(Ord(D) xor Ord(VERTICAL_CORNERS))
+end;
+
 { TItemResizeSpot }
 
 constructor TAbstractItemResizeSpot.Create(AOwner: TComponent;
@@ -179,6 +203,7 @@ var
 begin
   for I := 0 to FList.Count - 1 do
     TControl(FList[I]).Visible := True;
+  FParent.RealignSpot;
 end;
 
 procedure TAbstractItemResizer.HideSpots;

@@ -47,7 +47,7 @@ type
     function PointInObject(X, Y: Single): Boolean; override;
 
     // 이름 변경 필요
-    procedure DrawItem(AFrom, ATo: TPointF); virtual;
+    procedure DrawingWithMouse(AFrom, ATo: TPointF); virtual;
 
     property Selected: Boolean read FSelected write SetSelected;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
@@ -121,7 +121,7 @@ begin
     FResizer.HideSpots;
 end;
 
-procedure TThItem.DrawItem(AFrom, ATo: TPointF);
+procedure TThItem.DrawingWithMouse(AFrom, ATo: TPointF);
 begin
 end;
 
