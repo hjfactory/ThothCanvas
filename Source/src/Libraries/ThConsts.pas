@@ -12,6 +12,7 @@ const
   ItemDefaultOpacity  = 1;
 {$ENDIF}
 
+  ItemMinimumSize = 30;
   ItemShapeDefaultColor = claGreen;
   ItemLineThickness = 7;
 

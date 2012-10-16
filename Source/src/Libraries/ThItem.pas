@@ -60,7 +60,7 @@ type
 implementation
 
 uses
-  CommonUtils;
+  ThConsts, CommonUtils;
 
 { TThItem }
 
@@ -127,7 +127,7 @@ end;
 
 function TThItem.GetMinimumSize: TPointF;
 begin
-  Result := PointF(30, 30);
+  Result := PointF(ItemMinimumSize, ItemMinimumSize);
 end;
 
 function TThItem.GetUpdateRect: TRectF;

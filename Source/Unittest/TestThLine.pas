@@ -32,6 +32,25 @@ type
     // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
     procedure TestSelectLineTLtoBR;
     procedure TestSelectLineTRtoBL;
+    procedure TestSelectLineOverX;
+    procedure TestSelectLineOverY;
+//    procedure TestSelectLineOverXY;
+
+    // #76 도형에 마우스 오버시 하이라이트 효과가 나타난다.
+    procedure TestLineMouseOverHighlight;
+
+    // #99 선을 넘어서는 일직선 범위를 클릭 시 선이 선택된다.
+    procedure BugTestLineOutOfRange;
+
+    // #98 선이 아닌 다른 지역에 대해 선택이 되지 않아야 한다.
+    procedure TestLineSelectionRange;
+
+    // #97 수직선, 수평선을 그릴 수 있어야 한다.
+    procedure TestLineHorizon;
+    procedure TestLineVertical;
+
+    // #77 최소 크기를 갖으며 그리거나 크기조정 시 반영된다.
+    procedure TestLineMinumumSize;
   end;
 
 implementation
@@ -76,7 +95,7 @@ end;
 
 procedure TestTThLine.TestDrawLineTRtoBL;
 begin
-  DebugShowForm;
+//  DebugShowForm;
 
   // TopRight > BottomLeft
   DrawLine(100, 10, 10, 100);
@@ -126,6 +145,129 @@ begin
   TestLib.RunMouseClick(55, 55);
 
   Check(Assigned(FCanvas.SelectedItem));
+end;
+
+procedure TestTThLine.TestSelectLineOverX;
+begin
+  DrawLine(10, 10,100, 20);
+
+  TestLib.RunMouseClick(9, 11);
+
+  Check(Assigned(FCanvas.SelectedItem));
+end;
+
+procedure TestTThLine.TestSelectLineOverY;
+begin
+  DrawLine(10, 10,100, 20);
+
+  TestLib.RunMouseClick(11, 9);
+
+  Check(Assigned(FCanvas.SelectedItem));
+end;
+{
+// 사용성 측면에서 범위 밖에서 클릭하지 않는게 좋을 것 같음
+procedure TestTThLine.TestSelectLineOverXY;
+begin
+  DrawLine(10, 10,100, 20);
+
+  TestLib.RunMouseClick(9, 9);
+  Check(Assigned(FCanvas.SelectedItem), '9,9');
+
+  TestLib.RunMouseClick(150, 150);
+  TestLib.RunMouseClick(101, 21);
+  Check(Assigned(FCanvas.SelectedItem), '101,21');
+end;
+}
+
+procedure TestTThLine.TestLineMouseOverHighlight;
+var
+  AC: TAlphaColor;
+begin
+  // 추가
+  DrawLine(10, 10, 100, 100);
+  // 선택
+  TestLib.RunMouseClick(50, 50);
+
+  FCanvas.BackgroundColor := claPink;
+
+  // 선택해제
+  TestLib.RunMouseClick(150, 150);
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
+  Check(AC <> ItemHighlightColor, 'Color is not highlight color');
+
+  MousePath.New
+  .Add(150, 150)
+  .Add(50, 50);
+  TestLib.RunMouseMove(MousePath.Path);
+
+  // 그림자 확인
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
+  Check(AC = ItemHighlightColor, 'Not matching Color');
+//  Check(AC = claGray, 'Not matching Color');
+end;
+
+procedure TestTThLine.BugTestLineOutOfRange;
+begin
+  // 추가
+  DrawLine(10, 10, 100, 100);
+
+  // 영역외 선택
+  TestLib.RunMouseClick(150, 150);
+
+  Check(not Assigned(FCanvas.SelectedItem), 'Out of range');
+
+  // 선택
+  TestLib.RunMouseClick(50, 50);
+
+  // 선택해제
+  TestLib.RunMouseClick(150, 150);
+
+  Check(not Assigned(FCanvas.SelectedItem), 'Unselect');
+end;
+
+procedure TestTThLine.TestLineSelectionRange;
+begin
+  // 추가
+  DrawLine(10, 10, 100, 100);
+
+  // 선택 범위 외 선택
+  TestLib.RunMouseClick(60, 50);
+  CheckNull(FCanvas.SelectedItem, 'Invalid select area');
+
+  // 선택
+  TestLib.RunMouseClick(50, 50);
+//  CheckTrue(Assigned(FCanvas.SelectedItem));
+  CheckNotNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThLine.TestLineHorizon;
+begin
+  // 추가
+  DrawLine(10, 10, 100, 10);
+
+  TestLib.RunMouseClick(60, 10);
+  CheckNotNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThLine.TestLineVertical;
+begin
+  // 추가
+  DrawLine(10, 10, 12, 100);
+
+  TestLib.RunMouseClick(10, 60);
+  CheckNotNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThLine.TestLineMinumumSize;
+begin
+  DebugShowForm;
+
+  // 추가
+  DrawLine(10, 10, 20, 10);
+
+  TestLib.RunMouseClick(ItemMinimumSize-1, 10);
+
+  CheckNotNull(FCanvas.SelectedItem);
 end;
 
 initialization

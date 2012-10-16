@@ -16,17 +16,20 @@ type
                               scTopRight     = 5{rsdTop or rsdRight},
                               scBottomLeft   = 10{rsdBottom or rsdLeft},
                               scBottomRight  = 12{rsdBottom or rsdRight}{, spCustom});
+  TExchangeSpotCorner = (
+    escNone, escHorizon, escVertical, escBoth
+  );
 
 const
-  HORIZONTAL_CORNERS  = TSpotCorner(Ord(scLeft) or Ord(scRight));
-  VERTICAL_CORNERS    = TSpotCorner(Ord(scTop) or Ord(scBottom));
+  HORIZON_CORNERS   = TSpotCorner(Ord(scLeft) or Ord(scRight));
+  VERTICAL_CORNERS  = TSpotCorner(Ord(scTop) or Ord(scBottom));
 
 //function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
 function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;
-function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
+function IsHorizonExchange(D1, D2: TSpotCorner): Boolean;
 function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
-function HorizontalExchange(D: TSpotCorner): TSpotCorner;
-function VertialExchange(D: TSpotCorner): TSpotCorner;
+function HorizonSpotCornerExchange(D: TSpotCorner): TSpotCorner;
+function VertialSpotCornerExchange(D: TSpotCorner): TSpotCorner;
 
 type
 //  TItemResizeSpot = class;
@@ -116,9 +119,9 @@ begin
   Result := AndSpotCorner(Source, SC) = SC;
 end;
 
-function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
+function IsHorizonExchange(D1, D2: TSpotCorner): Boolean;
 begin
-  Result := AndSpotCorner(D1, HORIZONTAL_CORNERS) <> AndSpotCorner(D2, HORIZONTAL_CORNERS);
+  Result := AndSpotCorner(D1, HORIZON_CORNERS) <> AndSpotCorner(D2, HORIZON_CORNERS);
 end;
 
 function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
@@ -126,12 +129,12 @@ begin
   Result := AndSpotCorner(D1, VERTICAL_CORNERS) <> AndSpotCorner(D2, VERTICAL_CORNERS);
 end;
 
-function HorizontalExchange(D: TSpotCorner): TSpotCorner;
+function HorizonSpotCornerExchange(D: TSpotCorner): TSpotCorner;
 begin
-  Result := TSpotCorner(Ord(D) xor Ord(HORIZONTAL_CORNERS))
+  Result := TSpotCorner(Ord(D) xor Ord(HORIZON_CORNERS))
 end;
 
-function VertialExchange(D: TSpotCorner): TSpotCorner;
+function VertialSpotCornerExchange(D: TSpotCorner): TSpotCorner;
 begin
   Result := TSpotCorner(Ord(D) xor Ord(VERTICAL_CORNERS))
 end;
@@ -226,6 +229,9 @@ var
   I: Integer;
   Spot: TAbstractItemResizeSpot;
 begin
+  for I := FList.Count - 1 downto 0 do
+    TControl(FList[I]).Free;
+  FList.Clear;
   Assert(Assigned(FSpotClass), 'Not assigned items Spot class');
 
   for I := 0 to Length(Spots) - 1 do

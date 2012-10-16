@@ -322,13 +322,10 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
-  Check(FCanvas.SelectedItem.Position.X = 395, Format('X: %F', [FCanvas.SelectedItem.Position.X]));
-
-
+  Check(FCanvas.SelectedItem.Position.X = 395, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 initialization
   RegisterTest(TestTThItemRectangleResizer.Suite);
 
 end.
-
