@@ -1,4 +1,4 @@
-unit TestThLIne;
+unit TestThLine;
 {
 
   Delphi DUnit Test Case
@@ -17,13 +17,21 @@ uses
 
 type
   // #19 캔버스에 선을 추가한다.
-  TestTThLIne = class(TBaseTestUnit)
+  TestTThLine = class(TBaseTestUnit)
   private
   published
     procedure TestItemFactory;
 
     // #74 마우스 드래그로 시작점과 끝점을 이용해 도형을 그린다.
-    procedure TestDrawLine;
+    procedure TestDrawLineTLtoBR;
+    // #75 끝점이 시작점의 앞에 있어도 그려져야 한다.
+    procedure TestDrawLineTRtoBL;
+    procedure TestDrawLineBLtoTR;
+    procedure TestDrawLineBRtoTL;
+
+    // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
+    procedure TestSelectLineTLtoBR;
+    procedure TestSelectLineTRtoBL;
   end;
 
 implementation
@@ -33,7 +41,7 @@ uses
 
 { TestTThShape }
 
-procedure TestTThLIne.TestItemFactory;
+procedure TestTThLine.TestItemFactory;
 var
   Item: TThItem;
 begin
@@ -57,23 +65,71 @@ begin
   end;
 end;
 
-procedure TestTThLIne.TestDrawLine;
+procedure TestTThLine.TestDrawLineTLtoBR;
+begin
+  // TopLeft > BottomRight
+  DrawLine(10, 10, 100, 100);
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 20) = ItemShapeDefaultColor, 'TopLeft > BottomRight - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'TopLeft > BottomRight - 2');
+end;
+
+procedure TestTThLine.TestDrawLineTRtoBL;
 begin
   DebugShowForm;
 
-  DrawLine(10, 10, 100, 100);
+  // TopRight > BottomLeft
+  DrawLine(100, 10, 10, 100);
 
-  Check(TestLib.GetControlPixelColor(FCanvas, 20, 20) = ItemShapeDefaultColor, 'TopLeft To BottomRight - 1');
-  Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'TopLeft To BottomRight - 2');
+  Check(TestLib.GetControlPixelColor(FCanvas, 90, 20) = ItemShapeDefaultColor, 'TopRight > BottomLeft - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 90) = ItemShapeDefaultColor, 'TopRight > BottomLeft - 2');
 
-  DrawLine(200, 10, 110, 100);
+end;
 
-  Check(TestLib.GetControlPixelColor(FCanvas, 190, 20) = ItemShapeDefaultColor, 'TopRight To BottomLeft - 1');
-  Check(TestLib.GetControlPixelColor(FCanvas, 120, 90) = ItemShapeDefaultColor, 'TopRight To BottomLeft - 2');
+procedure TestTThLine.TestDrawLineBLtoTR;
+begin
+//  DebugShowForm;
+
+  // BottomLeft > TopRight
+  DrawLine(10, 100, 100, 10);
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 90) = ItemShapeDefaultColor, 'BottomLeft > TopRight - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 90, 20) = ItemShapeDefaultColor, 'BottomLeft > TopRight - 2');
+end;
+
+procedure TestTThLine.TestDrawLineBRtoTL;
+begin
+//  DebugShowForm;
+
+  // BottomRight > TopLeft
+  DrawLine(100, 100, 10, 10);
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 20) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 1');
+  Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 2');
+end;
+
+procedure TestTThLine.TestSelectLineTLtoBR;
+begin
+  DrawLine(10, 10,100, 100);
+
+  TestLib.RunMouseClick(50, 50);
+
+  Check(Assigned(FCanvas.SelectedItem));
+end;
+
+procedure TestTThLine.TestSelectLineTRtoBL;
+begin
+//  DebugShowForm;
+
+  DrawLine(100, 10,10, 100);
+
+  TestLib.RunMouseClick(55, 55);
+
+  Check(Assigned(FCanvas.SelectedItem));
 end;
 
 initialization
-  RegisterTest(TestTThLIne.Suite);
+  RegisterTest(TestTThLine.Suite);
 
 end.
 

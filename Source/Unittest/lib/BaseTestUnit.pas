@@ -92,12 +92,17 @@ end;
 
 procedure TBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single);
 begin
-
+  DrawLine(RectF(Left, Top, Right, Bottom));
 end;
 
 procedure TBaseTestUnit.DrawLine(R: TRectF);
 begin
-
+  FCanvas.DrawItemID := 1200;   // 1100 is Rectangles ID
+  MousePath.New
+  .Add(R.TopLeft)
+  .Add(R.CenterPoint)
+  .Add(R.BottomRight);
+  TestLib.RunMousePath(MousePath.Path);
 end;
 
 procedure TBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single);

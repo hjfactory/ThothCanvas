@@ -21,7 +21,8 @@ const
   HORIZONTAL_CORNERS  = TSpotCorner(Ord(scLeft) or Ord(scRight));
   VERTICAL_CORNERS    = TSpotCorner(Ord(scTop) or Ord(scBottom));
 
-function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
+//function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
+function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;
 function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;
 function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
 function HorizontalExchange(D: TSpotCorner): TSpotCorner;
@@ -108,6 +109,11 @@ uses
 function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
 begin
   Result := TSpotCorner(Ord(D1) and Ord(D2))
+end;
+
+function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;
+begin
+  Result := AndSpotCorner(Source, SC) = SC;
 end;
 
 function IsHorizontalExchange(D1, D2: TSpotCorner): Boolean;

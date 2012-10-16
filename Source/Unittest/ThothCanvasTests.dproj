@@ -123,6 +123,7 @@
         <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
         <DCCReference Include="TestThLine.pas"/>
+        <DCCReference Include="..\src\Interfaces\ThItemIF.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

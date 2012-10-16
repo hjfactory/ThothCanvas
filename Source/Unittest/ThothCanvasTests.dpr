@@ -33,7 +33,8 @@ uses
   ThItemResizerIF in '..\src\Interfaces\ThItemResizerIF.pas',
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
-  TestThLine in 'TestThLine.pas';
+  TestThLine in 'TestThLine.pas',
+  ThItemIF in '..\src\Interfaces\ThItemIF.pas';
 
 {$R *.RES}
 

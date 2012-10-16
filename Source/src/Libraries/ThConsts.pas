@@ -13,6 +13,7 @@ const
 {$ENDIF}
 
   ItemShapeDefaultColor = claGreen;
+  ItemLineThickness = 7;
 
   ItemHighlightSize = 5;
   ItemHighlightColor = $FFAAAAAA;
