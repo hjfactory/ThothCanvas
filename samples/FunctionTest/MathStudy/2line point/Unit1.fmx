@@ -4,68 +4,77 @@ object Form1: TForm1
   Caption = 'Form1'
   ClientHeight = 400
   ClientWidth = 600
-  Visible = False
+  FormFactor.Width = 1600
+  FormFactor.Height = 1200
+  FormFactor.Devices = [dkDesktop]
   OnCreate = FormCreate
-  StyleLookup = 'backgroundstyle'
   object Edit1: TEdit
-    Position.Point = '(392,80)'
-    Width = 89.000000000000000000
-    Height = 17.000000000000000000
-    TabOrder = 0
+    DisableFocusEffect = False
     KeyboardType = vktDefault
     Password = False
+    Position.X = 392.000000000000000000
+    Position.Y = 80.000000000000000000
+    Width = 89.000000000000000000
+    Height = 17.000000000000000000
   end
   object Memo1: TMemo
-    Position.Point = '(376,264)'
-    Width = 209.000000000000000000
+    Touch.InteractiveGestures = [igPan]
     Height = 121.000000000000000000
-    TabOrder = 1
+    Position.X = 376.000000000000000000
+    Position.Y = 264.000000000000000000
+    Width = 209.000000000000000000
+    DisableFocusEffect = False
     KeyboardType = vktDefault
   end
   object Image1: TImage
-    Position.Point = '(16,24)'
-    Width = 353.000000000000000000
     Height = 361.000000000000000000
+    Position.X = 16.000000000000000000
+    Position.Y = 24.000000000000000000
+    Width = 353.000000000000000000
     OnMouseDown = Image1MouseDown
   end
   object Edit2: TEdit
-    Position.Point = '(392,104)'
-    Width = 89.000000000000000000
-    Height = 17.000000000000000000
-    TabOrder = 3
+    DisableFocusEffect = False
     KeyboardType = vktDefault
     Password = False
+    Position.X = 392.000000000000000000
+    Position.Y = 104.000000000000000000
+    Width = 89.000000000000000000
+    Height = 17.000000000000000000
   end
   object Button3: TButton
-    Position.Point = '(496,80)'
-    Width = 80.000000000000000000
+    DisableFocusEffect = False
     Height = 22.000000000000000000
-    OnClick = Button3Click
-    TabOrder = 4
+    Position.X = 496.000000000000000000
+    Position.Y = 80.000000000000000000
     Text = #44228#49328
+    Width = 80.000000000000000000
+    OnClick = Button3Click
   end
   object Edit3: TEdit
-    Position.Point = '(432,48)'
-    Width = 89.000000000000000000
-    Height = 22.000000000000000000
-    TabOrder = 5
+    DisableFocusEffect = False
     KeyboardType = vktDefault
     Password = False
     Text = '200'
+    Position.X = 432.000000000000000000
+    Position.Y = 48.000000000000000000
+    Width = 89.000000000000000000
+    Height = 22.000000000000000000
   end
   object Button4: TButton
-    Position.Point = '(496,16)'
-    Width = 80.000000000000000000
+    DisableFocusEffect = False
     Height = 22.000000000000000000
-    OnClick = Button4Click
-    TabOrder = 6
+    Position.X = 496.000000000000000000
+    Position.Y = 16.000000000000000000
     Text = #45796#49884
+    Width = 80.000000000000000000
+    OnClick = Button4Click
   end
   object Label1: TLabel
-    Position.Point = '(392,40)'
-    Width = 33.000000000000000000
     Height = 33.000000000000000000
-    TabOrder = 7
+    Position.X = 392.000000000000000000
+    Position.Y = 40.000000000000000000
     Text = #44600#51060
+    Width = 33.000000000000000000
   end
 end

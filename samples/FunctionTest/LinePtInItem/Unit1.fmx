@@ -1,0 +1,61 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 400
+  ClientWidth = 640
+  FormFactor.Width = 1600
+  FormFactor.Height = 1200
+  FormFactor.Devices = [dkDesktop]
+  OnCreate = FormCreate
+  object Button3: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 496.000000000000000000
+    Position.Y = 80.000000000000000000
+    Text = #44536#47532#44592
+    Width = 80.000000000000000000
+    OnClick = Button3Click
+  end
+  object edtWidth: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '200'
+    Position.X = 480.000000000000000000
+    Position.Y = 48.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Label1: TLabel
+    Height = 33.000000000000000000
+    Position.X = 480.000000000000000000
+    Position.Y = 16.000000000000000000
+    Text = #44600#51060
+    Width = 33.000000000000000000
+  end
+  object edtHeight: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '120'
+    Position.X = 520.000000000000000000
+    Position.Y = 48.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Label2: TLabel
+    Height = 33.000000000000000000
+    Position.X = 520.000000000000000000
+    Position.Y = 16.000000000000000000
+    Text = #45458#51060
+    Width = 33.000000000000000000
+  end
+  object Image1: TImage
+    Height = 361.000000000000000000
+    Position.X = 16.000000000000000000
+    Position.Y = 24.000000000000000000
+    Width = 457.000000000000000000
+    OnMouseDown = Image1MouseDown
+  end
+end

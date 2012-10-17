@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.Edit, FMX.Layouts,
-  FMX.Memo, FMX.Objects;
+  FMX.Memo, FMX.Objects, System.UIConsts;
 
 type
   TForm1 = class(TForm)
@@ -86,7 +86,7 @@ begin
   Image1.Bitmap.Canvas.StrokeThickness := 1;
   Image1.Bitmap.Canvas.DrawLine(FPos1, FPos2, 1);
   Image1.Bitmap.Canvas.EndScene;
-  Image1.Bitmap.BitmapChanged;
+//  Image1.Bitmap.BitmapChanged;
 
   Rad := ArcTan(W/H);
   Log(Format('Radians: %f, Degree: %f', [Rad, RadToDeg(Rad)]));
@@ -112,7 +112,7 @@ begin
   Image1.Bitmap.Canvas.StrokeThickness := 1;
   Image1.Bitmap.Canvas.DrawLine(FPD1, FPD2, 1);
   Image1.Bitmap.Canvas.EndScene;
-  Image1.Bitmap.BitmapChanged;
+//  Image1.Bitmap.BitmapChanged;
 //  Log(Format('%f, %f', [X, Y]));
 end;
 
@@ -129,7 +129,7 @@ begin
   Image1.Bitmap.Canvas.StrokeThickness := 1;
   Image1.Bitmap.Canvas.DrawRect(Image1.ClipRect, 0, 0, AllCorners, 1);
   Image1.Bitmap.Canvas.EndScene;
-  Image1.Bitmap.BitmapChanged;
+//  Image1.Bitmap.BitmapChanged;
 end;
 
 procedure TForm1.DrawPoint(const AP: TPointF; AC: TAlphaColor);
@@ -141,7 +141,7 @@ begin
   Image1.Bitmap.Canvas.StrokeThickness := 5;
   Image1.Bitmap.Canvas.DrawEllipse(RectF(AP.X-1,AP.Y-1,AP.X+1,AP.Y+1), 1);
   Image1.Bitmap.Canvas.EndScene;
-  Image1.Bitmap.BitmapChanged;
+//  Image1.Bitmap.BitmapChanged;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -157,7 +157,7 @@ begin
   Image1.Bitmap.Canvas.StrokeThickness := 1;
   Image1.Bitmap.Canvas.DrawRect(Image1.ClipRect, 0, 0, AllCorners, 1);
   Image1.Bitmap.Canvas.EndScene;
-  Image1.Bitmap.BitmapChanged;
+//  Image1.Bitmap.BitmapChanged;
 end;
 
 procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton;
