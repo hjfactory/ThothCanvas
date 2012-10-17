@@ -19,8 +19,6 @@ uses
 type
   // #39 사각형 모서리를 드레그 하여 크기를 변경한다.
   TestTThItemRectangleResizer = class(TBaseTestUnit)
-  protected
-    procedure SetTestControl(var FormRect, CanvasRect: TRectF); override;
   published
     // #81 사각형 선택 시 4개의 ResizeSpot이 표시되야 한다.
     procedure TestShowResizeSpot;
@@ -297,19 +295,17 @@ begin
   Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
 end;
 
-procedure TestTThItemRectangleResizer.SetTestControl(var FormRect,
-  CanvasRect: TRectF);
-begin
-  FormRect.Top := 10;
-  FormRect.Left := 10;
-  FormRect.Width := 1000;
-  FormRect.Height := 800;
-
-  CanvasRect := RectF(10,10,799,603);
-end;
-
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMove;
 begin
+  FForm.Left := 10;
+  FForm.Top := 10;
+  FForm.Width := 1000;
+  FForm.Height := 800;
+
+  FCanvas.BoundsRect := RectF(10,10,799,603);
+  TestLib.SetInitialMousePoint(GetInitialPoint);
+  Application.ProcessMessages;
+
   DrawRectangle(395, 294, 595, 444);
   TestLib.RunMouseClick(500, 350);
 
@@ -317,8 +313,7 @@ begin
   .Add(595, 444)
   .Add(250, 105)
   .Add(366,324)
-  .Add(453,401)
-  ;
+  .Add(453,401);
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');

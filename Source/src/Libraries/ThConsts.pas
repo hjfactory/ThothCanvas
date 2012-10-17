@@ -16,7 +16,7 @@ const
   ItemShapeDefaultColor = claGreen;
   ItemLineThickness = 7;
 
-  ItemHighlightSize = 5;
+  ItemHighlightSize = 3;
   ItemHighlightColor = $FFAAAAAA;
 
   ItemResizeSpotOverColor = claRed;

@@ -100,7 +100,9 @@ begin
   FCanvas.DrawItemID := 1200;   // 1100 is Rectangles ID
   MousePath.New
   .Add(R.TopLeft)
+  .Add(R.Left + 1, R.Top)
   .Add(R.CenterPoint)
+  .Add(R.Left, R.Top + 1)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
 end;

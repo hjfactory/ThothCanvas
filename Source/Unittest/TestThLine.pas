@@ -29,13 +29,6 @@ type
     procedure TestDrawLineBLtoTR;
     procedure TestDrawLineBRtoTL;
 
-    // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
-    procedure TestSelectLineTLtoBR;
-    procedure TestSelectLineTRtoBL;
-    procedure TestSelectLineOverX;
-    procedure TestSelectLineOverY;
-//    procedure TestSelectLineOverXY;
-
     // #76 도형에 마우스 오버시 하이라이트 효과가 나타난다.
     procedure TestLineMouseOverHighlight;
 
@@ -51,6 +44,16 @@ type
 
     // #77 최소 크기를 갖으며 그리거나 크기조정 시 반영된다.
     procedure TestLineMinumumSize;
+
+    // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
+    procedure TestRangeSelectLineTLtoBR;
+    procedure TestRangeSelectLineTRtoBL;
+
+    // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다. -II
+    procedure TestRangeSelectHorizonOverY;
+    procedure TestRangeSelectVerticalOverX;
+
+//    procedure TestSelectLineOverXY;
   end;
 
 implementation
@@ -95,8 +98,6 @@ end;
 
 procedure TestTThLine.TestDrawLineTRtoBL;
 begin
-//  DebugShowForm;
-
   // TopRight > BottomLeft
   DrawLine(100, 10, 10, 100);
 
@@ -107,8 +108,6 @@ end;
 
 procedure TestTThLine.TestDrawLineBLtoTR;
 begin
-//  DebugShowForm;
-
   // BottomLeft > TopRight
   DrawLine(10, 100, 100, 10);
 
@@ -118,8 +117,6 @@ end;
 
 procedure TestTThLine.TestDrawLineBRtoTL;
 begin
-//  DebugShowForm;
-
   // BottomRight > TopLeft
   DrawLine(100, 100, 10, 10);
 
@@ -127,57 +124,111 @@ begin
   Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 2');
 end;
 
-procedure TestTThLine.TestSelectLineTLtoBR;
+procedure TestTThLine.TestRangeSelectLineTLtoBR;
+var
+  Rect: TRectF;
+  P, P2: TPointF;
+  D: Single;
+  R: Single;
 begin
-  DrawLine(10, 10,100, 100);
+//DebugShowForm;
 
-  TestLib.RunMouseClick(50, 50);
+  Rect := RectF(10, 10,100, 100);
+  DrawLine(Rect);
 
-  Check(Assigned(FCanvas.SelectedItem));
+  D := (ItemLineThickness - 1) / 2;
+  P := PointF(Rect.Left + (Rect.Width / 2), Rect.Top + (Rect.Height / 2));
+  R := ArcTan(Rect.Height/Rect.Width);
+
+  P2 := P;
+  P2.X := P2.X - Cos(R) * D;
+  P2.Y := P2.Y - Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('D Point(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P;
+  P2.X := P2.X - R / Cos(R);
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('D Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P;
+  P2.Y := P2.Y - R / Sin(R);
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('D Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P;
+  P2.X := P2.X + R / Cos(R);
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('D Right(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P;
+  P2.Y := P2.Y + R / Sin(R);
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('D Bottom(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D;
+  P2.Y := P2.Y + Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D + 1;
+  P2.Y := P2.Y + Sin(R) * D - 1;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D + 1;
+  P2.Y := P2.Y + Sin(R) * D + 1;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Bottom(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X + Cos(R) * D;
+  P2.Y := P2.Y - Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X + Cos(R) * D - 1;
+  P2.Y := P2.Y - Sin(R) * D + 1;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X + Cos(R) * D + 1;
+  P2.Y := P2.Y - Sin(R) * D + 1;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Right(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D;
+  P2.Y := P2.Y - Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft TopLeft(%f, %f)', [P2.X, P2.Y]));
 end;
 
-procedure TestTThLine.TestSelectLineTRtoBL;
+procedure TestTThLine.TestRangeSelectLineTRtoBL;
 begin
-//  DebugShowForm;
-
   DrawLine(100, 10,10, 100);
 
   TestLib.RunMouseClick(55, 55);
 
   Check(Assigned(FCanvas.SelectedItem));
 end;
-
-procedure TestTThLine.TestSelectLineOverX;
-begin
-  DrawLine(10, 10,100, 20);
-
-  TestLib.RunMouseClick(9, 11);
-
-  Check(Assigned(FCanvas.SelectedItem));
-end;
-
-procedure TestTThLine.TestSelectLineOverY;
-begin
-  DrawLine(10, 10,100, 20);
-
-  TestLib.RunMouseClick(11, 9);
-
-  Check(Assigned(FCanvas.SelectedItem));
-end;
-{
-// 사용성 측면에서 범위 밖에서 클릭하지 않는게 좋을 것 같음
-procedure TestTThLine.TestSelectLineOverXY;
-begin
-  DrawLine(10, 10,100, 20);
-
-  TestLib.RunMouseClick(9, 9);
-  Check(Assigned(FCanvas.SelectedItem), '9,9');
-
-  TestLib.RunMouseClick(150, 150);
-  TestLib.RunMouseClick(101, 21);
-  Check(Assigned(FCanvas.SelectedItem), '101,21');
-end;
-}
 
 procedure TestTThLine.TestLineMouseOverHighlight;
 var
@@ -198,10 +249,11 @@ begin
   MousePath.New
   .Add(150, 150)
   .Add(50, 50);
+//  .Add(101, 101);
   TestLib.RunMouseMove(MousePath.Path);
 
   // 그림자 확인
-  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
+  AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize), 100 + (ItemHighlightSize));
   Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(AC = claGray, 'Not matching Color');
 end;
@@ -242,32 +294,65 @@ end;
 
 procedure TestTThLine.TestLineHorizon;
 begin
-  // 추가
-  DrawLine(10, 10, 100, 10);
+  DrawLine(10, 200, 20, 200);
 
-  TestLib.RunMouseClick(60, 10);
-  CheckNotNull(FCanvas.SelectedItem);
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 197) = ItemShapeDefaultColor, 'Start');
+  Check(TestLib.GetControlPixelColor(FCanvas, 20, 197) = ItemShapeDefaultColor, 'End');
 end;
 
 procedure TestTThLine.TestLineVertical;
 begin
-  // 추가
-  DrawLine(10, 10, 12, 100);
+  DrawLine(10, 10, 10, 20);
 
-  TestLib.RunMouseClick(10, 60);
-  CheckNotNull(FCanvas.SelectedItem);
+  Check(TestLib.GetControlPixelColor(FCanvas, 7, 10) = ItemShapeDefaultColor, 'Start');
+  Check(TestLib.GetControlPixelColor(FCanvas, 7, 20) = ItemShapeDefaultColor, 'End');
 end;
 
 procedure TestTThLine.TestLineMinumumSize;
 begin
-  DebugShowForm;
-
   // 추가
   DrawLine(10, 10, 20, 10);
 
   TestLib.RunMouseClick(ItemMinimumSize-1, 10);
 
   CheckNotNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThLine.TestRangeSelectHorizonOverY;
+begin
+  DrawLine(10, 10, 100, 10);
+
+  TestLib.RunMouseClick(10, 7);
+  Check(Assigned(FCanvas.SelectedItem), 'Top');
+
+  TestLib.RunMouseClick(100, 100);
+  TestLib.RunMouseClick(10, 13);
+  Check(Assigned(FCanvas.SelectedItem), 'Bottom');
+
+  TestLib.RunMouseClick(100, 100);
+  TestLib.RunMouseClick(7, 10);
+  Check(Assigned(FCanvas.SelectedItem), 'Left');
+
+  TestLib.RunMouseClick(100, 100);
+  TestLib.RunMouseClick(103, 10);
+  Check(Assigned(FCanvas.SelectedItem), 'Right');
+end;
+
+procedure TestTThLine.TestRangeSelectVerticalOverX;
+begin
+  DrawLine(10, 10, 10, 100);
+
+  TestLib.RunMouseClick(10, 7);
+  Check(Assigned(FCanvas.SelectedItem), 'Top');
+
+  TestLib.RunMouseClick(10, 13);
+  Check(Assigned(FCanvas.SelectedItem), 'Right');
+
+  TestLib.RunMouseClick(7, 10);
+  Check(Assigned(FCanvas.SelectedItem), 'Left');
+
+  TestLib.RunMouseClick(10, 103);
+  Check(Assigned(FCanvas.SelectedItem), 'Bottom');
 end;
 
 initialization

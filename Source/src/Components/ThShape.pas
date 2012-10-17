@@ -56,8 +56,11 @@ type
   TThLine = class(TThShape)
   private
     function IsTopLeftToBottomRight: Boolean;
+    function IsHorizon: Boolean;
+    function IsVertical: Boolean;
   protected
     function CreateResizer: IItemResizer; override;
+    function GetShapeRect: TRectF; override;
 
     function PtInItem(Pt: TPointF): Boolean; override;
 
@@ -412,9 +415,17 @@ var
 begin
   R := GetShapeRect;
 
-  Rad := ArcTan(R.Height/R.Width);
+//  Rad := ArcTan(R.Height/R.Width);
 
   Result := PointF(1, 1);
+//  Result := PointF(ItemLineThickness, ItemLineThickness);
+end;
+
+function TThLine.GetShapeRect: TRectF;
+begin
+  Result.TopLeft :=   TThItemCircleResizeSpot(FResizer.Spots[0]).Position.Point;
+  Result.BottomRight :=   TThItemCircleResizeSpot(FResizer.Spots[1]).Position.Point;
+  Result.NormalizeRect;
 end;
 
 function TThLine.PtInItem(Pt: TPointF): Boolean;
@@ -426,6 +437,7 @@ var
   Range: Single;
   RangeX, RangeY: Single;
   PtX, PtY: Single;
+  P1, P2, P3: TPointF;
 begin
   Result := False;
 
@@ -437,7 +449,85 @@ begin
   RectW := Rect.Width;
   RectH := Rect.Height;
 
-  Range       := ItemLineThickness;
+  Range       := (ItemLineThickness-1)/2;
+
+  if RectH = 0 then
+  begin
+    if (Pt.X >= Rect.Left) and (Pt.X <= Rect.Right) then
+    begin
+      Result := Abs(Pt.Y) <= Range;
+    end
+    else
+    begin
+      if Pt.X < Rect.Left then
+        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(Range))
+      else
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(Range))
+      ;
+    end;
+  end
+  else if RectW = 0 then
+  begin
+    if (Pt.Y >= Rect.Top) and (Pt.Y <= Rect.Bottom) then
+    begin
+      Result := Abs(Pt.X) <= Range;
+    end
+    else
+    begin
+      if Pt.Y < Rect.Top then
+        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(Range))
+      else
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(Range))
+      ;
+    end;
+  end
+  else
+  begin
+    PtX := Pt.X;
+    if IsTopLeftToBottomRight then
+      PtY := Pt.Y
+    else
+      PtY := RectH - Pt.Y;
+
+    Rad := ArcTan(RectH/RectW);
+    ValidYofPtX := Tan(Rad) * PtX;
+    ValidXofPtY := PtY / Tan(Rad);
+
+    RangeX      := Range / Sin(Rad);
+    RangeY      := Range / Cos(Rad);
+
+    if PtInRect(Rect, Pt) then
+      Result := Abs(PtY - ValidYofPtX) < RangeY
+    else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) and (PtX < Rect.Left) then
+    begin
+      P1 := P1.Add(PointF(- Cos(Rad) * Range, Sin(Rad) * Range));
+      if PtY <= P1.Y then
+      begin
+        Result := Abs(PtX) <= Tan(Rad) * PtY;
+      end
+      else
+      begin
+        Result := Abs(PtX) <= Tan(Rad) * (PtY - P1.Y);
+      end;
+    end
+    else if (PtX >= Rect.Left) and (PtX <= Rect.Right) and (PtY < Rect.Top) then
+    begin
+      P1 := P1.Add(PointF(Sin(Rad) * Range, - Cos(Rad) * Range));
+      if PtX <= P1.X then
+      begin
+        Result := Abs(PtY) <= Tan(DegToRad(90) - Rad) * PtX ;
+      end
+      else
+      begin
+//        Result := Abs(PtX - P1.X) <=
+      end;
+    end
+    else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) then
+
+    ;
+  end;
+{
+Exit;
 
   PtX := Pt.X;
   if IsTopLeftToBottomRight then
@@ -447,7 +537,7 @@ begin
 
   if RectW = 0 then
   begin
-    Result := Abs(IfThen(PtY > Rect.Bottom, PtY - Rect.Bottom, PtY)) < Range;
+    Result := True;//Abs(IfThen(PtY > Rect.Bottom, PtY - Rect.Bottom, PtY)) < Range;
   end
   else
   begin
@@ -459,23 +549,37 @@ begin
     RangeX      := Range / Sin(Rad);
     RangeY      := Range / Cos(Rad);
 
-
-//    Result := Abs(PtY - ValidYofPtX) < RangeY;
-
-    if (PtX >= Rect.Left) and (PtX <= Rect.Right) then
+    if PtInRect(Rect, Pt) then
       Result := Abs(PtY - ValidYofPtX) < RangeY
+    else if (PtX >= Rect.Left) and (PtX <= Rect.Right) then
+
     else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) then
-      Result := Abs(PtX - ValidXofPtY) < RangeX
-//    else
-//      Result := (Abs(IfThen(PtX > Rect.Right, PtX - Rect.Right, PtX)) < RangeX) and
-//                (Abs(IfThen(PtY > Rect.Bottom, PtY - Rect.Bottom, PtY)) < RangeY)
+
     ;
+
+
+
+    if Result then
+    begin
+      Debug('(%f, %f) (%f, %f), %f, %f', [PtX, PtY, RectW, RectH, ValidXofPtY, RangeX]);
+    end;
   end;
+}
 end;
 
 function TThLine.IsTopLeftToBottomRight: Boolean;
 begin
   Result := TThItemCircleResizeSpot(FResizer.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
+end;
+
+function TThLine.IsHorizon: Boolean;
+begin
+  Result := TThItemCircleResizeSpot(FResizer.Spots[0]).SpotCorner in [scLeft, scRight];
+end;
+
+function TThLine.IsVertical: Boolean;
+begin
+  Result := TThItemCircleResizeSpot(FResizer.Spots[0]).SpotCorner in [scTop, scBottom];
 end;
 
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
@@ -491,13 +595,30 @@ begin
     P1 := ARect.TopLeft;
     P2 := ARect.BottomRight;
   end
+  else if IsHorizon then
+  begin
+    P1 := PointF(ARect.Left, ARect.Top);
+    P2 := PointF(ARect.Right, ARect.Top);
+  end
+  else if IsVertical then
+  begin
+    P1 := PointF(ARect.Left, ARect.Top);
+    P2 := PointF(ARect.Left, ARect.Bottom);
+  end
   else
   begin
-    P1 := PointF(ARect.Right, ARect.Top);
-    P2 := PointF(ARect.Left, ARect.Bottom);
+    P1 := PointF(ARect.Left, ARect.Bottom);
+    P2 := PointF(ARect.Right, ARect.Top);
   end;
 
   Canvas.DrawLine(P1, P2, 1);
+{
+
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := claBlack;
+  Canvas.DrawRect(GetShapeRect, 0, 0, AllCorners, 1);
+  Canvas.DrawLine(P1, P2, 1);
+}
 //  Canvas.draw
 //  Debug('Paint item (%f, %f) (%f, %f)', [P1.X, P1.Y, P2.X, P2.Y]);
 end;
@@ -507,13 +628,13 @@ var
   R: TRectF;
   ExchangedHorz, ExchangedVert: Boolean;
   BaseSpot, ActiveSpot: TAbstractItemResizeSpot;
+var
+  ToPos, FromPos: TPointF;
 begin
-  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
-  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
-
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
+  if R.Width = 0 then   R.Right := R.Left + 1;
+  if R.Height = 0 then  R.Bottom := R.Top + 1;
+
   R.NormalizeRect;
   BoundsRect := R;
 
@@ -522,13 +643,53 @@ begin
   BaseSpot.Position.Point   := AFrom.Subtract(Position.Point);;
   ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
 
-  ExchangedHorz := (ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) and (ATo.X = R.Right)) or
-                    (ContainSpotCorner(ActiveSpot.SpotCorner, scRight) and (ATo.X = R.Left));
-  ExchangedVert := (ContainSpotCorner(ActiveSpot.SpotCorner, scTop) and (ATo.Y = R.Bottom)) or
-                    (ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) and (ATo.Y = R.Top));
-
-  if ExchangedHorz or ExchangedVert then
-    NormalizeSpotCorner(ActiveSpot, ExchangedHorz, ExchangedVert);
+  if AFrom.X = ATo.X then
+  begin
+    if AFrom.Y > ATo.Y then
+    begin
+      BaseSpot.SpotCorner := scTop;
+      ActiveSpot.SpotCorner := scBottom;
+    end
+    else
+    begin
+      ActiveSpot.SpotCorner := scTop;
+      BaseSpot.SpotCorner := scBottom;
+    end;
+  end
+  else if AFrom.Y = ATo.Y then
+  begin
+    if AFrom.X > ATo.X then
+    begin
+      BaseSpot.SpotCorner := scLeft;
+      ActiveSpot.SpotCorner := scRight;
+    end
+    else
+    begin
+      ActiveSpot.SpotCorner := scLeft;
+      BaseSpot.SpotCorner := scRight;
+    end;
+  end
+  else
+  begin
+    if AFrom.X > ATo.X then
+    begin
+      if AFrom.Y > ATo.Y then
+        ActiveSpot.SpotCorner := scBottomRight
+      else
+        ActiveSpot.SpotCorner := scTopRight
+      ;
+    end
+    else
+    begin
+      if AFrom.Y > ATo.Y then
+        ActiveSpot.SpotCorner := scBottomLeft
+      else
+        ActiveSpot.SpotCorner := scTopLeft
+      ;
+    end;
+    BaseSpot.SpotCorner := HorizonSpotCornerExchange(ActiveSpot.SpotCorner);
+    BaseSpot.SpotCorner := VertialSpotCornerExchange(BaseSpot.SpotCorner);
+  end;
 end;
 
 initialization
