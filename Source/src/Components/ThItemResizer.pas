@@ -30,6 +30,7 @@ function IsHorizonExchange(D1, D2: TSpotCorner): Boolean;
 function IsVertialExchange(D1, D2: TSpotCorner): Boolean;
 function HorizonSpotCornerExchange(D: TSpotCorner): TSpotCorner;
 function VertialSpotCornerExchange(D: TSpotCorner): TSpotCorner;
+function SpotCornerExchange(D: TSpotCorner): TSpotCorner;
 
 type
 //  TItemResizeSpot = class;
@@ -69,6 +70,8 @@ type
 
     procedure SetSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
+
+    function GetSpot(SpotCorner: TSpotCorner): TAbstractItemResizeSpot;
 
     procedure ShowSpots;
     procedure HideSpots;
@@ -139,6 +142,13 @@ begin
   Result := TSpotCorner(Ord(D) xor Ord(VERTICAL_CORNERS))
 end;
 
+function SpotCornerExchange(D: TSpotCorner): TSpotCorner;
+begin
+  Result := D;
+  Result := HorizonSpotCornerExchange(Result);
+  Result := VertialSpotCornerExchange(Result);
+end;
+
 { TItemResizeSpot }
 
 constructor TAbstractItemResizeSpot.Create(AOwner: TComponent;
@@ -198,6 +208,21 @@ end;
 function TAbstractItemResizer.GetCount: Integer;
 begin
   Result := FList.Count;
+end;
+
+function TAbstractItemResizer.GetSpot(
+  SpotCorner: TSpotCorner): TAbstractItemResizeSpot;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+  begin
+    Result := FList[I];
+    if Result.SpotCorner = SpotCorner then
+      Exit;
+  end;
+
+  Result := nil;
 end;
 
 function TAbstractItemResizer.GetSpots(Index: Integer): IItemResizeSpot;

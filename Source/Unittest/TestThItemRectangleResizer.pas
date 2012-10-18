@@ -46,6 +46,7 @@ type
 
     // #95 크기 조정 시 대상이 아닌 Spot의 위치가 변함
     procedure BugTestResizeAnotherSpotMove;
+    procedure BugTestResizeAnotherSpotMove2;
   end;
 implementation
 
@@ -318,6 +319,11 @@ begin
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
   Check(FCanvas.SelectedItem.Position.X = 395, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
+end;
+
+procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMove2;
+begin
+
 end;
 
 initialization
