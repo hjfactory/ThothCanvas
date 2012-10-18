@@ -2,19 +2,21 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 400
-  ClientWidth = 640
+  ClientHeight = 395
+  ClientWidth = 644
   FormFactor.Width = 1600
   FormFactor.Height = 1200
   FormFactor.Devices = [dkDesktop]
   OnCreate = FormCreate
+  OnShow = FormShow
   object Button3: TButton
+    Default = True
     DisableFocusEffect = False
     Height = 22.000000000000000000
-    Position.X = 496.000000000000000000
-    Position.Y = 80.000000000000000000
+    Position.X = 96.000000000000000000
+    Position.Y = 64.000000000000000000
     Text = #44536#47532#44592
-    Width = 80.000000000000000000
+    Width = 72.000000000000000000
     OnClick = Button3Click
   end
   object edtWidth: TEdit
@@ -22,15 +24,15 @@ object Form1: TForm1
     KeyboardType = vktDefault
     Password = False
     Text = '200'
-    Position.X = 480.000000000000000000
-    Position.Y = 48.000000000000000000
+    Position.X = 8.000000000000000000
+    Position.Y = 40.000000000000000000
     Width = 33.000000000000000000
     Height = 22.000000000000000000
   end
   object Label1: TLabel
     Height = 33.000000000000000000
-    Position.X = 480.000000000000000000
-    Position.Y = 16.000000000000000000
+    Position.X = 8.000000000000000000
+    Position.Y = 8.000000000000000000
     Text = #44600#51060
     Width = 33.000000000000000000
   end
@@ -39,23 +41,103 @@ object Form1: TForm1
     KeyboardType = vktDefault
     Password = False
     Text = '120'
-    Position.X = 520.000000000000000000
-    Position.Y = 48.000000000000000000
+    Position.X = 48.000000000000000000
+    Position.Y = 40.000000000000000000
     Width = 33.000000000000000000
     Height = 22.000000000000000000
   end
   object Label2: TLabel
     Height = 33.000000000000000000
-    Position.X = 520.000000000000000000
-    Position.Y = 16.000000000000000000
-    Text = #45458#51060
+    Position.X = 96.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = #44618#51060
     Width = 33.000000000000000000
   end
   object Image1: TImage
     Height = 361.000000000000000000
-    Position.X = 16.000000000000000000
-    Position.Y = 24.000000000000000000
+    Position.X = 176.000000000000000000
+    Position.Y = 8.000000000000000000
     Width = 457.000000000000000000
     OnMouseDown = Image1MouseDown
+  end
+  object Edit1: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '200'
+    Position.X = 16.000000000000000000
+    Position.Y = 96.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Edit2: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '120'
+    Position.X = 56.000000000000000000
+    Position.Y = 96.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Button1: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 96.000000000000000000
+    Position.Y = 96.000000000000000000
+    Text = #51216#52237#44592
+    Width = 73.000000000000000000
+    OnClick = Button1Click
+  end
+  object edtDepth: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '30'
+    Position.X = 96.000000000000000000
+    Position.Y = 40.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Button2: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 8.000000000000000000
+    Position.Y = 64.000000000000000000
+    Text = #51648#50864#44592
+    Width = 80.000000000000000000
+    OnClick = Button2Click
+  end
+  object Edit4: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '5'
+    Position.X = 136.000000000000000000
+    Position.Y = 40.000000000000000000
+    Width = 33.000000000000000000
+    Height = 22.000000000000000000
+  end
+  object Button4: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 8.000000000000000000
+    Position.Y = 176.000000000000000000
+    Text = 'Top D Point'
+    Width = 161.000000000000000000
+  end
+  object Label3: TLabel
+    Height = 33.000000000000000000
+    Position.X = 48.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = #45458#51060
+    Width = 33.000000000000000000
+  end
+  object Label4: TLabel
+    Height = 33.000000000000000000
+    Position.X = 136.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = #54869#45824
+    Width = 33.000000000000000000
   end
 end

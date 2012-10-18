@@ -46,12 +46,10 @@ type
     procedure TestLineMinumumSize;
 
     // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
+    procedure TestRangeSelectHorizonOverY;  // 수평선
+    procedure TestRangeSelectVerticalOverX; // 수직선
     procedure TestRangeSelectLineTLtoBR;
     procedure TestRangeSelectLineTRtoBL;
-
-    // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다. -II
-    procedure TestRangeSelectHorizonOverY;
-    procedure TestRangeSelectVerticalOverX;
 
 //    procedure TestSelectLineOverXY;
   end;
@@ -59,7 +57,7 @@ type
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, CommonUtils;
 
 { TestTThShape }
 
@@ -122,112 +120,6 @@ begin
 
   Check(TestLib.GetControlPixelColor(FCanvas, 20, 20) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 1');
   Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 2');
-end;
-
-procedure TestTThLine.TestRangeSelectLineTLtoBR;
-var
-  Rect: TRectF;
-  P, P2: TPointF;
-  D: Single;
-  R: Single;
-begin
-//DebugShowForm;
-
-  Rect := RectF(10, 10,100, 100);
-  DrawLine(Rect);
-
-  D := (ItemLineThickness - 1) / 2;
-  P := PointF(Rect.Left + (Rect.Width / 2), Rect.Top + (Rect.Height / 2));
-  R := ArcTan(Rect.Height/Rect.Width);
-
-  P2 := P;
-  P2.X := P2.X - Cos(R) * D;
-  P2.Y := P2.Y - Sin(R) * D;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('D Point(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := P;
-  P2.X := P2.X - R / Cos(R);
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('D Left(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := P;
-  P2.Y := P2.Y - R / Sin(R);
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('D Top(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := P;
-  P2.X := P2.X + R / Cos(R);
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('D Right(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := P;
-  P2.Y := P2.Y + R / Sin(R);
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('D Bottom(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X - Cos(R) * D;
-  P2.Y := P2.Y + Sin(R) * D;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Left(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X - Cos(R) * D + 1;
-  P2.Y := P2.Y + Sin(R) * D - 1;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Top(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X - Cos(R) * D + 1;
-  P2.Y := P2.Y + Sin(R) * D + 1;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Bottom(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X + Cos(R) * D;
-  P2.Y := P2.Y - Sin(R) * D;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Top(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X + Cos(R) * D - 1;
-  P2.Y := P2.Y - Sin(R) * D + 1;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Left(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X + Cos(R) * D + 1;
-  P2.Y := P2.Y - Sin(R) * D + 1;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Right(%f, %f)', [P2.X, P2.Y]));
-
-  P2 := Rect.TopLeft;
-  P2.X := P2.X - Cos(R) * D;
-  P2.Y := P2.Y - Sin(R) * D;
-  TestLib.RunMouseClick(200, 200);
-  TestLib.RunMouseClick(P2.X, P2.Y);
-  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft TopLeft(%f, %f)', [P2.X, P2.Y]));
-end;
-
-procedure TestTThLine.TestRangeSelectLineTRtoBL;
-begin
-  DrawLine(100, 10,10, 100);
-
-  TestLib.RunMouseClick(55, 55);
-
-  Check(Assigned(FCanvas.SelectedItem));
 end;
 
 procedure TestTThLine.TestLineMouseOverHighlight;
@@ -353,6 +245,115 @@ begin
 
   TestLib.RunMouseClick(10, 103);
   Check(Assigned(FCanvas.SelectedItem), 'Bottom');
+end;
+
+procedure TestTThLine.TestRangeSelectLineTLtoBR;
+var
+  Rect: TRectF;
+  P, P2, B, DP: TPointF;
+  D, R: Single;
+begin
+//DebugShowForm;
+
+  Rect := RectF(10, 10,100, 100);
+  DrawLine(Rect);
+
+  D := (ItemLineThickness - 1) / 2;
+  P := Rect.CenterPoint;
+  R := ArcTan(Rect.Height/Rect.Width);
+
+  B := PointF(Sin(R) * D, Cos(R) * D);
+  DP := PointF(B.X, -B.Y);
+//  DP.X := Sin(R) * D;
+//  DP.Y := Cos(R) * D;
+
+  Debug('%f, %f', [DP.X, DP.Y]);
+
+  P2 := P.Add(PointF(DP.X, -DP.Y));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Top D Point(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P.Add(PointF(-DP.X, DP.Y));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Bottom D Point(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P.Add(PointF(0, -D/Cos(R)));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Center Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P.Add(PointF(-D/Sin(R), 0));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Center Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P.Add(PointF(D/Sin(R), 0));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Center Right(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := P.Add(PointF(0, D/Cos(R)));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('Center Bottom(%f, %f)', [P2.X, P2.Y]));
+Exit;
+// 검토 필요
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D;
+  P2.Y := P2.Y + Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D + 1;
+  P2.Y := P2.Y + Sin(R) * D - 1;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.Add(PointF(-B.X, -B.Y));
+  P2.Add(PointF(1, 1));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Left > Bottom(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.Add(PointF(B.X, - B.Y));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft Top(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.Add(PointF(B.X - 1, -B.Y + 1));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Left(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.Add(PointF(B.X + 1, - B.Y + 1));
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft > Top > Right(%f, %f)', [P2.X, P2.Y]));
+
+  P2 := Rect.TopLeft;
+  P2.X := P2.X - Cos(R) * D;
+  P2.Y := P2.Y - Sin(R) * D;
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMouseClick(P2.X, P2.Y);
+  Check(Assigned(FCanvas.SelectedItem), Format('TopLeft TopLeft(%f, %f)', [P2.X, P2.Y]));
+end;
+
+procedure TestTThLine.TestRangeSelectLineTRtoBL;
+begin
+  DrawLine(100, 10,10, 100);
+
+  TestLib.RunMouseClick(55, 55);
+
+  Check(Assigned(FCanvas.SelectedItem));
 end;
 
 initialization

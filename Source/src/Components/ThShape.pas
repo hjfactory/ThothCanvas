@@ -430,14 +430,18 @@ end;
 
 function TThLine.PtInItem(Pt: TPointF): Boolean;
 var
-  Rad: Single;
+  R: Single;
+  D: Single;
   Rect: TRectF;
   RectW, RectH,
-  ValidYofPtX, ValidXofPtY: Single;
-  Range: Single;
-  RangeX, RangeY: Single;
   PtX, PtY: Single;
-  P1, P2, P3: TPointF;
+
+  P: TPointF;
+  TopP, LeftP, RightP, BottomP: TPointF;
+  ExtendRect: TRectF;
+  ExtendX, ExtendY: Single;
+
+  Y1, Y2: Single;
 begin
   Result := False;
 
@@ -449,20 +453,20 @@ begin
   RectW := Rect.Width;
   RectH := Rect.Height;
 
-  Range       := (ItemLineThickness-1)/2;
+  D := (ItemLineThickness-1)/2;
 
   if RectH = 0 then
   begin
     if (Pt.X >= Rect.Left) and (Pt.X <= Rect.Right) then
     begin
-      Result := Abs(Pt.Y) <= Range;
+      Result := Abs(Pt.Y) <= D;
     end
     else
     begin
       if Pt.X < Rect.Left then
-        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(Range))
+        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(D))
       else
-        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(Range))
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(D))
       ;
     end;
   end
@@ -470,101 +474,51 @@ begin
   begin
     if (Pt.Y >= Rect.Top) and (Pt.Y <= Rect.Bottom) then
     begin
-      Result := Abs(Pt.X) <= Range;
+      Result := Abs(Pt.X) <= D;
     end
     else
     begin
       if Pt.Y < Rect.Top then
-        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(Range))
+        Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(D))
       else
-        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(Range))
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(D))
       ;
     end;
   end
   else
   begin
     PtX := Pt.X;
-    if IsTopLeftToBottomRight then
-      PtY := Pt.Y
-    else
-      PtY := RectH - Pt.Y;
+    PtY := IfThen(IsTopLeftToBottomRight, Pt.Y, RectH - Pt.Y);
 
-    Rad := ArcTan(RectH/RectW);
-    ValidYofPtX := Tan(Rad) * PtX;
-    ValidXofPtY := PtY / Tan(Rad);
+    // 꼭지점의 원 포함 확인
+    if not Result then
+      Result := PtInCircle(PointF(PtX, PtY).Truncate, Rect.TopLeft.Truncate, Trunc(D)) or
+                PtInCircle(PointF(PtX, PtY).Truncate, Rect.BottomRight.Truncate, Trunc(D));
 
-    RangeX      := Range / Sin(Rad);
-    RangeY      := Range / Cos(Rad);
-
-    if PtInRect(Rect, Pt) then
-      Result := Abs(PtY - ValidYofPtX) < RangeY
-    else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) and (PtX < Rect.Left) then
+    // 꼭지점과 직각인 사각형 포인트의 영역(ExtendRect)계산
+    R := ArcTan(RectH / RectW);
+    P := PointF(Sin(R) * D, Cos(R) * D);
+    LeftP   := Rect.TopLeft.Add(PointF(-P.X, P.Y)).Add(P);
+    TopP    := Rect.TopLeft.Add(PointF(P.X, -P.Y)).Add(P);
+    RightP  := Rect.BottomRight.Add(PointF(P.X, -P.Y)).Add(P);
+    BottomP := Rect.BottomRight.Add(PointF(-P.X, P.Y)).Add(P);
+    ExtendRect := RectF(LeftP.X, TopP.Y, RightP.X, BottomP.Y);
+//    ExtendRect.Offset(-LeftP.X, -TopP.Y);
+    if (not Result) and PtInRect(ExtendRect, PointF(PtX, PtY)) then
     begin
-      P1 := P1.Add(PointF(- Cos(Rad) * Range, Sin(Rad) * Range));
-      if PtY <= P1.Y then
+      ExtendX := PtX;
+      ExtendY := PtY;
+
+      Result := PtInRect(RectF(LeftP.X, TopP.Y, TopP.X, LeftP.Y), PointF(ExtendX, ExtendY)) or
+                PtInRect(RectF(BottomP.X, RightP.Y, RightP.X, BottomP.Y), PointF(ExtendX, ExtendY));
+      if not Result then
       begin
-        Result := Abs(PtX) <= Tan(Rad) * PtY;
-      end
-      else
-      begin
-        Result := Abs(PtX) <= Tan(Rad) * (PtY - P1.Y);
+        Y1 := Tan(R) * (ExtendX-TopP.X);
+        Y2 := ExtendRect.Height - Tan(R) * (BottomP.X - ExtendX);
+        Result := InRange(ExtendY, Y1, Y2);
       end;
-    end
-    else if (PtX >= Rect.Left) and (PtX <= Rect.Right) and (PtY < Rect.Top) then
-    begin
-      P1 := P1.Add(PointF(Sin(Rad) * Range, - Cos(Rad) * Range));
-      if PtX <= P1.X then
-      begin
-        Result := Abs(PtY) <= Tan(DegToRad(90) - Rad) * PtX ;
-      end
-      else
-      begin
-//        Result := Abs(PtX - P1.X) <=
-      end;
-    end
-    else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) then
-
-    ;
-  end;
-{
-Exit;
-
-  PtX := Pt.X;
-  if IsTopLeftToBottomRight then
-    PtY := Pt.Y
-  else
-    PtY := RectH - Pt.Y;
-
-  if RectW = 0 then
-  begin
-    Result := True;//Abs(IfThen(PtY > Rect.Bottom, PtY - Rect.Bottom, PtY)) < Range;
-  end
-  else
-  begin
-    // #43 첨부파일 참고 - 로직 설명 이미지(LineSelect.jpg)    ??????
-    Rad := ArcTan(RectH/RectW);
-    ValidYofPtX := Tan(Rad) * PtX;
-    ValidXofPtY := PtY / Tan(Rad);
-
-    RangeX      := Range / Sin(Rad);
-    RangeY      := Range / Cos(Rad);
-
-    if PtInRect(Rect, Pt) then
-      Result := Abs(PtY - ValidYofPtX) < RangeY
-    else if (PtX >= Rect.Left) and (PtX <= Rect.Right) then
-
-    else if (PtY >= Rect.Top) and (PtY <= Rect.Bottom) then
-
-    ;
-
-
-
-    if Result then
-    begin
-      Debug('(%f, %f) (%f, %f), %f, %f', [PtX, PtY, RectW, RectH, ValidXofPtY, RangeX]);
     end;
   end;
-}
 end;
 
 function TThLine.IsTopLeftToBottomRight: Boolean;
