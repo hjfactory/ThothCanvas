@@ -3,34 +3,66 @@ unit ThTypes;
 interface
 
 uses
-  FMX.Types, System.Types;
+  FMX.Types, System.Types, System.UITypes;
 
 
 type
   TSpotCorner = (
-                              scUnknown      = 0,
-                              scTop          = 1,
-                              scLeft         = 2,
-                              scRight        = 4,
-                              scBottom       = 8,
-                              scTopLeft      = 3{rsdTop or rsdLeft},
-                              scTopRight     = 5{rsdTop or rsdRight},
-                              scBottomLeft   = 10{rsdBottom or rsdLeft},
-                              scBottomRight  = 12{rsdBottom or rsdRight}{, spCustom});
+    scUnknown      = 0,
+    scTop          = 1,
+    scLeft         = 2,
+    scRight        = 4,
+    scBottom       = 8,
+    scTopLeft      = 3    {rsdTop + rsdLeft},
+    scTopRight     = 5    {rsdTop + rsdRight},
+    scBottomLeft   = 10   {rsdBottom + rsdLeft},
+    scBottomRight  = 12   {rsdBottom + rsdRight}{, spCustom});
+
+  TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;
 
 type
-  TControlHelper = class helper for TControl
-    function LocalToAbsoluteRect(ARect: TRectF): TRectF;
+  IThItem = interface
+    function GetItemRect: TRectF;
+    function GetMinimumSize: TPointF;
+    property MinimumSize: TPointF read GetMinimumSize;
+  end;
+
+  //////////////////////////////////////////////////////////////
+  /// Item Highlight
+  ///   IItemHighlitObject is IItemHighlighter's parent
+  IItemHighlitObject = interface(IThItem)
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
+  end;
+
+  IItemHighlighter = interface
+    function GetHighlightRect: TRectF;
+    procedure DrawHighlight;
+    property HighlightRect: TRectF read GetHighlightRect;
+  end;
+
+  //////////////////////////////////////////////////////////////
+  /// Item Resizer and ResizeSpot
+  ///   IItemResizerObject is IItemResizer's parent
+  ///   IItemResizer is IItemResizeSpots parent
+  IItemResizerObject = interface(IThItem)
+    function SupportLine: Boolean;
+  end;
+
+  IItemResizeSpot = interface
+  end;
+
+  IItemResizer = interface
+    function GetResizerRect: TRectF;
+    property ResizerRect: TRectF read GetResizerRect;
+    function GetCount: Integer;
+    property Count: Integer read GetCount;
+    function GetSpots(Index: Integer): IItemResizeSpot;
+    property Spots[Index: Integer] : IItemResizeSpot read GetSpots;
+
+    procedure ShowSpots;
+    procedure HideSpots;
   end;
 
 implementation
-
-{ TControlHelper }
-
-function TControlHelper.LocalToAbsoluteRect(ARect: TRectF): TRectF;
-begin
-  Result.TopLeft := LocalToAbsolute(ARect.TopLeft);
-  Result.BottomRight := LocalToAbsolute(ARect.BottomRight);
-end;
 
 end.

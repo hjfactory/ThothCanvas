@@ -3,17 +3,26 @@ unit ThItemResizer;
 interface
 
 uses
-  ThItemResizerIF, System.Classes, System.Types, FMX.Types, System.UITypes,
-  System.Generics.Collections, ThConsts, ThTypes, ThItemIF;
+  System.Classes, System.Types, FMX.Types, System.UITypes,
+  System.Generics.Collections, ThConsts, ThTypes;
 
 type
   TItemResizeSpot = class(TControl, IItemResizeSpot)
   private
+    FMouseDownPos: TPointF;
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackEvent;
     procedure SetSpotCorner(const Value: TSpotCorner);
+  protected
+    procedure DoMouseEnter; override;
+    procedure DoMouseLeave; override;
+
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
   public
+    ID:Integer; // TEST
     constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
+    function PointInObject(X, Y: Single): Boolean; override;
 
     property SpotCorner: TSpotCorner read FSpotCorner write SetSpotCorner;
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
@@ -58,22 +67,11 @@ type
   end;
 
   TThItemCircleResizeSpot = class(TItemResizeSpot)
-  private
-    FMouseDownPos: TPointF;
   protected
-
     procedure Paint; override;
     function GetUpdateRect: TRectF; override;
-//    function GetClipRect: TRectF; override;
-    procedure DoMouseEnter; override;
-    procedure DoMouseLeave; override;
-
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-    procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   public
     constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
-    function PointInObject(X, Y: Single): Boolean; override;
   end;
 
 implementation
@@ -92,9 +90,58 @@ begin
   FSpotCorner := ASpotCorner;
 end;
 
+procedure TItemResizeSpot.DoMouseEnter;
+begin
+  inherited;
+
+  Repaint;
+end;
+
+procedure TItemResizeSpot.DoMouseLeave;
+begin
+  inherited;
+
+  Repaint;
+end;
+
 class function TItemResizeSpot.InflateSize: Integer;
 begin
   Result := ItemResizeSpotRadius;
+end;
+
+procedure TItemResizeSpot.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+  inherited;
+
+  if FPressed then
+    FMouseDownPos := PointF(X, Y);
+end;
+
+procedure TItemResizeSpot.MouseMove(Shift: TShiftState; X, Y: Single);
+var
+  Gap: TPointF;
+begin
+  inherited;
+
+  if FPressed then
+  begin
+    Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
+    Position.Point := Position.Point.Add(Gap);
+
+    if Assigned(OnTrack) then
+      OnTrack(Self, Gap.X, Gap.Y);
+  end;
+end;
+
+function TItemResizeSpot.PointInObject(X, Y: Single): Boolean;
+var
+  P: TPointF;
+begin
+  Result := False;
+  P := AbsoluteToLocal(PointF(X, Y));
+  if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
+    Result := True;
 end;
 
 procedure TItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
@@ -138,6 +185,7 @@ begin
     Spot.Parent := TControl(FParent);
     Spot.OnTrack := DoResizeSpotTrack;
     Spot.Visible := False;
+    Spot.ID := I;
     FList.Add(Spot);
   end;
 end;
@@ -200,6 +248,7 @@ procedure TThItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ActiveSpot: TThItemCircleResizeSpot absolute Sender;
 begin
+//  NormalizeSpotCorner(ActiveSpot);
   ResizeShapeBySpot(ActiveSpot);
   NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
@@ -224,7 +273,11 @@ begin
   MinSize := FParent.MinimumSize;
   if ShapeR.Width < MinSize.X then
   begin
-    if ShapeR.Right = ActiveSpot.Position.X then
+    if (ShapeR.Width = 0) and ContainSpotCorner(ActiveSpot.SpotCorner, scRight) then
+      // 우측에서 좌로 올라올때 아래로 최소크기 적요되는 버그 개선
+      ShapeR.Left := ShapeR.Right - MinSize.X
+    else if ShapeR.Right = ActiveSpot.Position.X then
+    {(ShapeR.Width = 0) and ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) 포함}
       ShapeR.Right := ShapeR.Left + MinSize.X
     else
       ShapeR.Left := ShapeR.Right - MinSize.X;
@@ -232,7 +285,11 @@ begin
 
   if ShapeR.Height < MinSize.Y then
   begin
-    if ShapeR.Bottom = ActiveSpot.Position.Y then
+    if (ShapeR.Height = 0) and ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) then
+      // 아래에서 위로 올라올때 아래로 최소크기 적요되는 버그 개선
+      ShapeR.Top := ShapeR.Bottom - MinSize.Y
+    else if ShapeR.Bottom = ActiveSpot.Position.Y then
+    {(ShapeR.Height = 0) and ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) 포함}
       ShapeR.Bottom := ShapeR.Top + MinSize.Y
     else
       ShapeR.Top := ShapeR.Bottom - MinSize.Y;
@@ -252,29 +309,39 @@ var
   SpotPos: TPointF;
   AnotherSpot,
   ActiveSpot: TItemResizeSpot;
-  ActiveSpotCorner: TSpotCorner;
+  ActiveSpotCorner,
+  HSpotCorner, VSpotCorner: TSpotCorner;
 begin
   ActivateSpotRect := GetActiveSpotsItemRect(ASpot);
 
   ActiveSpot := TItemResizeSpot(ASpot);
   SpotPos := ActiveSpot.Position.Point;
 
-  if ActivateSpotRect.Width = 0 then
+  if FParent.SupportLine and (ActivateSpotRect.Width = 0) then        // Line
     ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Top = SpotPos.Y, scTop, scBottom)
-  else if ActivateSpotRect.Height = 0 then
+  else if FParent.SupportLine and (ActivateSpotRect.Height = 0) then  // Line
     ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Left = SpotPos.X, scLeft, scRight)
   else
   begin
-    ActiveSpotCorner := scUnknown;
-    if ActivateSpotRect.Left = SpotPos.X then
-      ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, scLeft)
+    HSpotCorner := scUnknown;
+    if ActivateSpotRect.Width = 0 then    // Rect - ActiveSpot의 HorizonSpotCorner를 전환
+      HSpotCorner := HorizonSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, HORIZON_CORNERS))
+    else if ActivateSpotRect.Left = SpotPos.X then
+      HSpotCorner := scLeft
     else if ActivateSpotRect.Right = SpotPos.X then
-      ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, scRight);
+      HSpotCorner := scRight;
 
-    if ActivateSpotRect.Top = SpotPos.Y then
-      ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, scTop)
+    VSpotCorner := scUnknown;
+    if ActivateSpotRect.Height = 0 then   // Rect - ActiveSpot의 VerticalSpotCorner를 전환
+      VSpotCorner := VerticalSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, VERTICAL_CORNERS))
+    else if ActivateSpotRect.Top = SpotPos.Y then
+      VSpotCorner := scTop
     else if ActivateSpotRect.Bottom = SpotPos.Y then
-      ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, scBottom);
+      VSpotCorner := scBottom;
+
+    ActiveSpotCorner := scUnknown;
+    ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, HSpotCorner);
+    ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, VSpotCorner);
   end;
 
   for I := 0 to Count - 1 do
@@ -284,7 +351,6 @@ begin
     if AnotherSpot = ActiveSpot then
       Continue;
 
-    //
     if not SupportedHorizonSpotCorner(ActiveSpotCorner) and SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) then
     begin
       AnotherSpot.SpotCorner := VerticalSpotCornerExchange(ActiveSpotCorner);
@@ -377,20 +443,6 @@ begin
   Height := ItemResizeSpotRadius * 2;
 end;
 
-procedure TThItemCircleResizeSpot.DoMouseEnter;
-begin
-  inherited;
-
-  Repaint;
-end;
-
-procedure TThItemCircleResizeSpot.DoMouseLeave;
-begin
-  inherited;
-
-  Repaint;
-end;
-
 function TThItemCircleResizeSpot.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
@@ -416,51 +468,6 @@ begin
   InflateRect(R, ItemResizeSpotRadius, ItemResizeSpotRadius);
   Canvas.FillEllipse(R, 1);
   Canvas.DrawEllipse(R, 1);
-end;
-
-procedure TThItemCircleResizeSpot.MouseDown(Button: TMouseButton;
-  Shift: TShiftState; X, Y: Single);
-begin
-  inherited;
-
-  if FPressed then
-  begin
-    FMouseDownPos := PointF(X, Y);
-  end;
-end;
-
-procedure TThItemCircleResizeSpot.MouseMove(Shift: TShiftState; X,
-  Y: Single);
-var
-  Gap: TPointF;
-begin
-  inherited;
-
-  if FPressed then
-  begin
-    Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
-    Position.Point := Position.Point.Add(Gap);
-
-    if Assigned(OnTrack) then
-      OnTrack(Self, Gap.X, Gap.Y);
-  end;
-end;
-
-procedure TThItemCircleResizeSpot.MouseUp(Button: TMouseButton;
-  Shift: TShiftState; X, Y: Single);
-begin
-  inherited;
-
-end;
-
-function TThItemCircleResizeSpot.PointInObject(X, Y: Single): Boolean;
-var
-  P: TPointF;
-begin
-  Result := False;
-  P := AbsoluteToLocal(PointF(X, Y));
-  if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
-    Result := True;
 end;
 
 end.

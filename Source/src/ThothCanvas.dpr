@@ -9,14 +9,11 @@ uses
   ThContainer in 'Libraries\ThContainer.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
   CommonUtils in 'Utils\CommonUtils.pas',
-  ThItemHighlighterIF in 'Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
   ThConsts in 'Libraries\ThConsts.pas',
-  ThItemResizerIF in 'Interfaces\ThItemResizerIF.pas',
   ThItemResizer in 'Components\ThItemResizer.pas',
   ThTypes in 'Libraries\ThTypes.pas',
-  ResizeUtils in 'Utils\ResizeUtils.pas',
-  ThItemIF in 'Interfaces\ThItemIF.pas';
+  ResizeUtils in 'Utils\ResizeUtils.pas';
 
 {$R *.res}
 

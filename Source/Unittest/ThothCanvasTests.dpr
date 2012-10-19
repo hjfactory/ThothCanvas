@@ -27,14 +27,11 @@ uses
   TestThRectangle in 'TestThRectangle.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
   CommonUtils in '..\src\Utils\CommonUtils.pas',
-  ThItemHighlighterIF in '..\src\Interfaces\ThItemHighlighterIF.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Libraries\ThConsts.pas',
-  ThItemResizerIF in '..\src\Interfaces\ThItemResizerIF.pas',
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
   TestThLine in 'TestThLine.pas',
-  ThItemIF in '..\src\Interfaces\ThItemIF.pas',
   ThTypes in '..\src\Libraries\ThTypes.pas',
   ResizeUtils in '..\src\Utils\ResizeUtils.pas';
 

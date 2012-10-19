@@ -1,3 +1,7 @@
+{
+
+}
+
 unit MainForm;
 
 interface
@@ -12,11 +16,9 @@ type
     Panel1: TPanel;
     Button2: TButton;
     Button3: TButton;
-    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvasEditor;
@@ -33,11 +35,6 @@ uses
   ThItem;
 
 {$R *.fmx}
-
-procedure TForm1.Button1Click(Sender: TObject);
-begin
-  FCanvas.SelectedItem.Position.Point := PointF(395, 294);
-end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin

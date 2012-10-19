@@ -46,7 +46,9 @@ type
 
     // #95 크기 조정 시 대상이 아닌 Spot의 위치가 변함
     procedure BugTestResizeAnotherSpotMove;
-    procedure BugTestResizeAnotherSpotMove2;
+    procedure BugTestResizeAnotherSpotMoveCenter;
+    procedure BugTestResizeAnotherSpotMoveTopToBottom;
+    procedure BugTestResizeAnotherSpotMoveBottomToTop;
   end;
 implementation
 
@@ -321,9 +323,57 @@ begin
   Check(FCanvas.SelectedItem.Position.X = 395, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
-procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMove2;
+procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveCenter;
 begin
+  DrawRectangle(10, 10, 150, 150);
+  TestLib.RunMouseClick(50, 50);
 
+  MousePath.New
+  .Add(10, 10)
+  .Add(50, 50)
+  .Add(150, 150)
+  .Add(250, 250)
+  ;
+  TestLib.RunMousePath(MousePath.Path);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
+  Check(TestLib.GetControlPixelColor(FCanvas, 250, 150) = ItemResizeSpotOutColor);
+end;
+
+procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveTopToBottom;
+begin
+  DrawRectangle(150, 50, 250, 150);
+  TestLib.RunMouseClick(200, 100);
+
+  MousePath.New
+  .Add(250, 50)
+  .Add(250, 150)
+  .Add(250, 200)
+  ;
+  TestLib.RunMousePath(MousePath.Path);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
+  Check(FCanvas.SelectedItem.Position.Y = 150);
+end;
+
+procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveBottomToTop;
+begin
+  DebugShowForm;
+
+  DrawRectangle(50, 150, 150, 250);
+  TestLib.RunMouseClick(100, 200);
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
+
+  MousePath.New
+  .Add(150, 250)
+  .Add(150, 150)
+  .Add(150, 50)
+  ;
+  TestLib.RunMousePath(MousePath.Path);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
+  Check(FCanvas.SelectedItem.Height = 100, Format('H : %f', [FCanvas.SelectedItem.Height]));
+  Check(FCanvas.SelectedItem.Position.Y = 50, Format('Y : %f', [FCanvas.SelectedItem.Position.Y]));
 end;
 
 initialization

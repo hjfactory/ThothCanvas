@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types, ThItemIF, ThItemHighlighterIF, ThItemResizerIF;
+  FMX.Types, ThTypes;
 
 type
 //  IThItem = interface
@@ -47,8 +47,7 @@ type
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
 
-    // 이름 변경 필요
-    procedure DrawingWithMouse(AFrom, ATo: TPointF); virtual;
+    procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
 
     property Selected: Boolean read FSelected write SetSelected;
     property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
@@ -78,7 +77,7 @@ end;
 destructor TThItem.Destroy;
 begin
   FHighlighter := nil;
-  FResizer := nil; // Interface destory
+  FResizer := nil; // Interface Free(destory)
 
   inherited;
 end;
@@ -95,7 +94,6 @@ procedure TThItem.DoMouseEnter;
 begin
   inherited;
 
-  // TControl.IsMouseOver 참고하여 Repaint만 수행
   Repaint;
 end;
 
@@ -103,7 +101,6 @@ procedure TThItem.DoMouseLeave;
 begin
   inherited;
 
-  // TControl.IsMouseOver 참고하여 Repaint만 수행
   Repaint;
 end;
 
@@ -116,13 +113,11 @@ begin
     if Assigned(FOnUnselected) then
       FOnUnselected(Self);
 
-  if Selected then
-    FResizer.ShowSpots
-  else
-    FResizer.HideSpots;
+  if Selected then      FResizer.ShowSpots
+  else                  FResizer.HideSpots;
 end;
 
-procedure TThItem.DrawingWithMouse(AFrom, ATo: TPointF);
+procedure TThItem.DrawItemWithMouse(AFrom, ATo: TPointF);
 begin
 end;
 
@@ -148,6 +143,7 @@ begin
     R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
     Result := UnionRect(Result, R);
   end;
+
   if Assigned(FResizer) then
   begin
     R := FResizer.ResizerRect;
@@ -170,7 +166,6 @@ begin
   end;
 
   InvalidateRect(UpdateRect);
-//  Repaint;
 end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -182,7 +177,7 @@ begin
     Position.X := Position.X + (X - FMouseDownPos.X);
     Position.Y := Position.Y + (Y - FMouseDownPos.Y);
 
-    InvalidateRect(UpdateRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
+//    InvalidateRect(UpdateRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
   end;
 end;
 
@@ -212,8 +207,9 @@ begin
 
   DoSelected(FSelected);
 
-//  InvalidateRect(UpdateRect);
-  Repaint;
+  // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)
+  if not FSelected then
+    Repaint;
 end;
 
 end.

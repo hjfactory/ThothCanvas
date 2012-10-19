@@ -9,7 +9,7 @@ const
   HORIZON_CORNERS   = TSpotCorner(Ord(scLeft) or Ord(scRight));
   VERTICAL_CORNERS  = TSpotCorner(Ord(scTop) or Ord(scBottom));
 
-//function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
+function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
 function IfThenSpotCorner(AValue: Boolean; const ATrue: TSpotCorner; const AFalse: TSpotCorner): TSpotCorner;
 
 function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;

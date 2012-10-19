@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils, System.UIConsts,
-  FMX.Types, ThTypes, ThItem, ThItemHighlighterIF, ThItemResizerIF;
+  FMX.Types, ThTypes, ThItem;
 
 type
 {
@@ -15,6 +15,7 @@ type
   TThShape = class(TThItem, IItemHighlitObject, IItemResizerObject)
   private
     procedure SetBackgroundColor(const Value: TAlphaColor);
+    function SupportLine: Boolean; virtual;
   strict protected
     procedure Paint; override;
   protected
@@ -38,7 +39,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    procedure DrawingWithMouse(AFrom, ATo: TPointF); override;
+    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
   end;
 
   TThLine = class(TThShape)
@@ -46,6 +47,7 @@ type
     function IsTopLeftToBottomRight: Boolean;
     function IsHorizon: Boolean;
     function IsVertical: Boolean;
+    function SupportLine: Boolean; override;
   protected
     function CreateResizer: IItemResizer; override;
 
@@ -54,7 +56,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    procedure DrawingWithMouse(AFrom, ATo: TPointF); override;
+    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
   end;
 
 implementation
@@ -131,6 +133,11 @@ begin
   Repaint;
 end;
 
+function TThShape.SupportLine: Boolean;
+begin
+  Result := False;
+end;
+
 { TThRectangle }
 
 function TThRectangle.PtInItem(Pt: TPointF): Boolean;
@@ -151,7 +158,7 @@ begin
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
-procedure TThRectangle.DrawingWithMouse(AFrom, ATo: TPointF);
+procedure TThRectangle.DrawItemWithMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
 begin
@@ -297,6 +304,11 @@ begin
   end;
 end;
 
+function TThLine.SupportLine: Boolean;
+begin
+  Result := True;
+end;
+
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   P1, P2: TPointF;
@@ -329,7 +341,7 @@ begin
   Canvas.DrawLine(P1, P2, 1);
 end;
 
-procedure TThLine.DrawingWithMouse(AFrom, ATo: TPointF);
+procedure TThLine.DrawItemWithMouse(AFrom, ATo: TPointF);
 var
   Rect: TRectF;
   BaseSpot, ActiveSpot: TItemResizeSpot;

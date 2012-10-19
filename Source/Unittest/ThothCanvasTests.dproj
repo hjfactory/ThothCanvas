@@ -116,14 +116,11 @@
         <DCCReference Include="TestThRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>
         <DCCReference Include="..\src\Utils\CommonUtils.pas"/>
-        <DCCReference Include="..\src\Interfaces\ThItemHighlighterIF.pas"/>
         <DCCReference Include="..\src\Components\ThItemHighlighter.pas"/>
         <DCCReference Include="..\src\Libraries\ThConsts.pas"/>
-        <DCCReference Include="..\src\Interfaces\ThItemResizerIF.pas"/>
         <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
         <DCCReference Include="TestThLine.pas"/>
-        <DCCReference Include="..\src\Interfaces\ThItemIF.pas"/>
         <DCCReference Include="..\src\Libraries\ThTypes.pas"/>
         <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
         <BuildConfiguration Include="Release">

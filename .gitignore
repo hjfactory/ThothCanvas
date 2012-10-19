@@ -5,7 +5,6 @@
 __history
 *.drc
 *.map
-*.zip
 *.exe
 *.dll
 *.elf

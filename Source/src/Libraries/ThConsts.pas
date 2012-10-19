@@ -21,10 +21,7 @@ const
 
   ItemResizeSpotOverColor = claRed;
   ItemResizeSpotOutColor = claWhite;
-  ItemResizeSpotRadius = 8;
-
-type
-  TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;
+  ItemResizeSpotRadius = 6;
 
 implementation
 
