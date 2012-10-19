@@ -34,7 +34,9 @@ uses
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
   TestThLine in 'TestThLine.pas',
-  ThItemIF in '..\src\Interfaces\ThItemIF.pas';
+  ThItemIF in '..\src\Interfaces\ThItemIF.pas',
+  ThTypes in '..\src\Libraries\ThTypes.pas',
+  ResizeUtils in '..\src\Utils\ResizeUtils.pas';
 
 {$R *.RES}
 

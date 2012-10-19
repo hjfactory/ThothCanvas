@@ -438,7 +438,7 @@ end;
 
 procedure TestTThLine.TestResizeLineTLtoRightOver;
 begin
-  DebugShowForm;
+//  DebugShowForm;
   // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
@@ -461,7 +461,6 @@ end;
 // S - 100 크기를 20으로 줄였을때 30이 되어야 한다.
 procedure TestTThLine.TestResizeMinimum;
 var
-  R, D: Single;
   SizeP: TPointF;
 begin
   DrawLine(50, 50, 150, 150);

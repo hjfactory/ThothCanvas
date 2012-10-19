@@ -4,54 +4,14 @@ interface
 
 uses
   ThItemResizerIF, System.Classes, System.Types, FMX.Types, System.UITypes,
-  System.Generics.Collections, ThConsts;
+  System.Generics.Collections, ThConsts, ThTypes, ThItemIF;
 
 type
-  TSpotCorner = (
-                              scUnknown      = 0,
-                              scTop          = 1,
-                              scLeft         = 2,
-                              scRight        = 4,
-                              scBottom       = 8,
-                              scTopLeft      = 3{rsdTop or rsdLeft},
-                              scTopRight     = 5{rsdTop or rsdRight},
-                              scBottomLeft   = 10{rsdBottom or rsdLeft},
-                              scBottomRight  = 12{rsdBottom or rsdRight}{, spCustom});
-  TExchangeSpotCorner = (
-    escNone, escHorizon, escVertical, escBoth
-  );
-
-const
-  HORIZON_CORNERS   = TSpotCorner(Ord(scLeft) or Ord(scRight));
-  VERTICAL_CORNERS  = TSpotCorner(Ord(scTop) or Ord(scBottom));
-
-//function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
-function IfThenSpotCorner(AValue: Boolean; const ATrue: TSpotCorner; const AFalse: TSpotCorner): TSpotCorner;
-
-function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;
-function SetHorizonSpotCorner(Source, SC: TSpotCorner): TSpotCorner;
-function SetVerticalSpotCorner(Source, SC: TSpotCorner): TSpotCorner;
-
-function ChangeHorizonSpotCorner(D1, D2: TSpotCorner): Boolean;
-function ChangeVerticalSpotCorner(D1, D2: TSpotCorner): Boolean;
-function SupportedHorizonSpotCorner(SC: TSpotCorner): Boolean;
-function SupportedVerticalSpotCorner(SC: TSpotCorner): Boolean;
-
-function HorizonSpotCornerExchange(D: TSpotCorner): TSpotCorner;
-function VerticalSpotCornerExchange(D: TSpotCorner): TSpotCorner;
-function SpotCornerExchange(D: TSpotCorner): TSpotCorner;
-
-type
-//  TItemResizeSpot = class;
-//  TResizeSpotTrackEvent = procedure(Spot: TItemResizeSpot) of object;
-  TAbstractItemResizeSpot = class(TControl, IItemResizeSpot)
+  TItemResizeSpot = class(TControl, IItemResizeSpot)
   private
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackEvent;
     procedure SetSpotCorner(const Value: TSpotCorner);
-  protected
-    procedure DoMatrixChanged(Sender: TObject); override;
-    procedure DoRepositioning; virtual;
   public
     constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
 
@@ -61,9 +21,10 @@ type
     class function InflateSize: Integer;
   end;
 
-  TResizeSpotClass = class of TAbstractItemResizeSpot;
-  TAbstractItemResizer = class(TInterfacedObject, IItemResizer)
+  TResizeSpotClass = class of TItemResizeSpot;
+  TThItemResizer = class(TInterfacedObject, IItemResizer)
   private
+    FParentControl: TControl;
     FList: TList;
     FOnTracking: TTrackEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
@@ -71,8 +32,13 @@ type
   protected
     FParent: IItemResizerObject;
     FSpotClass: TResizeSpotClass;
-    function GetResizerRect: TRectF; virtual; abstract;
+    function GetResizerRect: TRectF; virtual;
     procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
+
+    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); virtual;    // Spot 이동 시 Shape 크기 조정
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); virtual;  // Spot의 SpotCorner 조정
+
+    procedure RealignSpot; virtual;
   public
     constructor Create(AParent: IItemResizerObject);
     destructor Destroy; override;
@@ -80,7 +46,8 @@ type
     procedure SetSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
 
-    function GetSpot(SpotCorner: TSpotCorner): TAbstractItemResizeSpot;
+    function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
+    function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF;
 
     procedure ShowSpots;
     procedure HideSpots;
@@ -90,7 +57,7 @@ type
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
-  TThItemCircleResizeSpot = class(TAbstractItemResizeSpot)
+  TThItemCircleResizeSpot = class(TItemResizeSpot)
   private
     FMouseDownPos: TPointF;
   protected
@@ -109,97 +76,14 @@ type
     function PointInObject(X, Y: Single): Boolean; override;
   end;
 
-  TThItemFillResizer = class(TAbstractItemResizer)
-  protected
-    function GetResizerRect: TRectF; override;
-  public
-    property OnTrack;
-  end;
-
 implementation
 
 uses
-  System.UIConsts, CommonUtils;
-
-function AndSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
-begin
-  Result := TSpotCorner(Ord(D1) and Ord(D2))
-end;
-
-function OrSpotCorner(D1, D2: TSpotCorner): TSpotCorner;
-begin
-  Result := TSpotCorner(Ord(D1) or Ord(D2))
-end;
-
-function IfThenSpotCorner(AValue: Boolean; const ATrue: TSpotCorner; const AFalse: TSpotCorner): TSpotCorner;
-begin
-  if AValue then
-    Result := ATrue
-  else
-    Result := AFalse;
-end;
-
-function ContainSpotCorner(Source, SC: TSpotCorner): Boolean;
-begin
-  Result := AndSpotCorner(Source, SC) = SC;
-end;
-
-function SetHorizonSpotCorner(Source, SC: TSpotCorner): TSpotCorner;
-begin
-  Result := AndSpotCorner(Source, VERTICAL_CORNERS);  // Horizon 버림
-  Result := OrSpotCorner(Source, SC);
-end;
-
-function SetVerticalSpotCorner(Source, SC: TSpotCorner): TSpotCorner;
-begin
-  Result := AndSpotCorner(Source, HORIZON_CORNERS);
-  Result := OrSpotCorner(Source, SC);
-end;
-
-function ChangeHorizonSpotCorner(D1, D2: TSpotCorner): Boolean;
-begin
-  Result := AndSpotCorner(D1, HORIZON_CORNERS) <> AndSpotCorner(D2, HORIZON_CORNERS);
-end;
-
-function ChangeVerticalSpotCorner(D1, D2: TSpotCorner): Boolean;
-begin
-  Result := AndSpotCorner(D1, VERTICAL_CORNERS) <> AndSpotCorner(D2, VERTICAL_CORNERS);
-end;
-
-function SupportedHorizonSpotCorner(SC: TSpotCorner): Boolean;
-begin
-  Result := AndSpotCorner(SC, HORIZON_CORNERS) <> scUnknown;
-end;
-
-function SupportedVerticalSpotCorner(SC: TSpotCorner): Boolean;
-begin
-  Result := AndSpotCorner(SC, VERTICAL_CORNERS) <> scUnknown;
-end;
-
-function HorizonSpotCornerExchange(D: TSpotCorner): TSpotCorner;
-begin
-  Result := D;
-  if AndSpotCorner(Result, HORIZON_CORNERS) <> scUnknown then
-    Result := TSpotCorner(Ord(Result) xor Ord(HORIZON_CORNERS))
-end;
-
-function VerticalSpotCornerExchange(D: TSpotCorner): TSpotCorner;
-begin
-  Result := D;
-  if AndSpotCorner(Result, VERTICAL_CORNERS) <> scUnknown then
-  Result := TSpotCorner(Ord(D) xor Ord(VERTICAL_CORNERS))
-end;
-
-function SpotCornerExchange(D: TSpotCorner): TSpotCorner;
-begin
-  Result := D;
-  Result := HorizonSpotCornerExchange(Result);
-  Result := VerticalSpotCornerExchange(Result);
-end;
+  System.UIConsts, CommonUtils, ResizeUtils, System.Math;
 
 { TItemResizeSpot }
 
-constructor TAbstractItemResizeSpot.Create(AOwner: TComponent;
+constructor TItemResizeSpot.Create(AOwner: TComponent;
   ASpotCorner: TSpotCorner);
 begin
   inherited Create(AOwner);
@@ -208,36 +92,26 @@ begin
   FSpotCorner := ASpotCorner;
 end;
 
-procedure TAbstractItemResizeSpot.DoMatrixChanged(Sender: TObject);
-begin
-  inherited;
-
-  DoRepositioning;
-end;
-
-procedure TAbstractItemResizeSpot.DoRepositioning;
-begin
-end;
-
-class function TAbstractItemResizeSpot.InflateSize: Integer;
+class function TItemResizeSpot.InflateSize: Integer;
 begin
   Result := ItemResizeSpotRadius;
 end;
 
-procedure TAbstractItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
+procedure TItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
 begin
   FSpotCorner := Value;
 end;
 
 { TItemResizer }
 
-constructor TAbstractItemResizer.Create(AParent: IItemResizerObject);
+constructor TThItemResizer.Create(AParent: IItemResizerObject);
 begin
   FParent := AParent;
+  FParentControl := TControl(AParent);
   FList := TList.Create;
 end;
 
-destructor TAbstractItemResizer.Destroy;
+destructor TThItemResizer.Destroy;
 var
   I: Integer;
 begin
@@ -247,60 +121,11 @@ begin
   inherited;
 end;
 
-procedure TAbstractItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
-begin
-  if Assigned(OnTrack) then
-    OnTrack(Sender, X, Y);
-end;
-
-function TAbstractItemResizer.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-function TAbstractItemResizer.GetSpot(
-  SpotCorner: TSpotCorner): TAbstractItemResizeSpot;
-var
-  I: Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-  begin
-    Result := FList[I];
-    if Result.SpotCorner = SpotCorner then
-      Exit;
-  end;
-
-  Result := nil;
-end;
-
-function TAbstractItemResizer.GetSpots(Index: Integer): IItemResizeSpot;
-begin
-  if FList.Count > Index then
-    Result := IItemResizeSpot(TAbstractItemResizeSpot(FList[Index]));
-end;
-
-procedure TAbstractItemResizer.ShowSpots;
-var
-  I: Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-    TControl(FList[I]).Visible := True;
-  FParent.RealignSpot;
-end;
-
-procedure TAbstractItemResizer.HideSpots;
-var
-  I: Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-    TControl(FList[I]).Visible := False;
-end;
-
-procedure TAbstractItemResizer.SetResizeSpots(
+procedure TThItemResizer.SetResizeSpots(
   Spots: array of TSpotCorner);
 var
   I: Integer;
-  Spot: TAbstractItemResizeSpot;
+  Spot: TItemResizeSpot;
 begin
   for I := FList.Count - 1 downto 0 do
     TControl(FList[I]).Free;
@@ -317,9 +142,227 @@ begin
   end;
 end;
 
-procedure TAbstractItemResizer.SetSpotClass(ASpotClass: TResizeSpotClass);
+procedure TThItemResizer.SetSpotClass(ASpotClass: TResizeSpotClass);
 begin
   FSpotClass := ASpotClass;
+end;
+
+function TThItemResizer.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TThItemResizer.GetResizerRect: TRectF;
+begin
+  Result := TControl(FParent).ClipRect;
+  InflateRect(Result, FSpotClass.InflateSize + 1, FSpotClass.InflateSize + 1);
+end;
+
+function TThItemResizer.GetSpot(
+  SpotCorner: TSpotCorner): TItemResizeSpot;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+  begin
+    Result := FList[I];
+    if Result.SpotCorner = SpotCorner then
+      Exit;
+  end;
+
+  Result := nil;
+end;
+
+function TThItemResizer.GetSpots(Index: Integer): IItemResizeSpot;
+begin
+  if FList.Count > Index then
+    Result := IItemResizeSpot(TItemResizeSpot(FList[Index]));
+end;
+
+procedure TThItemResizer.ShowSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TControl(FList[I]).Visible := True;
+  RealignSpot;
+end;
+
+procedure TThItemResizer.HideSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TControl(FList[I]).Visible := False;
+end;
+
+procedure TThItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
+var
+  ActiveSpot: TThItemCircleResizeSpot absolute Sender;
+begin
+  ResizeShapeBySpot(ActiveSpot);
+  NormalizeSpotCorner(ActiveSpot);
+  RealignSpot;
+
+  if Assigned(OnTrack) then
+    OnTrack(Sender, X, Y);
+end;
+
+procedure TThItemResizer.ResizeShapeBySpot(ASpot: IItemResizeSpot);
+var
+  MinSize: TPointF;
+  ShapeR: TRectF;
+  ActiveSpot, OppositeSpot: TThItemCircleResizeSpot;
+begin
+  ActiveSpot := TThItemCircleResizeSpot(ASpot);
+  OppositeSpot := TThItemCircleResizeSpot(GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner)));
+
+  ShapeR.TopLeft := ActiveSpot.Position.Point;
+  ShapeR.BottomRight := OppositeSpot.Position.Point;
+  ShapeR.NormalizeRect;
+
+  MinSize := FParent.MinimumSize;
+  if ShapeR.Width < MinSize.X then
+  begin
+    if ShapeR.Right = ActiveSpot.Position.X then
+      ShapeR.Right := ShapeR.Left + MinSize.X
+    else
+      ShapeR.Left := ShapeR.Right - MinSize.X;
+  end;
+
+  if ShapeR.Height < MinSize.Y then
+  begin
+    if ShapeR.Bottom = ActiveSpot.Position.Y then
+      ShapeR.Bottom := ShapeR.Top + MinSize.Y
+    else
+      ShapeR.Top := ShapeR.Bottom - MinSize.Y;
+  end;
+
+  if ShapeR.Width = 0 then  ShapeR.Width := 1;
+  if ShapeR.Height = 0 then  ShapeR.Height := 1;
+
+  ShapeR.Offset(FParentControl.Position.Point);
+  FParentControl.BoundsRect := ShapeR;
+end;
+
+procedure TThItemResizer.NormalizeSpotCorner(ASpot: IItemResizeSpot);
+var
+  I: Integer;
+  ActivateSpotRect: TRectF;
+  SpotPos: TPointF;
+  AnotherSpot,
+  ActiveSpot: TItemResizeSpot;
+  ActiveSpotCorner: TSpotCorner;
+begin
+  ActivateSpotRect := GetActiveSpotsItemRect(ASpot);
+
+  ActiveSpot := TItemResizeSpot(ASpot);
+  SpotPos := ActiveSpot.Position.Point;
+
+  if ActivateSpotRect.Width = 0 then
+    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Top = SpotPos.Y, scTop, scBottom)
+  else if ActivateSpotRect.Height = 0 then
+    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Left = SpotPos.X, scLeft, scRight)
+  else
+  begin
+    ActiveSpotCorner := scUnknown;
+    if ActivateSpotRect.Left = SpotPos.X then
+      ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, scLeft)
+    else if ActivateSpotRect.Right = SpotPos.X then
+      ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, scRight);
+
+    if ActivateSpotRect.Top = SpotPos.Y then
+      ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, scTop)
+    else if ActivateSpotRect.Bottom = SpotPos.Y then
+      ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, scBottom);
+  end;
+
+  for I := 0 to Count - 1 do
+  begin
+    AnotherSpot := TItemResizeSpot(Spots[I]);
+
+    if AnotherSpot = ActiveSpot then
+      Continue;
+
+    //
+    if not SupportedHorizonSpotCorner(ActiveSpotCorner) and SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    if not SupportedVerticalSpotCorner(ActiveSpotCorner) and SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    if SupportedHorizonSpotCorner(ActiveSpotCorner) and not SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) or
+        SupportedVerticalSpotCorner(ActiveSpotCorner) and not SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := SpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    // Switch horizon spot
+    if ChangeHorizonSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(AnotherSpot.SpotCorner);
+
+    // Switch vertical spot
+    if ChangeVerticalSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(AnotherSpot.SpotCorner);
+  end;
+
+  ActiveSpot.SpotCorner := ActiveSpotCorner;
+end;
+
+procedure TThItemResizer.RealignSpot;
+var
+  I: Integer;
+  SpotP: TPointF;
+  ShapeR: TRectF;
+  Spot: TItemResizeSpot;
+begin
+  ShapeR := FParent.GetItemRect;
+
+  for I := 0 to Count - 1 do
+  begin
+    Spot := TItemResizeSpot(Spots[I]);
+{
+    // Line의 경우 수직/수평선인 경우 두께가 1이지만 0 포인트에 표시해 주어야 함
+      // NormalizeSpotCorner 조건에 안맞을 수 있음
+}
+    case Spot.SpotCorner of
+      scTopLeft:      SpotP := PointF(ShapeR.Left, ShapeR.Top);
+      scTop:          SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Top);
+      scTopRight:     SpotP := PointF(ShapeR.Right, ShapeR.Top);
+      scLeft:         SpotP := PointF(ShapeR.Left, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
+      scRight:        SpotP := PointF(ShapeR.Right, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
+      scBottomLeft:   SpotP := PointF(ShapeR.Left, ShapeR.Bottom);
+      scBottom:       SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Bottom);
+      scBottomRight:  SpotP := PointF(ShapeR.Right, ShapeR.Bottom);
+    end;
+
+    Spot.Position.Point := SpotP;
+  end;
+
+  FParentControl.Repaint;
+end;
+
+function TThItemResizer.GetActiveSpotsItemRect(ASpot: IItemResizeSpot): TRectF;
+var
+  ActiveSpot,
+  OppositeSpot: TItemResizeSpot;
+begin
+  if not Assigned(ASpot) then
+    ASpot := Spots[0];
+  ActiveSpot := TItemResizeSpot(ASpot);
+  OppositeSpot := GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner));
+  if not Assigned(OppositeSpot) then
+    Exit;
+  Result.TopLeft := ActiveSpot.Position.Point;
+  Result.BottomRight := OppositeSpot.Position.Point;
+  Result.NormalizeRect;
 end;
 
 { TThItemCircleResizeSpot }
@@ -408,14 +451,6 @@ procedure TThItemCircleResizeSpot.MouseUp(Button: TMouseButton;
 begin
   inherited;
 
-end;
-
-{ TItemFillResizer }
-
-function TThItemFillResizer.GetResizerRect: TRectF;
-begin
-  Result := TControl(FParent).ClipRect;
-  InflateRect(Result, FSpotClass.InflateSize + 1, FSpotClass.InflateSize + 1);
 end;
 
 function TThItemCircleResizeSpot.PointInObject(X, Y: Single): Boolean;

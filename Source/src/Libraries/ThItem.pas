@@ -4,14 +4,14 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types, ThItemHighlighterIF, ThItemResizerIF;
+  FMX.Types, ThItemIF, ThItemHighlighterIF, ThItemResizerIF;
 
 type
 //  IThItem = interface
 //
 //  end;
 
-  TThItem = class(TControl)
+  TThItem = class(TControl, IThItem)
   private
     FOnUnselected: TNotifyEvent;
     FOnSelected: TNotifyEvent;
@@ -28,6 +28,7 @@ type
     function CreateResizer: IItemResizer; virtual;
 
     function GetUpdateRect: TRectF; override;
+    function GetItemRect: TRectF; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -123,6 +124,11 @@ end;
 
 procedure TThItem.DrawingWithMouse(AFrom, ATo: TPointF);
 begin
+end;
+
+function TThItem.GetItemRect: TRectF;
+begin
+  Result := LocalRect;
 end;
 
 function TThItem.GetMinimumSize: TPointF;

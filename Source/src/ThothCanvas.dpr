@@ -14,7 +14,9 @@ uses
   ThConsts in 'Libraries\ThConsts.pas',
   ThItemResizerIF in 'Interfaces\ThItemResizerIF.pas',
   ThItemResizer in 'Components\ThItemResizer.pas',
-  ThTypes in 'Libraries\ThTypes.pas';
+  ThTypes in 'Libraries\ThTypes.pas',
+  ResizeUtils in 'Utils\ResizeUtils.pas',
+  ThItemIF in 'Interfaces\ThItemIF.pas';
 
 {$R *.res}
 

@@ -3,11 +3,10 @@ unit ThItemResizerIF;
 interface
 
 uses
-  System.Types;
+  System.Types, ThItemIF;
 
 type
-  IItemResizerObject = interface
-    procedure RealignSpot;
+  IItemResizerObject = interface(IThItem)
   end;
 
   IItemResizeSpot = interface
