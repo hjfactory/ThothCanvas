@@ -123,6 +123,7 @@
         <DCCReference Include="TestThLine.pas"/>
         <DCCReference Include="..\src\Libraries\ThTypes.pas"/>
         <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
+        <DCCReference Include="TestThCircle.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -184,6 +185,19 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment>
+                <DeployFile LocalName="..\bin\Win32\Debug\ThothCanvasTests.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32"/>
+                </DeployFile>
+                <DeployFile LocalName="..\bin\Win32\Debug\ThothCanvasTests.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win32">
+                        <RemoteName>ThothCanvasTests.rsm</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32"/>
+                    <Platform Name="iOSSimulator"/>
+                    <Platform Name="iOSDevice"/>
+                </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvasTests.rsm" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="OSX32">
                         <RemoteName>ThothCanvasTests.rsm</RemoteName>
@@ -191,11 +205,6 @@
                 </DeployFile>
                 <DeployFile LocalName="..\bin\OSX32\Debug\ThothCanvasTests" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="OSX32"/>
-                </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="OSX32"/>
-                    <Platform Name="iOSSimulator"/>
-                    <Platform Name="iOSDevice"/>
                 </DeployFile>
                 <DeployClass Required="true" Name="DependencyPackage">
                     <Platform Name="iOSDevice">

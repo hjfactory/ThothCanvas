@@ -20,20 +20,23 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
 
-    procedure DebugShowForm;
+    procedure ShowForm;
+    function DistanceSize(R: TRectF; D: Single): TPointF;
 
     procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawRectangle(R: TRectF); overload;
 
     procedure DrawLine(Left, Top, Right, Bottom: Single); overload;
     procedure DrawLine(R: TRectF); overload;
-    function DistanceSize(R: TRectF; D: Single): TPointF;
+
+    procedure DrawCircle(Left, Top, Right, Bottom: Single); overload;
+    procedure DrawCircle(R: TRectF); overload;
   end;
 
 implementation
 
 uses
-  UnitTestForm, FMX.Platform, FMX.TestLib;
+  UnitTestForm, FMX.Platform, FMX.TestLib, ThConsts;
 
 { TBastTestUnit }
 
@@ -86,7 +89,7 @@ begin
   FForm.Free;
 end;
 
-procedure TBaseTestUnit.DebugShowForm;
+procedure TBaseTestUnit.ShowForm;
 begin
   FClosing := False;
 end;
@@ -105,9 +108,24 @@ begin
   Result := PointF(Cos(Rad) * D, Sin(Rad) * D);
 end;
 
+procedure TBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single);
+begin
+  DrawCircle(RectF(Left, Top, Right, Bottom));
+end;
+
+procedure TBaseTestUnit.DrawCircle(R: TRectF);
+begin
+  FCanvas.DrawItemID := ItemFactoryIDCircle;
+  MousePath.New
+  .Add(R.TopLeft)
+  .Add(R.CenterPoint)
+  .Add(R.BottomRight);
+  TestLib.RunMousePath(MousePath.Path);
+end;
+
 procedure TBaseTestUnit.DrawLine(R: TRectF);
 begin
-  FCanvas.DrawItemID := 1200;   // 1100 is Rectangles ID
+  FCanvas.DrawItemID := ItemFactoryIDLine;   // 1100 is Rectangles ID
   MousePath.New
   .Add(R.TopLeft)
   .Add(R.Left + 1, R.Top)
@@ -124,7 +142,7 @@ end;
 
 procedure TBaseTestUnit.DrawRectangle(R: TRectF);
 begin
-  FCanvas.DrawItemID := 1100;   // 1100 is Rectangles ID
+  FCanvas.DrawItemID := ItemFactoryIDCircle;
   MousePath.New
   .Add(R.TopLeft)
   .Add(R.CenterPoint)

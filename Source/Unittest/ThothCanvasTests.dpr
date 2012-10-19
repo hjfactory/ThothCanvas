@@ -33,7 +33,8 @@ uses
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
   TestThLine in 'TestThLine.pas',
   ThTypes in '..\src\Libraries\ThTypes.pas',
-  ResizeUtils in '..\src\Utils\ResizeUtils.pas';
+  ResizeUtils in '..\src\Utils\ResizeUtils.pas',
+  TestThCircle in 'TestThCircle.pas';
 
 {$R *.RES}
 

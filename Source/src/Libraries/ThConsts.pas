@@ -23,6 +23,10 @@ const
   ItemResizeSpotOutColor = claWhite;
   ItemResizeSpotRadius = 6;
 
+  ItemFactoryIDRectangle  = 1100;
+  ItemFactoryIDLine       = 1200;
+  ItemFactoryIDCircle     = 1300;
+
 implementation
 
 end.
