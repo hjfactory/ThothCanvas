@@ -59,6 +59,16 @@ type
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
   end;
 
+  TThCircle = class(TThShape)
+  protected
+    function CreateResizer: IItemResizer; override;
+
+    function PtInItem(Pt: TPointF): Boolean; override;
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
+  public
+    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
+  end;
+
 implementation
 
 uses
@@ -394,8 +404,58 @@ begin
   end;
 end;
 
+{ TThCircle }
+
+function TThCircle.CreateResizer: IItemResizer;
+begin
+  Result := inherited;
+
+  TThItemResizer(Result).SetResizeSpots([scLeft, scTop, scRight, scBottom]);
+end;
+
+procedure TThCircle.DrawItemWithMouse(AFrom, ATo: TPointF);
+var
+  R: TRectF;
+begin
+  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
+    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
+  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
+
+  R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
+  R.NormalizeRect;
+  BoundsRect := R;
+end;
+
+procedure TThCircle.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
+var
+  R: TRectF;
+begin
+  R := ARect;
+
+  Canvas.StrokeThickness := 0;
+  Canvas.Stroke.Color := claNull;
+  Canvas.Fill.Color := AFillColor;
+
+  Canvas.FillEllipse(R, AbsoluteOpacity);
+  Canvas.DrawEllipse(R, AbsoluteOpacity);
+end;
+
+function TThCircle.PtInItem(Pt: TPointF): Boolean;
+begin
+  Result := False;
+  if Width * Height = 0 then
+    Exit;
+  if (Sqr((Pt.X * 2 - Width) / Width) + Sqr((Pt.Y * 2 - Height) / Height) <= 1)
+  then
+  begin
+    Result := True;
+  end;
+end;
+
 initialization
   RegisterItem(1100, TThRectangle);
   RegisterItem(1200, TThLine);
+  RegisterItem(1300, TThCircle);
 
 end.

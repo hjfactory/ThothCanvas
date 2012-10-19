@@ -358,7 +358,7 @@ end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveBottomToTop;
 begin
-  DebugShowForm;
+//  DebugShowForm;
 
   DrawRectangle(50, 150, 150, 250);
   TestLib.RunMouseClick(100, 200);

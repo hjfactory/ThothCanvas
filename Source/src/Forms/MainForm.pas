@@ -16,6 +16,7 @@ type
     Panel1: TPanel;
     Button2: TButton;
     Button3: TButton;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
