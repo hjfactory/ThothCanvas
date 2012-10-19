@@ -28,12 +28,13 @@ type
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
 
-    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot; var ExchangedHorz, ExchangedVert: Boolean); virtual;    // Spot 이동 시 Shape 크기 조정
-    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); virtual;  // Spot의 SpotCorner 조정
+    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); virtual;    // Spot 이동 시 Shape 크기 조정
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); virtual;  // Spot의 SpotCorner 조정
 
     procedure RealignSpot; virtual;
 
     function GetShapeRect: TRectF; virtual;
+    function GetActiveSpotsShapeRect(ASpot: IItemResizeSpot = nil): TRectF;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -55,7 +56,6 @@ type
 
   TThLine = class(TThShape)
   private
-    FDrawingSize: TRectF;
     function IsTopLeftToBottomRight: Boolean;
     function IsHorizon: Boolean;
     function IsVertical: Boolean;
@@ -68,8 +68,8 @@ type
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
 
     function GetMinimumSize: TPointF; override;
-    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot; var ExchangedHorz, ExchangedVert: Boolean); override;
-    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
+//    procedure ResizeShapeBySpot(ASpot: IItemResizeSpot; var ExchangedHorz, ExchangedVert: Boolean); override;
+//    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean); override;
   public
     procedure DrawingWithMouse(AFrom, ATo: TPointF); override;
   end;
@@ -96,6 +96,22 @@ destructor TThShape.Destroy;
 begin
 
   inherited;
+end;
+
+function TThShape.GetActiveSpotsShapeRect(ASpot: IItemResizeSpot): TRectF;
+var
+  ActiveSpot,
+  OppositeSpot: TAbstractItemResizeSpot;
+begin
+  if not Assigned(ASpot) then
+    ASpot := FResizer.Spots[0];
+  ActiveSpot := TAbstractItemResizeSpot(ASpot);
+  OppositeSpot := TAbstractItemResizer(FResizer).GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner));
+  if not Assigned(OppositeSpot) then
+    Exit;
+  Result.TopLeft := ActiveSpot.Position.Point;
+  Result.BottomRight := OppositeSpot.Position.Point;
+  Result.NormalizeRect;
 end;
 
 function TThShape.GetShapeRect: TRectF;
@@ -149,103 +165,81 @@ end;
 procedure TThShape.ResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ActiveSpot: TThItemCircleResizeSpot absolute Sender;
-  ExchangedHorz, ExchangedVert: Boolean;
 begin
-  ResizeShapeBySpot(ActiveSpot,ExchangedHorz, ExchangedVert);
-
-  if ExchangedHorz or ExchangedVert then
-    NormalizeSpotCorner(ActiveSpot, ExchangedHorz, ExchangedVert);
-
+  ResizeShapeBySpot(ActiveSpot);
+  NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
 end;
 
-procedure TThShape.ResizeShapeBySpot(ASpot: IItemResizeSpot; var ExchangedHorz, ExchangedVert: Boolean);
+procedure TThShape.ResizeShapeBySpot(ASpot: IItemResizeSpot);
 var
-  B, ShapeR: TRectF;
+  MinSize: TPointF;
+  ShapeR: TRectF;
   ActiveSpot, OppositeSpot: TThItemCircleResizeSpot;
 begin
   ActiveSpot := TThItemCircleResizeSpot(ASpot);
   OppositeSpot := TThItemCircleResizeSpot(TAbstractItemResizer(FResizer).GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner)));
 
-  ShapeR := RectF(ActiveSpot.Position.X, ActiveSpot.Position.Y, OppositeSpot.Position.X, OppositeSpot.Position.Y);
+  ShapeR.TopLeft := ActiveSpot.Position.Point;
+  ShapeR.BottomRight := OppositeSpot.Position.Point;
   ShapeR.NormalizeRect;
-  if ShapeR.Width < MinimumSize.X then
+
+  MinSize := MinimumSize;
+  if ShapeR.Width < MinSize.X then
   begin
-    if ShapeR.Left = ActiveSpot.Position.X then
-      ShapeR.Left := ShapeR.Right - MinimumSize.X
+    if ShapeR.Right = ActiveSpot.Position.X then
+      ShapeR.Right := ShapeR.Left + MinSize.X
     else
-      ShapeR.Right := ShapeR.Left + MinimumSize.X;
+      ShapeR.Left := ShapeR.Right - MinSize.X;
   end;
 
-  if ShapeR.Height < MinimumSize.Y then
+  if ShapeR.Height < MinSize.Y then
   begin
-    if ShapeR.Top = ActiveSpot.Position.Y then
-      ShapeR.Top := ShapeR.Bottom - MinimumSize.Y
+    if ShapeR.Bottom = ActiveSpot.Position.Y then
+      ShapeR.Bottom := ShapeR.Top + MinSize.Y
     else
-      ShapeR.Bottom := ShapeR.Top + MinimumSize.Y;
+      ShapeR.Top := ShapeR.Bottom - MinSize.Y;
   end;
 
-  B := GetShapeRect;
-
-  ExchangedHorz := (B.Left = ShapeR.Right) or (B.Right = ShapeR.Left);
-  ExchangedVert := (B.Top = ShapeR.Bottom) or (B.Bottom = ShapeR.Top);
+  if ShapeR.Width = 0 then  ShapeR.Width := 1;
+  if ShapeR.Height = 0 then  ShapeR.Height := 1;
 
   ShapeR.Offset(Position.Point);
   SetBoundsRect(ShapeR);
 end;
 
-procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz, ExchangedVert: Boolean);
+procedure TThShape.NormalizeSpotCorner(ASpot: IItemResizeSpot);
 var
   I: Integer;
-  R: TRectF;
+  SpotRect: TRectF;
   Spot: TAbstractItemResizeSpot;
   ActiveSpot: TAbstractItemResizeSpot;
-  ActiveSpotP: TPointF;
+  SpotPos: TPointF;
   SpotCorner: TSpotCorner;
 begin
-  R := GetShapeRect;
-  R.Offset(Position.X, Position.Y);
+  SpotRect := GetActiveSpotsShapeRect(ASpot);
 
   ActiveSpot := TAbstractItemResizeSpot(ASpot);
-  ActiveSpotP := ActiveSpot.Position.Point;
-  ActiveSpotP.Offset(Position.Point);
-  SpotCorner := ActiveSpot.SpotCorner;
+  SpotPos := ActiveSpot.Position.Point;
 
-// 1, ActiveSpot(변경중인)의 변경 할 SpotCorner 계산
-
-// 2, 본인 제외한 Spot에 대해 (1)에서
-  // 2-1, 가로가 변경된 경우 가로 SpotCorner 변경
-  // 2-2, 세로가 변경된 경우 세로 SpotCorner 변경
-
-// 3, 본인 SpotCorner 적용
-
-{1, }
-  if ExchangedHorz then
+  if SpotRect.Width = 0 then
+    SpotCorner := IfThenSpotCorner(SpotRect.Top = SpotPos.Y, scTop, scBottom)
+  else if SpotRect.Height = 0 then
+    SpotCorner := IfThenSpotCorner(SpotRect.Left = SpotPos.X, scLeft, scRight)
+  else
   begin
-    // Left to Right
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-      if ActiveSpotP.X >= R.Right then
-        SpotCorner := HorizonSpotCornerExchange(SpotCorner);
+    SpotCorner := scUnknown;
+    if SpotRect.Left = SpotPos.X then
+      SpotCorner := SetHorizonSpotCorner(SpotCorner, scLeft)
+    else if SpotRect.Right = SpotPos.X then
+      SpotCorner := SetHorizonSpotCorner(SpotCorner, scRight);
 
-    // Right to Left
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scRight) then
-      if ActiveSpotP.X <= R.Left then
-        SpotCorner := HorizonSpotCornerExchange(SpotCorner);
-  end;
-  if ExchangedVert then
-  begin
-    // Top to Bottom
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-      if ActiveSpotP.Y >= R.Bottom then
-        SpotCorner := VertialSpotCornerExchange(SpotCorner);
-
-    // Bottom to Top
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) then
-      if ActiveSpotP.Y <= R.Top then
-        SpotCorner := VertialSpotCornerExchange(SpotCorner);
+    if SpotRect.Top = SpotPos.Y then
+      SpotCorner := SetHorizonSpotCorner(SpotCorner, scTop)
+    else if SpotRect.Bottom = SpotPos.Y then
+      SpotCorner := SetHorizonSpotCorner(SpotCorner, scBottom);
   end;
 
-{2, }
   for I := 0 to FResizer.Count - 1 do
   begin
     Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
@@ -253,18 +247,39 @@ begin
     if Spot = ActiveSpot then
       Continue;
 
-{2.1, }
+    if not SupportedHorizonSpotCorner(SpotCorner) and SupportedHorizonSpotCorner(Spot.SpotCorner) then
+    begin
+      Spot.SpotCorner := VerticalSpotCornerExchange(SpotCorner);
+      Continue;
+    end;
+
+    if SupportedHorizonSpotCorner(SpotCorner) and not SupportedHorizonSpotCorner(Spot.SpotCorner) then
+    begin
+      Spot.SpotCorner := SpotCornerExchange(SpotCorner);
+      Continue;
+    end;
+
+    if not SupportedVerticalSpotCorner(SpotCorner) and SupportedVerticalSpotCorner(Spot.SpotCorner) then
+    begin
+      Spot.SpotCorner := HorizonSpotCornerExchange(SpotCorner);
+      Continue;
+    end;
+
+    if SupportedVerticalSpotCorner(SpotCorner) and not SupportedVerticalSpotCorner(Spot.SpotCorner) then
+    begin
+      Spot.SpotCorner := SpotCornerExchange(SpotCorner);
+      Continue;
+    end;
+
     // Switch horizon spot
-    if IsHorizonExchange(ActiveSpot.SpotCorner, SpotCorner) then
+    if ChangeHorizonSpotCorner(ActiveSpot.SpotCorner, SpotCorner) then
       Spot.SpotCorner := HorizonSpotCornerExchange(Spot.SpotCorner);
 
-{2.2, }
     // Switch vertical spot
-    if IsVertialExchange(ActiveSpot.SpotCorner, SpotCorner) then
-      Spot.SpotCorner := VertialSpotCornerExchange(Spot.SpotCorner);
+    if ChangeVerticalSpotCorner(ActiveSpot.SpotCorner, SpotCorner) then
+      Spot.SpotCorner := VerticalSpotCornerExchange(Spot.SpotCorner);
   end;
 
-{3, }
   ActiveSpot.SpotCorner := SpotCorner;
 end;
 
@@ -280,15 +295,18 @@ begin
   for I := 0 to FResizer.Count - 1 do
   begin
     Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
-
+{
+    // Line의 경우 수직/수평선인 경우 두께가 1이지만 0 포인트에 표시해 주어야 함
+      // NormalizeSpotCorner 조건에 안맞을 수 있음
+}
     case Spot.SpotCorner of
       scTopLeft:      SpotP := PointF(ShapeR.Left, ShapeR.Top);
-      scTop:          SpotP := PointF(RectWidth(ShapeR) / 2, ShapeR.Top);
+      scTop:          SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Top);
       scTopRight:     SpotP := PointF(ShapeR.Right, ShapeR.Top);
-      scLeft:         SpotP := PointF(ShapeR.Left, RectHeight(ShapeR) / 2);
-      scRight:        SpotP := PointF(ShapeR.Right, RectHeight(ShapeR) / 2);
+      scLeft:         SpotP := PointF(ShapeR.Left, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
+      scRight:        SpotP := PointF(ShapeR.Right, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
       scBottomLeft:   SpotP := PointF(ShapeR.Left, ShapeR.Bottom);
-      scBottom:       SpotP := PointF(RectWidth(ShapeR) / 2, ShapeR.Bottom);
+      scBottom:       SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Bottom);
       scBottomRight:  SpotP := PointF(ShapeR.Right, ShapeR.Bottom);
     end;
 
@@ -353,14 +371,17 @@ end;
 function TThLine.GetMinimumSize: TPointF;
 var
   Rad: Single;
+  R: TRectF;
 begin
-  if FDrawingSize.Height = 0 then
-    Result := PointF(ItemMinimumSize, 1)
-  else if FDrawingSize.Width = 0 then
-    Result := PointF(1, ItemMinimumSize)
+  R:= GetActiveSpotsShapeRect;
+
+  if R.Height = 0 then
+    Result := PointF(ItemMinimumSize, 0)
+  else if R.Width = 0 then
+    Result := PointF(0, ItemMinimumSize)
   else
   begin
-    Rad := ArcTan(FDrawingSize.Height / FDrawingSize.Width);
+    Rad := ArcTan(R.Height / R.Width);
     Result.X := Cos(Rad) * ItemMinimumSize;
     Result.Y := Sin(Rad) * ItemMinimumSize;
   end;
@@ -369,12 +390,6 @@ end;
 function TThLine.GetShapeRect: TRectF;
 begin
   Result := LocalRect;
-{
-  Result.TopLeft :=   TThItemCircleResizeSpot(FResizer.Spots[0]).Position.Point;
-  Result.BottomRight :=   TThItemCircleResizeSpot(FResizer.Spots[1]).Position.Point;
-//  Result.Offset(-Result.Left, -Result.Top);
-  Result.NormalizeRect;
-}
 end;
 
 function TThLine.PtInItem(Pt: TPointF): Boolean;
@@ -402,7 +417,6 @@ begin
   D := (ItemLineThickness-1)/2;
 
   if IsHorizon then
-//  if RectH = 0 then
   begin
     Rect.Height := 0;
     if (Pt.X >= Rect.Left) and (Pt.X <= Rect.Right) then
@@ -418,7 +432,6 @@ begin
       ;
     end;
   end
-//  else if RectW = 0 then
   else if IsVertical then
   begin
     Rect.Width := 0;
@@ -486,234 +499,6 @@ begin
   Result := TThItemCircleResizeSpot(FResizer.Spots[0]).Position.X = TThItemCircleResizeSpot(FResizer.Spots[1]).Position.X;
 end;
 
-procedure TThLine.ResizeShapeBySpot(ASpot: IItemResizeSpot; var ExchangedHorz,
-  ExchangedVert: Boolean);
-var
-  ShapeR: TRectF;
-  SpotPos: TPointF;
-  ActiveSpot: TThItemCircleResizeSpot;
-  Min: TPointF;
-begin
-{
-  ActiveSpot := TThItemCircleResizeSpot(ASpot);
-
-  ShapeR := GetShapeRect;
-  SpotPos := ActiveSpot.Position.Point;
-
-  //
-//  // Left to Right
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-  begin
-      ShapeR.Left := SpotPos.X;
-  end;
-
-  // Right to Left
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scRight) then
-  begin
-    if SpotPos.X < ShapeR.Left then
-    begin
-      ShapeR.Right := ShapeR.Left;
-      ShapeR.Left := SpotPos.X;
-    end
-    else if SpotPos.X = ShapeR.Left then
-      ShapeR.Right := ShapeR.Left + 1
-    else
-      ShapeR.Right := SpotPos.X;
-  end;
-
-  // Top to Bottom
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-  begin
-      ShapeR.Top := SpotPos.Y;
-  end;
-
-  // Bottom to Top
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) then
-  begin
-      ShapeR.Bottom := SpotPos.Y;
-  end;
-
-  FDrawingSize := ShapeR;
-
-  Min := MinimumSize;
-// Spot이 변경된 영역을 계산
-
-  // Left to Right
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-  begin
-    if SpotPos.X > ShapeR.Right then
-    begin
-      if ShapeR.Width < Min.X then
-        ShapeR.Width := Min.X;
-      ExchangedHorz := True;
-    end
-    else
-    begin
-      if ShapeR.Width < Min.X then
-        ShapeR.Left := ShapeR.Left - (Min.X - ShapeR.Width);
-    end;
-  end;
-
-  // Right to Left
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scRight) then
-  begin
-    if SpotPos.X < ShapeR.Left then
-    begin
-      if ShapeR.Width < Min.X then
-        ShapeR.Left := ShapeR.Left - (Min.X - ShapeR.Width);
-      ExchangedHorz := True;
-    end
-    else
-    begin
-      if ShapeR.Width < Min.X then
-        ShapeR.Width := Min.X;
-    end;
-  end;
-
-  // Top to Bottom
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-  begin
-
-    if SpotPos.Y > ShapeR.Bottom then
-    begin
-      if ShapeR.Height < Min.Y then
-        ShapeR.Height := Min.Y;
-      ExchangedVert := True;
-    end
-    else
-    begin
-      if ShapeR.Height < Min.Y then
-        ShapeR.Top := ShapeR.Top - (Min.Y - ShapeR.Height);
-    end;
-  end;
-
-  // Bottom to Top
-  if ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) then
-  begin
-    if SpotPos.Y < ShapeR.Top then
-    begin
-      if ShapeR.Height < Min.Y then
-        ShapeR.Top := ShapeR.Top - (Min.Y - ShapeR.Height);
-      ExchangedVert := True;
-    end
-    else
-    begin
-      if ShapeR.Height < Min.Y then
-        ShapeR.Height := Min.Y;
-    end;
-  end;
-
-  ShapeR.Offset(Position.Point);
-//Debug('%f, %f, %f, %f', [ShapeR.Left, ShapeR.Top, ShapeR.Right, ShapeR.Bottom]);
-  SetBoundsRect(ShapeR);
-}
-end;
-
-procedure TThLine.NormalizeSpotCorner(ASpot: IItemResizeSpot; ExchangedHorz,
-  ExchangedVert: Boolean);
-var
-  I: Integer;
-  R: TRectF;
-  Spot: TAbstractItemResizeSpot;
-  ActiveSpot: TAbstractItemResizeSpot;
-  ActiveSpotP: TPointF;
-  SpotCorner: TSpotCorner;
-begin
-  R := GetShapeRect;
-  R.Offset(Position.X, Position.Y);
-
-  ActiveSpot := TAbstractItemResizeSpot(ASpot);
-  ActiveSpotP := ActiveSpot.Position.Point;
-  ActiveSpotP.Offset(Position.Point);
-  SpotCorner := ActiveSpot.SpotCorner;
-
-  if IsVertical then
-  begin
-    if ActiveSpotP.Y = R.Top then
-      SpotCorner := scTop
-    else
-      SpotCorner := scBottom
-    ;
-  end
-  else
-  begin
-    if ActiveSpot.SpotCorner in [scTop, scBottom] then
-    begin
-      if ActiveSpotP.X = R.Left then
-        SpotCorner := scBottomLeft;
-    end;
-  end;
-
-  ;
-  for I := 0 to FResizer.Count - 1 do
-  begin
-    Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
-
-    if Spot = ActiveSpot then
-      Continue;
-
-//    Spot.SpotCorner := scTopRight;
-  end;
-  ActiveSpot.SpotCorner := SpotCorner;
-
-Exit;
-// 1, ActiveSpot(변경중인)의 변경 할 SpotCorner 계산
-
-// 2, 본인 제외한 Spot에 대해 (1)에서
-  // 2-1, 가로가 변경된 경우 가로 SpotCorner 변경
-  // 2-2, 세로가 변경된 경우 세로 SpotCorner 변경
-
-// 3, 본인 SpotCorner 적용
-
-{1, }
-  if ExchangedHorz then
-  begin
-    // Left to Right
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-      if ActiveSpotP.X >= R.Right then
-        SpotCorner := HorizonSpotCornerExchange(SpotCorner);
-
-    // Right to Left
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scRight) then
-      if ActiveSpotP.X <= R.Left then
-        SpotCorner := HorizonSpotCornerExchange(SpotCorner);
-  end;
-  if ExchangedVert then
-  begin
-    // Top to Bottom
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-      if ActiveSpotP.Y >= R.Bottom then
-        SpotCorner := VertialSpotCornerExchange(SpotCorner);
-
-    // Bottom to Top
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scBottom) then
-      if ActiveSpotP.Y <= R.Top then
-        SpotCorner := VertialSpotCornerExchange(SpotCorner);
-  end;
-
-{2, }
-  for I := 0 to FResizer.Count - 1 do
-  begin
-    Spot := TAbstractItemResizeSpot(FResizer.Spots[I]);
-
-    if Spot = ActiveSpot then
-      Continue;
-
-{2.1, }
-    // Switch horizon spot
-    if IsHorizonExchange(ActiveSpot.SpotCorner, SpotCorner) then
-      Spot.SpotCorner := HorizonSpotCornerExchange(Spot.SpotCorner);
-
-{2.2, }
-    // Switch vertical spot
-    if IsVertialExchange(ActiveSpot.SpotCorner, SpotCorner) then
-      Spot.SpotCorner := VertialSpotCornerExchange(Spot.SpotCorner);
-  end;
-
-{3, }
-  ActiveSpot.SpotCorner := SpotCorner;
-end;
-
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   P1, P2: TPointF;
@@ -744,15 +529,6 @@ begin
   end;
 
   Canvas.DrawLine(P1, P2, 1);
-{
-
-  Canvas.StrokeThickness := 1;
-  Canvas.Stroke.Color := claBlack;
-  Canvas.DrawRect(GetShapeRect, 0, 0, AllCorners, 1);
-  Canvas.DrawLine(P1, P2, 1);
-}
-//  Canvas.draw
-//  Debug('Paint item (%f, %f) (%f, %f)', [P1.X, P1.Y, P2.X, P2.Y]);
 end;
 
 procedure TThLine.DrawingWithMouse(AFrom, ATo: TPointF);
@@ -763,76 +539,48 @@ var
 begin
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   R.NormalizeRect;
-  FDrawingSize := R;
-
-  Min := MinimumSize;
-
-
-  if (AFrom.Distance(ATo) < ItemMinimumSize) and (R.Width < Min.X) or (R.Height < Min.Y) then
-  begin
-    if InRange(R.Width, 1, Min.X - 1) then
-      ATo.X := AFrom.X + Min.X * IfThen(AFrom.X > ATo.X, -1, 1);
-    if InRange(R.Height, 1, Min.Y - 1) then
-      ATo.Y := AFrom.Y + Min.Y * IfThen(AFrom.Y > ATo.Y, -1, 1);
-  end;
-
-  R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
-  R.NormalizeRect;
-  if R.Width < 1 then   R.Width := 1;
-  if R.Height < 1 then  R.Height := 1;
-  BoundsRect := R;
 
   BaseSpot    := TThItemCircleResizeSpot(FResizer.Spots[0]);
   ActiveSpot  := TThItemCircleResizeSpot(FResizer.Spots[1]);
   BaseSpot.Position.Point   := AFrom.Subtract(Position.Point);;
   ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
 
-  if AFrom.X = ATo.X then
+  Min := MinimumSize;
+  if (AFrom.Distance(ATo) < ItemMinimumSize) and ((R.Width < Min.X) or (R.Height < Min.Y)) then
   begin
-    if AFrom.Y > ATo.Y then
-    begin
-      BaseSpot.SpotCorner := scTop;
-      ActiveSpot.SpotCorner := scBottom;
-    end
-    else
-    begin
-      ActiveSpot.SpotCorner := scTop;
-      BaseSpot.SpotCorner := scBottom;
-    end;
+    if InRange(R.Width, 1, Min.X - 1) then
+      ATo.X := AFrom.X + Min.X * IfThen(AFrom.X > ATo.X, -1, 1);
+    if InRange(R.Height, 1, Min.Y - 1) then
+      ATo.Y := AFrom.Y + Min.Y * IfThen(AFrom.Y > ATo.Y, -1, 1);
+
+    ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
+
+    R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
+    R.NormalizeRect;
+  end;
+
+  if R.Width < 1 then   R.Width := 1;
+  if R.Height < 1 then  R.Height := 1;
+  BoundsRect := R;
+
+  if AFrom.X = ATo.X then // vertical
+  begin
+    BaseSpot.SpotCorner := IfThenSpotCorner(AFrom.Y > ATo.Y, scBottom, scTop);
+    ActiveSpot.SpotCorner := IfThenSpotCorner(AFrom.Y > ATo.Y, scTop, scBottom);
   end
-  else if AFrom.Y = ATo.Y then
+  else if AFrom.Y = ATo.Y then  // horizon
   begin
-    if AFrom.X > ATo.X then
-    begin
-      BaseSpot.SpotCorner := scLeft;
-      ActiveSpot.SpotCorner := scRight;
-    end
-    else
-    begin
-      ActiveSpot.SpotCorner := scLeft;
-      BaseSpot.SpotCorner := scRight;
-    end;
+    BaseSpot.SpotCorner := IfThenSpotCorner(AFrom.X > ATo.X, scRight, scLeft);
+    ActiveSpot.SpotCorner := IfThenSpotCorner(AFrom.X > ATo.X, scLeft, scRight);
   end
   else
   begin
     if AFrom.X > ATo.X then
-    begin
-      if AFrom.Y > ATo.Y then
-        ActiveSpot.SpotCorner := scBottomRight
-      else
-        ActiveSpot.SpotCorner := scTopRight
-      ;
-    end
+      ActiveSpot.SpotCorner := IfThenSpotCorner(AFrom.Y > ATo.Y, scBottomRight, scTopRight)
     else
-    begin
-      if AFrom.Y > ATo.Y then
-        ActiveSpot.SpotCorner := scBottomLeft
-      else
-        ActiveSpot.SpotCorner := scTopLeft
-      ;
-    end;
+      ActiveSpot.SpotCorner := IfThenSpotCorner(AFrom.Y > ATo.Y, scBottomLeft, scTopLeft);
     BaseSpot.SpotCorner := HorizonSpotCornerExchange(ActiveSpot.SpotCorner);
-    BaseSpot.SpotCorner := VertialSpotCornerExchange(BaseSpot.SpotCorner);
+    BaseSpot.SpotCorner := VerticalSpotCornerExchange(BaseSpot.SpotCorner);
   end;
 end;
 

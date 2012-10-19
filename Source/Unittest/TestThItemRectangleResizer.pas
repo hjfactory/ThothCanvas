@@ -274,7 +274,7 @@ begin
   .Add(80, 120);
   TestLib.RunMousePath(MousePath.Path);
 
-  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
+//  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
   Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
   Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
   Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
@@ -290,7 +290,7 @@ begin
   .Add(99, 120);
   TestLib.RunMousePath(MousePath.Path);
 
-  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
+//  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
   Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
   Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
   Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));

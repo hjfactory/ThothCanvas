@@ -42,7 +42,7 @@ type
     procedure TestLineVertical;
 
     // #77 최소 크기를 갖으며 그리거나 크기조정 시 반영된다.
-    procedure TestLineMinumumSize;
+    procedure TestLineMinimumSize;
 
     // #43 선의 일정간격 내에서도 마우스로 선택되어야 한다.
     procedure TestRangeSelectHorizonOverY;  // 수평선
@@ -52,20 +52,20 @@ type
 //    procedure TestSelectLineOverXY;
     // #80 SizeSpot을 드래그 하여 크기를 변경 할 수 있다.
     procedure TestResizeLine;
-{
+
     procedure TestResizeLineBRtoBottom;
-    procedure TestResizeLineBRtoBLOver;
+    procedure TestResizeLineBottomtoBLOver;
     procedure TestResizeLineTLtoBROver;
     procedure TestResizeLineTLtoRightOver;
-    procedure TestResizeLineTLtoBottomOver;
-    procedure TestResizeLineTRtoBLOver;
-    procedure TestResizeLineBLtoTROver;
-    procedure TestResizeLineBRtoTLOver;
-
+//    procedure TestResizeLineTLtoBottomOver;
+//    procedure TestResizeLineTRtoBLOver;
+//    procedure TestResizeLineBLtoTROver;
+//    procedure TestResizeLineBRtoTLOver;
+//
+    // #100 크기조정 시 최소 크기가 적용되어야 한다.
     procedure TestResizeMinimum;
-    procedure TestResizeMinimum2;
-    procedure TestResizeSpotSamePosition;
-}
+//    procedure TestResizeMinimum2;
+//    procedure TestResizeSpotSamePosition;
   end;
 
 implementation
@@ -207,24 +207,25 @@ end;
 
 procedure TestTThLine.TestLineVertical;
 begin
-  Debugshowform;
-
   DrawLine(10, 10, 10, 20);
 
   Check(TestLib.GetControlPixelColor(FCanvas, 7, 10) = ItemShapeDefaultColor, 'Start');
   Check(TestLib.GetControlPixelColor(FCanvas, 7, 20) = ItemShapeDefaultColor, 'End');
 end;
 
-procedure TestTThLine.TestLineMinumumSize;
+procedure TestTThLine.TestLineMinimumSize;
 begin
-  // 추가
-  DrawLine(10, 30, 40, 30);
+//  DebugShowForm;
+//  DrawLine(10, 30, 40, 30);
 
-  // 추가
   DrawLine(10, 10, 20, 10);
 
-  TestLib.RunMouseClick(ItemMinimumSize-1, 10);
+  TestLib.RunMouseClick(15, 10);
+  Check(Assigned(FCanvas.SelectedItem));
+  Check(FCanvas.SelectedItem.Width = 30, Format('W: %f', [FCanvas.SelectedItem.Width]));
 
+  TestLib.RunMouseClick(150, 150);
+  TestLib.RunMouseClick(ItemMinimumSize-1, 10);
   Check(Assigned(FCanvas.SelectedItem));
 end;
 
@@ -289,7 +290,7 @@ begin
 //  DP.X := Sin(R) * D;
 //  DP.Y := Cos(R) * D;
 
-  Debug('%f, %f', [DP.X, DP.Y]);
+//  Debug('%f, %f', [DP.X, DP.Y]);
 
   P2 := P.Add(PointF(DP.X, -DP.Y));
   TestLib.RunMouseClick(200, 200);
@@ -370,10 +371,9 @@ begin
   Check(FCanvas.SelectedItem.Width = 150, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
-{
 procedure TestTThLine.TestResizeLineBRtoBottom;
 begin
-  DebugShowForm;
+//  DebugShowForm;
 
   // 그리기
   DrawLine(50, 50, 150, 150);
@@ -382,7 +382,7 @@ begin
   //크기 조정
   MousePath.New
   .Add(150, 150)
-  .Add(60, 150)
+//  .Add(60, 150)
   .Add(50, 150);
   TestLib.RunMousePath(MousePath.Path);
 
@@ -394,14 +394,12 @@ begin
   );
 end;
 
-procedure TestTThLine.TestResizeLineBRtoBLOver;
+procedure TestTThLine.TestResizeLineBottomtoBLOver;
 begin
-  DebugShowForm;
-
   // 그리기
   DrawLine(250, 50, 250, 150);
   TestLib.RunMouseClick(250, 100);
-//Exit;
+
   //크기 조정
   MousePath.New
   .Add(250, 150)
@@ -440,6 +438,7 @@ end;
 
 procedure TestTThLine.TestResizeLineTLtoRightOver;
 begin
+  DebugShowForm;
   // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
@@ -448,17 +447,40 @@ begin
   MousePath.New
   .Add(50, 50)
   .Add(180, 55)
-  .Add(250, 60);
+  .Add(250, 50);
   TestLib.RunMousePath(MousePath.Path);
 
-  TestLib.RunMouseClick(180, 100);
+  TestLib.RunMouseClick(200, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (FCanvas.SelectedItem.Width = 100) and (FCanvas.SelectedItem.Height = 90),
+    (FCanvas.SelectedItem.Width = 100) and (FCanvas.SelectedItem.Height = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
 
+// S - 100 크기를 20으로 줄였을때 30이 되어야 한다.
+procedure TestTThLine.TestResizeMinimum;
+var
+  R, D: Single;
+  SizeP: TPointF;
+begin
+  DrawLine(50, 50, 150, 150);
+  TestLib.RunMouseClick(100, 100);
+
+  //크기 조정
+  MousePath.New
+  .Add(150, 150)
+  .Add(180, 180)
+  .Add(70, 70);
+  TestLib.RunMousePath(MousePath.Path);
+
+  SizeP := DistanceSize(RectF(50, 50, 80, 80), ItemMinimumSize);
+
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
+  Check(FCanvas.SelectedItem.Width = SizeP.X, Format('W: %f', [FCanvas.SelectedItem.Width]));
+end;
+
+{
 procedure TestTThLine.TestResizeLineTLtoBottomOver;
 begin
   // 그리기

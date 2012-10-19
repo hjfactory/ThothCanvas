@@ -27,6 +27,7 @@ type
 
     procedure DrawLine(Left, Top, Right, Bottom: Single); overload;
     procedure DrawLine(R: TRectF); overload;
+    function DistanceSize(R: TRectF; D: Single): TPointF;
   end;
 
 implementation
@@ -93,6 +94,15 @@ end;
 procedure TBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single);
 begin
   DrawLine(RectF(Left, Top, Right, Bottom));
+end;
+
+function TBaseTestUnit.DistanceSize(R: TRectF; D: Single): TPointF;
+var
+  Rad: Single;
+begin
+  Rad := ArcTan(R.Height / R.Width);
+
+  Result := PointF(Cos(Rad) * D, Sin(Rad) * D);
 end;
 
 procedure TBaseTestUnit.DrawLine(R: TRectF);
