@@ -396,6 +396,8 @@ end;
 
 procedure TestTThLine.TestResizeLineBottomtoBLOver;
 begin
+  ShowForm;
+
   // ±×¸®±â
   DrawLine(250, 50, 250, 150);
   TestLib.RunMouseClick(250, 100);

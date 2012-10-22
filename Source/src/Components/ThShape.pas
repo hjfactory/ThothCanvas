@@ -148,6 +148,7 @@ begin
   Result := False;
 end;
 
+{$REGION RECTANGLE}
 { TThRectangle }
 
 function TThRectangle.PtInItem(Pt: TPointF): Boolean;
@@ -173,15 +174,17 @@ var
   R: TRectF;
 begin
   if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
+    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.X;
   if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Y;
 
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   R.NormalizeRect;
   BoundsRect := R;
 end;
+{$ENDREGION}
 
+{$REGION LINE}
 { TThLine }
 
 function TThLine.CreateResizer: IItemResizer;
@@ -403,6 +406,7 @@ begin
     BaseSpot.SpotCorner := VerticalSpotCornerExchange(BaseSpot.SpotCorner);
   end;
 end;
+{$ENDREGION}
 
 { TThCircle }
 
@@ -418,9 +422,9 @@ var
   R: TRectF;
 begin
   if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X < ATo.X, 1, -1) * MinimumSize.X;
+    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.X;
   if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y < ATo.Y, 1, -1) * MinimumSize.Y;
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Y;
 
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   R.NormalizeRect;

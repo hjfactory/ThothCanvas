@@ -266,9 +266,11 @@ begin
   ActiveSpot := TThItemCircleResizeSpot(ASpot);
   OppositeSpot := TThItemCircleResizeSpot(GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner)));
 
-  ShapeR.TopLeft := ActiveSpot.Position.Point;
-  ShapeR.BottomRight := OppositeSpot.Position.Point;
-  ShapeR.NormalizeRect;
+  ShapeR := GetActiveSpotsItemRect(ASpot);
+
+//  ShapeR.TopLeft := ActiveSpot.Position.Point;
+//  ShapeR.BottomRight := OppositeSpot.Position.Point;
+//  ShapeR.NormalizeRect;
 
   MinSize := FParent.MinimumSize;
   if ShapeR.Width < MinSize.X then
@@ -426,8 +428,33 @@ begin
   OppositeSpot := GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner));
   if not Assigned(OppositeSpot) then
     Exit;
-  Result.TopLeft := ActiveSpot.Position.Point;
-  Result.BottomRight := OppositeSpot.Position.Point;
+{
+  // LIne Top to Bottom 인경우 처리에 걸림
+  if ActiveSpot.SpotCorner in [scLeft, scTop, scRight, scBottom] then
+  begin
+    Result := FParent.GetItemRect;
+    case ActiveSpot.SpotCorner of
+      scTop,
+      scBottom:
+        begin
+          Result.Top := ActiveSpot.Position.Y;
+          Result.Bottom := OppositeSpot.Position.Y;
+        end;
+      scLeft,
+      scRight:
+        begin
+          Result.Left := ActiveSpot.Position.X;
+          Result.Right := OppositeSpot.Position.X;
+        end;
+    end;
+
+  end
+  else
+}
+  begin
+    Result.TopLeft := ActiveSpot.Position.Point;
+    Result.BottomRight := OppositeSpot.Position.Point;
+  end;
   Result.NormalizeRect;
 end;
 

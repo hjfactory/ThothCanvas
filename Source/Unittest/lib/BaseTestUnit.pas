@@ -142,7 +142,7 @@ end;
 
 procedure TBaseTestUnit.DrawRectangle(R: TRectF);
 begin
-  FCanvas.DrawItemID := ItemFactoryIDCircle;
+  FCanvas.DrawItemID := ItemFactoryIDRectangle;
   MousePath.New
   .Add(R.TopLeft)
   .Add(R.CenterPoint)

@@ -23,7 +23,22 @@ type
   published
     procedure TestItemFactory;
 
+    // #116 마우스 드래그로 시작점과 끝점을 이용해 도형을 그린다.
     procedure TestDrawCircle;
+
+    // #117 끝점이 시작점의 앞에 있어도 그려져야 한다.
+    procedure TestDrawCircleRightToLeft;
+
+    // #118 최소 크기로 그려진다.
+    procedure TestDrawCircleMinimum;
+
+    // #120 크기 조정이 가능해야 한다.
+    procedure TestCircleResize;
+    procedure TestCircleResizeLeftToRight;
+    procedure TestCircleResizeTopToBottom;
+    procedure TestCircleResizeRightToLeft;
+    procedure TestCircleResizeBottomToTop;
+    procedure TestCircleResizeEx;
   end;
 
 implementation
@@ -51,12 +66,8 @@ procedure TestTThCircle.TestDrawCircle;
 var
   Item: TThItem;
 begin
-  ShowForm;
-
-  // Draw
   DrawCircle(50, 50, 200, 200);
 
-  // Select
   TestLib.RunMouseClick(100, 100);
   Item := FCanvas.SelectedItem;
 
@@ -65,6 +76,84 @@ begin
 
   Check(Item.Position.X = 50, Format('X = %f', [Item.Position.X]));
   Check(Item.Width = 150,     Format('Width = %f', [Item.Width]));
+end;
+
+procedure TestTThCircle.TestDrawCircleRightToLeft;
+var
+  Item: TThItem;
+begin
+  DrawCircle(200, 200, 50, 50);
+
+  TestLib.RunMouseClick(100, 100);
+  Item := FCanvas.SelectedItem;
+
+  Check(Assigned(Item), 'Check SelectedItem');
+  Check(Item.ClassType = TThCircle, 'Check Class type');
+
+  Check(Item.Position.X = 50, Format('X = %f', [Item.Position.X]));
+  Check(Item.Width = 150,     Format('Width = %f', [Item.Width]));
+end;
+
+procedure TestTThCircle.TestDrawCircleMinimum;
+var
+  Item: TThItem;
+begin
+  DrawCircle(50, 50, 50, 50);
+
+  TestLib.RunMouseClick(65, 65);
+  Item := FCanvas.SelectedItem;
+
+  Check(Assigned(Item), 'Check SelectedItem');
+  Check(Item.ClassType = TThCircle, 'Check Class type');
+
+  Check(Item.Width = 30,     Format('Width = %f', [Item.Width]));
+end;
+
+procedure TestTThCircle.TestCircleResize;
+begin
+  ShowForm;
+
+  DrawCircle(50, 50, 100, 100);
+
+  TestLib.RunMouseClick(65, 65);
+
+  //크기 조정(50, 50, 150, 100)
+  MousePath.New
+  .Add(100, 75)
+  .Add(120, 75)
+  .Add(150, 75);
+  TestLib.RunMousePath(MousePath.Path);
+  TestLib.RunMouseClick(150, 150);
+
+  TestLib.RunMouseClick(130, 75);
+  Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
+  Check((FCanvas.SelectedItem.Width = 100) and (FCanvas.SelectedItem.height = 50),
+    Format('W,H : %f, %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
+end;
+
+procedure TestTThCircle.TestCircleResizeBottomToTop;
+begin
+
+end;
+
+procedure TestTThCircle.TestCircleResizeLeftToRight;
+begin
+
+end;
+
+procedure TestTThCircle.TestCircleResizeRightToLeft;
+begin
+
+end;
+
+procedure TestTThCircle.TestCircleResizeTopToBottom;
+begin
+
+end;
+
+procedure TestTThCircle.TestCircleResizeEx;
+begin
+
 end;
 
 initialization

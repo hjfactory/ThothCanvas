@@ -253,6 +253,10 @@ end;
 
 procedure TestTThRectangle.TestDrawRectangleMinSize;
 begin
+  DrawRectangle(10, 10, 10, 10);
+  TestLib.RunMouseClick(35, 35);  // MinSize 30, 30 : 10,10 > 40, 40
+  Check(Assigned(FCanvas.SelectedItem), 'Empty Rect');
+
   // TLToBR
   DrawRectangle(10, 10, 30, 30);
   TestLib.RunMouseClick(35, 35);  // MinSize 30, 30 : 10,10 > 40, 40
