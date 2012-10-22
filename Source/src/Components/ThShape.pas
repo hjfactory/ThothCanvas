@@ -15,7 +15,6 @@ type
   TThShape = class(TThItem, IItemHighlitObject, IItemResizerObject)
   private
     procedure SetBackgroundColor(const Value: TAlphaColor);
-    function SupportLine: Boolean; virtual;
   strict protected
     procedure Paint; override;
   protected
@@ -47,7 +46,6 @@ type
     function IsTopLeftToBottomRight: Boolean;
     function IsHorizon: Boolean;
     function IsVertical: Boolean;
-    function SupportLine: Boolean; override;
   protected
     function CreateResizer: IItemResizer; override;
 
@@ -143,11 +141,6 @@ begin
   Repaint;
 end;
 
-function TThShape.SupportLine: Boolean;
-begin
-  Result := False;
-end;
-
 {$REGION RECTANGLE}
 { TThRectangle }
 
@@ -188,25 +181,30 @@ end;
 { TThLine }
 
 function TThLine.CreateResizer: IItemResizer;
+var
+  Resizer: TThItemResizer;
 begin
-  Result := inherited;
+  Resizer := TThLineResizer.Create(Self);
+  Resizer.SetSpotClass(TThItemCircleResizeSpot);
+  Resizer.SetResizeSpots([scTopLeft, scBottomRight]);
+  Resizer.OnTrack := nil;
 
-  TThItemResizer(Result).SetResizeSpots([scTopLeft, scBottomRight]);
+  Result := Resizer;
 end;
 
 function TThLine.IsTopLeftToBottomRight: Boolean;
 begin
-  Result := TThItemCircleResizeSpot(FResizer.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
+  Result := TItemResizeSpot(FResizer.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
 end;
 
 function TThLine.IsHorizon: Boolean;
 begin
-  Result := TThItemCircleResizeSpot(FResizer.Spots[0]).Position.Y = TThItemCircleResizeSpot(FResizer.Spots[1]).Position.Y;
+  Result := TItemResizeSpot(FResizer.Spots[0]).Position.Y = TItemResizeSpot(FResizer.Spots[1]).Position.Y;
 end;
 
 function TThLine.IsVertical: Boolean;
 begin
-  Result := TThItemCircleResizeSpot(FResizer.Spots[0]).Position.X = TThItemCircleResizeSpot(FResizer.Spots[1]).Position.X;
+  Result := TItemResizeSpot(FResizer.Spots[0]).Position.X = TItemResizeSpot(FResizer.Spots[1]).Position.X;
 end;
 
 function TThLine.GetMinimumSize: TPointF;
@@ -245,8 +243,7 @@ begin
   Result := False;
 
   Rect := GetItemRect;
-
-  RangeD := (ItemLineThickness-1)/2;
+  RangeD := (ItemLineSelectionThickness-1)/2;
 
   if IsHorizon then
   begin
@@ -260,8 +257,7 @@ begin
       if Pt.X < Rect.Left then
         Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(RangeD))
       else
-        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(RangeD))
-      ;
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(RangeD));
     end;
   end
   else if IsVertical then
@@ -276,8 +272,7 @@ begin
       if Pt.Y < Rect.Top then
         Result := PtInCircle(Pt.Truncate, Rect.TopLeft.Truncate, Trunc(RangeD))
       else
-        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(RangeD))
-      ;
+        Result := PtInCircle(Pt.Truncate, Rect.BottomRight.Truncate, Trunc(RangeD));
     end;
   end
   else
@@ -287,39 +282,38 @@ begin
 
     // 꼭지점의 원 포함 확인
     if not Result then
-      Result := PtInCircle(PointF(PtX, PtY).Truncate, Rect.TopLeft.Truncate, Trunc(RangeD)) or
-                PtInCircle(PointF(PtX, PtY).Truncate, Rect.BottomRight.Truncate, Trunc(RangeD));
+      Result := PtInCircle(PointF(PtX, PtY).Truncate, Rect.TopLeft.Truncate, Trunc(RangeD+1)) or  // 소수점 보정(+1)
+                PtInCircle(PointF(PtX, PtY).Truncate, Rect.BottomRight.Truncate, Trunc(RangeD+1));
 
-    // 꼭지점과 직각인 사각형 포인트의 영역(ExtendRect)계산
-    Rad := ArcTan(Rect.Height / Rect.Width);
-    BaseP := PointF(Sin(Rad) * RangeD, Cos(Rad) * RangeD);
-    LeftP   := Rect.TopLeft.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
-    TopP    := Rect.TopLeft.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
-    RightP  := Rect.BottomRight.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
-    BottomP := Rect.BottomRight.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
-    // 대각선에서 범위
-    ExtendRect := RectF(LeftP.X, TopP.Y, RightP.X, BottomP.Y);
-
-    if (not Result) and PtInRect(ExtendRect, PointF(PtX, PtY)) then
+    if not Result then
     begin
-      ExtendX := PtX;
-      ExtendY := PtY;
+      // 꼭지점과 직각인 사각형 포인트의 영역(ExtendRect)계산
+      Rad := ArcTan(Rect.Height / Rect.Width);
+      BaseP := PointF(Sin(Rad) * RangeD, Cos(Rad) * RangeD);
+      LeftP   := Rect.TopLeft.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
+      TopP    := Rect.TopLeft.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
+      RightP  := Rect.BottomRight.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
+      BottomP := Rect.BottomRight.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
+      // 대각선에서 범위
+      ExtendRect := RectF(LeftP.X, TopP.Y, RightP.X, BottomP.Y);
 
-      Result := PtInRect(RectF(LeftP.X, TopP.Y, TopP.X, LeftP.Y), PointF(ExtendX, ExtendY)) or
-                PtInRect(RectF(BottomP.X, RightP.Y, RightP.X, BottomP.Y), PointF(ExtendX, ExtendY));
-      if not Result then
+      if PtInRect(ExtendRect, PointF(PtX, PtY)) then
       begin
-        Y1 := Tan(Rad) * (ExtendX-TopP.X);
-        Y2 := ExtendRect.Height - Tan(Rad) * (BottomP.X - ExtendX);
-        Result := InRange(ExtendY, Y1, Y2);
+        ExtendX := PtX - (Rect.Left - BaseP.X);
+        ExtendY := PtY - (Rect.Top - BaseP.Y);
+
+        Result := PtInRect(RectF(LeftP.X, TopP.Y, TopP.X, LeftP.Y), PointF(ExtendX, ExtendY)) or
+                  PtInRect(RectF(BottomP.X, RightP.Y, RightP.X, BottomP.Y), PointF(ExtendX, ExtendY));
+        if not Result then
+        begin
+          Y1 := Round(Tan(Rad) * (ExtendX-TopP.X));
+          Y2 := Round(ExtendRect.Height - Tan(Rad) * (BottomP.X - ExtendX));
+//          Result := InRange(ExtendY, Y1, Y2);
+          Result := InRange(Round(ExtendY), Y1, Y2);
+        end;
       end;
     end;
   end;
-end;
-
-function TThLine.SupportLine: Boolean;
-begin
-  Result := True;
 end;
 
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
@@ -363,8 +357,8 @@ begin
   Rect := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   Rect.NormalizeRect;
 
-  BaseSpot    := TThItemCircleResizeSpot(FResizer.Spots[0]);
-  ActiveSpot  := TThItemCircleResizeSpot(FResizer.Spots[1]);
+  BaseSpot    := TItemResizeSpot(FResizer.Spots[0]);
+  ActiveSpot  := TItemResizeSpot(FResizer.Spots[1]);
   BaseSpot.Position.Point   := AFrom.Subtract(Position.Point);;
   ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
 
@@ -411,10 +405,15 @@ end;
 { TThCircle }
 
 function TThCircle.CreateResizer: IItemResizer;
+var
+  Resizer: TThItemResizer;
 begin
-  Result := inherited;
+  Resizer := TThCircleResizer.Create(Self);
+  Resizer.SetSpotClass(TThItemCircleResizeSpot);
+  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
+  Resizer.OnTrack := nil;
 
-  TThItemResizer(Result).SetResizeSpots([scLeft, scTop, scRight, scBottom]);
+  Result := Resizer;
 end;
 
 procedure TThCircle.DrawItemWithMouse(AFrom, ATo: TPointF);

@@ -45,7 +45,6 @@ type
   ///   IItemResizerObject is IItemResizer's parent
   ///   IItemResizer is IItemResizeSpots parent
   IItemResizerObject = interface(IThItem)
-    function SupportLine: Boolean;
   end;
 
   IItemResizeSpot = interface

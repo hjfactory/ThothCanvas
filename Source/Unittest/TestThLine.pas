@@ -188,7 +188,7 @@ begin
   DrawLine(10, 10, 100, 100);
 
   // 선택 범위 외 선택
-  TestLib.RunMouseClick(60, 50);
+  TestLib.RunMouseClick(80, 50);
   CheckNull(FCanvas.SelectedItem, 'Invalid select area');
 
   // 선택
@@ -281,16 +281,12 @@ begin
   Rect := RectF(10, 10,100, 100);
   DrawLine(Rect);
 
-  D := (ItemLineThickness - 1) / 2;
+  D := (ItemLineSelectionThickness - 1) / 2;
   P := Rect.CenterPoint;
   R := ArcTan(Rect.Height/Rect.Width);
 
   B := PointF(Sin(R) * D, Cos(R) * D);
   DP := PointF(B.X, -B.Y);
-//  DP.X := Sin(R) * D;
-//  DP.Y := Cos(R) * D;
-
-//  Debug('%f, %f', [DP.X, DP.Y]);
 
   P2 := P.Add(PointF(DP.X, -DP.Y));
   TestLib.RunMouseClick(200, 200);
@@ -396,7 +392,7 @@ end;
 
 procedure TestTThLine.TestResizeLineBottomtoBLOver;
 begin
-  ShowForm;
+//  ShowForm;
 
   // 그리기
   DrawLine(250, 50, 250, 150);

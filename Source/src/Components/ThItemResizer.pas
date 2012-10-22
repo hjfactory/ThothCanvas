@@ -30,19 +30,29 @@ type
     class function InflateSize: Integer;
   end;
 
+  TThItemCircleResizeSpot = class(TItemResizeSpot)
+  protected
+    procedure Paint; override;
+    function GetUpdateRect: TRectF; override;
+  public
+    constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
+  end;
+
   TResizeSpotClass = class of TItemResizeSpot;
   TThItemResizer = class(TInterfacedObject, IItemResizer)
   private
+    FParent: IItemResizerObject;
+    FSpotClass: TResizeSpotClass;
     FParentControl: TControl;
     FList: TList;
     FOnTracking: TTrackEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
-  protected
-    FParent: IItemResizerObject;
-    FSpotClass: TResizeSpotClass;
-    function GetResizerRect: TRectF; virtual;
+    function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
+
     procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
+  protected
+    function GetResizerRect: TRectF; virtual;
 
     procedure ResizeShapeBySpot(ASpot: IItemResizeSpot); virtual;    // Spot 이동 시 Shape 크기 조정
     procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); virtual;  // Spot의 SpotCorner 조정
@@ -55,8 +65,7 @@ type
     procedure SetSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
 
-    function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
-    function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF;
+    function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF; virtual;
 
     procedure ShowSpots;
     procedure HideSpots;
@@ -66,12 +75,20 @@ type
     property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
   end;
 
-  TThItemCircleResizeSpot = class(TItemResizeSpot)
+  // 수직/수평선(Width, Height = 0) 예외처리
+  TThLineResizer = class(TThItemResizer)
   protected
-    procedure Paint; override;
-    function GetUpdateRect: TRectF; override;
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); override;
+
+    procedure RealignSpot; override;    // Width, Height가 1인 경우 발생
+  end;
+
+  // 상하/좌우 크기만 변경되도록 예외
+  TThCircleResizer = class(TThItemResizer)
+  protected
+    procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); override;
   public
-    constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
+    function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF; override;
   end;
 
 implementation
@@ -248,7 +265,6 @@ procedure TThItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ActiveSpot: TThItemCircleResizeSpot absolute Sender;
 begin
-//  NormalizeSpotCorner(ActiveSpot);
   ResizeShapeBySpot(ActiveSpot);
   NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
@@ -261,16 +277,11 @@ procedure TThItemResizer.ResizeShapeBySpot(ASpot: IItemResizeSpot);
 var
   MinSize: TPointF;
   ShapeR: TRectF;
-  ActiveSpot, OppositeSpot: TThItemCircleResizeSpot;
+  ActiveSpot: TThItemCircleResizeSpot;
 begin
   ActiveSpot := TThItemCircleResizeSpot(ASpot);
-  OppositeSpot := TThItemCircleResizeSpot(GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner)));
 
   ShapeR := GetActiveSpotsItemRect(ASpot);
-
-//  ShapeR.TopLeft := ActiveSpot.Position.Point;
-//  ShapeR.BottomRight := OppositeSpot.Position.Point;
-//  ShapeR.NormalizeRect;
 
   MinSize := FParent.MinimumSize;
   if ShapeR.Width < MinSize.X then
@@ -319,32 +330,25 @@ begin
   ActiveSpot := TItemResizeSpot(ASpot);
   SpotPos := ActiveSpot.Position.Point;
 
-  if FParent.SupportLine and (ActivateSpotRect.Width = 0) then        // Line
-    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Top = SpotPos.Y, scTop, scBottom)
-  else if FParent.SupportLine and (ActivateSpotRect.Height = 0) then  // Line
-    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Left = SpotPos.X, scLeft, scRight)
-  else
-  begin
-    HSpotCorner := scUnknown;
-    if ActivateSpotRect.Width = 0 then    // Rect - ActiveSpot의 HorizonSpotCorner를 전환
-      HSpotCorner := HorizonSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, HORIZON_CORNERS))
-    else if ActivateSpotRect.Left = SpotPos.X then
-      HSpotCorner := scLeft
-    else if ActivateSpotRect.Right = SpotPos.X then
-      HSpotCorner := scRight;
+  HSpotCorner := scUnknown;
+  if ActivateSpotRect.Width = 0 then    // Rect - ActiveSpot의 HorizonSpotCorner를 전환
+    HSpotCorner := HorizonSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, HORIZON_CORNERS))
+  else if ActivateSpotRect.Left = SpotPos.X then
+    HSpotCorner := scLeft
+  else if ActivateSpotRect.Right = SpotPos.X then
+    HSpotCorner := scRight;
 
-    VSpotCorner := scUnknown;
-    if ActivateSpotRect.Height = 0 then   // Rect - ActiveSpot의 VerticalSpotCorner를 전환
-      VSpotCorner := VerticalSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, VERTICAL_CORNERS))
-    else if ActivateSpotRect.Top = SpotPos.Y then
-      VSpotCorner := scTop
-    else if ActivateSpotRect.Bottom = SpotPos.Y then
-      VSpotCorner := scBottom;
+  VSpotCorner := scUnknown;
+  if ActivateSpotRect.Height = 0 then   // Rect - ActiveSpot의 VerticalSpotCorner를 전환
+    VSpotCorner := VerticalSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, VERTICAL_CORNERS))
+  else if ActivateSpotRect.Top = SpotPos.Y then
+    VSpotCorner := scTop
+  else if ActivateSpotRect.Bottom = SpotPos.Y then
+    VSpotCorner := scBottom;
 
-    ActiveSpotCorner := scUnknown;
-    ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, HSpotCorner);
-    ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, VSpotCorner);
-  end;
+  ActiveSpotCorner := scUnknown;
+  ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, HSpotCorner);
+  ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, VSpotCorner);
 
   for I := 0 to Count - 1 do
   begin
@@ -352,25 +356,6 @@ begin
 
     if AnotherSpot = ActiveSpot then
       Continue;
-
-    if not SupportedHorizonSpotCorner(ActiveSpotCorner) and SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) then
-    begin
-      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(ActiveSpotCorner);
-      Continue;
-    end;
-
-    if not SupportedVerticalSpotCorner(ActiveSpotCorner) and SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
-    begin
-      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(ActiveSpotCorner);
-      Continue;
-    end;
-
-    if SupportedHorizonSpotCorner(ActiveSpotCorner) and not SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) or
-        SupportedVerticalSpotCorner(ActiveSpotCorner) and not SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
-    begin
-      AnotherSpot.SpotCorner := SpotCornerExchange(ActiveSpotCorner);
-      Continue;
-    end;
 
     // Switch horizon spot
     if ChangeHorizonSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
@@ -396,18 +381,15 @@ begin
   for I := 0 to Count - 1 do
   begin
     Spot := TItemResizeSpot(Spots[I]);
-{
-    // Line의 경우 수직/수평선인 경우 두께가 1이지만 0 포인트에 표시해 주어야 함
-      // NormalizeSpotCorner 조건에 안맞을 수 있음
-}
+
     case Spot.SpotCorner of
       scTopLeft:      SpotP := PointF(ShapeR.Left, ShapeR.Top);
-      scTop:          SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Top);
+      scTop:          SpotP := PointF(RectWidth(ShapeR)/2, ShapeR.Top);
       scTopRight:     SpotP := PointF(ShapeR.Right, ShapeR.Top);
-      scLeft:         SpotP := PointF(ShapeR.Left, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
-      scRight:        SpotP := PointF(ShapeR.Right, IfThen(ShapeR.Height = 1, 0, RectHeight(ShapeR)/2));
+      scLeft:         SpotP := PointF(ShapeR.Left, RectHeight(ShapeR)/2);
+      scRight:        SpotP := PointF(ShapeR.Right, RectHeight(ShapeR)/2);
       scBottomLeft:   SpotP := PointF(ShapeR.Left, ShapeR.Bottom);
-      scBottom:       SpotP := PointF(IfThen(ShapeR.Width = 1, 0, RectWidth(ShapeR)/2), ShapeR.Bottom);
+      scBottom:       SpotP := PointF(RectWidth(ShapeR)/2, ShapeR.Bottom);
       scBottomRight:  SpotP := PointF(ShapeR.Right, ShapeR.Bottom);
     end;
 
@@ -428,33 +410,9 @@ begin
   OppositeSpot := GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner));
   if not Assigned(OppositeSpot) then
     Exit;
-{
-  // LIne Top to Bottom 인경우 처리에 걸림
-  if ActiveSpot.SpotCorner in [scLeft, scTop, scRight, scBottom] then
-  begin
-    Result := FParent.GetItemRect;
-    case ActiveSpot.SpotCorner of
-      scTop,
-      scBottom:
-        begin
-          Result.Top := ActiveSpot.Position.Y;
-          Result.Bottom := OppositeSpot.Position.Y;
-        end;
-      scLeft,
-      scRight:
-        begin
-          Result.Left := ActiveSpot.Position.X;
-          Result.Right := OppositeSpot.Position.X;
-        end;
-    end;
 
-  end
-  else
-}
-  begin
-    Result.TopLeft := ActiveSpot.Position.Point;
-    Result.BottomRight := OppositeSpot.Position.Point;
-  end;
+  Result.TopLeft := ActiveSpot.Position.Point;
+  Result.BottomRight := OppositeSpot.Position.Point;
   Result.NormalizeRect;
 end;
 
@@ -495,6 +453,200 @@ begin
   InflateRect(R, ItemResizeSpotRadius, ItemResizeSpotRadius);
   Canvas.FillEllipse(R, 1);
   Canvas.DrawEllipse(R, 1);
+end;
+
+{ TThLineResizer }
+
+procedure TThLineResizer.NormalizeSpotCorner(ASpot: IItemResizeSpot);
+var
+  I: Integer;
+  ActivateSpotRect: TRectF;
+  SpotPos: TPointF;
+  AnotherSpot,
+  ActiveSpot: TItemResizeSpot;
+  ActiveSpotCorner,
+  HSpotCorner, VSpotCorner: TSpotCorner;
+begin
+  ActivateSpotRect := GetActiveSpotsItemRect(ASpot);
+
+  ActiveSpot := TItemResizeSpot(ASpot);
+  SpotPos := ActiveSpot.Position.Point;
+
+  if ActivateSpotRect.Width = 0 then        // Line
+    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Top = SpotPos.Y, scTop, scBottom)
+  else if ActivateSpotRect.Height = 0 then  // Line
+    ActiveSpotCorner := IfThenSpotCorner(ActivateSpotRect.Left = SpotPos.X, scLeft, scRight)
+  else
+  begin
+    HSpotCorner := scUnknown;
+    if ActivateSpotRect.Left = SpotPos.X then
+      HSpotCorner := scLeft
+    else if ActivateSpotRect.Right = SpotPos.X then
+      HSpotCorner := scRight;
+
+    VSpotCorner := scUnknown;
+    if ActivateSpotRect.Top = SpotPos.Y then
+      VSpotCorner := scTop
+    else if ActivateSpotRect.Bottom = SpotPos.Y then
+      VSpotCorner := scBottom;
+
+    ActiveSpotCorner := scUnknown;
+    ActiveSpotCorner := SetHorizonSpotCorner(ActiveSpotCorner, HSpotCorner);
+    ActiveSpotCorner := SetVerticalSpotCorner(ActiveSpotCorner, VSpotCorner);
+  end;
+
+  for I := 0 to Count - 1 do
+  begin
+    AnotherSpot := TItemResizeSpot(Spots[I]);
+
+    if AnotherSpot = ActiveSpot then
+      Continue;
+
+    // [Line] Top(Bottom)으로 변경한경우 TopLeft, BottomRight에서는 Bottom(Top)으로 처리
+    if not SupportedHorizonSpotCorner(ActiveSpotCorner) and SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    if not SupportedVerticalSpotCorner(ActiveSpotCorner) and SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    if SupportedHorizonSpotCorner(ActiveSpotCorner) and not SupportedHorizonSpotCorner(AnotherSpot.SpotCorner) or
+        SupportedVerticalSpotCorner(ActiveSpotCorner) and not SupportedVerticalSpotCorner(AnotherSpot.SpotCorner) then
+    begin
+      AnotherSpot.SpotCorner := SpotCornerExchange(ActiveSpotCorner);
+      Continue;
+    end;
+
+    // Switch horizon spot
+    if ChangeHorizonSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(AnotherSpot.SpotCorner);
+
+    // Switch vertical spot
+    if ChangeVerticalSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(AnotherSpot.SpotCorner);
+  end;
+
+  ActiveSpot.SpotCorner := ActiveSpotCorner;
+end;
+
+procedure TThLineResizer.RealignSpot;
+var
+  I: Integer;
+  SpotP: TPointF;
+  ShapeR: TRectF;
+  Spot: TItemResizeSpot;
+begin
+  ShapeR := FParent.GetItemRect;
+
+  for I := 0 to Count - 1 do
+  begin
+    Spot := TItemResizeSpot(Spots[I]);
+
+    case Spot.SpotCorner of
+      scTopLeft:      SpotP := PointF(ShapeR.Left, ShapeR.Top);
+      scTop:          SpotP := PointF(0, ShapeR.Top);
+      scTopRight:     SpotP := PointF(ShapeR.Right, ShapeR.Top);
+      scLeft:         SpotP := PointF(ShapeR.Left, 0);
+      scRight:        SpotP := PointF(ShapeR.Right, 0);
+      scBottomLeft:   SpotP := PointF(ShapeR.Left, ShapeR.Bottom);
+      scBottom:       SpotP := PointF(0, ShapeR.Bottom);
+      scBottomRight:  SpotP := PointF(ShapeR.Right, ShapeR.Bottom);
+    end;
+
+    Spot.Position.Point := SpotP;
+  end;
+
+  FParentControl.Repaint;
+end;
+
+{ TThCircleResizer }
+
+procedure TThCircleResizer.NormalizeSpotCorner(ASpot: IItemResizeSpot);
+var
+  I: Integer;
+  ActivateSpotRect: TRectF;
+  SpotPos: TPointF;
+  AnotherSpot,
+  ActiveSpot: TItemResizeSpot;
+  ActiveSpotCorner: TSpotCorner;
+begin
+  ActivateSpotRect := GetActiveSpotsItemRect(ASpot);
+
+  ActiveSpot := TItemResizeSpot(ASpot);
+  SpotPos := ActiveSpot.Position.Point;
+
+  ActiveSpotCorner := scUnknown;
+  // 가로축, 세로축으로만 변경
+  if SupportedHorizonSpotCorner(ActiveSpot.SpotCorner) then
+  begin
+    if ActivateSpotRect.Width = 0 then    // Rect - ActiveSpot의 HorizonSpotCorner를 전환
+      ActiveSpotCorner := HorizonSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, HORIZON_CORNERS))
+    else if ActivateSpotRect.Left = SpotPos.X then
+      ActiveSpotCorner := scLeft
+    else if ActivateSpotRect.Right = SpotPos.X then
+      ActiveSpotCorner := scRight;
+  end
+  else if SupportedVerticalSpotCorner(ActiveSpot.SpotCorner) then
+  begin
+    if ActivateSpotRect.Height = 0 then   // Rect - ActiveSpot의 VerticalSpotCorner를 전환
+      ActiveSpotCorner := VerticalSpotCornerExchange(AndSpotCorner(ActiveSpot.SpotCorner, VERTICAL_CORNERS))
+    else if ActivateSpotRect.Top = SpotPos.Y then
+      ActiveSpotCorner := scTop
+    else if ActivateSpotRect.Bottom = SpotPos.Y then
+      ActiveSpotCorner := scBottom;
+  end;
+
+  for I := 0 to Count - 1 do
+  begin
+    AnotherSpot := TItemResizeSpot(Spots[I]);
+
+    if AnotherSpot = ActiveSpot then
+      Continue;
+
+    // Switch horizon spot
+    if ChangeHorizonSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := HorizonSpotCornerExchange(AnotherSpot.SpotCorner);
+
+    // Switch vertical spot
+    if ChangeVerticalSpotCorner(ActiveSpot.SpotCorner, ActiveSpotCorner) then
+      AnotherSpot.SpotCorner := VerticalSpotCornerExchange(AnotherSpot.SpotCorner);
+  end;
+
+  ActiveSpot.SpotCorner := ActiveSpotCorner;
+end;
+
+function TThCircleResizer.GetActiveSpotsItemRect(ASpot: IItemResizeSpot): TRectF;
+var
+  ActiveSpot,
+  OppositeSpot: TItemResizeSpot;
+begin
+  if not Assigned(ASpot) then
+    ASpot := Spots[0];
+  ActiveSpot := TItemResizeSpot(ASpot);
+  OppositeSpot := GetSpot(SpotCornerExchange(ActiveSpot.SpotCorner));
+  if not Assigned(OppositeSpot) then
+    Exit;
+
+  Result := FParent.GetItemRect;
+  case ActiveSpot.SpotCorner of
+    scTop, scBottom:
+      begin
+        Result.Top := ActiveSpot.Position.Y;
+        Result.Bottom := OppositeSpot.Position.Y;
+      end;
+    scLeft,
+    scRight:
+      begin
+        Result.Left := ActiveSpot.Position.X;
+        Result.Right := OppositeSpot.Position.X;
+      end;
+  end;
+  Result.NormalizeRect;
 end;
 
 end.
