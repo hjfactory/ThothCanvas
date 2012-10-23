@@ -13,8 +13,8 @@ type
 
   TThItem = class(TControl, IThItem)
   private
+    FOnSelected: TSelectedEvent;
     FOnUnselected: TNotifyEvent;
-    FOnSelected: TNotifyEvent;
     FParentCanvas: IThCanvas;
     FOnTracking: TTrackEvent;
 
@@ -39,7 +39,7 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
-    procedure DoSelected(Value: Boolean); virtual;
+    procedure DoSelected(Value: Boolean; IsMultiple: Boolean); virtual;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
 
@@ -56,7 +56,7 @@ type
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
 
     property Selected: Boolean read FSelected write SetSelected;
-    property OnSelected: TNotifyEvent read FOnSelected write FOnSelected;
+    property OnSelected: TSelectedEvent read FOnSelected write FOnSelected;
     property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
     property MinimumSize: TPointF read GetMinimumSize;
 
@@ -188,17 +188,20 @@ begin
 
   FSelected := Value;
 
-  DoSelected(FSelected);
+//  DoSelected(FSelected);
 
   // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)
   if not FSelected then
     Repaint;
 end;
 
-procedure TThItem.DoSelected(Value: Boolean);
+procedure TThItem.DoSelected(Value: Boolean; IsMultiple: Boolean);
 begin
+  if FSelected = Value then
+    Exit;
+
   if Value and Assigned(FOnSelected) then
-    FOnSelected(Self)
+    FOnSelected(Self, IsMultiple)
   else if (not Value) and Assigned(FOnUnselected) then
     FOnUnselected(Self);
 end;
@@ -211,7 +214,8 @@ begin
   if Button = TMouseButton.mbLeft then
   begin
     FBeforeSelect := FSelected;
-    Selected := True;
+//    Selected := True;
+    DoSelected(True, ssShift in Shift);
     FMouseDownPos := PointF(X, Y);
   end;
 
@@ -237,16 +241,19 @@ end;
 
 procedure TThItem.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  S: Boolean;
 begin
   inherited;
 
   if Button = TMouseButton.mbLeft then
   begin
     // Shift로 선택 해제는 마우스 이동하지 않은 경우만(이미 선택되었던 개체에 대해)
-    if FParentCanvas.IsPressedShift and (FMouseDownPos = PointF(X, Y)) and FBeforeSelect then
-      Selected := False
+    if {FParentCanvas.IsPressedShift}(ssShift in Shift) and (FMouseDownPos = PointF(X, Y)) and FBeforeSelect then
+      S := False
     else
-      Selected := True;
+      S := True;
+    DoSelected(S, ssShift in Shift);
   end;
 end;
 

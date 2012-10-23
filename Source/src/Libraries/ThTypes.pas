@@ -19,6 +19,7 @@ type
     scBottomRight  = 12   {rsdBottom + rsdRight}{, spCustom});
 
   TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;
+  TSelectedEvent = procedure(Sender: TObject; IsMultiple: Boolean) of object;
 
 type
   IThItem = interface
@@ -29,7 +30,6 @@ type
 
   IThCanvas = interface
     function IsDrawingItem: Boolean;
-    function IsPressedShift: Boolean;
     function IsMultiSelected: Boolean;
   end;
 

@@ -16,18 +16,14 @@ type
   private
     FDrawItem: TThItem;
     FDrawItemID: Integer;
-    FPressShift: Boolean;
     FSelections: TThItems;
     FSelectedItem: TThItem;
 
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
-    procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); override;
-    procedure KeyUp(var Key: Word; var KeyChar: System.WideChar; Shift: TShiftState); override;
-
     procedure ClickCanvas; override;
-    procedure ItemSelect(Sender: TObject);
+    procedure ItemSelect(Sender: TObject; IsMultiple: Boolean);
     procedure ItemUnselect(Sender: TObject);
     procedure ItemMove(Sender: TObject; X, Y: Single);
   public
@@ -37,7 +33,6 @@ type
     function AddItem(const ItemID: Integer): TThItem;
 
     function IsDrawingItem: Boolean; override;
-    function IsPressedShift: Boolean; override;
     function IsMultiSelected: Boolean; override;
 
     property SelectedItem: TThItem read FSelectedItem;
@@ -67,7 +62,6 @@ begin
   CanFocus := True; // Keyboard event
 
   FDrawItemID := -1;
-  FPressShift := False;
 
   FSelections := TThItems.Create;
 end;
@@ -108,11 +102,11 @@ begin
   end;
 end;
 
-procedure TThCanvasEditor.ItemSelect(Sender: TObject);
+procedure TThCanvasEditor.ItemSelect(Sender: TObject; IsMultiple: Boolean);
 var
   I: Integer;
 begin
-  if not FPressShift then
+  if not IsMultiple then
     ClearSelection;
 
   FSelectedItem := TThItem(Sender);
@@ -126,6 +120,7 @@ procedure TThCanvasEditor.ItemUnselect(Sender: TObject);
 var
   I: Integer;
 begin
+  TThItem(Sender).Selected := False;
   FSelections.Remove(TThItem(Sender));
   FSelectedItem := nil;
   if FSelections.Count > 0 then
@@ -173,29 +168,6 @@ end;
 function TThCanvasEditor.IsMultiSelected: Boolean;
 begin
   Result := FSelections.Count > 1;
-end;
-
-function TThCanvasEditor.IsPressedShift: Boolean;
-begin
-  Result := FPressShift;
-end;
-
-procedure TThCanvasEditor.KeyDown(var Key: Word; var KeyChar: WideChar;
-  Shift: TShiftState);
-begin
-  inherited;
-
-  if ssShift in Shift then
-    FPressShift := True;
-end;
-
-procedure TThCanvasEditor.KeyUp(var Key: Word; var KeyChar: System.WideChar;
-  Shift: TShiftState);
-begin
-  inherited;
-
-  if Key = vkShift  then
-    FPressShift := False;
 end;
 
 procedure TThCanvasEditor.MouseDown(Button: TMouseButton; Shift: TShiftState; X,

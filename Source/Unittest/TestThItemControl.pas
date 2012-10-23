@@ -31,6 +31,7 @@ type
     // #147 다중 선택 후 삭제할 수 있어야 한다.
     procedure TestMultiselectAndDelete;
 
+    // #151 다중선택 후 Shift 누른 후 아이템 Tracking 오류
     procedure BugTestMultiselectShiftMove;
   end;
 

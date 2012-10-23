@@ -42,7 +42,6 @@ type
 
     // Interface method
     function IsDrawingItem: Boolean; virtual;
-    function IsPressedShift: Boolean; virtual;
     function IsMultiSelected: Boolean; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
@@ -213,11 +212,6 @@ begin
 end;
 
 function TThCanvas.IsMultiSelected: Boolean;
-begin
-  Result := False;
-end;
-
-function TThCanvas.IsPressedShift: Boolean;
 begin
   Result := False;
 end;
