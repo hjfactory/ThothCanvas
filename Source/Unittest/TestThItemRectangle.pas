@@ -1,4 +1,4 @@
-unit TestThRectangle;
+unit TestThItemRectangle;
 {
 
   Delphi DUnit Test Case
@@ -56,6 +56,9 @@ type
 
     // #94 아이템 추가 후 바로 이동 시 TopLeft Spot의 잔상이 남음
     procedure BugTestCreateAndMoveAfterPaint;
+
+    // #133 도형 그릴때에는 도형위에 중복하여 그린다.
+    procedure TestDrawOverItem;
   end;
 
 implementation
@@ -365,6 +368,15 @@ begin
 
   AC := TestLib.GetBitmapPixelColor(P.X, P.Y);
   Check(AC = claRed, 'Showing Afterpaint');
+end;
+
+procedure TestTThRectangle.TestDrawOverItem;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(50, 50, 200, 200);
+
+  TestLib.RunMouseClick(150, 150);
+  Check(Assigned(FCanvas.SelectedItem), 'Drawing item over of item');
 end;
 
 initialization

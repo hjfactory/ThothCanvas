@@ -1,4 +1,4 @@
-unit TestThCircle;
+unit TestThItemCircle;
 {
 
   Delphi DUnit Test Case
@@ -205,8 +205,6 @@ end;
 
 procedure TestTThCircle.TestCircleResizeEx;
 begin
-//  ShowForm;
-
   DrawCircle(100, 100, 200, 200);
 
   TestLib.RunMouseClick(165, 165);

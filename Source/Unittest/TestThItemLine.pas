@@ -1,4 +1,4 @@
-unit TestThLine;
+unit TestThItemLine;
 {
 
   Delphi DUnit Test Case
@@ -215,9 +215,6 @@ end;
 
 procedure TestTThLine.TestLineMinimumSize;
 begin
-//  DebugShowForm;
-//  DrawLine(10, 30, 40, 30);
-
   DrawLine(10, 10, 20, 10);
 
   TestLib.RunMouseClick(15, 10);
@@ -276,8 +273,6 @@ var
   P, P2, B, DP: TPointF;
   D, R: Single;
 begin
-//DebugShowForm;
-
   Rect := RectF(10, 10,100, 100);
   DrawLine(Rect);
 
@@ -351,11 +346,9 @@ end;
 
 procedure TestTThLine.TestResizeLine;
 begin
-  // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(150, 150)
   .Add(180, 180)
@@ -369,13 +362,9 @@ end;
 
 procedure TestTThLine.TestResizeLineBRtoBottom;
 begin
-//  DebugShowForm;
-
-  // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(150, 150)
 //  .Add(60, 150)
@@ -392,13 +381,9 @@ end;
 
 procedure TestTThLine.TestResizeLineBottomtoBLOver;
 begin
-//  ShowForm;
-
-  // 그리기
   DrawLine(250, 50, 250, 150);
   TestLib.RunMouseClick(250, 100);
 
-  //크기 조정
   MousePath.New
   .Add(250, 150)
   .Add(245, 150)
@@ -415,11 +400,9 @@ end;
 
 procedure TestTThLine.TestResizeLineTLtoBROver;
 begin
-  // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(50, 50)
   .Add(220, 220)
@@ -436,12 +419,9 @@ end;
 
 procedure TestTThLine.TestResizeLineTLtoRightOver;
 begin
-//  DebugShowForm;
-  // 그리기
   DrawLine(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정(150, 60, 250, 150)
   MousePath.New
   .Add(50, 50)
   .Add(180, 55)

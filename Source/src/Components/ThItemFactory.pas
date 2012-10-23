@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes,
-  ThItem;
+  ThItem, ThTypes;
 
 type
   TThItemData = class(TObject)
@@ -18,7 +18,7 @@ type
     property ItemClass: TThItemClass read FItemClass;
   end;
 
-  TThItems = class(TObject)
+  TThItemClasses = class(TObject)
   private
     FList: TList;
   public
@@ -31,7 +31,7 @@ type
 
   TThItemFactory = class(TObject)
   private
-    FItemClasses: TThItems;
+    FItemClasses: TThItemClasses;
   public
     constructor Create;
     destructor Destroy; override;
@@ -72,12 +72,12 @@ end;
 
 { TThItems }
 
-constructor TThItems.Create;
+constructor TThItemClasses.Create;
 begin
   FList := TList.Create;
 end;
 
-destructor TThItems.Destroy;
+destructor TThItemClasses.Destroy;
 var
   I: Integer;
 begin
@@ -88,7 +88,7 @@ begin
   inherited;
 end;
 
-function TThItems.GetItemClass(ID: Integer): TThItemClass;
+function TThItemClasses.GetItemClass(ID: Integer): TThItemClass;
 var
   I: Integer;
 begin
@@ -102,7 +102,7 @@ begin
     end;
 end;
 
-procedure TThItems.AddItem(ID: Integer; ItemClass: TThItemClass);
+procedure TThItemClasses.AddItem(ID: Integer; ItemClass: TThItemClass);
 begin
   FList.Add(TThItemData.Create(ID, ItemClass));
 end;
@@ -111,7 +111,7 @@ end;
 
 constructor TThItemFactory.Create;
 begin
-  FItemClasses := TThItems.Create;
+  FItemClasses := TThItemClasses.Create;
 end;
 
 destructor TThItemFactory.Destroy;

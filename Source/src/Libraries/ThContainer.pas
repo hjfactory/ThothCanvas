@@ -3,7 +3,7 @@ unit ThContainer;
 interface
 
 uses
-  System.Classes, System.SysUtils, ThItem,
+  System.Classes, System.SysUtils, ThTypes, ThItem,
   System.Types, System.UITypes, System.UIConsts, FMX.Types;
 
 type
@@ -18,14 +18,11 @@ type
     procedure AddTrackingPos(const Value: TPointF);
   end;
 
-  TThContainer = class(TControl)
+  TThCanvas = class(TControl, IThCanvas)
   private
     FUseMouseTracking: Boolean;
-    FSelecteditem: TThItem;
     FBackgroundColor: TAlphaColor;
 
-    procedure ItemSelect(Sender: TObject);
-    procedure ItemUnselect(Sender: TObject);
     function GetContentPos: TPosition;
     function GetItemCount: Integer;
     procedure SetBackgroundColor(const Value: TAlphaColor);
@@ -37,18 +34,20 @@ type
     procedure Paint; override;
 
     procedure DoAddObject(AObject: TFmxObject); override;
+
+    procedure ClickCanvas; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    // Interface method
+    function IsDrawingItem: Boolean; virtual;
+    function IsPressedShift: Boolean; virtual;
+    function IsMultiSelected: Boolean; virtual;
+
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-
-    function AddItem(const ItemID: Integer): TThItem;
-    procedure ClearSelection;
-
-    property SelectedItem: TThItem read FSelectedItem;
 
     property ContentPos: TPosition read GetContentPos;
     property ItemCount: Integer read GetItemCount;
@@ -59,7 +58,7 @@ type
 implementation
 
 uses
-  ThItemFactory, CommonUtils;
+  CommonUtils;
 
 { TThContent }
 
@@ -107,9 +106,9 @@ begin
 {$ENDIF}
 end;
 
-{ TThContainer }
+{ TThCanvas }
 
-constructor TThContainer.Create(AOwner: TComponent);
+constructor TThCanvas.Create(AOwner: TComponent);
 begin
   inherited;
 
@@ -131,14 +130,14 @@ begin
 {$ENDIF}
 end;
 
-destructor TThContainer.Destroy;
+destructor TThCanvas.Destroy;
 begin
   FContents.Free;
 
   inherited;
 end;
 
-procedure TThContainer.DoAddObject(AObject: TFmxObject);
+procedure TThCanvas.DoAddObject(AObject: TFmxObject);
 begin
   if Assigned(FContents) and (AObject <> FContents) then
     FContents.AddObject(AObject)
@@ -146,7 +145,7 @@ begin
     inherited;
 end;
 
-procedure TThContainer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
@@ -158,7 +157,7 @@ begin
   end;
 end;
 
-procedure TThContainer.MouseMove(Shift: TShiftState; X, Y: Single);
+procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
 var
   TrackingPos: TPointF;
 begin
@@ -171,16 +170,16 @@ begin
   end;
 end;
 
-procedure TThContainer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
 
   if FMouseDownPos = PointF(X, Y) then
-    ClearSelection;
+    ClickCanvas
 end;
 
-procedure TThContainer.Paint;
+procedure TThCanvas.Paint;
 begin
   inherited;
 
@@ -195,7 +194,11 @@ begin
 {$ENDIF}
 end;
 
-procedure TThContainer.SetBackgroundColor(const Value: TAlphaColor);
+procedure TThCanvas.ClickCanvas;
+begin
+end;
+
+procedure TThCanvas.SetBackgroundColor(const Value: TAlphaColor);
 begin
   if FBackgroundColor = Value then
     Exit;
@@ -204,44 +207,27 @@ begin
   Repaint;
 end;
 
-function TThContainer.AddItem(const ItemID: Integer): TThItem;
+function TThCanvas.IsDrawingItem: Boolean;
 begin
-  Result := ItemFactory.Get(ItemID);
-  if Assigned(Result) then
-  begin
-    Result.Parent := Self;
-    Result.OnSelected := ItemSelect;
-    Result.OnUnselected := ItemUnselect;
-  end;
+  Result := False;
 end;
 
-procedure TThContainer.ItemSelect(Sender: TObject);
+function TThCanvas.IsMultiSelected: Boolean;
 begin
-  // List贸府 鞘夸
-  ClearSelection;
-
-  FSelectedItem := TThItem(Sender);
+  Result := False;
 end;
 
-procedure TThContainer.ItemUnselect(Sender: TObject);
+function TThCanvas.IsPressedShift: Boolean;
 begin
-  FSelectedItem := nil;
-  // List贸府 鞘夸
+  Result := False;
 end;
 
-procedure TThContainer.ClearSelection;
-begin
-  if Assigned(FSelectedItem) then
-    FSelectedItem.Selected := False;
-  FSelectedItem := nil;
-end;
-
-function TThContainer.GetContentPos: TPosition;
+function TThCanvas.GetContentPos: TPosition;
 begin
   Result := FContents.Position;
 end;
 
-function TThContainer.GetItemCount: Integer;
+function TThCanvas.GetItemCount: Integer;
 begin
   Result := FContents.ChildrenCount;
 end;

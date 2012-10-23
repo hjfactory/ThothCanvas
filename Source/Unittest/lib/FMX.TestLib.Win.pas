@@ -10,7 +10,8 @@ unit FMX.TestLib.Win;
 interface
 
 uses
-  System.Types, System.UITypes, System.Classes, System.SysUtils, FMX.TestLib, FMX.Types, VCL.Forms, VCL.Graphics;
+  System.Types, System.UITypes, System.Classes, System.SysUtils, FMX.TestLib,
+  FMX.Types, VCL.Forms, VCL.Graphics;
 
 function GetTestLibClass: TTestLibClass;
 
@@ -26,10 +27,13 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseWheel(WheelDelta: Integer); override;
-    procedure KeyDown(var Key: Word; var KeyChar: WideChar); override;
-    procedure KeyUp(var Key: Word; var KeyChar: WideChar); override;
+    procedure KeyDown(Key: Word); override;
+    procedure KeyUp(Key: Word); override;
 
     procedure TakeScreenshot(Dest: FMX.Types.TBitmap); override;
+  public
+    procedure RunKeyDownShift; override;
+    procedure RunKeyUpShift; override;
   end;
 
 function GetTestLibClass: TTestLibClass;
@@ -83,6 +87,27 @@ procedure TTestLibWin.MouseWheel(WheelDelta: Integer);
 begin
   inherited;
 
+end;
+
+procedure TTestLibWin.KeyDown(Key: Word);
+begin
+  keybd_event(Key, MapVirtualKey(VK_SHIFT, 0), KEYEVENTF_EXTENDEDKEY, 0);
+end;
+
+procedure TTestLibWin.KeyUp(Key: Word);
+begin
+  keybd_event(Key, MapVirtualKey(VK_SHIFT, 0), KEYEVENTF_EXTENDEDKEY or KEYEVENTF_KEYUP, 0);
+end;
+
+procedure TTestLibWin.RunKeyDownShift;
+begin
+//  keybd_event(VK_SHIFT, MapVirtualKey(VK_SHIFT, 0), KEYEVENTF_KEYUP, 0);
+  KeyDown(VK_SHIFT);
+end;
+
+procedure TTestLibWin.RunKeyUpShift;
+begin
+  KeyUp(VK_SHIFT);
 end;
 
 procedure WriteWindowsToStream(AStream: TStream);
@@ -139,19 +164,6 @@ begin
   finally
     Stream.Free;
   end;
-end;
-
-
-procedure TTestLibWin.KeyDown(var Key: Word; var KeyChar: WideChar);
-begin
-  inherited;
-
-end;
-
-procedure TTestLibWin.KeyUp(var Key: Word; var KeyChar: WideChar);
-begin
-  inherited;
-
 end;
 
 end.

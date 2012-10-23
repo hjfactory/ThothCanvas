@@ -39,7 +39,7 @@ implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThContainer, ThCanvasEditor,
-  ThItem, ThShape, ThItemFactory;
+  ThItem, ThShape, ThItemFactory, FMX.Forms;
 
 procedure TestTThCanvasEditor.TestTracking;
 begin

@@ -113,17 +113,20 @@
         <DCCReference Include="..\src\Libraries\ThItem.pas"/>
         <DCCReference Include="..\src\Components\ThShape.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
-        <DCCReference Include="TestThRectangle.pas"/>
+        <DCCReference Include="TestThItemRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>
         <DCCReference Include="..\src\Utils\CommonUtils.pas"/>
         <DCCReference Include="..\src\Components\ThItemHighlighter.pas"/>
         <DCCReference Include="..\src\Libraries\ThConsts.pas"/>
         <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
-        <DCCReference Include="TestThLine.pas"/>
+        <DCCReference Include="TestThItemLine.pas"/>
         <DCCReference Include="..\src\Libraries\ThTypes.pas"/>
         <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
-        <DCCReference Include="TestThCircle.pas"/>
+        <DCCReference Include="TestThItemCircle.pas"/>
+        <DCCReference Include="TestThCommandHistory.pas"/>
+        <DCCReference Include="TestThItemControl.pas"/>
+        <DCCReference Include="..\src\Libraries\ThClasses.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

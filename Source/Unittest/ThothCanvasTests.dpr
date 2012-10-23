@@ -24,17 +24,20 @@ uses
   ThItem in '..\src\Libraries\ThItem.pas',
   ThShape in '..\src\Components\ThShape.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
-  TestThRectangle in 'TestThRectangle.pas',
+  TestThItemRectangle in 'TestThItemRectangle.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
   CommonUtils in '..\src\Utils\CommonUtils.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Libraries\ThConsts.pas',
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
-  TestThLine in 'TestThLine.pas',
+  TestThItemLine in 'TestThItemLine.pas',
   ThTypes in '..\src\Libraries\ThTypes.pas',
   ResizeUtils in '..\src\Utils\ResizeUtils.pas',
-  TestThCircle in 'TestThCircle.pas';
+  TestThItemCircle in 'TestThItemCircle.pas',
+  TestThCommandHistory in 'TestThCommandHistory.pas',
+  TestThItemControl in 'TestThItemControl.pas',
+  ThClasses in '..\src\Libraries\ThClasses.pas';
 
 {$R *.RES}
 

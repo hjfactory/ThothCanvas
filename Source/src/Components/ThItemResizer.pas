@@ -20,7 +20,6 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
   public
-    ID:Integer; // TEST
     constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
     function PointInObject(X, Y: Single): Boolean; override;
 
@@ -185,8 +184,7 @@ begin
   inherited;
 end;
 
-procedure TThItemResizer.SetResizeSpots(
-  Spots: array of TSpotCorner);
+procedure TThItemResizer.SetResizeSpots(Spots: array of TSpotCorner);
 var
   I: Integer;
   Spot: TItemResizeSpot;
@@ -202,7 +200,6 @@ begin
     Spot.Parent := TControl(FParent);
     Spot.OnTrack := DoResizeSpotTrack;
     Spot.Visible := False;
-    Spot.ID := I;
     FList.Add(Spot);
   end;
 end;

@@ -19,8 +19,8 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; abstract;
     procedure MouseWheel(WheelDelta: Integer); virtual; abstract;
 
-    procedure KeyDown(var Key: Word; var KeyChar: WideChar); virtual; abstract;
-    procedure KeyUp(var Key: Word; var KeyChar: WideChar); virtual; abstract;
+    procedure KeyDown(Key: Word); virtual; abstract;
+    procedure KeyUp(Key: Word); virtual; abstract;
   public
     procedure SetInitialMousePoint(Pos: TPointF);
 
@@ -28,6 +28,9 @@ type
 
     procedure RunMousePath(Path: array of TPointF);
     procedure RunMouseMove(Path: array of TPointF);
+
+    procedure RunKeyDownShift; virtual; abstract;
+    procedure RunKeyUpShift; virtual; abstract;
 
     function GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;
     function GetBitmapPixelColor(const X, Y: Single): TAlphaColor;

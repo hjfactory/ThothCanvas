@@ -71,11 +71,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangle;
 begin
-  // 그리기
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(150, 150)
   .Add(180, 180)
@@ -89,11 +87,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTLtoBROver;
 begin
-  // 그리기
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(50, 50)
   .Add(220, 220)
@@ -110,11 +106,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTLtoRightOver;
 begin
-  // 그리기
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정(150, 60, 250, 150)
   MousePath.New
   .Add(50, 50)
   .Add(180, 55)
@@ -131,11 +125,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTLtoBottomOver;
 begin
-  // 그리기
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정(60, 150, 150, 250)
   MousePath.New
   .Add(50, 50)
   .Add(180, 180)
@@ -152,11 +144,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTRtoBLOver;
 begin
-  // 그리기
   DrawRectangle(150, 50, 250, 150);
   TestLib.RunMouseClick(200, 100);
 
-  //크기 조정(60, 150, 150, 250)
   MousePath.New
   .Add(250, 50)
   .Add(180, 180)
@@ -173,11 +163,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleBLtoTROver;
 begin
-  // 그리기
   DrawRectangle(50, 150, 150, 250);
   TestLib.RunMouseClick(100, 200);
 
-  //크기 조정(150, 60, 250, 250)
   MousePath.New
   .Add(50, 250)
   .Add(50, 100)
@@ -195,11 +183,9 @@ end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleBRtoTLOver;
 begin
-  // 그리기
   DrawRectangle(150, 150, 250, 250);
   TestLib.RunMouseClick(200, 200);
 
-  //크기 조정(150, 60, 250, 250)
   MousePath.New
   .Add(250, 250)
   .Add(200, 80)
@@ -223,7 +209,6 @@ var
   SP, EP: TPointF;
   C: TAlphaColor;
 begin
-  // 그리기
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
@@ -233,7 +218,7 @@ begin
   EP.Offset(10, 10);
 
   Check(TestLib.GetControlPixelColor(FCanvas, SP.X, SP.Y) = ItemResizeSpotOverColor, 'Spot color');
-  //크기 조정
+
   MousePath.New
   .Add(SP)
   .Add(180, 180)
@@ -255,7 +240,6 @@ begin
   DrawRectangle(50, 50, 150, 150);
   TestLib.RunMouseClick(100, 100);
 
-  //크기 조정
   MousePath.New
   .Add(150, 150)
   .Add(180, 180)
@@ -358,8 +342,6 @@ end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveBottomToTop;
 begin
-//  DebugShowForm;
-
   DrawRectangle(50, 150, 150, 250);
   TestLib.RunMouseClick(100, 200);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');

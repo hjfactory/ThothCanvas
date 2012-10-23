@@ -13,7 +13,8 @@ uses
   ThConsts in 'Libraries\ThConsts.pas',
   ThItemResizer in 'Components\ThItemResizer.pas',
   ThTypes in 'Libraries\ThTypes.pas',
-  ResizeUtils in 'Utils\ResizeUtils.pas';
+  ResizeUtils in 'Utils\ResizeUtils.pas',
+  ThClasses in 'Libraries\ThClasses.pas';
 
 {$R *.res}
 

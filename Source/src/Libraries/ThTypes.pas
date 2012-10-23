@@ -27,6 +27,12 @@ type
     property MinimumSize: TPointF read GetMinimumSize;
   end;
 
+  IThCanvas = interface
+    function IsDrawingItem: Boolean;
+    function IsPressedShift: Boolean;
+    function IsMultiSelected: Boolean;
+  end;
+
   //////////////////////////////////////////////////////////////
   /// Item Highlight
   ///   IItemHighlitObject is IItemHighlighter's parent
