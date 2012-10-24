@@ -209,35 +209,7 @@ begin
   FDrawItem := nil;
   FDrawItemID := -1;
 end;
-{
-procedure TThCanvasEditor.Paint;
-var
-  I: Integer;
-  R, R2: TRectF;
-begin
-  inherited;
 
-  if FSelections.Count <= 1 then
-    Exit;
-
-  for I := 0 to FSelections.Count - 1 do
-  begin
-    R2 := FSelections[I].ClipRect;
-    R2.Offset(FSelections[I].Position.X, FSelections[I].Position.Y);
-    if I = 0 then
-      R := R2
-    else
-      R := UnionRect(R, R2);
-  end;
-
-  InflateRect(R, 2, 2);
-  Canvas.StrokeThickness := 3;
-  Canvas.Stroke.Color := $FFFF0000;
-  Canvas.DrawRect(R, 0, 0, AllCorners, 1);
-
-  InvalidateRect(R);
-end;
-}
 procedure TThCanvasEditor.SetDrawItemID(const Value: Integer);
 begin
   FDrawItemID := Value;
