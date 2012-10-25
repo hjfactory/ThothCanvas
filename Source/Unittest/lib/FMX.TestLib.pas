@@ -85,11 +85,12 @@ var
 begin
   Result := claBlack;
 
+  Application.ProcessMessages;
+  Sleep(0);
+
   Bitmap := TBitmap.Create(0, 0);
   TakeScreenshot(Bitmap);
 
-  Application.ProcessMessages;
-  Sleep(0);
   try
     if not Assigned(Bitmap) then
       Exit;

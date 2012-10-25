@@ -212,7 +212,7 @@ begin
   // 선택
   TestLib.RunMouseClick(50, 50);
 
-  FCanvas.BackgroundColor := claPink;
+  FCanvas.BgColor := claPink;
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);
@@ -335,15 +335,15 @@ var
   X, Y: Single;
   P: TPointF;
 begin
-  FCanvas.BackgroundColor := claRed;
+  FCanvas.BgColor := claRed;
 
 { Screen shot을 위해 폼 활성화 체크 }
   ExceptL := 0;
   P := IControl(FCanvas).LocalToScreen(PointF(100, 100));
   while TestLib.GetBitmapPixelColor(P.X, P.Y) <> claRed do
   begin
-    Application.ProcessMessages;
-    Sleep(0);
+//    Application.ProcessMessages;
+//    Sleep(0);
 
     Inc(ExceptL);
 

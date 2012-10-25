@@ -6,7 +6,7 @@ uses
   ThItem in 'Libraries\ThItem.pas',
   ThShape in 'Components\ThShape.pas',
   ThCanvasEditor in 'Components\ThCanvasEditor.pas',
-  ThContainer in 'Libraries\ThContainer.pas',
+  ThCanvas in 'Libraries\ThCanvas.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
   CommonUtils in 'Utils\CommonUtils.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',

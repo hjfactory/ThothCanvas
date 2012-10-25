@@ -144,7 +144,7 @@ begin
   // 선택
   TestLib.RunMouseClick(50, 50);
 
-  FCanvas.BackgroundColor := claPink;
+  FCanvas.BgColor := claPink;
 
   // 선택해제
   TestLib.RunMouseClick(150, 150);

@@ -104,7 +104,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="TestThCanvasEditor.pas"/>
-        <DCCReference Include="..\src\Libraries\ThContainer.pas"/>
+        <DCCReference Include="..\src\Libraries\ThCanvas.pas"/>
         <DCCReference Include="..\src\Components\ThCanvasEditor.pas"/>
         <DCCReference Include="lib\UnitTestForm.pas">
             <Form>frmUnitTest</Form>
@@ -124,9 +124,12 @@
         <DCCReference Include="..\src\Libraries\ThTypes.pas"/>
         <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
         <DCCReference Include="TestThItemCircle.pas"/>
-        <DCCReference Include="TestThCommandHistory.pas"/>
         <DCCReference Include="TestThItemControl.pas"/>
+        <DCCReference Include="TestThCommandHistory.pas"/>
         <DCCReference Include="..\src\Libraries\ThClasses.pas"/>
+        <DCCReference Include="..\src\Controllers\ThothController.pas"/>
+        <DCCReference Include="..\src\Controllers\ThCanvasController.pas"/>
+        <DCCReference Include="..\src\Commands\ThItemCommand.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

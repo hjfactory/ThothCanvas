@@ -4,7 +4,7 @@ interface
 
 uses
   System.UITypes, System.Classes, System.Types, System.SysUtils, FMX.Types,
-  ThContainer, ThTypes, ThItem, ThClasses;
+  ThCanvas, ThTypes, ThItem, ThClasses;
 
 type
 {
@@ -19,13 +19,16 @@ type
     FSelections: TThItems;
     FSelectedItem: TThItem;
 
+    FOnItemAdded: TItemEvent;
+
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
     procedure ClickCanvas; override;
+
     procedure ItemSelect(Sender: TObject; IsMultiple: Boolean);
-    procedure ItemUnselect(Sender: TObject);
-    procedure ItemMove(Sender: TObject; X, Y: Single);
+    procedure ItemUnselect(Item: TThItem);
+    procedure ItemTracking(Sender: TObject; X, Y: Single);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -46,6 +49,8 @@ type
 
     property DrawItemID: Integer read FDrawItemID write SetDrawItemID;
     property SelectionCount: Integer read GetSelectionCount;
+
+    property OnItemAdded: TItemEvent read FOnItemAdded write FOnItemAdded;
   end;
 
 implementation
@@ -81,7 +86,10 @@ begin
     Result.ParentCanvas := Self;
     Result.OnSelected := ItemSelect;
     Result.OnUnselected := ItemUnselect;
-    Result.OnTrack := ItemMove;
+    Result.OnTracking := ItemTracking;
+
+    if Assigned(FOnItemAdded) then
+      FOnItemAdded(Result);
   end;
 end;
 
@@ -90,7 +98,7 @@ begin
   ClearSelection;
 end;
 
-procedure TThCanvasEditor.ItemMove(Sender: TObject; X, Y: Single);
+procedure TThCanvasEditor.ItemTracking(Sender: TObject; X, Y: Single);
 var
   I: Integer;
   P: TPointF;
@@ -116,12 +124,12 @@ begin
     FSelections[I].Selected := True;
 end;
 
-procedure TThCanvasEditor.ItemUnselect(Sender: TObject);
+procedure TThCanvasEditor.ItemUnselect(Item: TThItem);
 var
   I: Integer;
 begin
-  TThItem(Sender).Selected := False;
-  FSelections.Remove(TThItem(Sender));
+  Item.Selected := False;
+  FSelections.Remove(Item);
   FSelectedItem := nil;
   if FSelections.Count > 0 then
     FSelectedItem := FSelections.Last;
@@ -149,7 +157,7 @@ begin
   begin
     FSelections[I].Repaint;
     FSelections[I].Free;
-//    FSelections[I].ParentCanvas := nil;
+//    FSelections[I].Parent := nil;
   end;
   FSelections.Clear;
   FSelectedItem := nil;

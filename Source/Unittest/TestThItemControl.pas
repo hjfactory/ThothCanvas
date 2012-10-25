@@ -33,13 +33,19 @@ type
 
     // #151 다중선택 후 Shift 누른 후 아이템 Tracking 오류
     procedure BugTestMultiselectShiftMove;
+
+    // #150 다른컨트롤에서 Shift 누른 후 여러개 선택 시 여러개 선택되지 않음
+    procedure BugTestAnotherContrlShfitPressAndMultiselect;
+
+    // #158 A아이템 삭제 후 Shift로 B 중복선택 시 B가 단독선택되어야 한다.
+    procedure TestItemDeleteAndSelectionClear;
   end;
 
 implementation
 
 uses
-  UnitTestForm, FMX.TestLib, ThContainer, ThCanvasEditor,
-  ThItem, ThShape, ThItemFactory, CommonUtils;
+  UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
+  ThItem, ThShape, ThItemFactory, CommonUtils, FMX.Controls;
 
 { TestTThItemDelete }
 
@@ -213,6 +219,49 @@ exit;
   TestLib.RunMouseClick(200, 200);
   Check(Assigned(FCanvas.SelectedItem), 'Assigned 2');
   Check(FCanvas.SelectedItem.Position.X = 160, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
+end;
+
+procedure TestTThItemDelete.BugTestAnotherContrlShfitPressAndMultiselect;
+var
+  Button: TButton;
+begin
+  Button := TButton.Create(FForm);
+  Button.Parent := FForm;
+  Button.Position.Point := PointF(0,0);
+  Button.Width := 50;
+  Button.Height := 100;
+  Button.SendToBack;
+
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyDownShift;
+
+  // Button click
+  TestLib.RunMouseClick(-10, -10);
+
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyUpShift;
+
+  Check(FCanvas.SelectionCount = 2);
+end;
+
+procedure TestTThItemDelete.TestItemDeleteAndSelectionClear;
+begin
+
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+
+  FCanvas.DeleteSelection;
+
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyUpShift;
+
+  Check(FCanvas.SelectionCount = 1);
 end;
 
 initialization

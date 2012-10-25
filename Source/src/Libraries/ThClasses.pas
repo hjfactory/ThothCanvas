@@ -5,7 +5,9 @@ interface
 uses
   System.Classes, ThTypes, ThItem;
 
-type
+//type
+
+{
   TThItems = class(TList)
   private
     function GetItems(Index: Integer): TThItem;
@@ -16,11 +18,11 @@ type
 
     property Items[Index: Integer]: TThItem read GetItems write SetItems; default;
   end;
-
+}
 implementation
 
 { TThItems }
-
+{
 function TThItems.Add(Item: TThItem): Integer;
 begin
   Result := inherited Add(Item);
@@ -42,5 +44,5 @@ procedure TThItems.SetItems(Index: Integer; const Value: TThItem);
 begin
   inherited Items[Index] := Value;
 end;
-
+}
 end.

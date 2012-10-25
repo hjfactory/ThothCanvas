@@ -11,7 +11,7 @@ type
   private
     FMouseDownPos: TPointF;
     FSpotCorner: TSpotCorner;
-    FOnTracking: TTrackEvent;
+    FOnTracking: TTrackingEvent;
     procedure SetSpotCorner(const Value: TSpotCorner);
   protected
     procedure DoMouseEnter; override;
@@ -24,7 +24,7 @@ type
     function PointInObject(X, Y: Single): Boolean; override;
 
     property SpotCorner: TSpotCorner read FSpotCorner write SetSpotCorner;
-    property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
+    property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
 
     class function InflateSize: Integer;
   end;
@@ -44,7 +44,7 @@ type
     FSpotClass: TResizeSpotClass;
     FParentControl: TControl;
     FList: TList;
-    FOnTracking: TTrackEvent;
+    FOnTracking: TTrackingEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
     function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
@@ -71,7 +71,7 @@ type
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
-    property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
+    property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
   end;
 
   // 수직/수평선(Width, Height = 0) 예외처리
@@ -103,7 +103,7 @@ begin
   inherited Create(AOwner);
 
   Opacity := 1;
-  FSpotCorner := ASpotCorner;
+  SpotCorner := ASpotCorner;
 end;
 
 procedure TItemResizeSpot.DoMouseEnter;
@@ -145,8 +145,8 @@ begin
     Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
     Position.Point := Position.Point.Add(Gap);
 
-    if Assigned(OnTrack) then
-      OnTrack(Self, Gap.X, Gap.Y);
+    if Assigned(FOnTracking) then
+      FOnTracking(Self, Gap.X, Gap.Y);
   end;
 end;
 
@@ -163,6 +163,13 @@ end;
 procedure TItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
 begin
   FSpotCorner := Value;
+
+  case FSpotCorner of
+    scTopLeft, scBottomRight: Cursor := crSizeNWSE;
+    scTopRight, scBottomLeft: Cursor := crSizeNESW;
+    scTop, scBottom: Cursor := crSizeNS;
+    scLeft, scRight: Cursor := crSizeWE;
+  end;
 end;
 
 { TItemResizer }
@@ -198,7 +205,7 @@ begin
   begin
     Spot := FSpotClass.Create(TControl(FParent), Spots[I]);
     Spot.Parent := TControl(FParent);
-    Spot.OnTrack := DoResizeSpotTrack;
+    Spot.OnTracking := DoResizeSpotTrack;
     Spot.Visible := False;
     FList.Add(Spot);
   end;
@@ -266,8 +273,8 @@ begin
   NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
 
-  if Assigned(OnTrack) then
-    OnTrack(Sender, X, Y);
+  if Assigned(FOnTracking) then
+    FOnTracking(Sender, X, Y);
 end;
 
 procedure TThItemResizer.ResizeShapeBySpot(ASpot: IItemResizeSpot);

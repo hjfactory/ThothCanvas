@@ -1,3 +1,11 @@
+{
+  ThShape를 상속받아 도형을 구현
+   - RegistItem에 반드시 추가 할 것
+
+  주요 추상메소드
+   - PaintItem  : 아이템을 캔버스에 그린다.(Paint에서 호출)
+   - PtInItem   : Pt가 도형에 포함되는지 여부 반환
+}
 unit ThShape;
 
 interface
@@ -7,18 +15,13 @@ uses
   FMX.Types, ThTypes, ThItem;
 
 type
-{
-  ShapeRect : LocalRect
-  ClipRect  : ShapeRect + ShadowRect
-}
-
   TThShape = class(TThItem, IItemHighlitObject, IItemResizerObject)
   private
-    procedure SetBackgroundColor(const Value: TAlphaColor);
+    procedure SetBgColor(const Value: TAlphaColor);
   strict protected
     procedure Paint; override;
   protected
-    FBackgroundColor: TAlphaColor;
+    FBgColor: TAlphaColor;
 
     function CreateHighlighter: IItemHighlighter; override;
     function CreateResizer: IItemResizer; override;
@@ -26,11 +29,14 @@ type
     // Abstract method
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
+
+    function GetMinimumSize: TPointF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    property BackgroundColor: TAlphaColor read FBackgroundColor write SetBackgroundColor;
+    property BgColor: TAlphaColor read FBgColor write SetBgColor;
+    property MinimumSize: TPointF read GetMinimumSize;
   end;
 
   TThRectangle = class(TThShape)
@@ -83,13 +89,18 @@ begin
   FHeight := MinimumSize.Y;
 
   FOpacity := ItemDefaultOpacity;
-  FBackgroundColor := ItemShapeDefaultColor;
+  FBgColor := ItemShapeDefaultColor;
 end;
 
 destructor TThShape.Destroy;
 begin
 
   inherited;
+end;
+
+function TThShape.GetMinimumSize: TPointF;
+begin
+  Result := PointF(ItemMinimumSize, ItemMinimumSize);
 end;
 
 function TThShape.CreateHighlighter: IItemHighlighter;
@@ -110,7 +121,7 @@ begin
   Resizer := TThItemResizer.Create(Self);
   Resizer.SetSpotClass(TThItemCircleResizeSpot);
   Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
-  Resizer.OnTrack := nil;
+  Resizer.OnTracking := nil;
 
   Result := Resizer;
 end;
@@ -121,7 +132,7 @@ var
   S: string;
 {$ENDIF}
 begin
-  PaintItem(GetItemRect, FBackgroundColor);
+  PaintItem(GetItemRect, FBgColor);
 
 {$IFDEF DEBUG}
   S := Format('Position(%f, %f)', [Position.X, Position.Y]);
@@ -132,12 +143,12 @@ begin
 {$ENDIF}
 end;
 
-procedure TThShape.SetBackgroundColor(const Value: TAlphaColor);
+procedure TThShape.SetBgColor(const Value: TAlphaColor);
 begin
-  if FBackgroundColor = Value then
+  if FBgColor = Value then
     Exit;
 
-  FBackgroundColor := Value;
+  FBgColor := Value;
   Repaint;
 end;
 
@@ -187,7 +198,7 @@ begin
   Resizer := TThLineResizer.Create(Self);
   Resizer.SetSpotClass(TThItemCircleResizeSpot);
   Resizer.SetResizeSpots([scTopLeft, scBottomRight]);
-  Resizer.OnTrack := nil;
+  Resizer.OnTracking := nil;
 
   Result := Resizer;
 end;
@@ -402,6 +413,7 @@ begin
 end;
 {$ENDREGION}
 
+{$REGION Circle}
 { TThCircle }
 
 function TThCircle.CreateResizer: IItemResizer;
@@ -411,7 +423,7 @@ begin
   Resizer := TThCircleResizer.Create(Self);
   Resizer.SetSpotClass(TThItemCircleResizeSpot);
   Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
-  Resizer.OnTrack := nil;
+  Resizer.OnTracking := nil;
 
   Result := Resizer;
 end;
@@ -455,6 +467,7 @@ begin
     Result := True;
   end;
 end;
+{$ENDREGION}
 
 initialization
   RegisterItem(1100, TThRectangle);

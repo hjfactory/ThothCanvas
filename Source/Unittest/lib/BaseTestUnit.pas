@@ -3,8 +3,8 @@ unit BaseTestUnit;
 interface
 
 uses
-  TestFramework, ThCanvasEditor,
-  System.Types, FMX.Types, FMX.Forms;
+  TestFramework, ThCanvasEditor, ThothController, ThCanvasController,
+  System.Types, FMX.Types, FMX.Forms, System.SysUtils;
 
 type
   // Test methods for class TThCanvasEditor
@@ -16,6 +16,11 @@ type
     FCanvas: TThCanvasEditor;
     function GetInitialPoint: TPointF;
     procedure SetTestControl(var FormRect, CanvasRect: TRectF); virtual;
+
+    procedure FormDestroy(Sender: TObject);
+  private
+    procedure CreateObject; virtual;
+    procedure DestroyObject; virtual;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -31,6 +36,15 @@ type
 
     procedure DrawCircle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawCircle(R: TRectF); overload;
+  end;
+
+  TBaseCommandTestUnit = class(TBaseTestUnit)
+  private
+    procedure CreateObject; override;
+    procedure DestroyObject; override;
+  protected
+    FThothController: TThothController;
+    FCanvasController: TThCanvasEditorController;
   end;
 
 implementation
@@ -68,6 +82,7 @@ begin
   FForm.Left    := Round(FormRect.Left);
   FForm.Width   := Round(FormRect.Width);
   FForm.Height  := Round(FormRect.Height);
+  FForm.OnDestroy := FormDestroy;
   FForm.Show;
 
   FCanvas := TThCanvasEditor.Create(FForm);
@@ -75,6 +90,8 @@ begin
   FCanvas.Position.Point  := CanvasRect.TopLeft;
   FCanvas.Width           := CanvasRect.Width;
   FCanvas.Height          := CanvasRect.Height;
+
+  CreateObject;
 
   TestLib.SetInitialMousePoint(GetInitialPoint);
   Application.ProcessMessages;
@@ -85,8 +102,21 @@ begin
   if not FClosing then
     Exit;
 
-  FCanvas.Free;
   FForm.Free;
+end;
+
+procedure TBaseTestUnit.FormDestroy(Sender: TObject);
+begin
+  DestroyObject;
+end;
+
+procedure TBaseTestUnit.CreateObject;
+begin
+end;
+
+procedure TBaseTestUnit.DestroyObject;
+begin
+  FCanvas.Free;
 end;
 
 procedure TBaseTestUnit.ShowForm;
@@ -148,6 +178,29 @@ begin
   .Add(R.CenterPoint)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
+end;
+
+{ TBaseCommandTestUnit }
+
+procedure TBaseCommandTestUnit.CreateObject;
+begin
+  inherited;
+
+  FThothController := TThothController.Create;
+  FCanvasController := TThCanvasEditorController.Create;
+  FCanvasController.SetSubject(FThothController);
+  FCanvasController.SetThCanvas(FCanvas);
+end;
+
+procedure TBaseCommandTestUnit.DestroyObject;
+begin
+  inherited;
+
+//  FreeAndNil(FCanvasController);
+//  FreeAndNil(FThothController);
+
+  FCanvasController.Free;
+  FThothController.Free;
 end;
 
 end.

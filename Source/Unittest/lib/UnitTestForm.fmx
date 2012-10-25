@@ -7,4 +7,5 @@ object frmUnitTest: TfrmUnitTest
   FormFactor.Width = 1600
   FormFactor.Height = 1200
   FormFactor.Devices = [dkDesktop]
+  OnClose = FormClose
 end

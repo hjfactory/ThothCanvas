@@ -38,7 +38,7 @@ type
 implementation
 
 uses
-  UnitTestForm, FMX.TestLib, ThContainer, ThCanvasEditor,
+  UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
   ThItem, ThShape, ThItemFactory, FMX.Forms;
 
 procedure TestTThCanvasEditor.TestTracking;
@@ -114,7 +114,7 @@ begin
   TestLib.RunMouseClick(150, 10);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');  // 안보여도 선택은 됨
-  TThShape(FCanvas.SelectedItem).BackgroundColor := claRed;
+  TThShape(FCanvas.SelectedItem).BgColor := claRed;
   FCanvas.SelectedItem.Opacity := 1;
 
   // 색상비교

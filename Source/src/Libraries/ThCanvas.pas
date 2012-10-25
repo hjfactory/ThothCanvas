@@ -1,4 +1,4 @@
-unit ThContainer;
+unit ThCanvas;
 
 interface
 

@@ -4,19 +4,23 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts,
-  FMX.Types, ThTypes;
+  FMX.Types, ThTypes, System.Generics.Collections;
 
 type
-//  IThItem = interface
-//
-//  end;
+  TThItem = class;
+  TThItems = TList<TThItem>;
+
+  TItemEvent = procedure(Item: TThItem) of object;
+  TItemSelectedEvent = procedure(Sender: TObject; IsAdded: Boolean) of object;
+  TItemMoveEvent = procedure(Sender: TObject; X, Y: Single) of object;
 
   TThItem = class(TControl, IThItem)
   private
-    FOnSelected: TSelectedEvent;
-    FOnUnselected: TNotifyEvent;
     FParentCanvas: IThCanvas;
-    FOnTracking: TTrackEvent;
+
+    FOnSelected: TItemSelectedEvent;
+    FOnUnselected: TItemEvent;
+    FOnTracking: TTrackingEvent;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
@@ -39,28 +43,24 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
-    procedure DoSelected(Value: Boolean; IsMultiple: Boolean); virtual;
+    procedure DoSelected(Value: Boolean; IsAdded: Boolean); virtual;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
-
-    function GetMinimumSize: TPointF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-
-    property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
 
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
 
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
 
+    property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
-    property OnSelected: TSelectedEvent read FOnSelected write FOnSelected;
-    property OnUnselected: TNotifyEvent read FOnUnselected write FOnUnselected;
-    property MinimumSize: TPointF read GetMinimumSize;
 
-    property OnTrack: TTrackEvent read FOnTracking write FOnTracking;
+    property OnSelected: TItemSelectedEvent read FOnSelected write FOnSelected;
+    property OnUnselected: TItemEvent read FOnUnselected write FOnUnselected;
+    property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
   end;
 
   TThItemClass = class of TThItem;
@@ -116,7 +116,6 @@ function TThItem.PointInObject(X, Y: Single): Boolean;
 var
   P: TPointF;
 begin
-//  Parent)
   Result := False;
   if IThCanvas(ParentCanvas).IsDrawingItem then
     Exit;
@@ -146,11 +145,6 @@ end;
 function TThItem.GetItemRect: TRectF;
 begin
   Result := LocalRect;
-end;
-
-function TThItem.GetMinimumSize: TPointF;
-begin
-  Result := PointF(ItemMinimumSize, ItemMinimumSize);
 end;
 
 function TThItem.GetUpdateRect: TRectF;
@@ -195,13 +189,13 @@ begin
     Repaint;
 end;
 
-procedure TThItem.DoSelected(Value: Boolean; IsMultiple: Boolean);
+procedure TThItem.DoSelected(Value: Boolean; IsAdded: Boolean);
 begin
   if FSelected = Value then
     Exit;
 
   if Value and Assigned(FOnSelected) then
-    FOnSelected(Self, IsMultiple)
+    FOnSelected(Self, IsAdded)
   else if (not Value) and Assigned(FOnUnselected) then
     FOnUnselected(Self);
 end;
@@ -214,7 +208,6 @@ begin
   if Button = TMouseButton.mbLeft then
   begin
     FBeforeSelect := FSelected;
-//    Selected := True;
     DoSelected(True, ssShift in Shift);
     FMouseDownPos := PointF(X, Y);
   end;
@@ -242,18 +235,21 @@ end;
 procedure TThItem.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 var
-  S: Boolean;
+  Select: Boolean;
 begin
   inherited;
 
   if Button = TMouseButton.mbLeft then
   begin
     // Shift로 선택 해제는 마우스 이동하지 않은 경우만(이미 선택되었던 개체에 대해)
-    if {FParentCanvas.IsPressedShift}(ssShift in Shift) and (FMouseDownPos = PointF(X, Y)) and FBeforeSelect then
-      S := False
+    if (ssShift in Shift) and (FMouseDownPos = PointF(X, Y)) and FBeforeSelect then
+      Select := False
     else
-      S := True;
-    DoSelected(S, ssShift in Shift);
+      Select := True;
+    DoSelected(Select, ssShift in Shift);
+
+//    if FMouseDownPos <> PointF(X, Y) then
+
   end;
 end;
 

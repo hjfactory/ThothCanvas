@@ -17,7 +17,7 @@ program ThothCanvasTests;
 uses
   DUnitTestRunner,
   TestThCanvasEditor in 'TestThCanvasEditor.pas',
-  ThContainer in '..\src\Libraries\ThContainer.pas',
+  ThCanvas in '..\src\Libraries\ThCanvas.pas',
   ThCanvasEditor in '..\src\Components\ThCanvasEditor.pas',
   UnitTestForm in 'lib\UnitTestForm.pas' {frmUnitTest},
   FMX.TestLib in 'lib\FMX.TestLib.pas',
@@ -35,9 +35,12 @@ uses
   ThTypes in '..\src\Libraries\ThTypes.pas',
   ResizeUtils in '..\src\Utils\ResizeUtils.pas',
   TestThItemCircle in 'TestThItemCircle.pas',
-  TestThCommandHistory in 'TestThCommandHistory.pas',
   TestThItemControl in 'TestThItemControl.pas',
-  ThClasses in '..\src\Libraries\ThClasses.pas';
+  TestThCommandHistory in 'TestThCommandHistory.pas',
+  ThClasses in '..\src\Libraries\ThClasses.pas',
+  ThothController in '..\src\Controllers\ThothController.pas',
+  ThCanvasController in '..\src\Controllers\ThCanvasController.pas',
+  ThItemCommand in '..\src\Commands\ThItemCommand.pas';
 
 {$R *.RES}
 

@@ -5,7 +5,6 @@ interface
 uses
   FMX.Types, System.Types, System.UITypes;
 
-
 type
   TSpotCorner = (
     scUnknown      = 0,
@@ -18,19 +17,41 @@ type
     scBottomLeft   = 10   {rsdBottom + rsdLeft},
     scBottomRight  = 12   {rsdBottom + rsdRight}{, spCustom});
 
-  TTrackEvent = procedure(Sender: TObject; X, Y: Single) of object;
-  TSelectedEvent = procedure(Sender: TObject; IsMultiple: Boolean) of object;
+  TTrackingEvent = procedure(Sender: TObject; X, Y: Single) of object;
 
 type
+  IThObserver = interface;
+
+  IThCommand = interface
+    procedure Execute;
+    procedure Rollback;
+  end;
+
+  /////////////////////////////////////////////////////////
+  ///  Observer Pattern
+  IThSubject = interface
+    procedure Subject(ASource: IThObserver; ACommand: IThCommand);
+    procedure RegistObserver(AObserver: IThObserver);
+    procedure UnregistObserver(AObserver: IThObserver);
+  end;
+
+  IThObserver = interface
+    procedure Notifycation(ACommand: IThCommand);
+    procedure SetSubject(ASubject: IThSubject);
+  end;
+
+
   IThItem = interface
     function GetItemRect: TRectF;
-    function GetMinimumSize: TPointF;
-    property MinimumSize: TPointF read GetMinimumSize;
   end;
 
   IThCanvas = interface
     function IsDrawingItem: Boolean;
     function IsMultiSelected: Boolean;
+  end;
+
+  IThCanvasController = interface
+    procedure SetThCanvas(ThCanvas: IThCanvas);
   end;
 
   //////////////////////////////////////////////////////////////
@@ -51,7 +72,9 @@ type
   ///   IItemResizerObject is IItemResizer's parent
   ///   IItemResizer is IItemResizeSpots parent
   IItemResizerObject = interface(IThItem)
-  end;
+  function GetMinimumSize: TPointF;
+    property MinimumSize: TPointF read GetMinimumSize;
+    end;
 
   IItemResizeSpot = interface
   end;
