@@ -5,44 +5,35 @@ interface
 uses
   System.Classes, ThTypes, ThItem;
 
-//type
-
-{
-  TThItems = class(TList)
-  private
-    function GetItems(Index: Integer): TThItem;
-    procedure SetItems(Index: Integer; const Value: TThItem);
+type
+  TThInterfacedObject = class(TObject, IInterface)
+  protected
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
   public
-    function Add(Item: TThItem): Integer;
-    function Remove(Item: TThItem): Integer;
-
-    property Items[Index: Integer]: TThItem read GetItems write SetItems; default;
   end;
-}
+
 implementation
 
-{ TThItems }
-{
-function TThItems.Add(Item: TThItem): Integer;
+{ TThInterfacedObject }
+
+function TThInterfacedObject.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
-  Result := inherited Add(Item);
+  if GetInterface(IID, Obj) then
+    Result := 0
+  else
+    Result := E_NOINTERFACE;
 end;
 
-function TThItems.GetItems(Index: Integer): TThItem;
+function TThInterfacedObject._AddRef: Integer;
 begin
-  Result := TThItem(inherited Items[Index]);
+  Result := 0;
 end;
 
-function TThItems.Remove(Item: TThItem): Integer;
+function TThInterfacedObject._Release: Integer;
 begin
-  Result := IndexOf(Item);
-  if Result >= 0 then
-    Delete(Result);
+  Result := 0;
 end;
 
-procedure TThItems.SetItems(Index: Integer; const Value: TThItem);
-begin
-  inherited Items[Index] := Value;
-end;
-}
 end.

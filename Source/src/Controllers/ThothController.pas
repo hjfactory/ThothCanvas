@@ -4,12 +4,13 @@ interface
 
 uses
   System.Classes,
-  ThTypes;
+  ThTypes, ThClasses, ThCommandManager;
 
 type
-  TThothController = class(TInterfacedObject, IThSubject)
+  TThothController = class(TThInterfacedObject, IThSubject)
   private
     FObservers: TInterfaceList;
+    FCommandManager: TThCommandManager;
   public
     constructor Create;
     destructor Destroy; override;
@@ -29,10 +30,15 @@ implementation
 constructor TThothController.Create;
 begin
   FObservers := TInterfaceList.Create;
+
+  FCommandManager := TThCommandManager.Create;
+  FCommandManager.SetSubject(Self);
 end;
 
 destructor TThothController.Destroy;
 begin
+  FCommandManager.Free;
+
   FObservers.Clear;
   FObservers := nil;
 
@@ -60,12 +66,12 @@ end;
 
 procedure TThothController.Undo;
 begin
-
+  FCommandManager.UndoAction;
 end;
 
 procedure TThothController.Redo;
 begin
-
+  FCommandManager.RedoAction;
 end;
 
 end.

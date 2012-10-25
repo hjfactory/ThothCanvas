@@ -40,7 +40,8 @@ uses
   ThClasses in '..\src\Libraries\ThClasses.pas',
   ThothController in '..\src\Controllers\ThothController.pas',
   ThCanvasController in '..\src\Controllers\ThCanvasController.pas',
-  ThItemCommand in '..\src\Commands\ThItemCommand.pas';
+  ThItemCommand in '..\src\Commands\ThItemCommand.pas',
+  ThCommandManager in '..\src\Commands\ThCommandManager.pas';
 
 {$R *.RES}
 

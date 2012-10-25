@@ -13,9 +13,16 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    // #23 Basic test
-    procedure TestCommandHistoryAdd;
+    // #123 사각형을 추가하고 Undo명령하면 도형이 선택되지 않아야 한다.
+    procedure TestCommandHistoryAddUndo;
+
+    // #138 사각형 추가 후 Undo > Redo 시 사각형이 추가되어 있어야 한다.
+    procedure TestCommandHistoryAddRedo;
+
+    // #154 아래위치한 아이템을 삭제 > 복구 시 그대로 아래에 위치해야한다.
     procedure TestCommandHistoryDelete;
+
+
     procedure TestCommandHistoryMove;
     procedure TestCommandHistoryResize;
   end;
@@ -40,10 +47,18 @@ begin
 
 end;
 
-procedure TestTThCommandHistory.TestCommandHistoryAdd;
+procedure TestTThCommandHistory.TestCommandHistoryAddUndo;
 begin
-//  ShowForm;
+  DrawRectangle(10, 10, 100, 100);
 
+  FThothController.Undo;
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNull(FCanvas.SelectedItem, 'Undo');
+end;
+
+procedure TestTThCommandHistory.TestCommandHistoryAddRedo;
+begin
   DrawRectangle(10, 10, 100, 100);
 
   FThothController.Undo;
@@ -52,12 +67,35 @@ begin
   CheckNull(FCanvas.SelectedItem, 'Undo');
 
   FThothController.Redo;
+  TestLib.RunMouseClick(50, 50);
   CheckNotNull(FCanvas.SelectedItem, 'Redo');
+  Check(FCanvas.SelectedItem.Position.Point = PointF(10, 10),
+      Format('Position (%f, %f)', [FCanvas.SelectedItem.Position.X, FCanvas.SelectedItem.Position.Y]));
 end;
 
 procedure TestTThCommandHistory.TestCommandHistoryDelete;
 begin
+  ShowForm;
 
+  DrawRectangle(10, 10, 100, 100);
+
+  TestLib.RunMouseClick(50, 50);
+  FCanvas.DeleteSelection;
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNull(FCanvas.SelectedItem, 'Delete');
+
+  FThothController.Undo;
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNotNull(FCanvas.SelectedItem, 'Undo');
+
+  FThothController.Redo;
+  // Redo 시 셀렉션에서 제거되지 않음
+    // Selected 변경 시 Selection 처리 필요
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNull(FCanvas.SelectedItem, 'Redo');
 end;
 
 procedure TestTThCommandHistory.TestCommandHistoryMove;

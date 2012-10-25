@@ -15,8 +15,8 @@ type
     constructor Create(AItems: TThItems); overload;
     destructor Destroy; override;
 
-    procedure Execute; virtual; abstract;
-    procedure Rollback; virtual; abstract;
+    procedure Undo; virtual; abstract;
+    procedure Redo; virtual; abstract;
   end;
 
   TThCommandItemAdd = class(TThAbstractCommandItem)
@@ -25,8 +25,18 @@ type
   public
     constructor Create(AParent: TControl; AItem: TThItem); overload;
 
-    procedure Execute; override;
-    procedure Rollback; override;
+    procedure Undo; override;
+    procedure Redo; override;
+  end;
+
+  TThCommandItemDelete = class(TThAbstractCommandItem)
+  private
+    FParent: TControl;
+  public
+    constructor Create(AParent: TControl; AItems: TThItems); overload;
+
+    procedure Undo; override;
+    procedure Redo; override;
   end;
 
 implementation
@@ -36,8 +46,6 @@ implementation
 constructor TThAbstractCommandItem.Create(AItems: TThItems);
 begin
   FItems := TThItems.Create(AItems);
-//  FItems.
-//  FItems.Assign(AItems);
 end;
 
 constructor TThAbstractCommandItem.Create(AItem: TThItem);
@@ -57,27 +65,59 @@ end;
 
 constructor TThCommandItemAdd.Create(AParent: TControl; AItem: TThItem);
 begin
-  FParent := AParent;
-
   inherited Create(AItem);
+
+  FParent := AParent;
 end;
 
-procedure TThCommandItemAdd.Execute;
-var
-  Item: TThItem;
-begin
-  Item := FItems[0];
-  Item.Parent := FParent;
-  Item.Visible := True;
-end;
-
-procedure TThCommandItemAdd.Rollback;
+procedure TThCommandItemAdd.Undo;
 var
   Item: TThItem;
 begin
   Item := FItems[0];
   Item.Parent := nil;
   Item.Visible := False;
+end;
+
+procedure TThCommandItemAdd.Redo;
+var
+  Item: TThItem;
+begin
+  Item := FItems[0];
+  Item.Parent := FParent;
+  Item.Visible := True;
+//  Item.Repaint;
+end;
+
+{ TThCommandItemDelete }
+
+constructor TThCommandItemDelete.Create(AParent: TControl; AItems: TThItems);
+begin
+  inherited Create(AItems);
+
+  FParent := AParent;
+end;
+
+procedure TThCommandItemDelete.Undo;
+var
+  I: Integer;
+begin
+  for I := 0 to FItems.Count - 1 do
+  begin
+    FItems[I].Parent := FParent;
+    FItems[I].Visible := True;
+  end;
+end;
+
+procedure TThCommandItemDelete.Redo;
+var
+  I: Integer;
+begin
+  for I := 0 to FItems.Count - 1 do
+  begin
+    FItems[I].Parent := nil;
+    FItems[I].Visible := False;
+  end;
 end;
 
 end.

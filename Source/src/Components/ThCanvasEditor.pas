@@ -20,13 +20,14 @@ type
     FSelectedItem: TThItem;
 
     FOnItemAdded: TItemEvent;
+    FOnItemDelete: TItemListEvent;
 
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
     procedure ClickCanvas; override;
 
-    procedure ItemSelect(Sender: TObject; IsMultiple: Boolean);
+    procedure ItemSelect(Item: TThItem; IsAdded: Boolean);
     procedure ItemUnselect(Item: TThItem);
     procedure ItemTracking(Sender: TObject; X, Y: Single);
   public
@@ -51,6 +52,7 @@ type
     property SelectionCount: Integer read GetSelectionCount;
 
     property OnItemAdded: TItemEvent read FOnItemAdded write FOnItemAdded;
+    property OnItemDelete: TItemListEvent read FOnItemDelete write FOnItemDelete;
   end;
 
 implementation
@@ -87,9 +89,6 @@ begin
     Result.OnSelected := ItemSelect;
     Result.OnUnselected := ItemUnselect;
     Result.OnTracking := ItemTracking;
-
-    if Assigned(FOnItemAdded) then
-      FOnItemAdded(Result);
   end;
 end;
 
@@ -110,14 +109,14 @@ begin
   end;
 end;
 
-procedure TThCanvasEditor.ItemSelect(Sender: TObject; IsMultiple: Boolean);
+procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsAdded: Boolean);
 var
   I: Integer;
 begin
-  if not IsMultiple then
+  if not IsAdded then
     ClearSelection;
 
-  FSelectedItem := TThItem(Sender);
+  FSelectedItem := Item;
   FSelections.Add(FSelectedItem);
 
   for I := 0 to FSelections.Count - 1 do
@@ -155,10 +154,14 @@ var
 begin
   for I := FSelections.Count - 1 downto 0 do
   begin
-    FSelections[I].Repaint;
-    FSelections[I].Free;
-//    FSelections[I].Parent := nil;
+    FSelections[I].Parent := nil;
+    FSelections[I].Selected := False;
+    FSelections[I].Visible := False;
   end;
+
+  if Assigned(FOnItemDelete) then
+    FOnItemDelete(FSelections);
+
   FSelections.Clear;
   FSelectedItem := nil;
 end;
@@ -213,6 +216,13 @@ procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
+
+  if IsDrawingItem and Assigned(FDrawItem) then
+  begin
+//    FDrawItem.Selected := True;
+    if Assigned(FOnItemAdded) then
+      FOnItemAdded(FDrawItem);
+  end;
 
   FDrawItem := nil;
   FDrawItemID := -1;

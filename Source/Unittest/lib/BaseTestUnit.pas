@@ -196,9 +196,6 @@ procedure TBaseCommandTestUnit.DestroyObject;
 begin
   inherited;
 
-//  FreeAndNil(FCanvasController);
-//  FreeAndNil(FThothController);
-
   FCanvasController.Free;
   FThothController.Free;
 end;

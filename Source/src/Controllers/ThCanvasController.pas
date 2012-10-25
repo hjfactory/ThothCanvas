@@ -3,15 +3,16 @@ unit ThCanvasController;
 interface
 
 uses
-  ThTypes, ThItem, ThCanvas, ThCanvasEditor;
+  ThTypes, ThClasses, ThItem, ThCanvas, ThCanvasEditor;
 
 type
-  TThCanvasEditorController = class(TInterfacedObject, IThObserver, IThCanvasController)
+  TThCanvasEditorController = class(TThInterfacedObject, IThObserver, IThCanvasController)
   private
     FCanvas: TThCanvasEditor;
     FSubject: IThSubject;
 
     procedure ItemAdded(Item: TThItem);
+    procedure ItemDelete(Items: TThItems);
   public
     constructor Create;
     destructor Destroy; override;
@@ -51,20 +52,24 @@ procedure TThCanvasEditorController.SetSubject(ASubject: IThSubject);
 begin
   FSubject := ASubject;
 
-//  ASubject.RegistObserver(Self);
+  ASubject.RegistObserver(Self);
 end;
 
 procedure TThCanvasEditorController.SetThCanvas(ThCanvas: IThCanvas);
 begin
   FCanvas := TThCanvasEditor(ThCanvas);
   FCanvas.OnItemAdded := ItemAdded;
+  FCanvas.OnItemDelete := ItemDelete;
 end;
 
 procedure TThCanvasEditorController.ItemAdded(Item: TThItem);
-var
-  Command: IThCommand;
 begin
-//  FSubject.Subject(Self, TThCommandItemAdd.Create(FCanvas, Item));
+  FSubject.Subject(Self, TThCommandItemAdd.Create(FCanvas, Item));
+end;
+
+procedure TThCanvasEditorController.ItemDelete(Items: TThItems);
+begin
+  FSubject.Subject(Self, TThCommandItemDelete.Create(FCanvas, Items));
 end;
 
 end.

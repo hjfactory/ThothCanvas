@@ -11,7 +11,8 @@ type
   TThItems = TList<TThItem>;
 
   TItemEvent = procedure(Item: TThItem) of object;
-  TItemSelectedEvent = procedure(Sender: TObject; IsAdded: Boolean) of object;
+  TItemListEvent = procedure(Items: TThItems) of object;
+  TItemSelectedEvent = procedure(Item: TThItem; IsAdded: Boolean) of object;
   TItemMoveEvent = procedure(Sender: TObject; X, Y: Single) of object;
 
   TThItem = class(TControl, IThItem)

@@ -23,8 +23,8 @@ type
   IThObserver = interface;
 
   IThCommand = interface
-    procedure Execute;
-    procedure Rollback;
+    procedure Undo;
+    procedure Redo;
   end;
 
   /////////////////////////////////////////////////////////
