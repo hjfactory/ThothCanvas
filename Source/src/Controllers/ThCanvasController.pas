@@ -13,6 +13,7 @@ type
 
     procedure ItemAdded(Item: TThItem);
     procedure ItemDelete(Items: TThItems);
+    procedure ItemMove(Items: TThItems);
   public
     constructor Create;
     destructor Destroy; override;

@@ -11,9 +11,11 @@ type
   TThItems = TList<TThItem>;
 
   TItemEvent = procedure(Item: TThItem) of object;
-  TItemListEvent = procedure(Items: TThItems) of object;
   TItemSelectedEvent = procedure(Item: TThItem; IsAdded: Boolean) of object;
-  TItemMoveEvent = procedure(Sender: TObject; X, Y: Single) of object;
+  TItemMoveEvent = procedure(Item: TThItem; StartPos: TPointF) of object;
+
+  TItemListEvent = procedure(Items: TThItems) of object;
+  TItemListPointvent = procedure(Items: TThItems; Distance: TPointF) of object;
 
   TThItem = class(TControl, IThItem)
   private
@@ -22,6 +24,7 @@ type
     FOnSelected: TItemSelectedEvent;
     FOnUnselected: TItemEvent;
     FOnTracking: TTrackingEvent;
+    FOnMove: TItemMoveEvent;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
@@ -30,7 +33,8 @@ type
     FResizer: IItemResizer;
     FBeforeSelect,
     FSelected: Boolean;
-    FMouseDownPos: TPointF;
+    FMouseDownPos,
+    FDownItemPos: TPointF;
 
     function CreateHighlighter: IItemHighlighter; virtual;
     function CreateResizer: IItemResizer; virtual;
@@ -44,7 +48,7 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
-    procedure DoSelected(Value: Boolean; IsAdded: Boolean); virtual;
+    procedure DoSelected(Value: Boolean; IsAdded: Boolean = False); virtual;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
@@ -62,6 +66,7 @@ type
     property OnSelected: TItemSelectedEvent read FOnSelected write FOnSelected;
     property OnUnselected: TItemEvent read FOnUnselected write FOnUnselected;
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
+    property OnMove: TItemMoveEvent read FOnMove write FOnMove;
   end;
 
   TThItemClass = class of TThItem;
@@ -173,6 +178,11 @@ end;
 
 procedure TThItem.SetSelected(const Value: Boolean);
 begin
+  DoSelected(Value);
+end;
+
+procedure TThItem.DoSelected(Value: Boolean; IsAdded: Boolean);
+begin
   if (not FParentCanvas.IsMultiSelected) and Value then
     FResizer.ShowSpots
   else
@@ -182,23 +192,14 @@ begin
     Exit;
 
   FSelected := Value;
-
-//  DoSelected(FSelected);
-
-  // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)
-  if not FSelected then
-    Repaint;
-end;
-
-procedure TThItem.DoSelected(Value: Boolean; IsAdded: Boolean);
-begin
-  if FSelected = Value then
-    Exit;
-
   if Value and Assigned(FOnSelected) then
     FOnSelected(Self, IsAdded)
   else if (not Value) and Assigned(FOnUnselected) then
     FOnUnselected(Self);
+
+  // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)
+  if not FSelected then
+    Repaint;
 end;
 
 procedure TThItem.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -209,8 +210,13 @@ begin
   if Button = TMouseButton.mbLeft then
   begin
     FBeforeSelect := FSelected;
-    DoSelected(True, ssShift in Shift);
+
+    if ssShift in Shift then
+      DoSelected(True, True)
+    else if not FSelected then
+      DoSelected(True);
     FMouseDownPos := PointF(X, Y);
+    FDownItemPos := Position.Point;
   end;
 
   InvalidateRect(UpdateRect);
@@ -224,10 +230,13 @@ begin
 
   if FPressed then
   begin
-    Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
-
     if FSelected and Assigned(FOnTracking) then
+    begin
+//      Debug('Move %f, %f', [X, Y]);
+      Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
+//      Position.Point := Position.Point.Add(Gap);
       FOnTracking(Self, Gap.X, Gap.Y);
+    end;
 
 //    InvalidateRect(UpdateRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
   end;
@@ -235,22 +244,17 @@ end;
 
 procedure TThItem.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
-var
-  Select: Boolean;
 begin
   inherited;
 
   if Button = TMouseButton.mbLeft then
   begin
-    // Shift로 선택 해제는 마우스 이동하지 않은 경우만(이미 선택되었던 개체에 대해)
-    if (ssShift in Shift) and (FMouseDownPos = PointF(X, Y)) and FBeforeSelect then
-      Select := False
-    else
-      Select := True;
-    DoSelected(Select, ssShift in Shift);
+    if (ssShift in Shift) and (FDownItemPos = Position.Point) and FBeforeSelect then
+      DoSelected(False, True)
+    else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
+      FOnMove(Self, FMouseDownPos);
 
-//    if FMouseDownPos <> PointF(X, Y) then
-
+//    Debug('%f, %f', [FMouseDownPos.X, X]);
   end;
 end;
 

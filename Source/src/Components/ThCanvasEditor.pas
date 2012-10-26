@@ -21,6 +21,7 @@ type
 
     FOnItemAdded: TItemEvent;
     FOnItemDelete: TItemListEvent;
+    FOnItemMove: TItemListPointvent;
 
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
@@ -30,6 +31,7 @@ type
     procedure ItemSelect(Item: TThItem; IsAdded: Boolean);
     procedure ItemUnselect(Item: TThItem);
     procedure ItemTracking(Sender: TObject; X, Y: Single);
+    procedure ItemMove(Item: TThItem; StartPos: TPointF);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -53,6 +55,7 @@ type
 
     property OnItemAdded: TItemEvent read FOnItemAdded write FOnItemAdded;
     property OnItemDelete: TItemListEvent read FOnItemDelete write FOnItemDelete;
+    property OnItemMove: TItemListPointvent read FOnItemMove write FOnItemMove;
   end;
 
 implementation
@@ -89,6 +92,7 @@ begin
     Result.OnSelected := ItemSelect;
     Result.OnUnselected := ItemUnselect;
     Result.OnTracking := ItemTracking;
+    Result.OnMove := ItemMove;
   end;
 end;
 
@@ -104,37 +108,41 @@ var
 begin
   for I := 0 to FSelections.Count - 1 do
   begin
+//    if FSelections[I] = TThItem(Sender) then
+//      Continue;
+
     P := FSelections[I].Position.Point.Add(PointF(X, Y));
     FSelections[I].Position.Point := P;
   end;
 end;
 
-procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsAdded: Boolean);
+procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
-  I: Integer;
+  P: TPointF;
+begin
+  if Assigned(FOnItemMove) then
+  begin
+    P := Item.Position.Point.Subtract(StartPos);
+    FOnItemMove(FSelections, P);
+  end;
+
+end;
+
+procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsAdded: Boolean);
 begin
   if not IsAdded then
     ClearSelection;
 
   FSelectedItem := Item;
   FSelections.Add(FSelectedItem);
-
-  for I := 0 to FSelections.Count - 1 do
-    FSelections[I].Selected := True;
 end;
 
 procedure TThCanvasEditor.ItemUnselect(Item: TThItem);
-var
-  I: Integer;
 begin
-  Item.Selected := False;
   FSelections.Remove(Item);
   FSelectedItem := nil;
   if FSelections.Count > 0 then
     FSelectedItem := FSelections.Last;
-
-  for I := 0 to FSelections.Count - 1 do
-    FSelections[I].Selected := True;
 end;
 
 procedure TThCanvasEditor.ClearSelection;
@@ -152,18 +160,18 @@ procedure TThCanvasEditor.DeleteSelection;
 var
   I: Integer;
 begin
-  for I := FSelections.Count - 1 downto 0 do
-  begin
-    FSelections[I].Parent := nil;
-    FSelections[I].Selected := False;
-    FSelections[I].Visible := False;
-  end;
-
   if Assigned(FOnItemDelete) then
     FOnItemDelete(FSelections);
 
-  FSelections.Clear;
-  FSelectedItem := nil;
+  for I := FSelections.Count - 1 downto 0 do
+  begin
+    FSelections[I].Parent := nil;
+    FSelections[I].Visible := False;
+    FSelections[I].Selected := False;
+  end;
+
+//  FSelections.Clear;
+//  FSelectedItem := nil;
 end;
 
 function TThCanvasEditor.GetSelectionCount: Integer;

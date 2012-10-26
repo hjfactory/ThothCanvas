@@ -285,8 +285,7 @@ procedure TestTThRectangle.TestMoveRectangleOutOfCanvas;
 var
   Item: TThItem;
 begin
-  // 추가
-  DrawRectangle(0, 0, 100, 100);
+  DrawRectangle(10, 10, 100, 100);
 
   // 밖에서 안으로 드래그
   MousePath.New

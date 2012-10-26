@@ -116,7 +116,11 @@ end;
 
 procedure TBaseTestUnit.DestroyObject;
 begin
-  FCanvas.Free;
+  if Assigned(FCanvas) then
+  begin
+    FCanvas.Free;
+    FCanvas := nil;
+  end;
 end;
 
 procedure TBaseTestUnit.ShowForm;

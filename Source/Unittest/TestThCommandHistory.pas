@@ -75,11 +75,10 @@ end;
 
 procedure TestTThCommandHistory.TestCommandHistoryDelete;
 begin
-  ShowForm;
-
   DrawRectangle(10, 10, 100, 100);
 
   TestLib.RunMouseClick(50, 50);
+
   FCanvas.DeleteSelection;
 
   TestLib.RunMouseClick(50, 50);
@@ -99,8 +98,30 @@ begin
 end;
 
 procedure TestTThCommandHistory.TestCommandHistoryMove;
+var
+  P: TPointF;
 begin
+  ShowForm;
 
+  DrawRectangle(10, 10, 100, 100);
+
+  MousePath.New
+  .Add(50, 50)
+  .Add(80, 100)
+  .Add(100, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  CheckNotNull(FCanvas.SelectedItem);
+  P := FCanvas.SelectedItem.Position.Point;
+  Check(P = PointF(60, 60), Format('Org(60,60) X: %f, Y: %f', [P.X, P.Y]));
+
+  FThothController.Undo;
+  P := FCanvas.SelectedItem.Position.Point;
+  Check(P = PointF(10, 10), Format('Undo(10,10) X: %f, Y: %f', [P.X, P.Y]));
+
+  FThothController.Redo;
+  P := FCanvas.SelectedItem.Position.Point;
+  Check(P = PointF(60, 60), Format('Redo(60,60) X: %f, Y: %f', [P.X, P.Y]));
 end;
 
 procedure TestTThCommandHistory.TestCommandHistoryResize;

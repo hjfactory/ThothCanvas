@@ -3,7 +3,7 @@ unit ThItemCommand;
 interface
 
 uses
-  FMX.Types,
+  FMX.Types, System.Types,
   ThTypes, ThClasses, ThItem;
 
 type
@@ -34,6 +34,17 @@ type
     FParent: TControl;
   public
     constructor Create(AParent: TControl; AItems: TThItems); overload;
+
+    procedure Undo; override;
+    procedure Redo; override;
+  end;
+
+  TThCommandItemMove = class(TThAbstractCommandItem)
+  private
+    FStartPos,
+    FEndPos: TPointF;
+  public
+//    constructor Create(AParent: TControl; AItems: TThItems); overload;
 
     procedure Undo; override;
     procedure Redo; override;
@@ -106,6 +117,7 @@ begin
   begin
     FItems[I].Parent := FParent;
     FItems[I].Visible := True;
+    FItems[I].Selected := True;
   end;
 end;
 
@@ -117,7 +129,20 @@ begin
   begin
     FItems[I].Parent := nil;
     FItems[I].Visible := False;
+    FItems[I].Selected := False;
   end;
+end;
+
+{ TThCommandItemMove }
+
+procedure TThCommandItemMove.Redo;
+begin
+
+end;
+
+procedure TThCommandItemMove.Undo;
+begin
+
 end;
 
 end.

@@ -8,7 +8,7 @@ uses
 
 type
   // #140 아이템을 캔버스에서 제거한다.
-  TestTThItemDelete = class(TBaseTestUnit)
+  TestTThItemControl = class(TBaseTestUnit)
   published
     // #141 아이템 삭제 후 캔버스에 표시되지 않아야 한다.
     procedure TestItemDelete;
@@ -39,17 +39,36 @@ type
 
     // #158 A아이템 삭제 후 Shift로 B 중복선택 시 B가 단독선택되어야 한다.
     procedure TestItemDeleteAndSelectionClear;
+
+    // #168 Selected 시 Selection에 반영되야 한다.
+    procedure TestItemSelectToProcessSelction;
+
+    // #169 마우스 클릭으로 selected 시 Selection에 반영되야 한다.
+    procedure TestItemMouseClickToProcessSelction;
+
+    // #171 다중 선택 시 Selection에 반영되야 한다.
+    procedure TestItemSelectToShowSelection;
+    procedure TestItemUnselectToHideSelection;
+
+    // #172 다른아이템 선택 시 아이템 이동 시 선택이 변경되야 한다.
+    procedure TestAnotherSelectedAndMoveChangeSelection;
+
+    // #173 2개의 아이템 선택 상태에서 이동 시 2개 선택이 유지되어야 한다.
+    procedure TestMultiselectionAndMove;
+
+    // #174 2개의 아이템 선택 상태에서 하나 클릭 시 클릭한 아이템 선택해제
+    procedure TestMultiselectAndShiftClickSingleSelect;
   end;
 
 implementation
 
 uses
-  UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
+  UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor, ThConsts,
   ThItem, ThShape, ThItemFactory, CommonUtils, FMX.Controls;
 
 { TestTThItemDelete }
 
-procedure TestTThItemDelete.TestItemDelete;
+procedure TestTThItemControl.TestItemDelete;
 begin
   DrawRectangle(10, 10, 100, 100);
 
@@ -64,7 +83,7 @@ begin
   Check(not Assigned(FCanvas.SelectedItem), 'Not selected item');
 end;
 
-procedure TestTThItemDelete.TestItemDeleteCheckContentsCount;
+procedure TestTThItemControl.TestItemDeleteCheckContentsCount;
 begin
   DrawRectangle(10, 10, 100, 100);
   DrawRectangle(20, 20, 110, 110);
@@ -81,7 +100,7 @@ begin
   Check(FCanvas.ItemCount = 2);
 end;
 
-procedure TestTThItemDelete.TestItemMultiSelectShiftKey;
+procedure TestTThItemControl.TestItemMultiSelectShiftKey;
 begin
   DrawRectangle(10, 10, 100, 100);
 
@@ -95,7 +114,7 @@ begin
   Check(FCanvas.SelectionCount = 2);
 end;
 
-procedure TestTThItemDelete.TestItemMultiSelectionCancel;
+procedure TestTThItemControl.TestItemMultiSelectionCancel;
 begin
   DrawRectangle(10, 10, 100, 100);
 
@@ -113,7 +132,7 @@ begin
   Check(FCanvas.SelectionCount = 0, 'Unselect');
 end;
 
-procedure TestTThItemDelete.TestItemMultiUnselect;
+procedure TestTThItemControl.TestItemMultiUnselect;
 begin
   DrawRectangle(10, 10, 100, 100);
 
@@ -133,7 +152,7 @@ begin
   Check(FCanvas.SelectionCount = 1, 'Unselect');
 end;
 
-procedure TestTThItemDelete.TestMultiselectAndMove;
+procedure TestTThItemControl.TestMultiselectAndMove;
 begin
   DrawRectangle(10, 10, 100, 100);
   DrawRectangle(110, 110, 200, 200);
@@ -158,7 +177,7 @@ begin
   Check(FCanvas.SelectedItem.Position.X = 40, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
-procedure TestTThItemDelete.TestMultiselectAndDelete;
+procedure TestTThItemControl.TestMultiselectAndDelete;
 begin
   DrawRectangle(10, 10, 50, 50);
   DrawRectangle(10, 60, 50, 100);
@@ -181,7 +200,7 @@ begin
   Check(FCanvas.ItemCount = 2);
 end;
 
-procedure TestTThItemDelete.BugTestMultiselectShiftMove;
+procedure TestTThItemControl.BugTestMultiselectShiftMove;
 begin
   DrawRectangle(10, 10, 100, 100);
   DrawRectangle(110, 110, 180, 180);
@@ -221,7 +240,7 @@ exit;
   Check(FCanvas.SelectedItem.Position.X = 160, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
-procedure TestTThItemDelete.BugTestAnotherContrlShfitPressAndMultiselect;
+procedure TestTThItemControl.BugTestAnotherContrlShfitPressAndMultiselect;
 var
   Button: TButton;
 begin
@@ -247,9 +266,8 @@ begin
   Check(FCanvas.SelectionCount = 2);
 end;
 
-procedure TestTThItemDelete.TestItemDeleteAndSelectionClear;
+procedure TestTThItemControl.TestItemDeleteAndSelectionClear;
 begin
-
   DrawRectangle(10, 10, 100, 100);
   DrawRectangle(110, 110, 180, 180);
 
@@ -264,8 +282,106 @@ begin
   Check(FCanvas.SelectionCount = 1);
 end;
 
+procedure TestTThItemControl.TestItemSelectToProcessSelction;
+begin
+  DrawRectangle(10, 10, 100, 100);
+
+  TestLib.RunMouseClick(50, 50);
+
+  CheckNotNull(FCanvas.SelectedItem, 'Click');
+
+  FCanvas.SelectedItem.Selected := False;
+
+  CheckNull(FCanvas.SelectedItem, 'Unselectd');
+end;
+
+procedure TestTThItemControl.TestItemMouseClickToProcessSelction;
+begin
+  DrawRectangle(10, 10, 100, 100);
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNotNull(FCanvas.SelectedItem, 'Click');
+
+  TestLib.RunMouseClick(150, 150);
+  CheckNull(FCanvas.SelectedItem, 'Unselectd');
+end;
+
+procedure TestTThItemControl.TestItemSelectToShowSelection;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizeSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotOutColor]));
+end;
+
+procedure TestTThItemControl.TestItemUnselectToHideSelection;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunMouseClick(150, 150);
+  Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) <> ItemResizeSpotOutColor, Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotOutColor]));
+end;
+
+procedure TestTThItemControl.TestAnotherSelectedAndMoveChangeSelection;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+
+  MousePath.New
+  .Add(150, 150)
+  .Add(180, 200)
+  .Add(200, 200);
+  TestLib.RunMousePath(MousePath.Path);
+  Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
+  Check(FCanvas.SelectedItem.Position.X = 160, 'Change selection failed');
+  Check(FCanvas.SelectedItem.Width = 70, 'Change selection failed');
+end;
+
+procedure TestTThItemControl.TestMultiselectionAndMove;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(150, 150);
+  TestLib.RunKeyUpShift;
+  Check(FCanvas.SelectionCount = 2, Format('Selection Count: %d', [FCanvas.SelectionCount]));
+
+  MousePath.New
+  .Add(150, 150)
+  .Add(180, 200)
+  .Add(200, 200);
+  TestLib.RunMousePath(MousePath.Path);
+  Check(FCanvas.SelectionCount = 2, Format('Count: %d', [FCanvas.SelectionCount]));
+end;
+
+procedure TestTThItemControl.TestMultiselectAndShiftClickSingleSelect;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(150, 150);
+  TestLib.RunKeyUpShift;
+  Check(FCanvas.SelectionCount = 2, Format('Selection Count: %d', [FCanvas.SelectionCount]));
+
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(160, 160);
+  TestLib.RunKeyUpShift;
+  Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
+  Check(FCanvas.SelectedItem.Position.X = 10, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
+end;
+
 initialization
-  RegisterTest(TestTThItemDelete.Suite);
+  RegisterTest(TestTThItemControl.Suite);
 
 end.
 
