@@ -125,7 +125,6 @@ begin
     P := Item.Position.Point.Subtract(StartPos);
     FOnItemMove(FSelections, P);
   end;
-
 end;
 
 procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsAdded: Boolean);

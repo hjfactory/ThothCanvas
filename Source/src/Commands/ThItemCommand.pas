@@ -15,8 +15,8 @@ type
     constructor Create(AItems: TThItems); overload;
     destructor Destroy; override;
 
-    procedure Undo; virtual; abstract;
-    procedure Redo; virtual; abstract;
+    procedure Execute; virtual; abstract;
+    procedure Rollback; virtual; abstract;
   end;
 
   TThCommandItemAdd = class(TThAbstractCommandItem)
@@ -25,8 +25,8 @@ type
   public
     constructor Create(AParent: TControl; AItem: TThItem); overload;
 
-    procedure Undo; override;
-    procedure Redo; override;
+    procedure Execute; override;
+    procedure Rollback; override;
   end;
 
   TThCommandItemDelete = class(TThAbstractCommandItem)
@@ -35,19 +35,18 @@ type
   public
     constructor Create(AParent: TControl; AItems: TThItems); overload;
 
-    procedure Undo; override;
-    procedure Redo; override;
+    procedure Execute; override;
+    procedure Rollback; override;
   end;
 
   TThCommandItemMove = class(TThAbstractCommandItem)
   private
-    FStartPos,
-    FEndPos: TPointF;
+    FDistance: TPointF;
   public
-//    constructor Create(AParent: TControl; AItems: TThItems); overload;
+    constructor Create(AItems: TThItems; ADistance: TPointF); overload;
 
-    procedure Undo; override;
-    procedure Redo; override;
+    procedure Execute; override;
+    procedure Rollback; override;
   end;
 
 implementation
@@ -81,7 +80,7 @@ begin
   FParent := AParent;
 end;
 
-procedure TThCommandItemAdd.Undo;
+procedure TThCommandItemAdd.Execute;
 var
   Item: TThItem;
 begin
@@ -90,7 +89,7 @@ begin
   Item.Visible := False;
 end;
 
-procedure TThCommandItemAdd.Redo;
+procedure TThCommandItemAdd.Rollback;
 var
   Item: TThItem;
 begin
@@ -109,7 +108,7 @@ begin
   FParent := AParent;
 end;
 
-procedure TThCommandItemDelete.Undo;
+procedure TThCommandItemDelete.Execute;
 var
   I: Integer;
 begin
@@ -121,7 +120,7 @@ begin
   end;
 end;
 
-procedure TThCommandItemDelete.Redo;
+procedure TThCommandItemDelete.Rollback;
 var
   I: Integer;
 begin
@@ -135,14 +134,28 @@ end;
 
 { TThCommandItemMove }
 
-procedure TThCommandItemMove.Redo;
+constructor TThCommandItemMove.Create(AItems: TThItems; ADistance: TPointF);
 begin
+  inherited Create(AItems);
+
+  FDistance := ADistance;
+end;
+
+procedure TThCommandItemMove.Execute;
+var
+  I: Integer;
+begin
+  for I := 0 to FItems.Count - 1 do
+    FItems[I].Position.Point := FItems[I].Position.Point.Subtract(FDistance);
 
 end;
 
-procedure TThCommandItemMove.Undo;
+procedure TThCommandItemMove.Rollback;
+var
+  I: Integer;
 begin
-
+  for I := 0 to FItems.Count - 1 do
+    FItems[I].Position.Point := FItems[I].Position.Point.Add(FDistance);
 end;
 
 end.

@@ -124,7 +124,7 @@ begin
 {$IFDEF DEBUG}
   FBgColor := $FFDDFFDD;
 {$ELSE}
-  FBgColor := $FFAADDAA;
+  FBgColor := $FFFFFFFF;
 {$ENDIF}
 end;
 

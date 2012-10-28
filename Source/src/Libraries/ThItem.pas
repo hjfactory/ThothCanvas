@@ -252,7 +252,7 @@ begin
     if (ssShift in Shift) and (FDownItemPos = Position.Point) and FBeforeSelect then
       DoSelected(False, True)
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
-      FOnMove(Self, FMouseDownPos);
+      FOnMove(Self, FDownItemPos);
 
 //    Debug('%f, %f', [FMouseDownPos.X, X]);
   end;

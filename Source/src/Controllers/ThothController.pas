@@ -11,6 +11,8 @@ type
   private
     FObservers: TInterfaceList;
     FCommandManager: TThCommandManager;
+    function GetRedoCount: Integer;
+    function GetUndoCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -21,6 +23,9 @@ type
 
     procedure Undo;
     procedure Redo;
+
+    property UndoCount: Integer read GetUndoCount;
+    property RedoCount: Integer read GetRedoCount;
   end;
 
 implementation
@@ -43,6 +48,16 @@ begin
   FObservers := nil;
 
   inherited;
+end;
+
+function TThothController.GetRedoCount: Integer;
+begin
+  Result := FCommandManager.RedoCount;
+end;
+
+function TThothController.GetUndoCount: Integer;
+begin
+  Result := FCommandManager.UndoCount;
 end;
 
 procedure TThothController.RegistObserver(AObserver: IThObserver);

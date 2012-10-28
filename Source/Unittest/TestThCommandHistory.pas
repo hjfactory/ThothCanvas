@@ -101,7 +101,7 @@ procedure TestTThCommandHistory.TestCommandHistoryMove;
 var
   P: TPointF;
 begin
-  ShowForm;
+//  ShowForm;
 
   DrawRectangle(10, 10, 100, 100);
 

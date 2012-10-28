@@ -14,7 +14,11 @@ uses
   ThItemResizer in 'Components\ThItemResizer.pas',
   ThTypes in 'Libraries\ThTypes.pas',
   ResizeUtils in 'Utils\ResizeUtils.pas',
-  ThClasses in 'Libraries\ThClasses.pas';
+  ThClasses in 'Libraries\ThClasses.pas',
+  ThCanvasController in 'Controllers\ThCanvasController.pas',
+  ThothController in 'Controllers\ThothController.pas',
+  ThCommandManager in 'Commands\ThCommandManager.pas',
+  ThItemCommand in 'Commands\ThItemCommand.pas';
 
 {$R *.res}
 

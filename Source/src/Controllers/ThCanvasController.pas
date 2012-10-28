@@ -3,7 +3,7 @@ unit ThCanvasController;
 interface
 
 uses
-  ThTypes, ThClasses, ThItem, ThCanvas, ThCanvasEditor;
+  ThTypes, ThClasses, ThItem, ThCanvas, ThCanvasEditor, System.Types;
 
 type
   TThCanvasEditorController = class(TThInterfacedObject, IThObserver, IThCanvasController)
@@ -13,7 +13,7 @@ type
 
     procedure ItemAdded(Item: TThItem);
     procedure ItemDelete(Items: TThItems);
-    procedure ItemMove(Items: TThItems);
+    procedure ItemMove(Items: TThItems; Distance: TPointF);
   public
     constructor Create;
     destructor Destroy; override;
@@ -61,6 +61,7 @@ begin
   FCanvas := TThCanvasEditor(ThCanvas);
   FCanvas.OnItemAdded := ItemAdded;
   FCanvas.OnItemDelete := ItemDelete;
+  FCanvas.OnItemMove := ItemMove;
 end;
 
 procedure TThCanvasEditorController.ItemAdded(Item: TThItem);
@@ -71,6 +72,12 @@ end;
 procedure TThCanvasEditorController.ItemDelete(Items: TThItems);
 begin
   FSubject.Subject(Self, TThCommandItemDelete.Create(FCanvas, Items));
+end;
+
+procedure TThCanvasEditorController.ItemMove(Items: TThItems;
+  Distance: TPointF);
+begin
+  FSubject.Subject(Self, TThCommandItemMove.Create(Items, Distance));
 end;
 
 end.
