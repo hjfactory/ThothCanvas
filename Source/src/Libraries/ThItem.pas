@@ -11,7 +11,7 @@ type
   TThItems = TList<TThItem>;
 
   TItemEvent = procedure(Item: TThItem) of object;
-  TItemSelectedEvent = procedure(Item: TThItem; IsAdded: Boolean) of object;
+  TItemSelectedEvent = procedure(Item: TThItem; IsMultiSelect: Boolean) of object;
   TItemMoveEvent = procedure(Item: TThItem; StartPos: TPointF) of object;
 
   TItemListEvent = procedure(Items: TThItems) of object;
@@ -48,7 +48,7 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
-    procedure DoSelected(Value: Boolean; IsAdded: Boolean = False); virtual;
+    procedure DoSelected(Value: Boolean; IsMultiSelect: Boolean = False); virtual;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
@@ -59,6 +59,7 @@ type
     function PointInObject(X, Y: Single): Boolean; override;
 
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
+    procedure HideSpot;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -176,26 +177,36 @@ begin
   InflateRect(R, 1, 1);
 end;
 
+procedure TThItem.HideSpot;
+begin
+  if Assigned(FResizer) then
+    FResizer.HideSpots;
+end;
+
 procedure TThItem.SetSelected(const Value: Boolean);
 begin
   DoSelected(Value);
 end;
 
-procedure TThItem.DoSelected(Value: Boolean; IsAdded: Boolean);
+procedure TThItem.DoSelected(Value: Boolean; IsMultiSelect: Boolean);
 begin
-  if (not FParentCanvas.IsMultiSelected) and Value then
-    FResizer.ShowSpots
-  else
-    FResizer.HideSpots;
-
   if FSelected = Value then
     Exit;
 
   FSelected := Value;
+
   if Value and Assigned(FOnSelected) then
-    FOnSelected(Self, IsAdded)
+    FOnSelected(Self, IsMultiSelect)
   else if (not Value) and Assigned(FOnUnselected) then
     FOnUnselected(Self);
+
+  if Assigned(FResizer) then
+  begin
+    if (not FParentCanvas.IsMultiSelected) and Value then
+      FResizer.ShowSpots
+    else
+      FResizer.HideSpots;
+  end;
 
   // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)
   if not FSelected then

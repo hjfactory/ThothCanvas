@@ -22,8 +22,10 @@ type
     // #154 아래위치한 아이템을 삭제 > 복구 시 그대로 아래에 위치해야한다.
     procedure TestCommandHistoryDelete;
 
-
+    // #136 사각형 이동 후 Undo 명령 시 기존 영역에 위치해야 한다.
     procedure TestCommandHistoryMove;
+
+    // #137 사각형의 TopLeft로 크기 변경 후 Undo 명령 시 이전 크기 및 위치에 돌아와야 한다.
     procedure TestCommandHistoryResize;
   end;
 
@@ -126,6 +128,18 @@ end;
 
 procedure TestTThCommandHistory.TestCommandHistoryResize;
 begin
+  ShowForm;
+
+  DrawRectangle(100, 100, 200, 200);
+
+  MousePath.New
+  .Add(100, 100)
+  .Add(80, 100)
+  .Add(50, 50);
+  TestLib.RunMousePath(MousePath.Path);
+
+  CheckNotNull(FCanvas.SelectedItem, 'Not null');
+  Check(FCanvas.SelectedItem.Width = 150, 'Width');
 
 end;
 

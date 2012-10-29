@@ -28,7 +28,7 @@ type
   protected
     procedure ClickCanvas; override;
 
-    procedure ItemSelect(Item: TThItem; IsAdded: Boolean);
+    procedure ItemSelect(Item: TThItem; IsMultiSelect: Boolean);
     procedure ItemUnselect(Item: TThItem);
     procedure ItemTracking(Sender: TObject; X, Y: Single);
     procedure ItemMove(Item: TThItem; StartPos: TPointF);
@@ -127,10 +127,16 @@ begin
   end;
 end;
 
-procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsAdded: Boolean);
+procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsMultiSelect: Boolean);
+var
+  I: Integer;
 begin
-  if not IsAdded then
+  if not IsMultiSelect then
     ClearSelection;
+
+  // Multiselect ½Ã Ã³¸®
+  for I := 0 to FSelections.Count - 1 do
+    FSelections[I].HideSpot;
 
   FSelectedItem := Item;
   FSelections.Add(FSelectedItem);
