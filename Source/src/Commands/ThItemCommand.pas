@@ -27,6 +27,8 @@ type
 
     procedure Execute; override;
     procedure Rollback; override;
+
+    property Items: TThItems read FItems;
   end;
 
   TThCommandItemDelete = class(TThAbstractCommandItem)
@@ -49,7 +51,21 @@ type
     procedure Rollback; override;
   end;
 
+  TThCommandItemResize = class(TThAbstractCommandItem)
+  private
+    FBeforeRect,
+    FAfterRect: TRectF;
+  public
+    constructor Create(AItem: TThItem; ABeforeRect: TRectF); overload;
+
+    procedure Execute; override;
+    procedure Rollback; override;
+  end;
+
 implementation
+
+uses
+  CommonUtils;
 
 { TThAbstractCommandItem }
 
@@ -68,6 +84,8 @@ destructor TThAbstractCommandItem.Destroy;
 begin
   FItems.Free;
 
+  Debug('Destroy Command');
+
   inherited;
 end;
 
@@ -85,8 +103,9 @@ var
   Item: TThItem;
 begin
   Item := FItems[0];
-  Item.Parent := nil;
-  Item.Visible := False;
+  Item.Parent := FParent;
+  Item.Visible := True;
+//  Item.Repaint;
 end;
 
 procedure TThCommandItemAdd.Rollback;
@@ -94,9 +113,8 @@ var
   Item: TThItem;
 begin
   Item := FItems[0];
-  Item.Parent := FParent;
-  Item.Visible := True;
-//  Item.Repaint;
+  Item.Parent := nil;
+  Item.Visible := False;
 end;
 
 { TThCommandItemDelete }
@@ -114,9 +132,9 @@ var
 begin
   for I := 0 to FItems.Count - 1 do
   begin
-    FItems[I].Parent := FParent;
-    FItems[I].Visible := True;
-    FItems[I].Selected := True;
+    FItems[I].Parent := nil;
+    FItems[I].Visible := False;
+    FItems[I].Selected := False;
   end;
 end;
 
@@ -126,9 +144,9 @@ var
 begin
   for I := 0 to FItems.Count - 1 do
   begin
-    FItems[I].Parent := nil;
-    FItems[I].Visible := False;
-    FItems[I].Selected := False;
+    FItems[I].Parent := FParent;
+    FItems[I].Visible := True;
+    FItems[I].Selected := True;
   end;
 end;
 
@@ -146,8 +164,7 @@ var
   I: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
-    FItems[I].Position.Point := FItems[I].Position.Point.Subtract(FDistance);
-
+    FItems[I].Position.Point := FItems[I].Position.Point.Add(FDistance);
 end;
 
 procedure TThCommandItemMove.Rollback;
@@ -155,7 +172,31 @@ var
   I: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
-    FItems[I].Position.Point := FItems[I].Position.Point.Add(FDistance);
+    FItems[I].Position.Point := FItems[I].Position.Point.Subtract(FDistance);
+end;
+
+{ TThCommandItemResize }
+
+constructor TThCommandItemResize.Create(AItem: TThItem; ABeforeRect: TRectF);
+begin
+  inherited Create(AItem);
+
+  FBeforeRect := ABeforeRect;
+  FAfterRect := AItem.BoundsRect;
+  FAfterRect.Offset(AItem.Position.Point);
+end;
+
+procedure TThCommandItemResize.Execute;
+begin
+  FItems[0].Selected := False;
+  FItems[0].SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
+  FItems[0].Selected := True;
+end;
+
+procedure TThCommandItemResize.Rollback;
+begin
+  FItems[0].SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
+  FItems[0].Selected := True;
 end;
 
 end.

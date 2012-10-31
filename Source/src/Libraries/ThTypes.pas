@@ -75,9 +75,9 @@ type
   ///   IItemResizerObject is IItemResizer's parent
   ///   IItemResizer is IItemResizeSpots parent
   IItemResizerObject = interface(IThItem)
-  function GetMinimumSize: TPointF;
+    function GetMinimumSize: TPointF;
     property MinimumSize: TPointF read GetMinimumSize;
-    end;
+  end;
 
   IItemResizeSpot = interface
   end;
@@ -92,6 +92,7 @@ type
 
     procedure ShowSpots;
     procedure HideSpots;
+    procedure RealignSpot;
   end;
 
 implementation

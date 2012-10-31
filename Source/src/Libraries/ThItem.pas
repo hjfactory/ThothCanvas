@@ -13,6 +13,7 @@ type
   TItemEvent = procedure(Item: TThItem) of object;
   TItemSelectedEvent = procedure(Item: TThItem; IsMultiSelect: Boolean) of object;
   TItemMoveEvent = procedure(Item: TThItem; StartPos: TPointF) of object;
+  TItemResizeEvent = procedure(Item: TThItem; BeforeRect: TRectF) of object;
 
   TItemListEvent = procedure(Items: TThItems) of object;
   TItemListPointvent = procedure(Items: TThItems; Distance: TPointF) of object;
@@ -25,6 +26,7 @@ type
     FOnUnselected: TItemEvent;
     FOnTracking: TTrackingEvent;
     FOnMove: TItemMoveEvent;
+    FOnResize: TItemResizeEvent;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
@@ -57,6 +59,8 @@ type
 
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
+    procedure DoItemResize(Sender: TObject; BeforeRect: TRectF);
+    procedure SetBounds(X, Y, AWidth, AHeight: Single); override;
 
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
     procedure HideSpot;
@@ -68,6 +72,7 @@ type
     property OnUnselected: TItemEvent read FOnUnselected write FOnUnselected;
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
+    property OnResize: TItemResizeEvent read FOnResize write FOnResize;
   end;
 
   TThItemClass = class of TThItem;
@@ -94,7 +99,18 @@ begin
   FHighlighter := nil;
   FResizer := nil; // Interface Free(destory)
 
+  Debug('Destroy Item');
+
   inherited;
+end;
+
+procedure TThItem.SetBounds(X, Y, AWidth, AHeight: Single);
+begin
+  inherited;
+
+  // 크기 변경 요청 시 Spot위치 조정
+  if Assigned(FResizer) then
+    FResizer.RealignSpot;
 end;
 
 procedure TThItem.SetParentCanvas(const Value: IThCanvas);
@@ -129,6 +145,13 @@ begin
   P := AbsoluteToLocal(PointF(X, Y));
 
   Result := PtInItem(P);
+end;
+
+procedure TThItem.DoItemResize(Sender: TObject; BeforeRect: TRectF);
+begin
+//  BeforeRect.Offset(Position.Point);
+  if Assigned(FOnResize) then
+    FOnResize(Self, BeforeRect);
 end;
 
 procedure TThItem.DoMouseEnter;

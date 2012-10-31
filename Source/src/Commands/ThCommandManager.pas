@@ -32,6 +32,9 @@ type
 
 implementation
 
+uses
+  ThItemCommand;
+
 { TThCommandHistory }
 
 constructor TThCommandManager.Create;
@@ -67,8 +70,23 @@ begin
 end;
 
 procedure TThCommandManager.Notifycation(ACommand: IThCommand);
+var
+  I, J: Integer;
+  Command: IThCommand;
 begin
   FUndoStack.Push(ACommand);
+
+  // Undo된 TThCommandItemAdd 커맨드의 Items는 신규 커맨드 요청 시 해제(Free)
+  for I := 0 to FRedoStack.Count - 1 do
+  begin
+    Command := FRedoStack.Pop;
+    if Command is TThCommandItemAdd then
+      for J := 0 to TThCommandItemAdd(Command).Items.Count - 1 do
+        TThCommandItemAdd(Command).Items[J].Free;
+  end;
+
+  // Undo된(FRedoStack에 위치한) 커맨드들은 새로운 커맨드 요청 시 Clear
+  FRedoStack.Clear;
 end;
 
 procedure TThCommandManager.UndoAction;
@@ -82,7 +100,7 @@ begin
   if not Assigned(Command) then
     Exit;
 
-  Command.Execute;
+  Command.Rollback;
   FRedoStack.Push(Command);
 end;
 
@@ -97,7 +115,7 @@ begin
   if not Assigned(Command) then
     Exit;
 
-  Command.Rollback;
+  Command.Execute;
   FUndoStack.Push(Command);
 end;
 

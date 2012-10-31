@@ -22,6 +22,7 @@ type
     FOnItemAdded: TItemEvent;
     FOnItemDelete: TItemListEvent;
     FOnItemMove: TItemListPointvent;
+    FOnItemResize: TItemResizeEvent;
 
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
@@ -32,6 +33,7 @@ type
     procedure ItemUnselect(Item: TThItem);
     procedure ItemTracking(Sender: TObject; X, Y: Single);
     procedure ItemMove(Item: TThItem; StartPos: TPointF);
+    procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -56,6 +58,7 @@ type
     property OnItemAdded: TItemEvent read FOnItemAdded write FOnItemAdded;
     property OnItemDelete: TItemListEvent read FOnItemDelete write FOnItemDelete;
     property OnItemMove: TItemListPointvent read FOnItemMove write FOnItemMove;
+    property OnItemResize: TItemResizeEvent read FOnItemResize write FOnItemResize;
   end;
 
 implementation
@@ -93,6 +96,7 @@ begin
     Result.OnUnselected := ItemUnselect;
     Result.OnTracking := ItemTracking;
     Result.OnMove := ItemMove;
+    Result.OnResize := ItemResize;
   end;
 end;
 
@@ -125,6 +129,12 @@ begin
     P := Item.Position.Point.Subtract(StartPos);
     FOnItemMove(FSelections, P);
   end;
+end;
+
+procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
+begin
+  if Assigned(FOnItemResize) then
+    FOnItemResize(Item, BeforeRect);
 end;
 
 procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsMultiSelect: Boolean);

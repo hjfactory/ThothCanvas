@@ -27,6 +27,9 @@ type
 
     // #137 사각형의 TopLeft로 크기 변경 후 Undo 명령 시 이전 크기 및 위치에 돌아와야 한다.
     procedure TestCommandHistoryResize;
+
+    // #134 Undo 명령된 커맨드 들은 새로운 커맨드가 발생될때 제거되어야 한다.
+    procedure TestClearUndoCommand;
   end;
 
 implementation
@@ -128,10 +131,11 @@ end;
 
 procedure TestTThCommandHistory.TestCommandHistoryResize;
 begin
-  ShowForm;
+//  ShowForm;
 
   DrawRectangle(100, 100, 200, 200);
 
+  TestLib.RunMouseClick(150, 150);
   MousePath.New
   .Add(100, 100)
   .Add(80, 100)
@@ -139,8 +143,25 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   CheckNotNull(FCanvas.SelectedItem, 'Not null');
-  Check(FCanvas.SelectedItem.Width = 150, 'Width');
+  Check(FCanvas.SelectedItem.Width = 150, Format('Width: %f', [FCanvas.SelectedItem.Width]));
 
+  FThothController.Undo;
+  CheckNotNull(FCanvas.SelectedItem, 'Undo. Not null');
+  Check(FCanvas.SelectedItem.Width = 100, Format('Undo. Width: %f', [FCanvas.SelectedItem.Width]));
+
+  FThothController.Redo;
+  CheckNotNull(FCanvas.SelectedItem, 'Redo. Not null');
+  Check(FCanvas.SelectedItem.Width = 150, Format('Redo. Width: %f', [FCanvas.SelectedItem.Width]));
+end;
+
+procedure TestTThCommandHistory.TestClearUndoCommand;
+begin
+  DrawRectangle(100, 100, 200, 200);
+  FThothController.Undo;
+  Check(FThothController.RedoCount = 1, 'RedoCount = 1');
+
+  DrawRectangle(100, 100, 200, 200);
+  Check(FThothController.RedoCount = 0, 'RedoCount = 0');
 end;
 
 initialization

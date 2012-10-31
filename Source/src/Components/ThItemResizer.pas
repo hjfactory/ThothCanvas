@@ -10,6 +10,7 @@ type
   TItemResizeSpot = class(TControl, IItemResizeSpot)
   private
     FMouseDownPos: TPointF;
+    FDownItemRect: TRectF;
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackingEvent;
     procedure SetSpotCorner(const Value: TSpotCorner);
@@ -19,6 +20,7 @@ type
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
   public
     constructor Create(AOwner: TComponent; ASpotCorner: TSpotCorner); reintroduce; virtual;
     function PointInObject(X, Y: Single): Boolean; override;
@@ -93,7 +95,7 @@ type
 implementation
 
 uses
-  System.UIConsts, CommonUtils, ResizeUtils, System.Math;
+  System.UIConsts, CommonUtils, ResizeUtils, System.Math, ThItem;
 
 { TItemResizeSpot }
 
@@ -131,7 +133,11 @@ begin
   inherited;
 
   if FPressed then
-    FMouseDownPos := PointF(X, Y);
+  begin
+    FMouseDownPos := PointF(X, Y);                  // Spot내의 마우스 위치
+    FDownItemRect := TControl(Parent).BoundsRect;   // Item의 범위
+    FDownItemRect.Offset(TControl(Parent).Position.Point);
+  end;
 end;
 
 procedure TItemResizeSpot.MouseMove(Shift: TShiftState; X, Y: Single);
@@ -147,6 +153,18 @@ begin
 
     if Assigned(FOnTracking) then
       FOnTracking(Self, Gap.X, Gap.Y);
+  end;
+end;
+
+procedure TItemResizeSpot.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Single);
+begin
+  inherited;
+
+  if (FDownItemRect <> TControl(Parent).BoundsRect) then
+  begin
+    Debug('Resize item');
+    TThItem(FParent).DoItemResize(Self, FDownItemRect);
   end;
 end;
 

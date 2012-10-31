@@ -14,6 +14,7 @@ type
     procedure ItemAdded(Item: TThItem);
     procedure ItemDelete(Items: TThItems);
     procedure ItemMove(Items: TThItems; Distance: TPointF);
+    procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
   public
     constructor Create;
     destructor Destroy; override;
@@ -62,6 +63,7 @@ begin
   FCanvas.OnItemAdded := ItemAdded;
   FCanvas.OnItemDelete := ItemDelete;
   FCanvas.OnItemMove := ItemMove;
+  FCanvas.OnItemResize := ItemResize;
 end;
 
 procedure TThCanvasEditorController.ItemAdded(Item: TThItem);
@@ -78,6 +80,12 @@ procedure TThCanvasEditorController.ItemMove(Items: TThItems;
   Distance: TPointF);
 begin
   FSubject.Subject(Self, TThCommandItemMove.Create(Items, Distance));
+end;
+
+procedure TThCanvasEditorController.ItemResize(Item: TThItem;
+  BeforeRect: TRectF);
+begin
+  FSubject.Subject(Self, TThCommandItemResize.Create(Item, BeforeRect));
 end;
 
 end.
