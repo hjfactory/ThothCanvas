@@ -13,7 +13,9 @@ type
     FDownItemRect: TRectF;
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackingEvent;
+    FParentItem: IThItem;
     procedure SetSpotCorner(const Value: TSpotCorner);
+    procedure SetParentItem(const Value: IThItem);
   protected
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
@@ -27,6 +29,8 @@ type
 
     property SpotCorner: TSpotCorner read FSpotCorner write SetSpotCorner;
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
+
+    property ParentItem: IThItem read FParentItem write SetParentItem;
 
     class function InflateSize: Integer;
   end;
@@ -95,7 +99,7 @@ type
 implementation
 
 uses
-  System.UIConsts, CommonUtils, ResizeUtils, System.Math, ThItem;
+  System.UIConsts, CommonUtils, ResizeUtils, System.Math;
 
 { TItemResizeSpot }
 
@@ -164,7 +168,8 @@ begin
   if (FDownItemRect <> TControl(Parent).BoundsRect) then
   begin
     Debug('Resize item');
-    TThItem(FParent).DoItemResize(Self, FDownItemRect);
+
+    FParentItem.ItemResizeBySpot(Self, FDownItemRect);
   end;
 end;
 
@@ -176,6 +181,12 @@ begin
   P := AbsoluteToLocal(PointF(X, Y));
   if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
     Result := True;
+end;
+
+procedure TItemResizeSpot.SetParentItem(const Value: IThItem);
+begin
+  FParentItem := Value;
+//  Parent := TFMXObject(Value);
 end;
 
 procedure TItemResizeSpot.SetSpotCorner(const Value: TSpotCorner);
@@ -222,6 +233,7 @@ begin
   for I := 0 to Length(Spots) - 1 do
   begin
     Spot := FSpotClass.Create(TControl(FParent), Spots[I]);
+    Spot.ParentItem := FParent;
     Spot.Parent := TControl(FParent);
     Spot.OnTracking := DoResizeSpotTrack;
     Spot.Visible := False;

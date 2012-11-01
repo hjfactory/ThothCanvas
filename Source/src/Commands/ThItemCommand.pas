@@ -7,7 +7,7 @@ uses
   ThTypes, ThClasses, ThItem;
 
 type
-  TThAbstractCommandItem = class(TInterfacedObject, IThCommand)
+  TThAbstractCommandItem = class(TInterfacedObject, IThItemCommand)
   protected
     FItems: TThItems;
   public
@@ -187,16 +187,23 @@ begin
 end;
 
 procedure TThCommandItemResize.Execute;
+var
+  Item: TThItem;
 begin
-  FItems[0].Selected := False;
-  FItems[0].SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
-  FItems[0].Selected := True;
+  Item := FItems[0];
+
+  Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
+  Item.RealignSpot;
 end;
 
 procedure TThCommandItemResize.Rollback;
+var
+  Item: TThItem;
 begin
-  FItems[0].SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
-  FItems[0].Selected := True;
+  Item := FItems[0];
+
+  Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
+  Item.RealignSpot;
 end;
 
 end.

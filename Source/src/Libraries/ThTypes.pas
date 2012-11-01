@@ -46,6 +46,7 @@ type
 
   IThItem = interface
     function GetItemRect: TRectF;
+    procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
   end;
 
   IThCanvas = interface

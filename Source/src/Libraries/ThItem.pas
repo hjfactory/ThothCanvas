@@ -59,10 +59,11 @@ type
 
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
-    procedure DoItemResize(Sender: TObject; BeforeRect: TRectF);
+    procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
     procedure SetBounds(X, Y, AWidth, AHeight: Single); override;
 
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
+    procedure RealignSpot;
     procedure HideSpot;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
@@ -108,9 +109,9 @@ procedure TThItem.SetBounds(X, Y, AWidth, AHeight: Single);
 begin
   inherited;
 
-  // 크기 변경 요청 시 Spot위치 조정
-  if Assigned(FResizer) then
-    FResizer.RealignSpot;
+  // 크기 변경 요청 시 Spot위치 조정(SpotCorner로 크기 조정 시 요청됨)
+//  if Assigned(FResizer) then
+//    FResizer.RealignSpot;
 end;
 
 procedure TThItem.SetParentCanvas(const Value: IThCanvas);
@@ -147,7 +148,7 @@ begin
   Result := PtInItem(P);
 end;
 
-procedure TThItem.DoItemResize(Sender: TObject; BeforeRect: TRectF);
+procedure TThItem.ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
 begin
 //  BeforeRect.Offset(Position.Point);
   if Assigned(FOnResize) then
@@ -198,6 +199,12 @@ begin
   end;
 
   InflateRect(R, 1, 1);
+end;
+
+procedure TThItem.RealignSpot;
+begin
+  if Assigned(FResizer) then
+    FResizer.RealignSpot;
 end;
 
 procedure TThItem.HideSpot;
@@ -266,13 +273,9 @@ begin
   begin
     if FSelected and Assigned(FOnTracking) then
     begin
-//      Debug('Move %f, %f', [X, Y]);
       Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
-//      Position.Point := Position.Point.Add(Gap);
       FOnTracking(Self, Gap.X, Gap.Y);
     end;
-
-//    InvalidateRect(UpdateRect);     //  잔상을 지우기 위해 기존 영역을 다시 그린다.
   end;
 end;
 
@@ -287,8 +290,6 @@ begin
       DoSelected(False, True)
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
       FOnMove(Self, FDownItemPos);
-
-//    Debug('%f, %f', [FMouseDownPos.X, X]);
   end;
 end;
 

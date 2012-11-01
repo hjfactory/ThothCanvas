@@ -11,6 +11,7 @@ type
   private
     FObservers: TInterfaceList;
     FCommandManager: TThCommandManager;
+
     function GetRedoCount: Integer;
     function GetUndoCount: Integer;
   public
