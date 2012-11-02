@@ -4,12 +4,14 @@ interface
 
 uses
   System.Classes,
-  ThTypes, ThClasses, ThCommandManager;
+  ThTypes, ThClasses, ThCommandManager, ThItemStorage;
 
 type
   TThothController = class(TThInterfacedObject, IThSubject)
   private
     FObservers: TInterfaceList;
+
+    FItemStorage: TThItemStorage;
     FCommandManager: TThCommandManager;
 
     function GetRedoCount: Integer;
@@ -37,6 +39,9 @@ constructor TThothController.Create;
 begin
   FObservers := TInterfaceList.Create;
 
+  FItemStorage := TThItemStorage.Create;
+  FItemStorage.SetSubject(Self);
+
   FCommandManager := TThCommandManager.Create;
   FCommandManager.SetSubject(Self);
 end;
@@ -44,6 +49,8 @@ end;
 destructor TThothController.Destroy;
 begin
   FCommandManager.Free;
+
+  FItemStorage.Free;
 
   FObservers.Clear;
   FObservers := nil;

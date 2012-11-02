@@ -16,6 +16,8 @@ type
     FRedoStack: TThCommandStack;
     function GetRedoCount: Integer;
     function GetUndoCount: Integer;
+
+    procedure ClearRedoCommand;
   public
     constructor Create;
     destructor Destroy; override;
@@ -33,7 +35,7 @@ type
 implementation
 
 uses
-  ThItemCommand;
+  ThItemCommand, ThSystemCommand;
 
 { TThCommandHistory }
 
@@ -45,6 +47,8 @@ end;
 
 destructor TThCommandManager.Destroy;
 begin
+  ClearRedoCommand;
+
   FUndoStack.Clear;
   FRedoStack.Clear;
   FUndoStack.Free;
@@ -70,23 +74,11 @@ begin
 end;
 
 procedure TThCommandManager.Notifycation(ACommand: IThCommand);
-var
-  I, J: Integer;
-  Command: IThCommand;
 begin
   FUndoStack.Push(ACommand);
 
   // Undo된 TThCommandItemAdd 커맨드의 Items는 신규 커맨드 요청 시 해제(Free)
-  for I := 0 to FRedoStack.Count - 1 do
-  begin
-    Command := FRedoStack.Pop;
-    if Command is TThCommandItemAdd then
-      for J := 0 to TThCommandItemAdd(Command).Items.Count - 1 do
-        TThCommandItemAdd(Command).Items[J].Free;
-  end;
-
-  // Undo된(FRedoStack에 위치한) 커맨드들은 새로운 커맨드 요청 시 Clear
-  FRedoStack.Clear;
+  ClearRedoCommand;
 end;
 
 procedure TThCommandManager.UndoAction;
@@ -117,6 +109,22 @@ begin
 
   Command.Execute;
   FUndoStack.Push(Command);
+end;
+
+procedure TThCommandManager.ClearRedoCommand;
+var
+  I: Integer;
+  Command: IThCommand;
+begin
+  for I := 0 to FRedoStack.Count - 1 do
+  begin
+    Command := FRedoStack.Pop;
+    if Command is TThCommandItemAdd then
+      FSubject.Subject(Self, TThCommandSystemItemDestroy.Create(TThCommandItemAdd(Command).Items));
+  end;
+
+  // Undo된(FRedoStack에 위치한) 커맨드들은 새로운 커맨드 요청 시 Clear
+  FRedoStack.Clear;
 end;
 
 end.

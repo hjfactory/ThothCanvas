@@ -30,6 +30,9 @@ type
 
     // #134 Undo 명령된 커맨드 들은 새로운 커맨드가 발생될때 제거되어야 한다.
     procedure TestClearUndoCommand;
+
+    // #135 Undo 명령으로 취소된 아이템추가는 새로운 명령이 있을경우 아이템이 제거되야 한다.
+    procedure TestClearUndoCommandDestroyItem;
   end;
 
 implementation
@@ -155,6 +158,16 @@ begin
 end;
 
 procedure TestTThCommandHistory.TestClearUndoCommand;
+begin
+  DrawRectangle(100, 100, 200, 200);
+  FThothController.Undo;
+  Check(FThothController.RedoCount = 1, 'RedoCount = 1');
+
+  DrawRectangle(100, 100, 200, 200);
+  Check(FThothController.RedoCount = 0, 'RedoCount = 0');
+end;
+
+procedure TestTThCommandHistory.TestClearUndoCommandDestroyItem;
 begin
   DrawRectangle(100, 100, 200, 200);
   FThothController.Undo;

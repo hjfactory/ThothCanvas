@@ -39,8 +39,6 @@ end;
 
 destructor TThCanvasEditorController.Destroy;
 begin
-//  FSubject := nil;
-//  FCanvas := nil;
 
   inherited;
 end;
@@ -86,6 +84,7 @@ procedure TThCanvasEditorController.ItemResize(Item: TThItem;
   BeforeRect: TRectF);
 begin
   FSubject.Subject(Self, TThCommandItemResize.Create(Item, BeforeRect));
+
 end;
 
 end.

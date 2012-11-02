@@ -7,7 +7,7 @@ uses
   ThTypes, ThClasses, ThItem;
 
 type
-  TThAbstractCommandItem = class(TInterfacedObject, IThItemCommand)
+  TThAbstractCommandItem = class(TInterfacedObject, IThCommand)
   protected
     FItems: TThItems;
   public

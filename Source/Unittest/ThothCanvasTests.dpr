@@ -42,7 +42,8 @@ uses
   ThCanvasController in '..\src\Controllers\ThCanvasController.pas',
   ThItemCommand in '..\src\Commands\ThItemCommand.pas',
   ThCommandManager in '..\src\Commands\ThCommandManager.pas',
-  ThItemStorage in '..\src\Controllers\ThItemStorage.pas';
+  ThItemStorage in '..\src\Controllers\ThItemStorage.pas',
+  ThSystemCommand in '..\src\Commands\ThSystemCommand.pas';
 
 {$R *.RES}
 

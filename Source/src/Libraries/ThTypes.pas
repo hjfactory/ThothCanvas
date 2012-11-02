@@ -22,12 +22,17 @@ type
 type
   IThObserver = interface;
 
+  /////////////////////////////////////////////////////////
+  ///  Commands
   IThCommand = interface
     procedure Execute;
     procedure Rollback;
   end;
 
   IThItemCommand = interface(IThCommand)
+  end;
+
+  IThSystemCommand = interface(IThCommand)
   end;
 
   /////////////////////////////////////////////////////////

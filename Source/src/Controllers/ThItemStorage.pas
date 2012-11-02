@@ -10,15 +10,21 @@ type
   private
     FSubject: IThSubject;
     FItems: TThItems;
+    function GetItemCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
+
+    property ItemCount: Integer read GetItemCount;
   end;
 
 implementation
+
+uses
+  ThItemCommand, ThSystemCommand;
 
 { TThItemStorage }
 
@@ -34,6 +40,11 @@ begin
   inherited;
 end;
 
+function TThItemStorage.GetItemCount: Integer;
+begin
+  Result := FItems.Count;
+end;
+
 procedure TThItemStorage.SetSubject(ASubject: IThSubject);
 begin
   FSubject := ASubject;
@@ -41,7 +52,24 @@ begin
 end;
 
 procedure TThItemStorage.Notifycation(ACommand: IThCommand);
+var
+  I: Integer;
+  Item: TThItem;
 begin
+  if ACommand is TThCommandItemAdd then
+  begin
+    // 중복되는 일은 없겠지??
+    FItems.AddRange(TThCommandItemAdd(ACommand).Items);
+  end
+  else if ACommand is TThCommandSystemItemDestroy then
+  begin
+    for I := 0 to TTHCommandSystemItemDestroy(ACommand).Items.Count - 1 do
+    begin
+      Item := TTHCommandSystemItemDestroy(ACommand).Items[I];
+      FItems.Remove(Item);
+      Item.Free;
+    end;
+  end;
 
 end;
 
