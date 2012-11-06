@@ -24,6 +24,8 @@ type
     FOnItemMove: TItemListPointvent;
     FOnItemResize: TItemResizeEvent;
 
+    FIsMultiSelecting: Boolean; // BeginSelect, EndSelect
+
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
@@ -45,6 +47,8 @@ type
 
     property SelectedItem: TThItem read FSelectedItem;
     procedure ClearSelection;
+    procedure BeginSelect;
+    procedure EndSelect;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
@@ -75,6 +79,7 @@ begin
   CanFocus := True; // Keyboard event
 
   FDrawItemID := -1;
+  FIsMultiSelecting := False;
 
   FSelections := TThItems.Create;
 end;
@@ -84,6 +89,16 @@ begin
   FSelections.Free;
 
   inherited;
+end;
+
+procedure TThCanvasEditor.BeginSelect;
+begin
+  FIsMultiSelecting := True;
+end;
+
+procedure TThCanvasEditor.EndSelect;
+begin
+  FIsMultiSelecting := False;
 end;
 
 function TThCanvasEditor.AddItem(const ItemID: Integer): TThItem;
@@ -141,7 +156,7 @@ procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsMultiSelect: Boolean);
 var
   I: Integer;
 begin
-  if not IsMultiSelect then
+  if (not IsMultiSelect) and (not FIsMultiSelecting) then
     ClearSelection;
 
   // Multiselect 시 처리
@@ -180,13 +195,11 @@ begin
 
   for I := FSelections.Count - 1 downto 0 do
   begin
+    FSelections[I].Tag := FSelections[I].Index; // Rollback 시 Index 복구용
     FSelections[I].Parent := nil;
     FSelections[I].Visible := False;
     FSelections[I].Selected := False;
   end;
-
-//  FSelections.Clear;
-//  FSelectedItem := nil;
 end;
 
 function TThCanvasEditor.GetSelectionCount: Integer;

@@ -33,6 +33,9 @@ type
 
     // #135 Undo 명령으로 취소된 아이템추가는 새로운 명령이 있을경우 아이템이 제거되야 한다.
     procedure TestClearUndoCommandDestroyItem;
+
+    // #154 아래위치한 아이템을 삭제> 복구 시 그대로 아래에 위치해야 한다.
+    procedure TestBackItemUndoAfterBack;
   end;
 
 implementation
@@ -169,12 +172,38 @@ end;
 
 procedure TestTThCommandHistory.TestClearUndoCommandDestroyItem;
 begin
+  DrawRectangle(10, 10, 100, 100);
   DrawRectangle(100, 100, 200, 200);
-  FThothController.Undo;
-  Check(FThothController.RedoCount = 1, 'RedoCount = 1');
+  Check(FThothController.ItemCount = 2, 'ItemCount = 2');
 
-  DrawRectangle(100, 100, 200, 200);
-  Check(FThothController.RedoCount = 0, 'RedoCount = 0');
+  FThothController.Undo;
+  Check(FThothController.ItemCount = 2, 'Undo. ItemCount = 2');
+
+  MousePath.New
+  .Add(50, 50)
+  .Add(80, 100);
+  TestLib.RunMousePath(MousePath.Path);
+
+  Check(FThothController.ItemCount = 1, 'New cmd. ItemCount = 1');
+end;
+
+procedure TestTThCommandHistory.TestBackItemUndoAfterBack;
+begin
+  DrawRectangle(250, 250, 300, 300);
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(80, 80, 200, 200);
+
+  TestLib.RunMouseClick(90, 90);
+  CheckNotNull(FCanvas.SelectedItem);
+  Check(FCanvas.SelectedItem.Position.X = 80, '2nd item select');
+
+  TestLib.RunMouseClick(50, 50);
+  FCanvas.DeleteSelection;
+  FThothController.Undo;
+
+  TestLib.RunMouseClick(90, 90);
+  CheckNotNull(FCanvas.SelectedItem);
+  Check(FCanvas.SelectedItem.Position.X = 80, 'Undo. 2nd item select');
 end;
 
 initialization

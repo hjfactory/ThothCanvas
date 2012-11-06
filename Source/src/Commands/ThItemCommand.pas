@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  CommonUtils;
+  CommonUtils, ThCanvasEditor;
 
 { TThAbstractCommandItem }
 
@@ -141,12 +141,22 @@ end;
 procedure TThCommandItemDelete.Rollback;
 var
   I: Integer;
+  Canvas: TThCanvasEditor;
 begin
-  for I := 0 to FItems.Count - 1 do
-  begin
-    FItems[I].Parent := FParent;
-    FItems[I].Visible := True;
-    FItems[I].Selected := True;
+  Canvas := TThCanvasEditor(FParent);
+
+  Canvas.ClearSelection;
+  Canvas.BeginSelect;
+  try
+    for I := 0 to FItems.Count - 1 do
+    begin
+      FItems[I].Parent := FParent;
+      FItems[I].Index := FItems[I].Tag;
+      FItems[I].Visible := True;
+      FItems[I].Selected := True;
+    end;
+  finally
+    Canvas.EndSelect;
   end;
 end;
 

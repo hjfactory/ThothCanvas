@@ -18,7 +18,9 @@ uses
   ThCanvasController in 'Controllers\ThCanvasController.pas',
   ThothController in 'Controllers\ThothController.pas',
   ThCommandManager in 'Commands\ThCommandManager.pas',
-  ThItemCommand in 'Commands\ThItemCommand.pas';
+  ThItemCommand in 'Commands\ThItemCommand.pas',
+  ThItemStorage in 'Controllers\ThItemStorage.pas',
+  ThSystemCommand in 'Commands\ThSystemCommand.pas';
 
 {$R *.res}
 

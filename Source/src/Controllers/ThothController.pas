@@ -16,6 +16,7 @@ type
 
     function GetRedoCount: Integer;
     function GetUndoCount: Integer;
+    function GetItemCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -29,6 +30,8 @@ type
 
     property UndoCount: Integer read GetUndoCount;
     property RedoCount: Integer read GetRedoCount;
+
+    property ItemCount: Integer read GetItemCount;
   end;
 
 implementation
@@ -56,6 +59,11 @@ begin
   FObservers := nil;
 
   inherited;
+end;
+
+function TThothController.GetItemCount: Integer;
+begin
+  Result := FItemStorage.ItemCount;
 end;
 
 function TThothController.GetRedoCount: Integer;
