@@ -14,8 +14,10 @@ type
     FSpotCorner: TSpotCorner;
     FOnTracking: TTrackingEvent;
     FParentItem: IThItem;
+    FDisabled: Boolean;
     procedure SetSpotCorner(const Value: TSpotCorner);
     procedure SetParentItem(const Value: IThItem);
+    procedure SetDisabled(const Value: Boolean);
   protected
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
@@ -31,6 +33,7 @@ type
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
 
     property ParentItem: IThItem read FParentItem write SetParentItem;
+    property Disabled: Boolean read FDisabled write SetDisabled;
 
     class function InflateSize: Integer;
   end;
@@ -43,13 +46,15 @@ type
     constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
   end;
 
+  TThResizeSpots = TList<TItemResizeSpot>;
   TResizeSpotClass = class of TItemResizeSpot;
+
   TThItemResizer = class(TInterfacedObject, IItemResizer)
   private
     FParent: IItemResizerObject;
     FSpotClass: TResizeSpotClass;
     FParentControl: TControl;
-    FList: TList;
+    FSpots: TThResizeSpots;
     FOnTracking: TTrackingEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
@@ -73,6 +78,7 @@ type
     function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF; virtual;
 
     procedure ShowSpots;
+    procedure ShowDisableSpots;
     procedure HideSpots;
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
@@ -134,6 +140,9 @@ end;
 procedure TItemResizeSpot.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
+  if FDisabled then
+    Exit;
+
   inherited;
 
   if FPressed then
@@ -148,6 +157,8 @@ procedure TItemResizeSpot.MouseMove(Shift: TShiftState; X, Y: Single);
 var
   Gap: TPointF;
 begin
+  if FDisabled then
+    Exit;
   inherited;
 
   if FPressed then
@@ -163,6 +174,8 @@ end;
 procedure TItemResizeSpot.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
+  if FDisabled then
+    Exit;
   inherited;
 
   if (FDownItemRect <> TControl(Parent).BoundsRect) then
@@ -181,6 +194,16 @@ begin
   P := AbsoluteToLocal(PointF(X, Y));
   if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
     Result := True;
+end;
+
+procedure TItemResizeSpot.SetDisabled(const Value: Boolean);
+begin
+  FDisabled := Value;
+
+  if FDisabled then
+    Cursor := crDefault
+  else
+    SetSpotCorner(FSpotCorner);
 end;
 
 procedure TItemResizeSpot.SetParentItem(const Value: IThItem);
@@ -207,15 +230,15 @@ constructor TThItemResizer.Create(AParent: IItemResizerObject);
 begin
   FParent := AParent;
   FParentControl := TControl(AParent);
-  FList := TList.Create;
+  FSpots := TThResizeSpots.Create;
 end;
 
 destructor TThItemResizer.Destroy;
 var
   I: Integer;
 begin
-  for I := FList.Count - 1 downto 0 do
-    TControl(FList[I]).Free;
+  for I := FSpots.Count - 1 downto 0 do
+    FSpots[I].Free;
 
   inherited;
 end;
@@ -225,9 +248,9 @@ var
   I: Integer;
   Spot: TItemResizeSpot;
 begin
-  for I := FList.Count - 1 downto 0 do
-    TControl(FList[I]).Free;
-  FList.Clear;
+  for I := FSpots.Count - 1 downto 0 do
+    FSpots[I].Free;
+  FSpots.Clear;
   Assert(Assigned(FSpotClass), 'Not assigned items Spot class');
 
   for I := 0 to Length(Spots) - 1 do
@@ -237,7 +260,7 @@ begin
     Spot.Parent := TControl(FParent);
     Spot.OnTracking := DoResizeSpotTrack;
     Spot.Visible := False;
-    FList.Add(Spot);
+    FSpots.Add(Spot);
   end;
 end;
 
@@ -248,7 +271,7 @@ end;
 
 function TThItemResizer.GetCount: Integer;
 begin
-  Result := FList.Count;
+  Result := FSpots.Count;
 end;
 
 function TThItemResizer.GetResizerRect: TRectF;
@@ -262,9 +285,9 @@ function TThItemResizer.GetSpot(
 var
   I: Integer;
 begin
-  for I := 0 to FList.Count - 1 do
+  for I := 0 to FSpots.Count - 1 do
   begin
-    Result := FList[I];
+    Result := FSpots[I];
     if Result.SpotCorner = SpotCorner then
       Exit;
   end;
@@ -274,16 +297,33 @@ end;
 
 function TThItemResizer.GetSpots(Index: Integer): IItemResizeSpot;
 begin
-  if FList.Count > Index then
-    Result := IItemResizeSpot(TItemResizeSpot(FList[Index]));
+  if FSpots.Count > Index then
+    Result := IItemResizeSpot(TItemResizeSpot(FSpots[Index]));
 end;
 
 procedure TThItemResizer.ShowSpots;
 var
   I: Integer;
 begin
-  for I := 0 to FList.Count - 1 do
-    TControl(FList[I]).Visible := True;
+  for I := 0 to FSpots.Count - 1 do
+  begin
+    FSpots[I].Disabled := False;
+    FSpots[I].Visible := True;
+  end;
+
+  RealignSpot;
+end;
+
+procedure TThItemResizer.ShowDisableSpots;
+var
+  I: Integer;
+begin
+  for I := 0 to FSpots.Count - 1 do
+  begin
+    FSpots[I].Disabled := True;
+    FSpots[I].Visible := True;
+  end;
+
   RealignSpot;
 end;
 
@@ -291,8 +331,8 @@ procedure TThItemResizer.HideSpots;
 var
   I: Integer;
 begin
-  for I := 0 to FList.Count - 1 do
-    TControl(FList[I]).Visible := False;
+  for I := 0 to FSpots.Count - 1 do
+    TControl(FSpots[I]).Visible := False;
 end;
 
 procedure TThItemResizer.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
@@ -478,7 +518,10 @@ begin
 
   Canvas.StrokeThickness := 1;
   Canvas.Stroke.Color := $FF222222;
-  if IsMouseOver then
+
+  if FDisabled then
+    Canvas.Fill.Color := ItemResizeSpotDisableColor
+  else if IsMouseOver then
     Canvas.Fill.Color := ItemResizeSpotOverColor
   else
     Canvas.Fill.Color := ItemResizeSpotOutColor;

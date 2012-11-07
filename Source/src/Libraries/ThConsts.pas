@@ -23,11 +23,16 @@ const
 
   ItemResizeSpotOverColor = claRed;
   ItemResizeSpotOutColor = claWhite;
+  ItemResizeSpotDisableColor = claDarkgray;
   ItemResizeSpotRadius = 6;
 
+  // Item factorys Unique id
   ItemFactoryIDRectangle  = 1100;
   ItemFactoryIDLine       = 1200;
   ItemFactoryIDCircle     = 1300;
+
+  CanvasTrackAniCount   = 7;
+  CanvasTrackDuration   = 0.5;
 
 implementation
 

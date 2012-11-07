@@ -58,13 +58,25 @@ type
 
     // #174 2개의 아이템 선택 상태에서 하나 클릭 시 클릭한 아이템 선택해제
     procedure TestMultiselectAndShiftClickSingleSelect;
+
+    // #184 다중 선택 시 모든 아이템에 외곽선이 표시되어야 한다.
+    procedure TestMultiselectDrawOutline;
+
+    // #186 다중 선택 해제 시 하나만 선택되는 경우 ResizeSpot이 표시되어야 한다.
+    procedure TestMultiselectAndUnselectResizeSpot;
+
+    // #185 다중 선택된 ResizeSpot은 마우스로 크기 변경이 되지 않아야 한다.
+    procedure TestMultiselectCantResize;
+
+    // #182 다중 선택 시 하이라이트는 마우스오버된 경우만 표시되야 한다.
+    procedure TestShowHighlightOnlyMouseOver;
   end;
 
 implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor, ThConsts,
-  ThItem, ThShape, ThItemFactory, CommonUtils, FMX.Controls;
+  ThItem, ThShape, ThItemFactory, CommonUtils, FMX.Controls, UITypes;
 
 { TestTThItemDelete }
 
@@ -378,6 +390,79 @@ begin
   TestLib.RunKeyUpShift;
   Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
   Check(FCanvas.SelectedItem.Position.X = 10, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
+end;
+
+procedure TestTThItemControl.TestMultiselectDrawOutline;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyUpShift;
+
+  // ResizeSpot 표시 확인
+  Check(TestLib.GetControlPixelColor(FCanvas, 10, 10) = ItemResizeSpotDisableColor,   Format('Not matching color TopLeft(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotDisableColor]));
+  Check(TestLib.GetControlPixelColor(FCanvas, 180, 180) = ItemResizeSpotDisableColor, Format('Not matching color BottomRight(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotDisableColor]));
+end;
+
+procedure TestTThItemControl.TestMultiselectAndUnselectResizeSpot;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyUpShift;
+
+  Check(TestLib.GetControlPixelColor(FCanvas, 180, 180) = ItemResizeSpotOutColor, Format('Not matching color BottomRight(%d, %d)', [TestLib.GetControlPixelColor(FCanvas, 10, 10), ItemResizeSpotOutColor]));
+end;
+
+procedure TestTThItemControl.TestMultiselectCantResize;
+begin
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyUpShift;
+
+  MousePath.New
+  .Add(180, 180)
+  .Add(180, 200)
+  .Add(200, 200);
+  TestLib.RunMousePath(MousePath.Path);
+
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(150, 150);
+  CheckNotNull(FCanvas.SelectedItem);
+  Check(FCanvas.SelectedItem.Width = 70, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+end;
+
+procedure TestTThItemControl.TestShowHighlightOnlyMouseOver;
+var
+  AC: TAlphaColor;
+begin
+  ShowForm;
+
+  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(110, 110, 180, 180);
+
+  TestLib.RunMouseClick(169, 170);
+  TestLib.RunKeyDownShift;
+  TestLib.RunMouseClick(50, 50);
+  TestLib.RunKeyUpShift;
+
+  MousePath.New
+  .Add(250, 250);
+  TestLib.RunMouseMove(MousePath.Path);
+
+  AC := TestLib.GetControlPixelColor(FCanvas, 20, 100 + (ItemHighlightSize - 1));
+  Check(AC <> ItemHighlightColor);
 end;
 
 initialization

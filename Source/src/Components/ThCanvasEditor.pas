@@ -161,7 +161,7 @@ begin
 
   // Multiselect ½Ã Ã³¸®
   for I := 0 to FSelections.Count - 1 do
-    FSelections[I].HideSpot;
+    FSelections[I].ShowDisableSpots;
 
   FSelectedItem := Item;
   FSelections.Add(FSelectedItem);
@@ -173,6 +173,9 @@ begin
   FSelectedItem := nil;
   if FSelections.Count > 0 then
     FSelectedItem := FSelections.Last;
+
+  if FSelections.Count = 1 then
+    FSelections[0].ShowSpots;
 end;
 
 procedure TThCanvasEditor.ClearSelection;

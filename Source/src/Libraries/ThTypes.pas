@@ -97,6 +97,7 @@ type
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots;
 
     procedure ShowSpots;
+    procedure ShowDisableSpots;
     procedure HideSpots;
     procedure RealignSpot;
   end;

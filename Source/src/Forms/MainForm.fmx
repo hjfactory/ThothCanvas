@@ -102,4 +102,22 @@ object Form1: TForm1
     Width = 104.000000000000000000
     OnClick = Button6Click
   end
+  object Button7: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 392.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'Button7'
+    Width = 80.000000000000000000
+    OnClick = Button7Click
+  end
+  object Button8: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 304.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'Button8'
+    Width = 80.000000000000000000
+    OnClick = Button8Click
+  end
 end

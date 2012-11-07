@@ -10,7 +10,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, ThCanvasEditor,
   FMX.Objects, FMX.ExtCtrls, ThothController, ThCanvasController, ThTypes,
-  ThItemCommand;
+  ThItemCommand, FMX.Ani;
 
 type
   TForm1 = class(TForm, IThObserver)
@@ -23,6 +23,8 @@ type
     btnRedo: TCornerButton;
     btnUndo: TCornerButton;
     Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -30,11 +32,16 @@ type
     procedure Button6Click(Sender: TObject);
     procedure btnUndoClick(Sender: TObject);
     procedure btnRedoClick(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
     { Private declarations }
     FController: TThothController;
     FCanvas: TThCanvasEditor;
     FCanvasController: TThCanvasEditorController;
+
+    // test
+  FHorzTrackAni : TFloatAnimation;
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
@@ -123,6 +130,28 @@ end;
 procedure TForm1.Button6Click(Sender: TObject);
 begin
   FCanvas.DeleteSelection;
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);
+begin
+  FHorzTrackAni := TFloatAnimation.Create(Self);
+  FHorzTrackAni.Parent := FCanvas;
+  FHorzTrackAni.AnimationType := TAnimationType.atOut;
+  FHorzTrackAni.Interpolation := TInterpolationType.itQuadratic;
+  FHorzTrackAni.PropertyName := 'ViewPortPosition.X';
+  FHorzTrackAni.StartFromCurrent := True;
+  FHorzTrackAni.Delay := 0;
+  FHorzTrackAni.Duration := 5;
+
+  FHorzTrackAni.StartValue := 0;
+  FHorzTrackAni.StopValue := 50;
+  FHorzTrackAni.Start;
+
+end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+begin
+  FCanvas.ViewPortPosition.X := FCanvas.ViewPortPosition.X + 100;
 end;
 
 end.

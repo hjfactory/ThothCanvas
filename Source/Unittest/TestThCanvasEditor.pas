@@ -33,13 +33,17 @@ type
 
     // #49 캔버스를 클릭하면 (도형)선택이 취소되어야 한다.
     procedure TestUnselectingItem;
+
+// #180 캔버스 이동 완료 시 애니메이션 효과를 주어 약간 더 흘러가게 한다.
+    // #187 캔버스를 클릭하여 이동 후 마우스를 놓으면 마지막 이동거리 * 지정횟수 만큼 움직여야 한다.
+    procedure TestCanvasTrackingAnimation;
   end;
 
 implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
-  ThItem, ThShape, ThItemFactory, FMX.Forms;
+  ThItem, ThShape, ThItemFactory, FMX.Forms, ThConsts;
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
@@ -52,8 +56,8 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ContentPos.X = 150) and (FCanvas.ContentPos.X = 150)
-    , Format('FCanvas.Postion : %f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.X])
+    (FCanvas.ViewPortPosition.X = 150) and (FCanvas.ViewPortPosition.X = 150)
+    , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
 
@@ -69,8 +73,8 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ContentPos.X = -150) and (FCanvas.ContentPos.X = -150)
-    , Format('FCanvas.Postion : %f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.X])
+    (FCanvas.ViewPortPosition.X = -150) and (FCanvas.ViewPortPosition.X = -150)
+    , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
 
@@ -85,8 +89,8 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ContentPos.X = -250)
-    , Format('FCanvas.Postion : %f, %f', [FCanvas.ContentPos.X, FCanvas.ContentPos.X])
+    (FCanvas.ViewPortPosition.X = -250)
+    , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
 
@@ -144,6 +148,23 @@ begin
 
   Check(not Assigned(FCanvas.SelectedItem), 'Incorrent select');
   Check(not Item.Selected, 'Item unselected');
+end;
+
+procedure TestTThCanvasEditor.TestCanvasTrackingAnimation;
+begin
+  ShowForm;
+
+  DrawRectangle(100, 100, 150, 150);
+
+  MousePath.New
+  .Add(10, 10)
+  .Add(50, 10)
+  .Add(55, 10);
+  TestLib.RunMousePath(MousePath.Path);
+
+  Delay(1000);
+
+  Check(FCanvas.ViewPortPosition.X = (45 + 5 * CanvasTrackAniCount), Format('X: %f', [FCanvas.ViewPortPosition.X]));
 end;
 
 initialization

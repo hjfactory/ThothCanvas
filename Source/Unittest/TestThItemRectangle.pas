@@ -128,7 +128,7 @@ begin
   .Add(100, 50);
   TestLib.RunMousePath(MousePath.Path);
 
-  Check(FCanvas.ContentPos.X = 100);
+  Check(FCanvas.ViewPortPosition.X = 100);
 
   // Draw Rectangle
   DrawRectangle(10, 10, 100, 100);
@@ -217,7 +217,7 @@ begin
   // 선택해제
   TestLib.RunMouseClick(150, 150);
   AC := TestLib.GetControlPixelColor(FCanvas, 100 + (ItemHighlightSize - 1), 100 + (ItemHighlightSize - 1));
-  Check(AC <> ItemHighlightColor, 'Canvas color is not gray');
+  Check(AC <> ItemHighlightColor, 'Canvas color is not highlight color');
 
   MousePath.New
   .Add(150, 150)

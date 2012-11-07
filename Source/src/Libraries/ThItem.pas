@@ -64,7 +64,8 @@ type
 
     procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
     procedure RealignSpot;
-    procedure HideSpot;
+    procedure ShowSpots;
+    procedure ShowDisableSpots;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -132,7 +133,8 @@ procedure TThItem.Painting;
 begin
   inherited;
 
-  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
+//  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
+  if (IsMouseOver) and Assigned(FHighlighter) then
     FHighlighter.DrawHighlight;
 end;
 
@@ -207,10 +209,16 @@ begin
     FResizer.RealignSpot;
 end;
 
-procedure TThItem.HideSpot;
+procedure TThItem.ShowDisableSpots;
 begin
   if Assigned(FResizer) then
-    FResizer.HideSpots;
+    FResizer.ShowDisableSpots;
+end;
+
+procedure TThItem.ShowSpots;
+begin
+  if Assigned(FResizer) then
+    FResizer.ShowSpots;
 end;
 
 procedure TThItem.SetSelected(const Value: Boolean);
@@ -232,7 +240,9 @@ begin
 
   if Assigned(FResizer) then
   begin
-    if (not FParentCanvas.IsMultiSelected) and Value then
+    if FParentCanvas.IsMultiSelected then
+      FResizer.ShowDisableSpots
+    else if {(not FParentCanvas.IsMultiSelected) and} Value then
       FResizer.ShowSpots
     else
       FResizer.HideSpots;

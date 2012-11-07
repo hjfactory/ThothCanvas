@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.SysUtils, ThTypes, ThItem,
-  System.Types, System.UITypes, System.UIConsts, FMX.Types;
+  System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani;
 
 type
   TThContents = class(TControl)
@@ -23,7 +23,11 @@ type
     FUseMouseTracking: Boolean;
     FBgColor: TAlphaColor;
 
-    function GetContentPos: TPosition;
+    FLastDelta: TPointF;
+    FVertTrackAni,
+    FHorzTrackAni: TFloatAnimation;
+
+    function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
   protected
@@ -47,7 +51,7 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
-    property ContentPos: TPosition read GetContentPos;
+    property ViewPortPosition: TPosition read GetViewPortPosition;
     property ItemCount: Integer read GetItemCount;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
@@ -56,7 +60,7 @@ type
 implementation
 
 uses
-  CommonUtils;
+  ThConsts;
 
 { TThContent }
 
@@ -121,6 +125,24 @@ begin
   FContents.Stored := False;
   FContents.Locked := True;
 
+  FVertTrackAni := TFloatAnimation.Create(Self);
+  FVertTrackAni.Parent := Self;
+  FVertTrackAni.AnimationType := TAnimationType.atOut;
+  FVertTrackAni.Interpolation := TInterpolationType.itQuadratic;
+  FVertTrackAni.PropertyName := 'ViewPortPosition.Y';
+  FVertTrackAni.StartFromCurrent := True;
+  FVertTrackAni.Delay := 0;
+  FVertTrackAni.Duration := CanvasTrackDuration;
+
+  FHorzTrackAni := TFloatAnimation.Create(Self);
+  FHorzTrackAni.Parent := Self;
+  FHorzTrackAni.AnimationType := TAnimationType.atOut;
+  FHorzTrackAni.Interpolation := TInterpolationType.itQuadratic;
+  FHorzTrackAni.PropertyName := 'ViewPortPosition.X';
+  FHorzTrackAni.StartFromCurrent := True;
+  FHorzTrackAni.Delay := 0;
+  FHorzTrackAni.Duration := CanvasTrackDuration;
+
 {$IFDEF DEBUG}
   FBgColor := $FFDDFFDD;
 {$ELSE}
@@ -131,6 +153,8 @@ end;
 destructor TThCanvas.Destroy;
 begin
   FContents.Free;
+//  FVertTrackAni.Free;
+//  FHorzTrackAni.Free;
 
   inherited;
 end;
@@ -150,21 +174,25 @@ begin
 
   if FPressed and FUseMouseTracking then
   begin
+    FLastDelta := PointF(0, 0);
     FMouseDownPos := PointF(X, Y);
     FMouseCurrPos := PointF(X, Y);
+
+    if FVertTrackAni.Running then
+      FVertTrackAni.StopAtCurrent;
+    if FHorzTrackAni.Running then
+      FHorzTrackAni.StopAtCurrent;
   end;
 end;
 
 procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
-var
-  TrackingPos: TPointF;
 begin
   if FPressed and FUseMouseTracking then
   begin
-    TrackingPos := PointF(X - FMouseCurrPos.X, Y - FMouseCurrPos.Y);
+    FLastDelta := PointF(X - FMouseCurrPos.X, Y - FMouseCurrPos.Y);
     FMouseCurrPos := PointF(X, Y);
 
-    FContents.AddTrackingPos(TrackingPos);
+    FContents.AddTrackingPos(FLastDelta);
   end;
 end;
 
@@ -172,6 +200,24 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
 begin
   inherited;
+
+  if FLastDelta.Y <> 0 then
+  begin
+    if FVertTrackAni.Running then
+      FVertTrackAni.StopAtCurrent;
+    FVertTrackAni.StartValue  := ViewPortPosition.Y;
+    FVertTrackAni.StopValue   := ViewPortPosition.Y + FLastDelta.Y * CanvasTrackAniCount;
+    FVertTrackAni.Start;
+  end;
+
+  if FLastDelta.X <> 0 then
+  begin
+    if FHorzTrackAni.Running then
+      FHorzTrackAni.StopAtCurrent;
+    FHorzTrackAni.StartValue  := ViewPortPosition.X;
+    FHorzTrackAni.StopValue   := ViewPortPosition.X + FLastDelta.X * CanvasTrackAniCount;
+    FHorzTrackAni.Start;
+  end;
 
   if FMouseDownPos = PointF(X, Y) then
     ClickCanvas
@@ -215,7 +261,7 @@ begin
   Result := False;
 end;
 
-function TThCanvas.GetContentPos: TPosition;
+function TThCanvas.GetViewPortPosition: TPosition;
 begin
   Result := FContents.Position;
 end;
