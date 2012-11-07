@@ -3,7 +3,7 @@ unit ThItemCommand;
 interface
 
 uses
-  FMX.Types, System.Types,
+  FMX.Types, System.Types, System.SysUtils,
   ThTypes, ThClasses, ThItem;
 
 type
@@ -84,8 +84,6 @@ destructor TThAbstractCommandItem.Destroy;
 begin
   FItems.Free;
 
-  Debug('Destroy Command');
-
   inherited;
 end;
 
@@ -105,6 +103,7 @@ begin
   Item := FItems[0];
   Item.Parent := FParent;
   Item.Visible := True;
+  Item.Selected := True;
 //  Item.Repaint;
 end;
 
@@ -113,6 +112,7 @@ var
   Item: TThItem;
 begin
   Item := FItems[0];
+  Item.Selected := False;
   Item.Parent := nil;
   Item.Visible := False;
 end;

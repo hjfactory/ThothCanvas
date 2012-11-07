@@ -24,7 +24,7 @@ type
 implementation
 
 uses
-  ThItemCommand, ThSystemCommand;
+  ThItemCommand, ThSystemCommand, CommonUtils;
 
 { TThItemStorage }
 
@@ -35,6 +35,8 @@ end;
 
 destructor TThItemStorage.Destroy;
 begin
+  FSubject.UnregistObserver(Self);
+
   FItems.Free;
 
   inherited;
@@ -70,7 +72,6 @@ begin
       Item.Free;
     end;
   end;
-
 end;
 
 end.

@@ -101,8 +101,6 @@ begin
   FHighlighter := nil;
   FResizer := nil; // Interface Free(destory)
 
-  Debug('Destroy Item');
-
   inherited;
 end;
 

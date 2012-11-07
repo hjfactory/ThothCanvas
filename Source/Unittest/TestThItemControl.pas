@@ -447,8 +447,6 @@ procedure TestTThItemControl.TestShowHighlightOnlyMouseOver;
 var
   AC: TAlphaColor;
 begin
-  ShowForm;
-
   DrawRectangle(10, 10, 100, 100);
   DrawRectangle(110, 110, 180, 180);
 

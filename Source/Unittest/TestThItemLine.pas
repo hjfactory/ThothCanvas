@@ -200,6 +200,7 @@ end;
 procedure TestTThLine.TestLineHorizon;
 begin
   DrawLine(10, 200, 20, 200);
+  FCanvas.ClearSelection;
 
   Check(TestLib.GetControlPixelColor(FCanvas, 10, 197) = ItemShapeDefaultColor, 'Start');
   Check(TestLib.GetControlPixelColor(FCanvas, 20, 197) = ItemShapeDefaultColor, 'End');
@@ -208,6 +209,7 @@ end;
 procedure TestTThLine.TestLineVertical;
 begin
   DrawLine(10, 10, 10, 20);
+  FCanvas.ClearSelection;
 
   Check(TestLib.GetControlPixelColor(FCanvas, 7, 10) = ItemShapeDefaultColor, 'Start');
   Check(TestLib.GetControlPixelColor(FCanvas, 7, 20) = ItemShapeDefaultColor, 'End');

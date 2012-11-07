@@ -73,7 +73,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ViewPortPosition.X = -150) and (FCanvas.ViewPortPosition.X = -150)
+    (FCanvas.ViewPortPosition.X <= -150) and (FCanvas.ViewPortPosition.X <= -150)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
@@ -152,8 +152,6 @@ end;
 
 procedure TestTThCanvasEditor.TestCanvasTrackingAnimation;
 begin
-  ShowForm;
-
   DrawRectangle(100, 100, 150, 150);
 
   MousePath.New

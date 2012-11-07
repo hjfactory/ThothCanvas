@@ -179,11 +179,7 @@ begin
   inherited;
 
   if (FDownItemRect <> TControl(Parent).BoundsRect) then
-  begin
-    Debug('Resize item');
-
     FParentItem.ItemResizeBySpot(Self, FDownItemRect);
-  end;
 end;
 
 function TItemResizeSpot.PointInObject(X, Y: Single): Boolean;

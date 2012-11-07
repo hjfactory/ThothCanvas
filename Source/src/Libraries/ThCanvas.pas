@@ -3,7 +3,7 @@ unit ThCanvas;
 interface
 
 uses
-  System.Classes, System.SysUtils, ThTypes, ThItem,
+  System.Classes, System.SysUtils, ThTypes, ThItem, FMX.Layouts,
   System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani;
 
 type
@@ -161,7 +161,7 @@ end;
 
 procedure TThCanvas.DoAddObject(AObject: TFmxObject);
 begin
-  if Assigned(FContents) and (AObject <> FContents) then
+  if Assigned(FContents) and (AObject <> FContents) and (not (AObject is TAnimation)) then
     FContents.AddObject(AObject)
   else
     inherited;

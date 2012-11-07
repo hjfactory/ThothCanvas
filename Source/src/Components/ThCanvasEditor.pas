@@ -258,7 +258,7 @@ begin
 
   if IsDrawingItem and Assigned(FDrawItem) then
   begin
-//    FDrawItem.Selected := True;
+    FDrawItem.Selected := True;
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);
   end;

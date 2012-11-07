@@ -151,7 +151,7 @@ end;
 
 procedure TForm1.Button8Click(Sender: TObject);
 begin
-  FCanvas.ViewPortPosition.X := FCanvas.ViewPortPosition.X + 100;
+  FCanvas.ViewPortPosition.X := FCanvas.ViewPortPosition.X + 10;
 end;
 
 end.

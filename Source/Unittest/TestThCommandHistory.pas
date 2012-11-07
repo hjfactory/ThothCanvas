@@ -112,8 +112,6 @@ procedure TestTThCommandHistory.TestCommandHistoryMove;
 var
   P: TPointF;
 begin
-//  ShowForm;
-
   DrawRectangle(10, 10, 100, 100);
 
   MousePath.New
@@ -137,8 +135,6 @@ end;
 
 procedure TestTThCommandHistory.TestCommandHistoryResize;
 begin
-//  ShowForm;
-
   DrawRectangle(100, 100, 200, 200);
 
   TestLib.RunMouseClick(150, 150);
@@ -172,7 +168,7 @@ end;
 
 procedure TestTThCommandHistory.TestClearUndoCommandDestroyItem;
 begin
-  DrawRectangle(10, 10, 100, 100);
+  DrawRectangle(10, 10, 80, 80);
   DrawRectangle(100, 100, 200, 200);
   Check(FThothController.ItemCount = 2, 'ItemCount = 2');
 

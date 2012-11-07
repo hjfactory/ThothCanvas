@@ -39,13 +39,13 @@ end;
 
 destructor TThCanvasEditorController.Destroy;
 begin
+  FSubject.UnregistObserver(Self);
 
   inherited;
 end;
 
 procedure TThCanvasEditorController.Notifycation(ACommand: IThCommand);
 begin
-
 end;
 
 procedure TThCanvasEditorController.SetSubject(ASubject: IThSubject);

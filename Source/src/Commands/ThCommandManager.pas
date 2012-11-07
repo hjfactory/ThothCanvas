@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  ThItemCommand, ThSystemCommand;
+  ThItemCommand, ThSystemCommand, CommonUtils;
 
 { TThCommandHistory }
 
@@ -47,6 +47,8 @@ end;
 
 destructor TThCommandManager.Destroy;
 begin
+  FSubject.UnregistObserver(Self);
+
   ClearRedoCommand;
 
   FUndoStack.Clear;
