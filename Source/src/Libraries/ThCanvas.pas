@@ -10,12 +10,19 @@ type
   TThContents = class(TControl)
   private
     FTrackingPos: TPointF;
+    FZoomScale: Single;
+
+    procedure SetZoomScale(const Value: Single);
+    function GetZoomScale: Single;
   protected
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
     procedure Paint; override;
   public
+    constructor Create(AOwner: TComponent); override;
+
     procedure AddTrackingPos(const Value: TPointF);
+    property ZoomScale: Single read FZoomScale write SetZoomScale;
   end;
 
   TThCanvas = class(TControl, IThCanvas)
@@ -30,6 +37,7 @@ type
     function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
+    function GetZoomScale: Single;
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
@@ -51,6 +59,10 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
 
+    procedure ZoomIn;
+    procedure ZoomOut;
+    property ZoomScale: Single read GetZoomScale;
+
     property ViewPortPosition: TPosition read GetViewPortPosition;
     property ItemCount: Integer read GetItemCount;
 
@@ -70,6 +82,13 @@ begin
 
   Position.X := Position.X + Value.X;
   Position.Y := Position.Y + Value.Y;
+end;
+
+constructor TThContents.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FZoomScale := 1;
 end;
 
 function TThContents.GetClipRect: TRectF;
@@ -96,6 +115,11 @@ begin
   end;
 end;
 
+function TThContents.GetZoomScale: Single;
+begin
+
+end;
+
 procedure TThContents.Paint;
 begin
   inherited;
@@ -106,6 +130,16 @@ begin
 
   Canvas.DrawRect(TControl(Parent).ClipRect, 0, 0, AllCorners, 1);
 {$ENDIF}
+end;
+
+procedure TThContents.SetZoomScale(const Value: Single);
+begin
+  if FZoomScale = Value then
+    Exit;
+
+  FZoomScale := Value;
+  Scale.X := Value;
+  Scale.Y := value;
 end;
 
 { TThCanvas }
@@ -249,6 +283,21 @@ begin
 
   FBgColor := Value;
   Repaint;
+end;
+
+procedure TThCanvas.ZoomIn;
+begin
+  FContents.ZoomScale := FContents.ZoomScale * 1.1;
+end;
+
+procedure TThCanvas.ZoomOut;
+begin
+  FContents.ZoomScale := FContents.ZoomScale * 0.9;
+end;
+
+function TThCanvas.GetZoomScale: Single;
+begin
+  Result := FContents.ZoomScale;
 end;
 
 function TThCanvas.IsDrawingItem: Boolean;

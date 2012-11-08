@@ -61,7 +61,6 @@ var
 implementation
 
 uses
-  CommonUtils,
 {$IFDEF MACOS}
   FMX.TestLib.Mac;
 {$ENDIF}

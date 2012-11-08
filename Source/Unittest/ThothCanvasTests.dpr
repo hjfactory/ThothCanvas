@@ -26,7 +26,7 @@ uses
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
   TestThItemRectangle in 'TestThItemRectangle.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
-  CommonUtils in '..\src\Utils\CommonUtils.pas',
+  DebugUtils in '..\src\Utils\DebugUtils.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Libraries\ThConsts.pas',
   ThItemResizer in '..\src\Components\ThItemResizer.pas',
@@ -43,7 +43,8 @@ uses
   ThItemCommand in '..\src\Commands\ThItemCommand.pas',
   ThCommandManager in '..\src\Commands\ThCommandManager.pas',
   ThItemStorage in '..\src\Controllers\ThItemStorage.pas',
-  ThSystemCommand in '..\src\Commands\ThSystemCommand.pas';
+  ThSystemCommand in '..\src\Commands\ThSystemCommand.pas',
+  TestThCanvasZoom in 'TestThCanvasZoom.pas';
 
 {$R *.RES}
 

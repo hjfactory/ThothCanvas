@@ -28,9 +28,6 @@ type
 
 implementation
 
-uses
-  CommonUtils;
-
 { TThCommandSystemItemDestroy }
 
 constructor TThCommandSystemItemDestroy.Create(AItems: TThItems);

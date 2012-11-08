@@ -68,7 +68,7 @@ type
 implementation
 
 uses
-  Math, ThItemFactory, CommonUtils;
+  Math, ThItemFactory;
 
 { TThCanvasEditor }
 

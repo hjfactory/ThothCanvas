@@ -48,9 +48,12 @@ begin
 end;
 
 function TThItemShadowHighlighter.GetHighlightRect: TRectF;
+var
+  ScaledHighlightSize: Single;
 begin
   Result := TControl(FParent).ClipRect;
-  Result.Offset(HighlightSize, HighlightSize);
+  ScaledHighlightSize := HighlightSize / TControl(FParent).AbsoluteScale.X;
+  Result.Offset(ScaledHighlightSize, ScaledHighlightSize);
 end;
 
 procedure TThItemShadowHighlighter.SetHighlightColor(const Value: TAlphaColor);

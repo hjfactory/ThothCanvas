@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  CommonUtils, ThCanvasEditor;
+  ThCanvasEditor;
 
 { TThAbstractCommandItem }
 

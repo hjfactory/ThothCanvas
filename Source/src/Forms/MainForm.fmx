@@ -9,7 +9,7 @@ object Form1: TForm1
   FormFactor.Devices = [dkDesktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  object Button2: TButton
+  object btnRectangle: TButton
     Tag = 1100
     DisableFocusEffect = False
     Height = 22.000000000000000000
@@ -17,7 +17,7 @@ object Form1: TForm1
     Position.Y = 8.000000000000000000
     Text = 'Rectangle'
     Width = 60.000000000000000000
-    OnClick = Button2Click
+    OnClick = btnRectangleClick
   end
   object Panel1: TPanel
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -26,7 +26,7 @@ object Form1: TForm1
     Position.Y = 40.000000000000000000
     Width = 789.000000000000000000
   end
-  object Button3: TButton
+  object btnLine: TButton
     Tag = 1200
     DisableFocusEffect = False
     Height = 22.000000000000000000
@@ -34,9 +34,9 @@ object Form1: TForm1
     Position.Y = 8.000000000000000000
     Text = 'Line'
     Width = 60.000000000000000000
-    OnClick = Button2Click
+    OnClick = btnRectangleClick
   end
-  object Button1: TButton
+  object btnCircle: TButton
     Tag = 1300
     DisableFocusEffect = False
     Height = 22.000000000000000000
@@ -44,9 +44,9 @@ object Form1: TForm1
     Position.Y = 8.000000000000000000
     Text = 'Circle'
     Width = 60.000000000000000000
-    OnClick = Button2Click
+    OnClick = btnRectangleClick
   end
-  object Button4: TButton
+  object btnSelect: TButton
     Tag = -1
     DisableFocusEffect = False
     Height = 22.000000000000000000
@@ -54,24 +54,16 @@ object Form1: TForm1
     Position.Y = 8.000000000000000000
     Text = 'Select'
     Width = 60.000000000000000000
-    OnClick = Button2Click
-  end
-  object Button5: TButton
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
-    Position.X = 712.000000000000000000
-    Position.Y = 8.000000000000000000
-    Text = 'Add 200'
-    Width = 80.000000000000000000
-    OnClick = Button5Click
+    OnClick = btnRectangleClick
   end
   object btnRedo: TCornerButton
+    Anchors = [akTop, akRight]
     Corners = [crTopRight, crBottomRight]
     DisableFocusEffect = False
     Enabled = False
     Height = 22.000000000000000000
-    Position.X = 656.000000000000000000
-    Position.Y = 9.000000000000000000
+    Position.X = 752.000000000000000000
+    Position.Y = 10.000000000000000000
     Sides = [sdTop, sdLeft, sdBottom, sdRight]
     Text = 'Redo'
     Width = 41.000000000000000000
@@ -80,12 +72,13 @@ object Form1: TForm1
     OnClick = btnRedoClick
   end
   object btnUndo: TCornerButton
+    Anchors = [akTop, akRight]
     Corners = [crTopLeft, crBottomLeft]
     DisableFocusEffect = False
     Enabled = False
     Height = 22.000000000000000000
-    Position.X = 616.000000000000000000
-    Position.Y = 9.000000000000000000
+    Position.X = 712.000000000000000000
+    Position.Y = 10.000000000000000000
     Sides = [sdTop, sdLeft, sdBottom, sdRight]
     Text = 'Undo'
     Width = 41.000000000000000000
@@ -93,31 +86,52 @@ object Form1: TForm1
     YRadius = 3.000000000000000000
     OnClick = btnUndoClick
   end
-  object Button6: TButton
+  object btnDeleteSelection: TButton
+    Anchors = [akTop, akRight]
     DisableFocusEffect = False
     Height = 22.000000000000000000
-    Position.X = 496.000000000000000000
-    Position.Y = 8.000000000000000000
+    Position.X = 600.000000000000000000
+    Position.Y = 10.000000000000000000
     Text = 'Delete selections'
     Width = 104.000000000000000000
-    OnClick = Button6Click
+    OnClick = btnDeleteSelectionClick
   end
-  object Button7: TButton
+  object btnZoomOut: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [crTopLeft, crBottomLeft]
     DisableFocusEffect = False
     Height = 22.000000000000000000
-    Position.X = 392.000000000000000000
-    Position.Y = 8.000000000000000000
-    Text = 'Button7'
-    Width = 80.000000000000000000
-    OnClick = Button7Click
+    Position.X = 528.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Text = '-'
+    Width = 33.000000000000000000
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnZoomOutClick
   end
-  object Button8: TButton
+  object btnZoomIn: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [crTopRight, crBottomRight]
     DisableFocusEffect = False
     Height = 22.000000000000000000
-    Position.X = 304.000000000000000000
+    Position.X = 560.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Text = '+'
+    Width = 33.000000000000000000
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnZoomInClick
+  end
+  object edtZoom: TEdit
+    DisableFocusEffect = False
+    KeyboardType = vktDefault
+    Password = False
+    Text = '1'
+    Position.X = 480.000000000000000000
     Position.Y = 8.000000000000000000
-    Text = 'Button8'
-    Width = 80.000000000000000000
-    OnClick = Button8Click
+    Width = 44.000000000000000000
+    Height = 22.000000000000000000
   end
 end

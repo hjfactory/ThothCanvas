@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, CommonUtils;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts;
 
 { TestTThItemResizer }
 

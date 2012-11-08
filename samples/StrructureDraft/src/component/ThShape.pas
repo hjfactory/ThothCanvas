@@ -235,8 +235,6 @@ begin
   Result := inherited GetAbsoluteMatrix;
   if not FInheritedScale then
   begin
-//    Result.m31 := Position.X
-//    Result.m32
     Result.m11 := Scale.X;
     Result.m22 := Scale.Y;
   end;

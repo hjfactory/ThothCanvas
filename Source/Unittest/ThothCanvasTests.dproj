@@ -115,7 +115,7 @@
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
         <DCCReference Include="TestThItemRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>
-        <DCCReference Include="..\src\Utils\CommonUtils.pas"/>
+        <DCCReference Include="..\src\Utils\DebugUtils.pas"/>
         <DCCReference Include="..\src\Components\ThItemHighlighter.pas"/>
         <DCCReference Include="..\src\Libraries\ThConsts.pas"/>
         <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
@@ -133,6 +133,7 @@
         <DCCReference Include="..\src\Commands\ThCommandManager.pas"/>
         <DCCReference Include="..\src\Controllers\ThItemStorage.pas"/>
         <DCCReference Include="..\src\Commands\ThSystemCommand.pas"/>
+        <DCCReference Include="TestThCanvasZoom.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

@@ -8,7 +8,7 @@ uses
   ThCanvasEditor in 'Components\ThCanvasEditor.pas',
   ThCanvas in 'Libraries\ThCanvas.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
-  CommonUtils in 'Utils\CommonUtils.pas',
+  DebugUtils in 'Utils\DebugUtils.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
   ThConsts in 'Libraries\ThConsts.pas',
   ThItemResizer in 'Components\ThItemResizer.pas',

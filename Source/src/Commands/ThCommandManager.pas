@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  ThItemCommand, ThSystemCommand, CommonUtils;
+  ThItemCommand, ThSystemCommand;
 
 { TThCommandHistory }
 
@@ -130,3 +130,4 @@ begin
 end;
 
 end.
+

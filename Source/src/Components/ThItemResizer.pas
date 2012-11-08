@@ -19,6 +19,8 @@ type
     procedure SetParentItem(const Value: IThItem);
     procedure SetDisabled(const Value: Boolean);
   protected
+    function GetAbsoluteMatrix: TMatrix; override;
+
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
@@ -105,7 +107,7 @@ type
 implementation
 
 uses
-  System.UIConsts, CommonUtils, ResizeUtils, System.Math;
+  System.UIConsts, ResizeUtils, System.Math;
 
 { TItemResizeSpot }
 
@@ -113,6 +115,8 @@ constructor TItemResizeSpot.Create(AOwner: TComponent;
   ASpotCorner: TSpotCorner);
 begin
   inherited Create(AOwner);
+
+  AutoCapture := True;
 
   Opacity := 1;
   SpotCorner := ASpotCorner;
@@ -130,6 +134,17 @@ begin
   inherited;
 
   Repaint;
+end;
+
+function TItemResizeSpot.GetAbsoluteMatrix: TMatrix;
+begin
+  Result := inherited GetAbsoluteMatrix;
+
+  if not Assigned(Scale) then
+    Exit;
+
+  Result.m11 := Scale.X;
+  Result.m22 := Scale.Y;
 end;
 
 class function TItemResizeSpot.InflateSize: Integer;
@@ -491,8 +506,6 @@ end;
 constructor TThItemCircleResizeSpot.Create(AOwner: TComponent; ADirection: TSpotCorner);
 begin
   inherited;
-
-  AutoCapture := True;
 
   Width := ItemResizeSpotRadius * 2;
   Height := ItemResizeSpotRadius * 2;

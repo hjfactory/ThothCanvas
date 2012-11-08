@@ -1,4 +1,4 @@
-unit CommonUtils;
+unit DebugUtils;
 
 interface
 

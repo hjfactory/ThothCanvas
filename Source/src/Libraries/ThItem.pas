@@ -82,7 +82,7 @@ type
 implementation
 
 uses
-  ThConsts, CommonUtils;
+  ThConsts;
 
 { TThItem }
 

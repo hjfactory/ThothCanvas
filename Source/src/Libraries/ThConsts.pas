@@ -31,7 +31,7 @@ const
   ItemFactoryIDLine       = 1200;
   ItemFactoryIDCircle     = 1300;
 
-  CanvasTrackAniCount   = 7;
+  CanvasTrackAniCount   = 5;
   CanvasTrackDuration   = 0.5;
 
 implementation

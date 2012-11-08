@@ -76,7 +76,7 @@ implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor, ThConsts,
-  ThItem, ThShape, ThItemFactory, CommonUtils, FMX.Controls, UITypes;
+  ThItem, ThShape, ThItemFactory, FMX.Controls, UITypes;
 
 { TestTThItemDelete }
 

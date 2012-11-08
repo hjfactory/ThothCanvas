@@ -76,7 +76,7 @@ type
 implementation
 
 uses
-  CommonUtils, System.Math, ThConsts, ThItemFactory, ThItemHighlighter,
+  System.Math, ThConsts, ThItemFactory, ThItemHighlighter,
   ResizeUtils, ThItemResizer;
 
 { TThShape }
