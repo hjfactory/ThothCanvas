@@ -3,8 +3,9 @@ unit ThCanvas;
 interface
 
 uses
-  System.Classes, System.SysUtils, ThTypes, ThItem, FMX.Layouts,
-  System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani;
+  System.Classes, System.SysUtils, FMX.Layouts,
+  System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani,
+  ThTypes, ThItem, ThZoomAnimation;
 
 type
   TThContents = class(TControl)
@@ -13,7 +14,6 @@ type
     FZoomScale: Single;
 
     procedure SetZoomScale(const Value: Single);
-    function GetZoomScale: Single;
   protected
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
@@ -34,6 +34,8 @@ type
     FVertTrackAni,
     FHorzTrackAni: TFloatAnimation;
 
+    FZoomAni: TZoomAni;
+
     function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
@@ -45,6 +47,9 @@ type
 
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
+
+    procedure DoZoomIn(TargetPos: TPointF); virtual;
+    procedure DoZoomOut(TargetPos: TPointF); virtual;
 
     procedure ClickCanvas; virtual;
   public
@@ -115,11 +120,6 @@ begin
   end;
 end;
 
-function TThContents.GetZoomScale: Single;
-begin
-
-end;
-
 procedure TThContents.Paint;
 begin
   inherited;
@@ -177,6 +177,11 @@ begin
   FHorzTrackAni.Delay := 0;
   FHorzTrackAni.Duration := CanvasTrackDuration;
 
+  FZoomAni := TZoomCircleAni.Create(Self);
+  FZoomAni.Parent := Self;
+  FZoomAni.Width := 100;
+  FZoomAni.Height := 100;
+
 {$IFDEF DEBUG}
   FBgColor := $FFDDFFDD;
 {$ELSE}
@@ -186,19 +191,34 @@ end;
 
 destructor TThCanvas.Destroy;
 begin
+  FZoomAni.Free;
   FContents.Free;
 //  FVertTrackAni.Free;
 //  FHorzTrackAni.Free;
+
 
   inherited;
 end;
 
 procedure TThCanvas.DoAddObject(AObject: TFmxObject);
 begin
-  if Assigned(FContents) and (AObject <> FContents) and (not (AObject is TAnimation)) then
+  if Assigned(FContents) and (AObject <> FContents)
+      and (not (AObject is TAnimation)) and (not (AObject is TZoomAni)) then
     FContents.AddObject(AObject)
   else
     inherited;
+end;
+
+procedure TThCanvas.DoZoomIn(TargetPos: TPointF);
+begin
+  FZoomAni.ZoomIn(TargetPos);
+  FContents.ZoomScale := FContents.ZoomScale * 1.1;
+end;
+
+procedure TThCanvas.DoZoomOut(TargetPos: TPointF);
+begin
+  FZoomAni.ZoomOut(TargetPos);
+  FContents.ZoomScale := FContents.ZoomScale * 0.9;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -287,12 +307,12 @@ end;
 
 procedure TThCanvas.ZoomIn;
 begin
-  FContents.ZoomScale := FContents.ZoomScale * 1.1;
+  DoZoomIn(ClipRect.CenterPoint)
 end;
 
 procedure TThCanvas.ZoomOut;
 begin
-  FContents.ZoomScale := FContents.ZoomScale * 0.9;
+  DoZoomOut(ClipRect.CenterPoint);
 end;
 
 function TThCanvas.GetZoomScale: Single;
