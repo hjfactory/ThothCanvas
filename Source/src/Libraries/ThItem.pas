@@ -62,7 +62,7 @@ type
     procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
     procedure SetBounds(X, Y, AWidth, AHeight: Single); override;
 
-    procedure DrawItemWithMouse(AFrom, ATo: TPointF); virtual;
+    procedure DrawItemAtMouse(AFrom, ATo: TPointF); virtual;
     procedure RealignSpot;
     procedure ShowSpots;
     procedure ShowDisableSpots;
@@ -169,7 +169,7 @@ begin
   Repaint;
 end;
 
-procedure TThItem.DrawItemWithMouse(AFrom, ATo: TPointF);
+procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
 end;
 

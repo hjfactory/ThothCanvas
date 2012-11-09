@@ -121,6 +121,8 @@ procedure TestTThRectangle.TestCanvasTrackingAndDrawRectangle;
 var
   Item: TThItem;
 begin
+  FCanvas.TrackAnimated := False;
+
   // Tracking
   MousePath.New
   .Add(0, 0)

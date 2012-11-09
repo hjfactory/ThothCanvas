@@ -47,6 +47,10 @@ uses
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
+//  ShowForm;
+
+//  DrawRectangle(50, 200, 100, 250);
+
   MousePath.New
   .Add(50, 50)
   .Add(100, 100)
@@ -99,6 +103,8 @@ end;
 //    도형의 색상을 추출하여 색상비교
 procedure TestTThCanvasEditor.TestTrackingOutOfCanvasAreaNotDisplayed;
 begin
+  FCanvas.TrackAnimated := False;
+
   // Draw Rectangle
   FCanvas.DrawItemID := 1100;
   MousePath.New
@@ -160,7 +166,7 @@ begin
   .Add(55, 10);
   TestLib.RunMousePath(MousePath.Path);
 
-  Delay(1000);
+  TestLib.Delay(1000);
 
   Check(FCanvas.ViewPortPosition.X = (45 + 5 * CanvasTrackAniCount), Format('X: %f', [FCanvas.ViewPortPosition.X]));
 end;

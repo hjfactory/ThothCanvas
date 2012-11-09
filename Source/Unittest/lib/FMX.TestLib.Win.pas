@@ -87,6 +87,7 @@ procedure TTestLibWin.MouseWheel(WheelDelta: Integer);
 begin
   inherited;
 
+  mouse_event(MOUSEEVENTF_WHEEL, 0, 0, WheelDelta, 0);
 end;
 
 procedure TTestLibWin.KeyDown(Key: Word);

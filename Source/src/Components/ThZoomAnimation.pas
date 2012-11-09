@@ -42,6 +42,8 @@ constructor TZoomAni.Create(AOwner: TComponent);
 begin
   inherited;
 
+  HitTest := False;
+
   FZoomAni := TFloatAnimation.Create(Self);
   FZoomAni.Parent := Self;
   FZoomAni.AnimationType := TAnimationType.atOut;
@@ -49,11 +51,13 @@ begin
   FZoomAni.PropertyName := 'Diffuse';
   FZoomAni.StartFromCurrent := False;
   FZoomAni.Delay := 0;
-  FZoomAni.Duration := 0.3;
+  FZoomAni.Duration := 0.5;
   FZoomAni.OnFinish := FinishAni;
 
   FWidth := 100;
   FHeight := 100;
+
+  Visible := False;
 end;
 
 destructor TZoomAni.Destroy;
@@ -124,16 +128,17 @@ begin
 
   InflateRect(R, Radius, Radius);
 
-  if Radius > (Width / 4) then
-  begin
-    InflateRect(R2, Radius / 2, Radius / 2);
-  end;
-
   Canvas.StrokeThickness := 3;
   Canvas.StrokeDash := TStrokeDash.sdDot;
   Canvas.Stroke.Color := claDarkGray;
   Canvas.DrawEllipse(R, 1);
-  Canvas.DrawEllipse(R2, 1);
+
+  // 원이 크면 서브 원 표시
+  if Radius > (Width / 4) then
+  begin
+    InflateRect(R2, Radius / 2, Radius / 2);
+    Canvas.DrawEllipse(R2, 1);
+  end;
 end;
 
 end.

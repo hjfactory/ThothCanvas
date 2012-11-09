@@ -49,10 +49,14 @@ end;
 
 function TThItemShadowHighlighter.GetHighlightRect: TRectF;
 var
+  ViewportScale: Single;
   ScaledHighlightSize: Single;
 begin
   Result := TControl(FParent).ClipRect;
-  ScaledHighlightSize := HighlightSize / TControl(FParent).AbsoluteScale.X;
+  ViewportScale := TControl(FParent).AbsoluteScale.X;
+    // Item의 스케일에서 Canvas의 Scale로 처리 필요
+    //  - Item도 스케일이 변경될 수 있음
+  ScaledHighlightSize := HighlightSize / ViewportScale;
   Result.Offset(ScaledHighlightSize, ScaledHighlightSize);
 end;
 

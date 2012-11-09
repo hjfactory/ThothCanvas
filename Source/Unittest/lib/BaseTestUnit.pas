@@ -4,7 +4,7 @@ interface
 
 uses
   TestFramework, ThCanvasEditor, ThothController, ThCanvasController,
-  System.Types, FMX.Types, FMX.Forms, System.SysUtils, System.Diagnostics;
+  System.Types, FMX.Types, FMX.Forms, System.SysUtils;
 
 type
   // Test methods for class TThCanvasEditor
@@ -24,8 +24,6 @@ type
   public
     procedure SetUp; override;
     procedure TearDown; override;
-
-    procedure Delay(ms: Integer);
 
     procedure ShowForm;
     function DistanceSize(R: TRectF; D: Single): TPointF;
@@ -114,19 +112,6 @@ end;
 
 procedure TBaseTestUnit.CreateObject;
 begin
-end;
-
-procedure TBaseTestUnit.Delay(ms: Integer);
-var
-  StopWatch: TStopWatch;
-begin
-  StopWatch := TStopWatch.Create;
-
-  StopWatch.Start;
-  repeat
-    Application.ProcessMessages;
-    Sleep(1);
-  until StopWatch.ElapsedMilliseconds >= ms;
 end;
 
 procedure TBaseTestUnit.DestroyObject;

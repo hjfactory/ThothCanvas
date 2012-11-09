@@ -9,9 +9,6 @@ uses
 type
   // #23 Undo/Redo기능을 이용하여 명령을 되돌린다.
   TestTThCommandHistory = class(TBaseCommandTestUnit)
-  public
-    procedure SetUp; override;
-    procedure TearDown; override;
   published
     // #123 사각형을 추가하고 Undo명령하면 도형이 선택되지 않아야 한다.
     procedure TestCommandHistoryAddUndo;
@@ -45,18 +42,6 @@ uses
   ThItem, ThShape, ThItemFactory;
 
 { TestTThCommandHistory }
-
-procedure TestTThCommandHistory.SetUp;
-begin
-  inherited;
-
-end;
-
-procedure TestTThCommandHistory.TearDown;
-begin
-  inherited;
-
-end;
 
 procedure TestTThCommandHistory.TestCommandHistoryAddUndo;
 begin

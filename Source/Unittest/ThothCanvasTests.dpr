@@ -44,7 +44,8 @@ uses
   ThCommandManager in '..\src\Commands\ThCommandManager.pas',
   ThItemStorage in '..\src\Controllers\ThItemStorage.pas',
   ThSystemCommand in '..\src\Commands\ThSystemCommand.pas',
-  TestThCanvasZoom in 'TestThCanvasZoom.pas';
+  TestThCanvasZoom in 'TestThCanvasZoom.pas',
+  ThZoomAnimation in '..\src\Components\ThZoomAnimation.pas';
 
 {$R *.RES}
 

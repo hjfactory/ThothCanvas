@@ -3,7 +3,7 @@ unit ThCanvas;
 interface
 
 uses
-  System.Classes, System.SysUtils, FMX.Layouts,
+  System.Classes, System.SysUtils,
   System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani,
   ThTypes, ThItem, ThZoomAnimation;
 
@@ -25,16 +25,19 @@ type
     property ZoomScale: Single read FZoomScale write SetZoomScale;
   end;
 
-  TThCanvas = class(TControl, IThCanvas)
+  TThCanvas = class(TControl, IThCanvas, IThZoomObject)
   private
     FUseMouseTracking: Boolean;
     FBgColor: TAlphaColor;
 
+    // 마우스가 마지막으로 이동한 거리
     FLastDelta: TPointF;
+
     FVertTrackAni,
     FHorzTrackAni: TFloatAnimation;
-
     FZoomAni: TZoomAni;
+    FTrackAnimated: Boolean;
+    FZoomAnimated: Boolean;
 
     function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
@@ -48,8 +51,9 @@ type
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
-    procedure DoZoomIn(TargetPos: TPointF); virtual;
-    procedure DoZoomOut(TargetPos: TPointF); virtual;
+    procedure DoZoom(AScale: single; ATargetPos: TPointF);
+    procedure DoZoomIn(ATargetPos: TPointF); virtual;
+    procedure DoZoomOut(ATargetPos: TPointF); virtual;
 
     procedure ClickCanvas; virtual;
   public
@@ -63,21 +67,28 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
+    procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
 
     procedure ZoomIn;
     procedure ZoomOut;
+
+    procedure ZoomInAtPoint(APos: TPointF);
+    procedure ZoomOutAtPoint(APos: TPointF);
+
     property ZoomScale: Single read GetZoomScale;
 
     property ViewPortPosition: TPosition read GetViewPortPosition;
     property ItemCount: Integer read GetItemCount;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
+    property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
+    property ZoomAnimated: Boolean read FZoomAnimated write FZoomAnimated;
    end;
 
 implementation
 
 uses
-  ThConsts;
+  ThConsts, FMX.Forms;
 
 { TThContent }
 
@@ -145,6 +156,17 @@ end;
 { TThCanvas }
 
 constructor TThCanvas.Create(AOwner: TComponent);
+  function _CreateTrackAni(APropertyName: string): TFloatAnimation;
+  begin
+    Result := TFloatAnimation.Create(Self);
+    Result.Parent := Self;
+    Result.AnimationType := TAnimationType.atOut;
+    Result.Interpolation := TInterpolationType.itQuadratic;
+    Result.PropertyName := APropertyName;
+    Result.StartFromCurrent := True;
+    Result.Delay := 0;
+    Result.Duration := CanvasTrackDuration;
+  end;
 begin
   inherited;
 
@@ -152,6 +174,8 @@ begin
   AutoCapture := True;  // 영역밖으로 나가도 컨트롤 되도록 처리
 
   FUseMouseTracking := True;
+  FTrackAnimated    := True;
+  FZoomAnimated     := True;
 
   FContents := TThContents.Create(Self);
   FContents.Parent := Self;
@@ -159,28 +183,10 @@ begin
   FContents.Stored := False;
   FContents.Locked := True;
 
-  FVertTrackAni := TFloatAnimation.Create(Self);
-  FVertTrackAni.Parent := Self;
-  FVertTrackAni.AnimationType := TAnimationType.atOut;
-  FVertTrackAni.Interpolation := TInterpolationType.itQuadratic;
-  FVertTrackAni.PropertyName := 'ViewPortPosition.Y';
-  FVertTrackAni.StartFromCurrent := True;
-  FVertTrackAni.Delay := 0;
-  FVertTrackAni.Duration := CanvasTrackDuration;
-
-  FHorzTrackAni := TFloatAnimation.Create(Self);
-  FHorzTrackAni.Parent := Self;
-  FHorzTrackAni.AnimationType := TAnimationType.atOut;
-  FHorzTrackAni.Interpolation := TInterpolationType.itQuadratic;
-  FHorzTrackAni.PropertyName := 'ViewPortPosition.X';
-  FHorzTrackAni.StartFromCurrent := True;
-  FHorzTrackAni.Delay := 0;
-  FHorzTrackAni.Duration := CanvasTrackDuration;
-
+  FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
+  FHorzTrackAni := _CreateTrackAni('ViewPortPosition.X');
   FZoomAni := TZoomCircleAni.Create(Self);
   FZoomAni.Parent := Self;
-  FZoomAni.Width := 100;
-  FZoomAni.Height := 100;
 
 {$IFDEF DEBUG}
   FBgColor := $FFDDFFDD;
@@ -209,16 +215,44 @@ begin
     inherited;
 end;
 
-procedure TThCanvas.DoZoomIn(TargetPos: TPointF);
+procedure TThCanvas.DoZoom(AScale: single; ATargetPos: TPointF);
+var
+  ScaledSize: TSizeF;
+  DifferenceSize: TSizeF;  // different of scaled size to not scaled size
+  MoveDistancePoint: TPointF;
 begin
-  FZoomAni.ZoomIn(TargetPos);
-  FContents.ZoomScale := FContents.ZoomScale * 1.1;
+  // 증가된 크기
+  ScaledSize.Width := Width / AScale;
+  ScaledSize.Height := Height / AScale;
+
+  // 증가된 크기와 원래크기 차이
+  DifferenceSize := ScaledSize.Subtract(PointF(Width, Height));
+
+  // 증가된 크기 중 마우스의 비율(=이동할 거리)
+  MoveDistancePoint.X := DifferenceSize.Width * (ATargetPos.X / Width) * AScale;
+  MoveDistancePoint.Y := DifferenceSize.Height * (ATargetPos.Y / Height) * AScale;
+
+//  FContents.Position.Point.Offset(MoveDistancePoint);
+//  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
+  FContents.Position.Point := MoveDistancePoint;
+
+  FContents.ZoomScale := AScale;
 end;
 
-procedure TThCanvas.DoZoomOut(TargetPos: TPointF);
+procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
 begin
-  FZoomAni.ZoomOut(TargetPos);
-  FContents.ZoomScale := FContents.ZoomScale * 0.9;
+  if FZoomAnimated then
+    FZoomAni.ZoomIn(ATargetPos);
+  DoZoom(FContents.ZoomScale * 1.1, ATargetPos);
+//  FContents.ZoomScale := FContents.ZoomScale * 1.1;
+end;
+
+procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
+begin
+  if FZoomAnimated then
+    FZoomAni.ZoomOut(ATargetPos);
+  DoZoom(FContents.ZoomScale * 0.9, ATargetPos);
+//  FContents.ZoomScale := FContents.ZoomScale * 0.9;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -228,7 +262,7 @@ begin
 
   if FPressed and FUseMouseTracking then
   begin
-    FLastDelta := PointF(0, 0);
+//    FLastDelta := PointF(0, 0);
     FMouseDownPos := PointF(X, Y);
     FMouseCurrPos := PointF(X, Y);
 
@@ -255,26 +289,43 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FLastDelta.Y <> 0 then
+  if FTrackAnimated then
   begin
-    if FVertTrackAni.Running then
-      FVertTrackAni.StopAtCurrent;
-    FVertTrackAni.StartValue  := ViewPortPosition.Y;
-    FVertTrackAni.StopValue   := ViewPortPosition.Y + FLastDelta.Y * CanvasTrackAniCount;
-    FVertTrackAni.Start;
-  end;
+    if FLastDelta.Y <> 0 then
+    begin
+      if FVertTrackAni.Running then
+        FVertTrackAni.StopAtCurrent;
+      FVertTrackAni.StartValue  := ViewPortPosition.Y;
+      FVertTrackAni.StopValue   := ViewPortPosition.Y + FLastDelta.Y * CanvasTrackAniCount;
+      FVertTrackAni.Start;
+    end;
 
-  if FLastDelta.X <> 0 then
-  begin
-    if FHorzTrackAni.Running then
-      FHorzTrackAni.StopAtCurrent;
-    FHorzTrackAni.StartValue  := ViewPortPosition.X;
-    FHorzTrackAni.StopValue   := ViewPortPosition.X + FLastDelta.X * CanvasTrackAniCount;
-    FHorzTrackAni.Start;
+    if FLastDelta.X <> 0 then
+    begin
+      if FHorzTrackAni.Running then
+        FHorzTrackAni.StopAtCurrent;
+      FHorzTrackAni.StartValue  := ViewPortPosition.X;
+      FHorzTrackAni.StopValue   := ViewPortPosition.X + FLastDelta.X * CanvasTrackAniCount;
+      FHorzTrackAni.Start;
+    end;
   end;
 
   if FMouseDownPos = PointF(X, Y) then
     ClickCanvas
+end;
+
+procedure TThCanvas.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
+  var Handled: Boolean);
+var
+  P: TPointF;
+begin
+  inherited;
+
+  P := Screen.MousePos;
+  P := ScreenToLocal(P);
+
+  if WheelDelta < 0 then    DoZoomOut(P)
+  else                      DoZoomIn(P);
 end;
 
 procedure TThCanvas.Paint;
@@ -310,9 +361,19 @@ begin
   DoZoomIn(ClipRect.CenterPoint)
 end;
 
+procedure TThCanvas.ZoomInAtPoint(APos: TPointF);
+begin
+  DoZoomIn(APos);
+end;
+
 procedure TThCanvas.ZoomOut;
 begin
   DoZoomOut(ClipRect.CenterPoint);
+end;
+
+procedure TThCanvas.ZoomOutAtPoint(APos: TPointF);
+begin
+  DoZoomOut(APos);
 end;
 
 function TThCanvas.GetZoomScale: Single;

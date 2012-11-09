@@ -64,6 +64,14 @@ type
   end;
 
   //////////////////////////////////////////////////////////////
+  /// Zoom object
+  ///  Target is Canvas and Item
+  IThZoomObject = interface
+    function GetZoomScale: Single;
+    property ZoomScale: Single read GetZoomScale;
+  end;
+
+  //////////////////////////////////////////////////////////////
   /// Item Highlight
   ///   IItemHighlitObject is IItemHighlighter's parent
   IItemHighlitObject = interface(IThItem)

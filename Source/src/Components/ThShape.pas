@@ -44,7 +44,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
+    procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
   TThLine = class(TThShape)
@@ -60,7 +60,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
+    procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
   TThCircle = class(TThShape)
@@ -70,7 +70,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    procedure DrawItemWithMouse(AFrom, ATo: TPointF); override;
+    procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
 implementation
@@ -173,7 +173,7 @@ begin
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
-procedure TThRectangle.DrawItemWithMouse(AFrom, ATo: TPointF);
+procedure TThRectangle.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
 begin
@@ -359,7 +359,7 @@ begin
   Canvas.DrawLine(P1, P2, 1);
 end;
 
-procedure TThLine.DrawItemWithMouse(AFrom, ATo: TPointF);
+procedure TThLine.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   Rect: TRectF;
   BaseSpot, ActiveSpot: TItemResizeSpot;
@@ -428,7 +428,7 @@ begin
   Result := Resizer;
 end;
 
-procedure TThCircle.DrawItemWithMouse(AFrom, ATo: TPointF);
+procedure TThCircle.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
 begin

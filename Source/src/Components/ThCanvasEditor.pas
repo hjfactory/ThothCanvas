@@ -245,7 +245,7 @@ begin
     FromP := FMouseDownPos.Subtract(FContents.Position.Point);
     ToP   := PointF(X, Y).Subtract(FContents.Position.Point);
 
-    FDrawItem.DrawItemWithMouse(FromP, ToP);
+    FDrawItem.DrawItemAtMouse(FromP, ToP);
   end
   else
     inherited;

@@ -27,8 +27,17 @@ type
     procedure TestZoomAndSpotSizeMaintain;
     procedure TestZoomAndHighlightSizeMaintain;
 
+    // #196 명령을 통한 확대 축소는 중심점을 기준으로 Zoom 되어야 한다.
+    procedure TestZoomCenterPosition;
+
+    // #190 위치 중심으로 확대/축소 되어야 한다.
+    procedure TestZoomAtPoint;
+
     // #189 캔버스 선택(클릭) 후 마우스 휠을 올리면 확대, 내리면 축소가 되어야 한다.
     procedure TestZoomWithWheel;
+
+    // #199 이동 후에도 마우스 위치에 따른 Zoom이 가능해야 한다.
+    procedure TestZoomPositionCheckAfterMove;
   end;
 
 implementation
@@ -92,9 +101,63 @@ begin
 Exit;
 end;
 
+procedure TestTThCanvasZoom.TestZoomCenterPosition;
+begin
+  DrawRectangle(150, 150, 250, 250);
+
+  FCanvas.ZoomAnimated := False;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ClearSelection;
+
+  TestLib.RunMouseClick(149, 149);
+
+  CheckNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThCanvasZoom.TestZoomAtPoint;
+begin
+  DrawRectangle(100, 100, 250, 250);
+
+  FCanvas.ZoomAnimated := False;
+  FCanvas.ZoomOutAtPoint(PointF(100, 100));
+  FCanvas.ZoomOutAtPoint(PointF(100, 100));
+  FCanvas.ZoomOutAtPoint(PointF(100, 100));
+  FCanvas.ClearSelection;
+
+  TestLib.RunMouseClick(99, 99);
+
+  CheckNull(FCanvas.SelectedItem);
+end;
+
 procedure TestTThCanvasZoom.TestZoomWithWheel;
+var
+  ZS: Single;
+begin
+  DrawRectangle(150, 150, 250, 250);
+
+  ZS := FCanvas.ZoomScale;
+  TestLib.RunMouseWheelUp(150, 150);
+  TestLib.Delay(100);
+  Check(FCanvas.ZoomScale < ZS, 'Up');
+
+  ZS := FCanvas.ZoomScale;
+  TestLib.RunMouseWheelDown(150, 150);
+  TestLib.Delay(100);
+  Check(FCanvas.ZoomScale > ZS, 'Down');
+end;
+
+procedure TestTThCanvasZoom.TestZoomPositionCheckAfterMove;
 begin
 
+  MousePath.New
+  .Add(50, 50)
+  .Add(100, 100)
+  .Add(100, 150)
+  .Add(150, 150)
+  .Add(200, 200);
+  TestLib.RunMousePath(MousePath.Path);
 end;
 
 initialization

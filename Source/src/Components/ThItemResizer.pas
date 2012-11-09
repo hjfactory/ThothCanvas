@@ -198,12 +198,19 @@ begin
 end;
 
 function TItemResizeSpot.PointInObject(X, Y: Single): Boolean;
+  function _GetAbsoluteScale: Single;
+  begin
+    Result := TControl(Parent).AbsoluteScale.X;
+  end;
+
 var
   P: TPointF;
+  Raduis: Single;
 begin
   Result := False;
   P := AbsoluteToLocal(PointF(X, Y));
-  if (Abs(P.X) < ItemResizeSpotRadius) and (Abs(P.Y) < ItemResizeSpotRadius) then
+  Raduis := ItemResizeSpotRadius / _GetAbsoluteScale;
+  if (Abs(P.X) < Raduis) and (Abs(P.Y) < Raduis) then
     Result := True;
 end;
 

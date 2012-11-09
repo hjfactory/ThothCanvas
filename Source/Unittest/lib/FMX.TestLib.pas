@@ -32,10 +32,15 @@ type
     procedure RunKeyDownShift; virtual; abstract;
     procedure RunKeyUpShift; virtual; abstract;
 
+    procedure RunMouseWheelUp(X, Y: Single);
+    procedure RunMouseWheelDown(X, Y: Single);
+
     function GetControlPixelColor(const Control: TControl; const X, Y: Single): TAlphaColor;
     function GetBitmapPixelColor(const X, Y: Single): TAlphaColor;
 
     procedure TakeScreenshot(Dest: TBitmap); virtual; abstract;
+
+    procedure Delay(ms: Integer);
   end;
 
   TTestLibClass = class of TTestLib;
@@ -61,6 +66,7 @@ var
 implementation
 
 uses
+  System.Diagnostics,
 {$IFDEF MACOS}
   FMX.TestLib.Mac;
 {$ENDIF}
@@ -74,6 +80,19 @@ uses
 procedure TTestLib.SetInitialMousePoint(Pos: TPointF);
 begin
   FInitialMousePoint := Pos;
+end;
+
+procedure TTestLib.Delay(ms: Integer);
+var
+  StopWatch: TStopWatch;
+begin
+  StopWatch := TStopWatch.Create;
+
+  StopWatch.Start;
+  repeat
+    Application.ProcessMessages;
+    Sleep(1);
+  until StopWatch.ElapsedMilliseconds >= ms;
 end;
 
 function TTestLib.GetBitmapPixelColor(const X,
@@ -155,6 +174,26 @@ begin
     Application.ProcessMessages;
 //    Sleep(500);
   end;
+end;
+
+procedure TTestLib.RunMouseWheelDown(X, Y: Single);
+var
+  Pos: TPointF;
+begin
+  Pos := FInitialMousePoint.Add(PointF(X, Y));
+
+  MouseMove([], Pos.X, Pos.Y);
+  MouseWheel(120);
+end;
+
+procedure TTestLib.RunMouseWheelUp(X, Y: Single);
+var
+  Pos: TPointF;
+begin
+  Pos := FInitialMousePoint.Add(PointF(X, Y));
+
+  MouseMove([], Pos.X, Pos.Y);
+  MouseWheel(-120);
 end;
 
 procedure TTestLib.RunMouseMove(Path: array of TPointF);
