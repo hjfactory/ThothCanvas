@@ -43,6 +43,7 @@ type
     function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
     function GetZoomScale: Single;
+    function GetViewPortSize: TSizeF;
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown 시 좌표
@@ -51,7 +52,7 @@ type
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
-    procedure DoZoom(AScale: single; ATargetPos: TPointF);
+    procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
 
@@ -78,6 +79,7 @@ type
     property ZoomScale: Single read GetZoomScale;
 
     property ViewPortPosition: TPosition read GetViewPortPosition;
+    property ViewPortSize: TSizeF read GetViewPortSize;
     property ItemCount: Integer read GetItemCount;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
@@ -88,7 +90,7 @@ type
 implementation
 
 uses
-  ThConsts, FMX.Forms;
+  ThConsts, FMX.Forms, DebugUtils;
 
 { TThContent }
 
@@ -215,13 +217,17 @@ begin
     inherited;
 end;
 
-procedure TThCanvas.DoZoom(AScale: single; ATargetPos: TPointF);
+procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
 var
   ScaledSize: TSizeF;
   DifferenceSize: TSizeF;  // different of scaled size to not scaled size
   MoveDistancePoint: TPointF;
+  ScaledPoint: TPointF;
+var
+  P: TPointF;
 begin
-  // 증가된 크기
+//
+//  // 증가된 크기
   ScaledSize.Width := Width / AScale;
   ScaledSize.Height := Height / AScale;
 
@@ -233,8 +239,30 @@ begin
   MoveDistancePoint.Y := DifferenceSize.Height * (ATargetPos.Y / Height) * AScale;
 
 //  FContents.Position.Point.Offset(MoveDistancePoint);
+//
+////  ScaledPoint.X := FContents.Position.X * FContents.ZoomScale;
+////  ScaledPoint.Y := FContents.Position.Y * FContents.ZoomScale;
+////  FContents.Position.Point := ScaledPoint.Add(MoveDistancePoint);
 //  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
-  FContents.Position.Point := MoveDistancePoint;
+//  FContents.Position.Point := MoveDistancePoint;
+
+  MoveDistancePoint.X := (ScaledSize.Width - ViewPortSize.Width) * (ATargetPos.X / Width) * AScale * ZoomScale;
+  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale * ZoomScale;
+
+//  MoveDistancePoint.X := (ScaledSize.Width * AScale - ViewPortSize.Width * ZoomScale) * (ATargetPos.X / Width);
+//  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale;
+
+  Debug('B: %f, A: %f(%f, %f, %f)',
+    [
+      FContents.Position.Point.X,
+      FContents.Position.Point.Add(MoveDistancePoint).X,
+      AScale,
+      ScaledSize.Width,
+      ViewPortSize.Width
+    ]);
+
+
+  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
 
   FContents.ZoomScale := AScale;
 end;
@@ -248,10 +276,13 @@ begin
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
+var
+  ZoomScale: Single;
 begin
   if FZoomAnimated then
     FZoomAni.ZoomOut(ATargetPos);
-  DoZoom(FContents.ZoomScale * 0.9, ATargetPos);
+  ZoomScale := FContents.ZoomScale * 0.9;
+  DoZoom(ZoomScale, ATargetPos);
 //  FContents.ZoomScale := FContents.ZoomScale * 0.9;
 end;
 
@@ -394,6 +425,12 @@ end;
 function TThCanvas.GetViewPortPosition: TPosition;
 begin
   Result := FContents.Position;
+end;
+
+function TThCanvas.GetViewPortSize: TSizeF;
+begin
+  Result.Width  := Width / ZoomScale;
+  Result.Height := Height / ZoomScale;
 end;
 
 function TThCanvas.GetItemCount: Integer;

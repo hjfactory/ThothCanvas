@@ -36,6 +36,9 @@ type
     // #189 캔버스 선택(클릭) 후 마우스 휠을 올리면 확대, 내리면 축소가 되어야 한다.
     procedure TestZoomWithWheel;
 
+    // #201 한곳에서 Zoom처리 하면 포인트에 맞게 처리되지만 마우스를 다른데로 옮겨가면 시도 시 처리되지 않음
+    procedure BugTestZoomPointAnotherPoint;
+
     // #199 이동 후에도 마우스 위치에 따른 Zoom이 가능해야 한다.
     procedure TestZoomPositionCheckAfterMove;
   end;
@@ -43,7 +46,7 @@ type
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, UITypes;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, UITypes, FMX.Forms;
 
 { TestTThCanvasZoom }
 
@@ -146,6 +149,28 @@ begin
   TestLib.RunMouseWheelDown(150, 150);
   TestLib.Delay(100);
   Check(FCanvas.ZoomScale > ZS, 'Down');
+end;
+
+procedure TestTThCanvasZoom.BugTestZoomPointAnotherPoint;
+var
+  X, Y: Single;
+  ZoomScale, ZoomScale2: Single;
+begin
+  FCanvas.BoundsRect := RectF(100,100,200,200);
+  TestLib.SetInitialMousePoint(GetInitialPoint);
+  Application.ProcessMessages;
+
+  FCanvas.ZoomOutAtPoint(PointF(25, 25));
+
+  ZoomScale := 1 * 0.9;
+  X := (100 / ZoomScale - 100 / 1) * (25 / 100);
+  Check(FCanvas.ViewPortPosition.X = X, Format('1, Width: %f, X: (%f / %f)', [FCanvas.Width, FCanvas.ViewPortPosition.X, X]));
+
+  FCanvas.ZoomOutAtPoint(PointF(75, 75));
+
+  ZoomScale2 := ZoomScale * 0.9;
+  X := X + (100 / ZoomScale2 - 100 / ZoomScale) * (75 / 100);
+  Check(FCanvas.ViewPortPosition.X = X, Format('1, Width: %f, X: (%f / %f)', [FCanvas.Width, FCanvas.ViewPortPosition.X, X]));
 end;
 
 procedure TestTThCanvasZoom.TestZoomPositionCheckAfterMove;
