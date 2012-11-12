@@ -41,12 +41,18 @@ type
 
     // #199 이동 후에도 마우스 위치에 따른 Zoom이 가능해야 한다.
     procedure TestZoomPositionCheckAfterMove;
+
+    // #198 Zoom이후 마우스로 아이템 추가 시 Zoom이 적용되지 않고 그려짐
+    procedure BugTestZoomAfterDrawCenter;
+    procedure BugTestZoomAfterDraw25;
+    procedure BugTestZoomAfterDraw75;
   end;
 
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, UITypes, FMX.Forms;
+  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, UITypes, FMX.Forms,
+  DebugUtils;
 
 { TestTThCanvasZoom }
 
@@ -72,10 +78,9 @@ begin
   AC := TestLib.GetControlPixelColor(FCanvas, 50-ItemResizeSpotRadius+1, 50);
   Check(AC = ItemResizeSpotOutColor, Format('Not matching color Orginal(%d, %d)', [AC, ItemResizeSpotOutColor]));
 
-  FCanvas.ZoomOut;
-  FCanvas.ZoomOut;
+  FCanvas.ZoomOutAtPoint(0, 0);
+  FCanvas.ZoomOutAtPoint(0, 0);
 
-  // 구현은 되었으나 테스트에서 오류
   l := 50 * FCanvas.ZoomScale;
   AC := TestLib.GetControlPixelColor(FCanvas, l-ItemResizeSpotRadius+1, l);
 //  AC := TestLib.GetControlPixelColor(FCanvas, 50-ItemResizeSpotRadius+2, 50);
@@ -93,8 +98,8 @@ begin
   AC := TestLib.GetControlPixelColor(FCanvas, 150+ItemHighlightSize-1, 100);
   Check(AC = ItemHighlightColor, Format('Not matching color Orginal(%d, %d)', [AC, ItemHighlightColor]));
 
-  FCanvas.ZoomOut;
-  FCanvas.ZoomOut;
+  FCanvas.ZoomOutAtPoint(0, 0);
+  FCanvas.ZoomOutAtPoint(0, 0);
 
   // 구현은 되었으나 테스트에서 오류
   l := 150 * FCanvas.ZoomScale;
@@ -124,9 +129,9 @@ begin
   DrawRectangle(100, 100, 250, 250);
 
   FCanvas.ZoomAnimated := False;
-  FCanvas.ZoomOutAtPoint(PointF(100, 100));
-  FCanvas.ZoomOutAtPoint(PointF(100, 100));
-  FCanvas.ZoomOutAtPoint(PointF(100, 100));
+  FCanvas.ZoomOutAtPoint(100, 100);
+  FCanvas.ZoomOutAtPoint(100, 100);
+  FCanvas.ZoomOutAtPoint(100, 100);
   FCanvas.ClearSelection;
 
   TestLib.RunMouseClick(99, 99);
@@ -153,29 +158,59 @@ end;
 
 procedure TestTThCanvasZoom.BugTestZoomPointAnotherPoint;
 var
-  X, Y: Single;
+  X: Single;
   ZoomScale, ZoomScale2: Single;
 begin
-  FCanvas.BoundsRect := RectF(100,100,200,200);
-  TestLib.SetInitialMousePoint(GetInitialPoint);
-  Application.ProcessMessages;
+  ShowForm;
+//
+//  FForm.Left := 10;
+//  FForm.Top := 10;
+//  FForm.Width := 1020;
+//  FForm.Height := 1020;
+//
+//  FCanvas.BoundsRect := RectF(100,100,1100,1100);
+//  TestLib.SetInitialMousePoint(GetInitialPoint);
+//  Application.ProcessMessages;
 
-  FCanvas.ZoomOutAtPoint(PointF(25, 25));
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+//  FCanvas.ZoomOutAtPoint(75, 75);
+//  FCanvas.ZoomOutAtPoint(225, 225);
+//  FCanvas.ZoomOutAtPoint(0,0);
 
+  DrawRectangle(75, 75, 150, 150);
+  FCanvas.ClearSelection;
+
+//  FCanvas.ZoomOutAtPoint(25, 25);
+  FCanvas.ZoomOutAtPoint(75, 75);
+//  FCanvas.test(FCanvas.ViewPortPosition.X + 0.75); //0
+  FCanvas.test(FCanvas.ViewPortPosition.X - 0.75 - (0.75*0.9)-(0.75*0.9*0.9)-(0.75*0.9*0.9*0.9)-(0.75*0.9*0.9*0.9*0.9)); //150(Center)
+//  FCanvas.test(FCanvas.ViewPortPosition.X - 1.5);  // 225
+  DrawRectangle(75, 200, 150, 150);
+  DrawRectangle(200, 75, 150, 150);
+
+
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(76, 76);
+  CheckNotNull(FCanvas.SelectedItem);
+{
   ZoomScale := 1 * 0.9;
-  X := (100 / ZoomScale - 100 / 1) * (25 / 100);
-  Check(FCanvas.ViewPortPosition.X = X, Format('1, Width: %f, X: (%f / %f)', [FCanvas.Width, FCanvas.ViewPortPosition.X, X]));
+  X := (FCanvas.ViewPortSize.Width - 1000) * ZoomScale * (250 / FCanvas.Width);
+  Check(FCanvas.ViewPortPosition.X = X, Format('1, Width: %f, X: (%f / %f)', [FCanvas.ViewPortSize.Width, FCanvas.ViewPortPosition.X, X]));
 
-  FCanvas.ZoomOutAtPoint(PointF(75, 75));
+  FCanvas.ZoomOutAtPoint(750, 750);
 
   ZoomScale2 := ZoomScale * 0.9;
-  X := X + (100 / ZoomScale2 - 100 / ZoomScale) * (75 / 100);
-  Check(FCanvas.ViewPortPosition.X = X, Format('1, Width: %f, X: (%f / %f)', [FCanvas.Width, FCanvas.ViewPortPosition.X, X]));
+  X := X + (1000 / ZoomScale2 - 1000 / ZoomScale) * ZoomScale2 * (750 / 1000);
+  Check(FCanvas.ViewPortPosition.X = X, Format('2, Width: %f, X: (%f / %f)', [FCanvas.Width, FCanvas.ViewPortPosition.X, X]));
+}
 end;
 
 procedure TestTThCanvasZoom.TestZoomPositionCheckAfterMove;
 begin
-
   MousePath.New
   .Add(50, 50)
   .Add(100, 100)
@@ -183,6 +218,101 @@ begin
   .Add(150, 150)
   .Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
+end;
+
+procedure TestTThCanvasZoom.BugTestZoomAfterDrawCenter;
+begin
+  FForm.Left := 10;
+  FForm.Top := 10;
+  FForm.Width := 1020;
+  FForm.Height := 920;
+
+  FCanvas.BoundsRect := RectF(10,10,1010,910);
+  TestLib.SetInitialMousePoint(GetInitialPoint);
+  Application.ProcessMessages;
+
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+  FCanvas.ZoomOut;
+
+  DrawRectangle(100, 100, 200, 200);
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(101, 101);
+  CheckNotNull(FCanvas.SelectedItem, 'TopLeft');
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(199, 199);
+  CheckNotNull(FCanvas.SelectedItem, 'BottomRight');
+
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(99, 99);
+  CheckNull(FCanvas.SelectedItem);
+//  CheckNull(FCanvas.SelectedItem, Format('TopLeft Null %f, %f', [FCanvas.SelectedItem.Position.X, FCanvas.SelectedItem.Position.Y]));
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(201, 201);
+  CheckNull(FCanvas.SelectedItem);
+//  CheckNull(FCanvas.SelectedItem, Format('BottomRight Null %f, %f', [FCanvas.SelectedItem.Position.X, FCanvas.SelectedItem.Position.Y]));
+end;
+
+procedure TestTThCanvasZoom.BugTestZoomAfterDraw25;
+begin
+  FForm.Left := 10;
+  FForm.Top := 10;
+  FForm.Width := 1020;
+  FForm.Height := 920;
+
+  FCanvas.BoundsRect := RectF(10,10,1010,910);
+  TestLib.SetInitialMousePoint(GetInitialPoint);
+  Application.ProcessMessages;
+
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4, FCanvas.Height / 4);
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4, FCanvas.Height / 4);
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4, FCanvas.Height / 4);
+
+  DrawRectangle(100, 100, 200, 200);
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(101, 101);
+  CheckNotNull(FCanvas.SelectedItem, 'TopLeft');
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(199, 199);
+  CheckNotNull(FCanvas.SelectedItem, 'BottomRight');
+
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(99, 99);
+  CheckNull(FCanvas.SelectedItem);
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(201, 201);
+  CheckNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThCanvasZoom.BugTestZoomAfterDraw75;
+begin
+  FForm.Left := 10;
+  FForm.Top := 10;
+  FForm.Width := 1020;
+  FForm.Height := 920;
+
+  FCanvas.BoundsRect := RectF(10,10,1010,910);
+  TestLib.SetInitialMousePoint(GetInitialPoint);
+  Application.ProcessMessages;
+
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4 * 3, FCanvas.Height / 4 * 3);
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4 * 3, FCanvas.Height / 4 * 3);
+  FCanvas.ZoomOutAtPoint(FCanvas.Width / 4 * 3, FCanvas.Height / 4 * 3);
+
+  DrawRectangle(100, 100, 200, 200);
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(101, 101);
+  CheckNotNull(FCanvas.SelectedItem, 'TopLeft');
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(199, 199);
+  CheckNotNull(FCanvas.SelectedItem, 'BottomRight');
+
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(99, 99);
+  CheckNull(FCanvas.SelectedItem);
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(201, 201);
+  CheckNull(FCanvas.SelectedItem);
 end;
 
 initialization

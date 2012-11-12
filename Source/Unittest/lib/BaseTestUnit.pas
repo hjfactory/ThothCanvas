@@ -21,13 +21,14 @@ type
   private
     procedure CreateObject; virtual;
     procedure DestroyObject; virtual;
+
   public
     procedure SetUp; override;
     procedure TearDown; override;
 
     procedure ShowForm;
-    function DistanceSize(R: TRectF; D: Single): TPointF;
 
+    function DistanceSize(R: TRectF; D: Single): TPointF;
     procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawRectangle(R: TRectF); overload;
 

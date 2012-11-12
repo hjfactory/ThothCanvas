@@ -193,6 +193,9 @@ procedure TThCanvasEditor.DeleteSelection;
 var
   I: Integer;
 begin
+  if FSelections.Count = 0 then
+    Exit;
+
   if Assigned(FOnItemDelete) then
     FOnItemDelete(FSelections);
 
@@ -222,6 +225,8 @@ end;
 
 procedure TThCanvasEditor.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  CurrP: TPointF;
 begin
   inherited;
 
@@ -231,19 +236,22 @@ begin
     FDrawItem := AddItem(FDrawItemID);
     if Assigned(FDrawItem) then
     begin
-      FDrawItem.Position.Point := PointF(X, Y).Subtract(FContents.Position.Point);
+      CurrP := PointF(X / ZoomScale, Y / ZoomScale);
+      FDrawItem.Position.Point := CurrP.Subtract(FContents.ScaledPoint);
     end;
   end;
 end;
 
 procedure TThCanvasEditor.MouseMove(Shift: TShiftState; X, Y: Single);
 var
+  CurrP,
   FromP, ToP: TPointF;
 begin
   if IsDrawingItem and Assigned(FDrawItem) then
   begin
-    FromP := FMouseDownPos.Subtract(FContents.Position.Point);
-    ToP   := PointF(X, Y).Subtract(FContents.Position.Point);
+    FromP := FMouseDownPos.Subtract(FContents.ScaledPoint);
+    CurrP := PointF(X / ZoomScale, Y / ZoomScale);
+    ToP   := CurrP.Subtract(FContents.ScaledPoint);
 
     FDrawItem.DrawItemAtMouse(FromP, ToP);
   end

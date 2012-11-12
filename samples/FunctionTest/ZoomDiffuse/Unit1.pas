@@ -171,19 +171,20 @@ begin
   Radius := (Width / 2) * (FDiffuse / 100);
   P := ClipRect.CenterPoint;
   R := RectF(P.X, P.Y, P.X, P.Y);
-  R2 := RectF(RectF(P.X, P.Y, P.X, P.Y));
+  R2 := RectF(P.X, P.Y, P.X, P.Y);
 
   InflateRect(R, Radius, Radius);
 
   if Radius > (Width / 4) then
   begin
-    InflateRect(R, Radius / 2, R, Radius / 2);
+    InflateRect(R2, Radius / 2, Radius / 2);
   end;
 
   Canvas.StrokeThickness := 3;
   Canvas.StrokeDash := TStrokeDash.sdDot;
   Canvas.Stroke.Color := claDarkGray;
   Canvas.DrawEllipse(R, 1);
+  Canvas.DrawEllipse(R2, 1);
 end;
 
 end.

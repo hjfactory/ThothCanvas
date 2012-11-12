@@ -14,6 +14,7 @@ type
     FZoomScale: Single;
 
     procedure SetZoomScale(const Value: Single);
+    function GetScaledPoint: TPointF;
   protected
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
@@ -23,6 +24,7 @@ type
 
     procedure AddTrackingPos(const Value: TPointF);
     property ZoomScale: Single read FZoomScale write SetZoomScale;
+    property ScaledPoint: TPointF read GetScaledPoint;
   end;
 
   TThCanvas = class(TControl, IThCanvas, IThZoomObject)
@@ -73,8 +75,8 @@ type
     procedure ZoomIn;
     procedure ZoomOut;
 
-    procedure ZoomInAtPoint(APos: TPointF);
-    procedure ZoomOutAtPoint(APos: TPointF);
+    procedure ZoomInAtPoint(X, Y: Single);
+    procedure ZoomOutAtPoint(X, Y: Single);
 
     property ZoomScale: Single read GetZoomScale;
 
@@ -85,6 +87,8 @@ type
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
     property ZoomAnimated: Boolean read FZoomAnimated write FZoomAnimated;
+
+    procedure Test(A: single);
    end;
 
 implementation
@@ -113,6 +117,12 @@ function TThContents.GetClipRect: TRectF;
 begin
   Result :=  TControl(Parent).ClipRect;
   OffsetRect(Result, -Position.X, -Position.Y);
+end;
+
+function TThContents.GetScaledPoint: TPointF;
+begin
+  Result.X := Position.X / ZoomScale;
+  Result.Y := Position.Y / ZoomScale;
 end;
 
 function TThContents.GetUpdateRect: TRectF;
@@ -220,51 +230,27 @@ end;
 procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
 var
   ScaledSize: TSizeF;
-  DifferenceSize: TSizeF;  // different of scaled size to not scaled size
   MoveDistancePoint: TPointF;
-  ScaledPoint: TPointF;
 var
   P: TPointF;
 begin
-//
-//  // 증가된 크기
   ScaledSize.Width := Width / AScale;
   ScaledSize.Height := Height / AScale;
 
-  // 증가된 크기와 원래크기 차이
-  DifferenceSize := ScaledSize.Subtract(PointF(Width, Height));
-
-  // 증가된 크기 중 마우스의 비율(=이동할 거리)
-  MoveDistancePoint.X := DifferenceSize.Width * (ATargetPos.X / Width) * AScale;
-  MoveDistancePoint.Y := DifferenceSize.Height * (ATargetPos.Y / Height) * AScale;
-
-//  FContents.Position.Point.Offset(MoveDistancePoint);
-//
-////  ScaledPoint.X := FContents.Position.X * FContents.ZoomScale;
-////  ScaledPoint.Y := FContents.Position.Y * FContents.ZoomScale;
-////  FContents.Position.Point := ScaledPoint.Add(MoveDistancePoint);
-//  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
-//  FContents.Position.Point := MoveDistancePoint;
-
+//  MoveDistancePoint.X := (ScaledSize.Width - ViewPortSize.Width) * (ATargetPos.X / Width) * AScale * ZoomScale;
+//  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale * ZoomScale;
   MoveDistancePoint.X := (ScaledSize.Width - ViewPortSize.Width) * (ATargetPos.X / Width) * AScale * ZoomScale;
   MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale * ZoomScale;
 
-//  MoveDistancePoint.X := (ScaledSize.Width * AScale - ViewPortSize.Width * ZoomScale) * (ATargetPos.X / Width);
-//  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale;
+  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
+  FContents.ZoomScale := AScale;
 
-  Debug('B: %f, A: %f(%f, %f, %f)',
+  Debug('%f   (%f, %f)',
     [
       FContents.Position.Point.X,
-      FContents.Position.Point.Add(MoveDistancePoint).X,
       AScale,
-      ScaledSize.Width,
-      ViewPortSize.Width
+      ScaledSize.Width
     ]);
-
-
-  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
-
-  FContents.ZoomScale := AScale;
 end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
@@ -272,7 +258,6 @@ begin
   if FZoomAnimated then
     FZoomAni.ZoomIn(ATargetPos);
   DoZoom(FContents.ZoomScale * 1.1, ATargetPos);
-//  FContents.ZoomScale := FContents.ZoomScale * 1.1;
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
@@ -283,7 +268,6 @@ begin
     FZoomAni.ZoomOut(ATargetPos);
   ZoomScale := FContents.ZoomScale * 0.9;
   DoZoom(ZoomScale, ATargetPos);
-//  FContents.ZoomScale := FContents.ZoomScale * 0.9;
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -294,7 +278,7 @@ begin
   if FPressed and FUseMouseTracking then
   begin
 //    FLastDelta := PointF(0, 0);
-    FMouseDownPos := PointF(X, Y);
+    FMouseDownPos := PointF(X / ZoomScale, Y / ZoomScale);
     FMouseCurrPos := PointF(X, Y);
 
     if FVertTrackAni.Running then
@@ -341,7 +325,7 @@ begin
     end;
   end;
 
-  if FMouseDownPos = PointF(X, Y) then
+  if FMouseDownPos = PointF(X / ZoomScale, Y / ZoomScale) then
     ClickCanvas
 end;
 
@@ -387,14 +371,20 @@ begin
   Repaint;
 end;
 
+procedure TThCanvas.Test(A: single);
+begin
+  FContents.Position.X := A;
+  FContents.Position.Y := A;
+end;
+
 procedure TThCanvas.ZoomIn;
 begin
   DoZoomIn(ClipRect.CenterPoint)
 end;
 
-procedure TThCanvas.ZoomInAtPoint(APos: TPointF);
+procedure TThCanvas.ZoomInAtPoint(X, Y: Single);
 begin
-  DoZoomIn(APos);
+  DoZoomIn(PointF(X, Y));
 end;
 
 procedure TThCanvas.ZoomOut;
@@ -402,9 +392,9 @@ begin
   DoZoomOut(ClipRect.CenterPoint);
 end;
 
-procedure TThCanvas.ZoomOutAtPoint(APos: TPointF);
+procedure TThCanvas.ZoomOutAtPoint(X, Y: Single);
 begin
-  DoZoomOut(APos);
+  DoZoomOut(PointF(X, Y));
 end;
 
 function TThCanvas.GetZoomScale: Single;

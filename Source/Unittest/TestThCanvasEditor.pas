@@ -51,6 +51,7 @@ begin
 
 //  DrawRectangle(50, 200, 100, 250);
 
+  FCanvas.TrackAnimated := False;
   MousePath.New
   .Add(50, 50)
   .Add(100, 100)
@@ -84,7 +85,7 @@ end;
 
 procedure TestTThCanvasEditor.TestTrackingOutOfArea;
 begin
-  // 50 to -200
+  FCanvas.TrackAnimated := False;
   MousePath.New
   .Add(50, 50)
   .Add(0, 50)
