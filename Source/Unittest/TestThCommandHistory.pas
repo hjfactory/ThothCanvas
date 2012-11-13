@@ -65,7 +65,7 @@ begin
   FThothController.Redo;
   TestLib.RunMouseClick(50, 50);
   CheckNotNull(FCanvas.SelectedItem, 'Redo');
-  Check(FCanvas.SelectedItem.Position.Point = PointF(10, 10),
+  Check(FCanvas.SelectedItem.Position.Point = PointF(100, 100),
       Format('Position (%f, %f)', [FCanvas.SelectedItem.Position.X, FCanvas.SelectedItem.Position.Y]));
 end;
 
@@ -107,15 +107,15 @@ begin
 
   CheckNotNull(FCanvas.SelectedItem);
   P := FCanvas.SelectedItem.Position.Point;
-  Check(P = PointF(60, 60), Format('Org(60,60) X: %f, Y: %f', [P.X, P.Y]));
+  Check(P = PointF(600, 600), Format('Org(60,60) X: %f, Y: %f', [P.X, P.Y]));
 
   FThothController.Undo;
   P := FCanvas.SelectedItem.Position.Point;
-  Check(P = PointF(10, 10), Format('Undo(10,10) X: %f, Y: %f', [P.X, P.Y]));
+  Check(P = PointF(100, 100), Format('Undo(10,10) X: %f, Y: %f', [P.X, P.Y]));
 
   FThothController.Redo;
   P := FCanvas.SelectedItem.Position.Point;
-  Check(P = PointF(60, 60), Format('Redo(60,60) X: %f, Y: %f', [P.X, P.Y]));
+  Check(P = PointF(600, 600), Format('Redo(60,60) X: %f, Y: %f', [P.X, P.Y]));
 end;
 
 procedure TestTThCommandHistory.TestCommandHistoryResize;
@@ -130,15 +130,15 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   CheckNotNull(FCanvas.SelectedItem, 'Not null');
-  Check(FCanvas.SelectedItem.Width = 150, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 1500, Format('Width: %f', [FCanvas.SelectedItem.Width]));
 
   FThothController.Undo;
   CheckNotNull(FCanvas.SelectedItem, 'Undo. Not null');
-  Check(FCanvas.SelectedItem.Width = 100, Format('Undo. Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 1000, Format('Undo. Width: %f', [FCanvas.SelectedItem.Width]));
 
   FThothController.Redo;
   CheckNotNull(FCanvas.SelectedItem, 'Redo. Not null');
-  Check(FCanvas.SelectedItem.Width = 150, Format('Redo. Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 1500, Format('Redo. Width: %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThCommandHistory.TestClearUndoCommand;
@@ -176,7 +176,7 @@ begin
 
   TestLib.RunMouseClick(90, 90);
   CheckNotNull(FCanvas.SelectedItem);
-  Check(FCanvas.SelectedItem.Position.X = 80, '2nd item select');
+  Check(FCanvas.SelectedItem.Position.X = 800, '2nd item select');
 
   TestLib.RunMouseClick(50, 50);
   FCanvas.DeleteSelection;
@@ -184,7 +184,7 @@ begin
 
   TestLib.RunMouseClick(90, 90);
   CheckNotNull(FCanvas.SelectedItem);
-  Check(FCanvas.SelectedItem.Position.X = 80, 'Undo. 2nd item select');
+  Check(FCanvas.SelectedItem.Position.X = 800, 'Undo. 2nd item select');
 end;
 
 initialization

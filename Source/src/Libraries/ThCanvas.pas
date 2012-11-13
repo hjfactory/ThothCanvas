@@ -196,6 +196,7 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
+  FContents.ZoomScale := CanvasDefaultZoomScale;
 
   FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
   FHorzTrackAni := _CreateTrackAni('ViewPortPosition.X');
@@ -240,7 +241,7 @@ end;
 procedure TThCanvas.DoZoomHome;
 begin
   FContents.Position.Point := PointF(0, 0);
-  FContents.ZoomScale := 1;
+  FContents.ZoomScale := CanvasDefaultZoomScale;
 end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);

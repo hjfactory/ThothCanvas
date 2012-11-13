@@ -186,7 +186,7 @@ begin
   TestLib.RunMouseClick(50, 50);
 
   Check(Assigned(FCanvas.SelectedItem), 'Assigned');
-  Check(FCanvas.SelectedItem.Position.X = 40, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = 400, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.TestMultiselectAndDelete;
@@ -245,11 +245,11 @@ exit;
   TestLib.RunMouseClick(100, 100);
 
   Check(Assigned(FCanvas.SelectedItem), 'Assigned');
-  Check(FCanvas.SelectedItem.Position.X = 60, Format('Item.X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = 600, Format('Item.X: %f', [FCanvas.SelectedItem.Position.X]));
 
   TestLib.RunMouseClick(200, 200);
   Check(Assigned(FCanvas.SelectedItem), 'Assigned 2');
-  Check(FCanvas.SelectedItem.Position.X = 160, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = 1600, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.BugTestAnotherContrlShfitPressAndMultiselect;
@@ -351,8 +351,8 @@ begin
   .Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
   Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
-  Check(FCanvas.SelectedItem.Position.X = 160, 'Change selection failed');
-  Check(FCanvas.SelectedItem.Width = 70, 'Change selection failed');
+  Check(FCanvas.SelectedItem.Position.X = 1600, 'Change selection failed');
+  Check(FCanvas.SelectedItem.Width = 700, 'Change selection failed');
 end;
 
 procedure TestTThItemControl.TestMultiselectionAndMove;
@@ -389,7 +389,7 @@ begin
   TestLib.RunMouseClick(160, 160);
   TestLib.RunKeyUpShift;
   Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
-  Check(FCanvas.SelectedItem.Position.X = 10, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = 100, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.TestMultiselectDrawOutline;
@@ -440,7 +440,7 @@ begin
   FCanvas.ClearSelection;
   TestLib.RunMouseClick(150, 150);
   CheckNotNull(FCanvas.SelectedItem);
-  Check(FCanvas.SelectedItem.Width = 70, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 700, Format('Width: %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThItemControl.TestShowHighlightOnlyMouseOver;

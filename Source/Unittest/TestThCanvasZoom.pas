@@ -50,6 +50,9 @@ type
     // #193 아이템 크기조정(또는 그릴때)시 Zoom에 따른 최소크기가 적용되야 한다.
     procedure TestMinSizeWithZoomOfDrawing;
     procedure TestMinSizeWithZoomOfResizing;
+
+    // #203 확대 시 직선 주위를 선택해도 선택되는 버그
+    procedure TestAfterZoomingOverRangeLineSelection;
   end;
 
 implementation
@@ -65,11 +68,11 @@ begin
   DrawRectangle(50, 50, 150, 150);
 
   FCanvas.ZoomIn;
-  Check(FCanvas.ZoomScale > 1, Format('ZoomIn: %f', [FCanvas.ZoomScale]));
+  Check(FCanvas.ZoomScale > CanvasDefaultZoomScale, Format('ZoomIn: %f', [FCanvas.ZoomScale]));
 
+  FCanvas.ZoomHome;
   FCanvas.ZoomOut;
-  FCanvas.ZoomOut;
-  Check(FCanvas.ZoomScale < 1, Format('ZoomOt: %f', [FCanvas.ZoomScale]));
+  Check(FCanvas.ZoomScale < CanvasDefaultZoomScale, Format('ZoomOt: %f', [FCanvas.ZoomScale]));
 end;
 
 procedure TestTThCanvasZoom.TestZoomAndSpotSizeMaintain;
@@ -107,7 +110,6 @@ begin
   c := 100 * FCanvas.ZoomScale;
   AC := TestLib.GetControlPixelColor(FCanvas, Trunc(l)+ItemHighlightSize-1, Trunc(c));
   Check(AC = ItemHighlightColor, Format('[Left: %f] Not matching color ZoomOut(%d, %d)', [l, AC, ItemHighlightColor]));
-Exit;
 end;
 
 procedure TestTThCanvasZoom.TestZoomCenterPosition;
@@ -324,6 +326,11 @@ begin
   FCanvas.ClearSelection;
   TestLib.RunMouseClick(10 + ItemMinimumSize - 1, 10 + ItemMinimumSize - 1);
   CheckNotNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThCanvasZoom.TestAfterZoomingOverRangeLineSelection;
+begin
+
 end;
 
 initialization
