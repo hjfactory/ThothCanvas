@@ -55,6 +55,7 @@ type
     procedure DoAddObject(AObject: TFmxObject); override;
 
     procedure DoZoom(AScale: Single; ATargetPos: TPointF);
+    procedure DoZoomHome;
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
 
@@ -74,6 +75,7 @@ type
 
     procedure ZoomIn;
     procedure ZoomOut;
+    procedure ZoomHome;
 
     procedure ZoomInAtPoint(X, Y: Single);
     procedure ZoomOutAtPoint(X, Y: Single);
@@ -235,6 +237,12 @@ begin
   FContents.ZoomScale := FContents.ZoomScale * AScale;
 end;
 
+procedure TThCanvas.DoZoomHome;
+begin
+  FContents.Position.Point := PointF(0, 0);
+  FContents.ZoomScale := 1;
+end;
+
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
 begin
   if FZoomAnimated then
@@ -282,7 +290,7 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FTrackAnimated then
+  if FTrackAnimated and (not IsDrawingItem) then
   begin
     if FLastDelta.Y <> 0 then
     begin
@@ -353,6 +361,11 @@ procedure TThCanvas.Test(A: single);
 begin
   FContents.Position.X := A;
   FContents.Position.Y := A;
+end;
+
+procedure TThCanvas.ZoomHome;
+begin
+  DoZoomHome;
 end;
 
 procedure TThCanvas.ZoomIn;

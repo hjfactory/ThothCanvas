@@ -25,6 +25,7 @@ type
     btnZoomOut: TCornerButton;
     btnZoomIn: TCornerButton;
     edtZoom: TEdit;
+    btnHome: TCornerButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRectangleClick(Sender: TObject);
@@ -33,6 +34,7 @@ type
     procedure btnRedoClick(Sender: TObject);
     procedure btnZoomOutClick(Sender: TObject);
     procedure btnZoomInClick(Sender: TObject);
+    procedure btnHomeClick(Sender: TObject);
   private
     { Private declarations }
     FController: TThothController;
@@ -111,6 +113,11 @@ procedure TForm1.btnZoomOutClick(Sender: TObject);
 begin
   FCanvas.ZoomOut;
   edtZoom.Text := FloatToStr(FCanvas.ZoomScale);
+end;
+
+procedure TForm1.btnHomeClick(Sender: TObject);
+begin
+  FCanvas.ZoomHome;
 end;
 
 procedure TForm1.btnRectangleClick(Sender: TObject);

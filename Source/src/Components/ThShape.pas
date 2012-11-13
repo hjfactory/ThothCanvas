@@ -161,6 +161,10 @@ end;
 
 function TThRectangle.PtInItem(Pt: TPointF): Boolean;
 begin
+  Result := False;
+  if (AbsoluteRect.Width < ItemFocusMinimumSize) and (AbsoluteRect.Height < ItemFocusMinimumSize) then
+    Exit;
+
   Result := PtInRect(GetItemRect, Pt);
 end;
 
@@ -262,6 +266,9 @@ begin
 
   Rect := GetItemRect;
   RangeD := (ItemLineSelectionThickness-1)/2;
+
+  if (Rect.TopLeft.Distance(Rect.BottomRight) < ItemFocusMinimumSize) then
+    Exit;
 
   if IsHorizon then
   begin
@@ -466,6 +473,9 @@ end;
 function TThCircle.PtInItem(Pt: TPointF): Boolean;
 begin
   Result := False;
+  if (AbsoluteRect.Width < ItemFocusMinimumSize) and (AbsoluteRect.Height < ItemFocusMinimumSize) then
+    Exit;
+
   if Width * Height = 0 then
     Exit;
   if (Sqr((Pt.X * 2 - Width) / Width) + Sqr((Pt.Y * 2 - Height) / Height) <= 1)

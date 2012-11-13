@@ -43,7 +43,8 @@ constructor TZoomAni.Create(AOwner: TComponent);
 begin
   inherited;
 
-  Locked := False;
+//  Locked := False;
+  Hittest := False;
 
   FZoomAni := TFloatAnimation.Create(Self);
   FZoomAni.Parent := Self;

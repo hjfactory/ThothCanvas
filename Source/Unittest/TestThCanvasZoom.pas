@@ -74,7 +74,6 @@ end;
 
 procedure TestTThCanvasZoom.TestZoomAndSpotSizeMaintain;
 var
-  l: single;
   AC: TAlphaColor;
 begin
   DrawRectangle(50, 50, 150, 150);
@@ -86,7 +85,7 @@ begin
   FCanvas.ZoomOutAtPoint(50, 50);
 
   AC := TestLib.GetControlPixelColor(FCanvas, 50-ItemResizeSpotRadius+1, 50);
-  Check(AC = ItemResizeSpotOutColor, Format('[Left: %f] Not matching color ZoomOut(%d, %d)', [l, AC, ItemResizeSpotOutColor]));
+  Check(AC = ItemResizeSpotOutColor, Format('[Left] Not matching color ZoomOut(%d, %d)', [AC, ItemResizeSpotOutColor]));
 end;
 
 procedure TestTThCanvasZoom.TestZoomAndHighlightSizeMaintain;
@@ -161,12 +160,10 @@ end;
 procedure TestTThCanvasZoom.BugTestZoomPointAnotherPoint;
 begin
   FCanvas.ZoomOutAtPoint(75, 75);
-  FCanvas.ZoomOutAtPoint(75, 75);
-  FCanvas.ZoomOutAtPoint(75, 75);
 
   DrawRectangle(75, 75, 150, 150);
-  FCanvas.ClearSelection;
 
+  FCanvas.ClearSelection;
   FCanvas.ZoomOutAtPoint(75, 75);
   DrawRectangle(75, 200, 150, 150);
   DrawRectangle(200, 75, 150, 150);
@@ -302,8 +299,6 @@ end;
 
 procedure TestTThCanvasZoom.TestMinSizeWithZoomOfDrawing;
 begin
-  ShowForm;
-
   FCanvas.ZoomOut;
   FCanvas.ZoomOut;
 
@@ -316,15 +311,14 @@ end;
 
 procedure TestTThCanvasZoom.TestMinSizeWithZoomOfResizing;
 begin
-
   FCanvas.ZoomOut;
   FCanvas.ZoomOut;
 
   DrawRectangle(10, 10, 100, 100);
 
-  MousePath.New
+   MousePath.New
   .Add(100, 100)
-  .Add(10, 10);
+  .Add(20, 20);
   TestLib.RunMousePath(MousePath.Path);
 
   FCanvas.ClearSelection;

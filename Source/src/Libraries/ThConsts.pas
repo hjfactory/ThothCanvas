@@ -16,6 +16,7 @@ const
   ItemShapeDefaultColor = claGreen;
   ItemLineThickness = 7;
   ItemLineSelectionThickness = 15;    // 선 선택 범위
+  ItemFocusMinimumSize = ItemMinimumSize * 0.5;
 
   ItemHighlightSize = 3;
 //  ItemHighlightColor = $FFAAAAAA;

@@ -141,6 +141,7 @@ var
   P: TPointF;
 begin
   Result := False;
+
   if IThCanvas(ParentCanvas).IsDrawingItem then
     Exit;
   P := AbsoluteToLocal(PointF(X, Y));

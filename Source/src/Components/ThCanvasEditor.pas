@@ -29,6 +29,7 @@ type
     procedure SetDrawItemID(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
+    procedure Paint; override;
     procedure ClickCanvas; override;
 
     procedure ItemSelect(Item: TThItem; IsMultiSelect: Boolean);
@@ -276,6 +277,55 @@ begin
 
   FDrawItem := nil;
   FDrawItemID := -1;
+end;
+
+procedure TThCanvasEditor.Paint;
+//var
+//  I, J: Integer;
+//  S: Single;
+begin
+  inherited;
+{
+  //  Canvas.Stroke.Thickness := 0.1;
+
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := $FF000000;
+
+  for I := 0 to (Trunc(width) div 300) do
+  begin
+    Canvas.StrokeDash := TStrokeDash.sdSolid;
+    Canvas.Stroke.Color := $FF000000;
+    Canvas.DrawLine(PointF(I*300, 0), PointF(I*300, Height), 0.8);
+    Canvas.StrokeDash := TStrokeDash.sdDot;
+    Canvas.Stroke.Color := $FF999999;
+    for J := 1 to 4 do
+      Canvas.DrawLine(PointF(I*300 + 60 * J, 0), PointF(I*300 + 60 * J, Height), 0.8);
+  end;
+
+  for I := 0 to (Trunc(Height) div 300) do
+  begin
+    Canvas.StrokeDash := TStrokeDash.sdSolid;
+    Canvas.Stroke.Color := $FF000000;
+    Canvas.DrawLine(PointF(0, I*300), PointF(Width, I*300), 0.8);
+    Canvas.StrokeDash := TStrokeDash.sdDot;
+    Canvas.Stroke.Color := $FF999999;
+    for J := 1 to 4 do
+      Canvas.DrawLine(PointF(0, I*300 + 60 * J), PointF(Width, I*300 + 60 * J), 0.8);
+  end;
+}
+  //
+//  Canvas.DrawLine(PointF(100, 0), PointF(100, Height), 0.8);
+//  Canvas.DrawLine(PointF(400, 0), PointF(400, Height), 0.8);
+//
+//  Canvas.DrawLine(PointF(100, 0), PointF(100, Height), 0.8);
+//  Canvas.DrawLine(PointF(400, 0), PointF(400, Height), 0.8);
+//
+//  Canvas.Stroke.Thickness := 0.01;
+//  Canvas.Stroke.Color := $FF999999;
+//  Canvas.DrawLine(PointF(160, 0), PointF(160, Height), 1);
+//  Canvas.DrawLine(PointF(220, 0), PointF(220, Height), 1);
+//  Canvas.DrawLine(PointF(280, 0), PointF(280, Height), 1);
+//  Canvas.DrawLine(PointF(340, 0), PointF(340, Height), 1);
 end;
 
 procedure TThCanvasEditor.SetDrawItemID(const Value: Integer);
