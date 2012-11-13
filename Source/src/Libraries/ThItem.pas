@@ -239,7 +239,7 @@ begin
 
   if Assigned(FResizer) then
   begin
-    if FParentCanvas.IsMultiSelected then
+    if FSelected and FParentCanvas.IsMultiSelected then
       FResizer.ShowDisableSpots
     else if {(not FParentCanvas.IsMultiSelected) and} Value then
       FResizer.ShowSpots
