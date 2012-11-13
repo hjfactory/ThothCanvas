@@ -11,6 +11,7 @@ type
   private
     FZoomAni: TFloatAnimation;
     FDiffuse: Single;
+    FFinished: Boolean;
 
     procedure SetDiffuse(const Value: Single);
     procedure FinishAni(Sender: TObject);
@@ -34,7 +35,7 @@ type
 implementation
 
 uses
-  System.UIConsts;
+  System.UIConsts, DebugUtils;
 
 { TZoomAni }
 
@@ -42,7 +43,7 @@ constructor TZoomAni.Create(AOwner: TComponent);
 begin
   inherited;
 
-  HitTest := False;
+  Locked := False;
 
   FZoomAni := TFloatAnimation.Create(Self);
   FZoomAni.Parent := Self;
@@ -57,6 +58,7 @@ begin
   FWidth := 100;
   FHeight := 100;
 
+  FFinished := True;
   Visible := False;
 end;
 
@@ -89,25 +91,27 @@ procedure TZoomAni.ZoomIn(ACenterPos: TPointF);
 begin
   Position.Point := ACenterPos.Subtract(PointF(Width / 2, Height / 2));
 
-  Visible := True;
-  FZoomAni.StartValue := 100;
-  FZoomAni.StopValue := 10;
-
   if FZoomAni.Running then
     FZoomAni.Stop;
+  Visible := True;
+
+  FZoomAni.StartValue := 100;
+  FZoomAni.StopValue := 10;
   FZoomAni.Start;
+
+  FFinished := False;
 end;
 
 procedure TZoomAni.ZoomOut(ACenterPos: TPointF);
 begin
   Position.Point := ACenterPos.Subtract(PointF(Width / 2, Height / 2));
 
-  Visible := True;
-  FZoomAni.StartValue := 10;
-  FZoomAni.StopValue := 100;
-
   if FZoomAni.Running then
     FZoomAni.Stop;
+  Visible := True;
+
+  FZoomAni.StartValue := 10;
+  FZoomAni.StopValue := 100;
   FZoomAni.Start;
 end;
 

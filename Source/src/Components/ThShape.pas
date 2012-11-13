@@ -99,8 +99,12 @@ begin
 end;
 
 function TThShape.GetMinimumSize: TPointF;
+var
+  MinSize: Single;
 begin
-  Result := PointF(ItemMinimumSize, ItemMinimumSize);
+  MinSize := ItemMinimumSize / AbsoluteScale.X;
+
+  Result := PointF(MinSize, MinSize);
 end;
 
 function TThShape.CreateHighlighter: IItemHighlighter;
@@ -220,20 +224,23 @@ end;
 
 function TThLine.GetMinimumSize: TPointF;
 var
+  MinSize,
   Rad: Single;
   R: TRectF;
 begin
   R := TThItemResizer(FResizer).GetActiveSpotsItemRect;
 
+  MinSize := ItemMinimumSize / AbsoluteScale.X;
+
   if R.Height = 0 then
-    Result := PointF(ItemMinimumSize, 0)
+    Result := PointF(MinSize, 0)
   else if R.Width = 0 then
-    Result := PointF(0, ItemMinimumSize)
+    Result := PointF(0, MinSize)
   else
   begin
     Rad := ArcTan(R.Height / R.Width);
-    Result.X := Cos(Rad) * ItemMinimumSize;
-    Result.Y := Sin(Rad) * ItemMinimumSize;
+    Result.X := Cos(Rad) * MinSize;
+    Result.Y := Sin(Rad) * MinSize;
   end;
 end;
 
@@ -374,7 +381,7 @@ begin
   ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
 
   Min := MinimumSize;
-  if (AFrom.Distance(ATo) < ItemMinimumSize) and ((Rect.Width < Min.X) or (Rect.Height < Min.Y)) then
+  if (AFrom.Distance(ATo) < ItemMinimumSize / AbsoluteScale.X) and ((Rect.Width < Min.X) or (Rect.Height < Min.Y)) then
   begin
     if InRange(Rect.Width, 1, Min.X - 1) then
       ATo.X := AFrom.X + Min.X * IfThen(AFrom.X > ATo.X, -1, 1);

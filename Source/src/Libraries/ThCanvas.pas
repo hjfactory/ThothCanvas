@@ -211,9 +211,6 @@ destructor TThCanvas.Destroy;
 begin
   FZoomAni.Free;
   FContents.Free;
-//  FVertTrackAni.Free;
-//  FHorzTrackAni.Free;
-
 
   inherited;
 end;
@@ -229,45 +226,27 @@ end;
 
 procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
 var
-  ScaledSize: TSizeF;
-  MoveDistancePoint: TPointF;
-var
   P: TPointF;
 begin
-  ScaledSize.Width := Width / AScale;
-  ScaledSize.Height := Height / AScale;
+  P := FContents.Position.Point;
+  FContents.Position.X := P.X * AScale + (Width * (1 - AScale)) * (ATargetPos.X / Width);
+  FContents.Position.Y := P.Y * AScale + (Height * (1 - AScale)) * (ATargetPos.Y / Height);
 
-//  MoveDistancePoint.X := (ScaledSize.Width - ViewPortSize.Width) * (ATargetPos.X / Width) * AScale * ZoomScale;
-//  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale * ZoomScale;
-  MoveDistancePoint.X := (ScaledSize.Width - ViewPortSize.Width) * (ATargetPos.X / Width) * AScale * ZoomScale;
-  MoveDistancePoint.Y := (ScaledSize.Height - ViewPortSize.Height) * (ATargetPos.Y / Height) * AScale * ZoomScale;
-
-  FContents.Position.Point := FContents.Position.Point.Add(MoveDistancePoint);
-  FContents.ZoomScale := AScale;
-
-  Debug('%f   (%f, %f)',
-    [
-      FContents.Position.Point.X,
-      AScale,
-      ScaledSize.Width
-    ]);
+  FContents.ZoomScale := FContents.ZoomScale * AScale;
 end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
 begin
   if FZoomAnimated then
     FZoomAni.ZoomIn(ATargetPos);
-  DoZoom(FContents.ZoomScale * 1.1, ATargetPos);
+  DoZoom(1.1, ATargetPos);
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
-var
-  ZoomScale: Single;
 begin
   if FZoomAnimated then
     FZoomAni.ZoomOut(ATargetPos);
-  ZoomScale := FContents.ZoomScale * 0.9;
-  DoZoom(ZoomScale, ATargetPos);
+  DoZoom(0.9, ATargetPos);
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -277,7 +256,6 @@ begin
 
   if FPressed and FUseMouseTracking then
   begin
-//    FLastDelta := PointF(0, 0);
     FMouseDownPos := PointF(X / ZoomScale, Y / ZoomScale);
     FMouseCurrPos := PointF(X, Y);
 

@@ -112,6 +112,9 @@ begin
     Result.OnTracking := ItemTracking;
     Result.OnMove := ItemMove;
     Result.OnResize := ItemResize;
+    // Zoom적용된 최소사이즈 적용
+    Result.Width := Result.Width / ZoomScale;
+    Result.Height := Result.Height / ZoomScale;
   end;
 end;
 
