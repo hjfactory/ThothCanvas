@@ -265,7 +265,7 @@ begin
   Result := False;
 
   Rect := GetItemRect;
-  RangeD := (ItemLineSelectionThickness-1)/2;
+  RangeD := (ItemLineSelectionThickness-1)/2 / AbsoluteScale.X;
 
   if (Rect.TopLeft.Distance(Rect.BottomRight) < ItemFocusMinimumSize) then
     Exit;
@@ -345,7 +345,7 @@ procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   P1, P2: TPointF;
 begin
-  Canvas.StrokeThickness := ItemLineThickness;
+  Canvas.StrokeThickness := ItemLineThickness / AbsoluteScale.X;
   Canvas.Stroke.Color := AFillColor;
   Canvas.StrokeCap := TStrokeCap.scRound;
 

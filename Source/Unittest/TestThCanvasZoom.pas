@@ -106,8 +106,8 @@ begin
   FCanvas.ZoomOutAtPoint(0, 0);
 
   // 구현은 되었으나 테스트에서 오류
-  l := 150 * FCanvas.ZoomScale;
-  c := 100 * FCanvas.ZoomScale;
+  l := 1500 * FCanvas.ZoomScale;
+  c := 1000 * FCanvas.ZoomScale;
   AC := TestLib.GetControlPixelColor(FCanvas, Trunc(l)+ItemHighlightSize-1, Trunc(c));
   Check(AC = ItemHighlightColor, Format('[Left: %f] Not matching color ZoomOut(%d, %d)', [l, AC, ItemHighlightColor]));
 end;
