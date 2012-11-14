@@ -105,23 +105,23 @@
         </DelphiCompile>
         <DCCReference Include="TestThCanvasEditor.pas"/>
         <DCCReference Include="..\src\Libraries\ThCanvas.pas"/>
-        <DCCReference Include="..\src\Components\ThCanvasEditor.pas"/>
+        <DCCReference Include="..\src\Cores\ThCanvasEditor.pas"/>
         <DCCReference Include="lib\UnitTestForm.pas">
             <Form>frmUnitTest</Form>
         </DCCReference>
         <DCCReference Include="lib\FMX.TestLib.pas"/>
         <DCCReference Include="..\src\Libraries\ThItem.pas"/>
-        <DCCReference Include="..\src\Components\ThShape.pas"/>
+        <DCCReference Include="..\src\Cores\ThShape.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
         <DCCReference Include="TestThItemRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>
         <DCCReference Include="..\src\Utils\DebugUtils.pas"/>
         <DCCReference Include="..\src\Components\ThItemHighlighter.pas"/>
-        <DCCReference Include="..\src\Libraries\ThConsts.pas"/>
+        <DCCReference Include="..\src\Types\ThConsts.pas"/>
         <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
         <DCCReference Include="TestThItemLine.pas"/>
-        <DCCReference Include="..\src\Libraries\ThTypes.pas"/>
+        <DCCReference Include="..\src\Types\ThTypes.pas"/>
         <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
         <DCCReference Include="TestThItemCircle.pas"/>
         <DCCReference Include="TestThItemControl.pas"/>
@@ -135,6 +135,7 @@
         <DCCReference Include="..\src\Commands\ThSystemCommand.pas"/>
         <DCCReference Include="TestThCanvasZoom.pas"/>
         <DCCReference Include="..\src\Components\ThZoomAnimation.pas"/>
+        <DCCReference Include="..\src\Types\ThResourceString.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

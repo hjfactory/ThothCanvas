@@ -142,7 +142,7 @@ begin
   S := Format('Position(%f, %f)', [Position.X, Position.Y]);
   S := S + Format(' W, H(%f, %f)', [Width, Height]);
   Canvas.Fill.Color := claRed;
-  Canvas.Font.Size := 10;
+  Canvas.Font.Size := 10 / AbsoluteScale.X;
   Canvas.FillText(ClipRect, S, True, 1, [], TTextAlign.taCenter);
 {$ENDIF}
 end;

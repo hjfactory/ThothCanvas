@@ -32,9 +32,12 @@ const
   ItemFactoryIDLine       = 1200;
   ItemFactoryIDCircle     = 1300;
 
-  CanvasDefaultZoomScale = 0.1;
   CanvasTrackAniCount   = 5;
   CanvasTrackDuration   = 0.5;
+
+  CanvasZoomScaleDefault = 0.1;
+  CanvasZoomScaleMax    = 15;
+  CanvasZoomScaleMin    = 0.001;
 
 implementation
 

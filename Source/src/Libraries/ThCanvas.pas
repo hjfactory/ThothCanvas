@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, System.SysUtils,
   System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani,
-  ThTypes, ThItem, ThZoomAnimation;
+  ThTypes, ThItem, ThZoomAnimation, ThAlertAnimation;
 
 type
   TThContents = class(TControl)
@@ -18,7 +18,6 @@ type
   protected
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
-    procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -41,11 +40,15 @@ type
     FTrackAnimated: Boolean;
     FZoomAnimated: Boolean;
 
+    FAlert: TAlertAnimation;
+
     function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
     function GetZoomScale: Single;
     function GetViewPortSize: TSizeF;
+
+    procedure AlertMessage(msg: string);
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
@@ -54,7 +57,7 @@ type
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
-    procedure DoZoom(AScale: Single; ATargetPos: TPointF);
+    function DoZoom(AScale: Single; ATargetPos: TPointF): Boolean;
     procedure DoZoomHome;
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
@@ -96,7 +99,7 @@ type
 implementation
 
 uses
-  ThConsts, FMX.Forms, DebugUtils;
+  ThConsts, FMX.Forms, ThResourceString;
 
 { TThContent }
 
@@ -145,18 +148,6 @@ begin
   end;
 end;
 
-procedure TThContents.Paint;
-begin
-  inherited;
-
-{$IFDEF DEBUG}
-  Canvas.Fill.Color := claNull;
-  Canvas.Stroke.Color := claBlack;
-
-  Canvas.DrawRect(TControl(Parent).ClipRect, 0, 0, AllCorners, 1);
-{$ENDIF}
-end;
-
 procedure TThContents.SetZoomScale(const Value: Single);
 begin
   if FZoomScale = Value then
@@ -196,12 +187,15 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
-  FContents.ZoomScale := CanvasDefaultZoomScale;
+  FContents.ZoomScale := CanvasZoomScaleDefault;
 
   FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
   FHorzTrackAni := _CreateTrackAni('ViewPortPosition.X');
   FZoomAni := TZoomCircleAni.Create(Self);
   FZoomAni.Parent := Self;
+
+  FAlert := TAlertAnimation.Create(Self);
+  FAlert.Parent := Self;
 
 {$IFDEF DEBUG}
   FBgColor := $FFDDFFDD;
@@ -212,6 +206,7 @@ end;
 
 destructor TThCanvas.Destroy;
 begin
+  FAlert.Free;
   FZoomAni.Free;
   FContents.Free;
 
@@ -221,41 +216,53 @@ end;
 procedure TThCanvas.DoAddObject(AObject: TFmxObject);
 begin
   if Assigned(FContents) and (AObject <> FContents)
-      and (not (AObject is TAnimation)) and (not (AObject is TZoomAni)) then
+      and (not (AObject is TAnimation)) and (not (AObject is TZoomAni)) and (not (AObject is TAlertAnimation)) then
     FContents.AddObject(AObject)
   else
     inherited;
 end;
 
-procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
+function TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF): Boolean;
 var
   P: TPointF;
 begin
+  if FContents.ZoomScale * AScale > CanvasZoomScaleMax then
+  begin
+    AlertMessage(MsgCanvasZoomInMaxAlert);
+    Exit(False);
+  end;
+
+  if FContents.ZoomScale * AScale < CanvasZoomScaleMin then
+  begin
+    AlertMessage(MsgCanvasZoomOutMinAlert);
+    Exit(False);
+  end;
+
   P := FContents.Position.Point;
   FContents.Position.X := P.X * AScale + (Width * (1 - AScale)) * (ATargetPos.X / Width);
   FContents.Position.Y := P.Y * AScale + (Height * (1 - AScale)) * (ATargetPos.Y / Height);
 
   FContents.ZoomScale := FContents.ZoomScale * AScale;
+
+  Result := True;
 end;
 
 procedure TThCanvas.DoZoomHome;
 begin
   FContents.Position.Point := PointF(0, 0);
-  FContents.ZoomScale := CanvasDefaultZoomScale;
+  FContents.ZoomScale := CanvasZoomScaleDefault;
 end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
 begin
-  if FZoomAnimated then
+  if DoZoom(1.1, ATargetPos) and FZoomAnimated then
     FZoomAni.ZoomIn(ATargetPos);
-  DoZoom(1.1, ATargetPos);
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
 begin
-  if FZoomAnimated then
+  if DoZoom(0.9, ATargetPos) and FZoomAnimated then
     FZoomAni.ZoomOut(ATargetPos);
-  DoZoom(0.9, ATargetPos);
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -291,7 +298,9 @@ procedure TThCanvas.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FTrackAnimated and (not IsDrawingItem) then
+  if not (ssShift in Shift) and not (ssCtrl in Shift) and (FMouseDownPos = PointF(X / ZoomScale, Y / ZoomScale)) then
+    ClickCanvas
+  else if FTrackAnimated and (not IsDrawingItem) then
   begin
     if FLastDelta.Y <> 0 then
     begin
@@ -312,8 +321,6 @@ begin
     end;
   end;
 
-  if FMouseDownPos = PointF(X / ZoomScale, Y / ZoomScale) then
-    ClickCanvas
 end;
 
 procedure TThCanvas.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
@@ -343,6 +350,11 @@ begin
   Canvas.DrawLine(PointF(Width/2, Top), PointF(Width/2, Height), 1);
   Canvas.DrawLine(PointF(Left, Height/2), PointF(Width, Height/2), 1);
 {$ENDIF}
+end;
+
+procedure TThCanvas.AlertMessage(msg: string);
+begin
+  FAlert.Message(msg);
 end;
 
 procedure TThCanvas.ClickCanvas;

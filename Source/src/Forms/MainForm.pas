@@ -69,6 +69,8 @@ begin
   FCanvasController := TThCanvasEditorController.Create;
   FCanvasController.SetSubject(FController);
   FCanvasController.SetThCanvas(FCanvas);
+
+  edtZoom.Text := FloatToStr(FCanvas.ZoomScale);
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

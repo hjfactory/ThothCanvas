@@ -180,8 +180,6 @@ begin
 end;
 
 function TThItem.GetUpdateRect: TRectF;
-var
-  R: TRectF;
 begin
   Result := inherited GetUpdateRect;
   InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
@@ -266,7 +264,7 @@ begin
   begin
     FBeforeSelect := FSelected;
 
-    if ssShift in Shift then
+    if (ssShift in Shift) or (ssCtrl in Shift) then
       DoSelected(True, True)
     else if not FSelected then
       DoSelected(True);
@@ -300,7 +298,7 @@ begin
 
   if Button = TMouseButton.mbLeft then
   begin
-    if (ssShift in Shift) and (FDownItemPos = Position.Point) and FBeforeSelect then
+    if ((ssShift in Shift) or (ssCtrl in Shift)) and (FDownItemPos = Position.Point) and FBeforeSelect then
       DoSelected(False, True)
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
       FOnMove(Self, FDownItemPos);

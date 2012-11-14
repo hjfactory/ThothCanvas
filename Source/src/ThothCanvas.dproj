@@ -127,15 +127,15 @@
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="Libraries\ThItem.pas"/>
-        <DCCReference Include="Components\ThShape.pas"/>
-        <DCCReference Include="Components\ThCanvasEditor.pas"/>
+        <DCCReference Include="Cores\ThShape.pas"/>
+        <DCCReference Include="Cores\ThCanvasEditor.pas"/>
         <DCCReference Include="Libraries\ThCanvas.pas"/>
         <DCCReference Include="Components\ThItemFactory.pas"/>
         <DCCReference Include="Utils\DebugUtils.pas"/>
         <DCCReference Include="Components\ThItemHighlighter.pas"/>
-        <DCCReference Include="Libraries\ThConsts.pas"/>
+        <DCCReference Include="Types\ThConsts.pas"/>
         <DCCReference Include="Components\ThItemResizer.pas"/>
-        <DCCReference Include="Libraries\ThTypes.pas"/>
+        <DCCReference Include="Types\ThTypes.pas"/>
         <DCCReference Include="Utils\ResizeUtils.pas"/>
         <DCCReference Include="Libraries\ThClasses.pas"/>
         <DCCReference Include="Controllers\ThCanvasController.pas"/>
@@ -145,6 +145,8 @@
         <DCCReference Include="Controllers\ThItemStorage.pas"/>
         <DCCReference Include="Commands\ThSystemCommand.pas"/>
         <DCCReference Include="Components\ThZoomAnimation.pas"/>
+        <DCCReference Include="Types\ThResourceString.pas"/>
+        <DCCReference Include="Components\ThAlertAnimation.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
