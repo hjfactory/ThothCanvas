@@ -105,7 +105,7 @@
         <DCC_DebugInformation>false</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_Build>8</VerInfo_Build>
+        <VerInfo_Build>9</VerInfo_Build>
         <VerInfo_Release>2</VerInfo_Release>
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
         <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
@@ -114,7 +114,7 @@
         <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_Keys>CompanyName=Team, Thoth;FileDescription=;FileVersion=0.1.2.8;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=Thoth Canvas(alpha);ProductVersion=0.1;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Team, Thoth;FileDescription=;FileVersion=0.1.2.9;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=Thoth Canvas(alpha);ProductVersion=0.1;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_MajorVer>0</VerInfo_MajorVer>
     </PropertyGroup>

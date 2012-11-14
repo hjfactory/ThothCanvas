@@ -16,6 +16,7 @@ type
     procedure SetZoomScale(const Value: Single);
     function GetScaledPoint: TPointF;
   protected
+    procedure Paint; override;
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
   public
@@ -55,6 +56,7 @@ type
     FMouseCurrPos: TPointF; // MouseMove ½Ã ÁÂÇ¥
 
     procedure Paint; override;
+    procedure AfterPaint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
     function DoZoom(AScale: Single; ATargetPos: TPointF): Boolean;
@@ -92,8 +94,6 @@ type
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
     property ZoomAnimated: Boolean read FZoomAnimated write FZoomAnimated;
-
-    procedure Test(A: single);
    end;
 
 implementation
@@ -148,6 +148,19 @@ begin
   end;
 end;
 
+procedure TThContents.Paint;
+var
+  R: TRectF;
+begin
+  inherited;
+
+  R := R.Empty;
+  InflateRect(R, 100, 100);
+
+  Canvas.Stroke.Color := $FFFF0000;
+  Canvas.DrawEllipse(R, 1);
+end;
+
 procedure TThContents.SetZoomScale(const Value: Single);
 begin
   if FZoomScale = Value then
@@ -187,7 +200,8 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
-  FContents.ZoomScale := CanvasZoomScaleDefault;
+
+  DoZoomHome;
 
   FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
   FHorzTrackAni := _CreateTrackAni('ViewPortPosition.X');
@@ -250,6 +264,8 @@ end;
 procedure TThCanvas.DoZoomHome;
 begin
   FContents.Position.Point := PointF(0, 0);
+//  FContents.Position.Point := PointF(-Width / FContents.Scale.X / 2,  -Height / FContents.Scale.Y / 2);
+
   FContents.ZoomScale := CanvasZoomScaleDefault;
 end;
 
@@ -338,6 +354,8 @@ begin
 end;
 
 procedure TThCanvas.Paint;
+var
+  I: Integer;
 begin
   inherited;
 
@@ -350,6 +368,26 @@ begin
   Canvas.DrawLine(PointF(Width/2, Top), PointF(Width/2, Height), 1);
   Canvas.DrawLine(PointF(Left, Height/2), PointF(Width, Height/2), 1);
 {$ENDIF}
+{
+  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := $FF333333;
+
+  for I := 0 to (Trunc(Width) div 30) do
+  begin
+    Canvas.DrawLine(PointF(I*30, 0), PointF(I*30, Height), 1);
+  end;
+
+  for I := 0 to (Trunc(Height) div 30) do
+  begin
+    Canvas.DrawLine(PointF(0, I*30), PointF(Width, I*30), 1);
+  end;
+}
+end;
+
+procedure TThCanvas.AfterPaint;
+begin
+  inherited;
+
 end;
 
 procedure TThCanvas.AlertMessage(msg: string);
@@ -368,12 +406,6 @@ begin
 
   FBgColor := Value;
   Repaint;
-end;
-
-procedure TThCanvas.Test(A: single);
-begin
-  FContents.Position.X := A;
-  FContents.Position.Y := A;
 end;
 
 procedure TThCanvas.ZoomHome;
