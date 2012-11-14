@@ -184,7 +184,11 @@ var
   R: TRectF;
 begin
   Result := inherited GetUpdateRect;
-
+  InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
+  InflateRect(Result, 1, 1);
+{
+Exit;
+  // HighlightRect가 의미가 없나?
   if Assigned(FHighlighter) then
   begin
     R := FHighlighter.HighlightRect;
@@ -199,7 +203,8 @@ begin
     Result := UnionRect(Result, R);
   end;
 
-  InflateRect(R, 1, 1);
+  InflateRect(Result, 1, 1);
+}
 end;
 
 procedure TThItem.RealignSpot;

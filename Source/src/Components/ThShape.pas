@@ -264,8 +264,16 @@ var
 begin
   Result := False;
 
+//  Rect := GetItemRect;
+//  RangeD := (ItemLineSelectionThickness-1)/2 / AbsoluteScale.X;
+
+  // 나누면 모두 1이하로 계산되기때문에 곱하여 계산처리로 변경
   Rect := GetItemRect;
-  RangeD := (ItemLineSelectionThickness-1)/2 / AbsoluteScale.X;
+  Rect.TopLeft      := ScalePoint(Rect.TopLeft, AbsoluteScale.X, AbsoluteScale.Y);
+  Rect.BottomRight  := ScalePoint(Rect.BottomRight, AbsoluteScale.X, AbsoluteScale.Y);
+  Pt := ScalePoint(Pt, AbsoluteScale.X, AbsoluteScale.Y);
+  RangeD := (ItemLineSelectionThickness-1) / 2;
+
 
   if (Rect.TopLeft.Distance(Rect.BottomRight) < ItemFocusMinimumSize) then
     Exit;

@@ -51,8 +51,8 @@ type
     procedure TestMinSizeWithZoomOfDrawing;
     procedure TestMinSizeWithZoomOfResizing;
 
-    // #203 확대 시 직선 주위를 선택해도 선택되는 버그
-    procedure TestAfterZoomingOverRangeLineSelection;
+    // #204 확대 시 직선 주위를 선택해도 선택되는 버그
+    procedure BugTestAfterZoomingOverRangeLineSelection;
   end;
 
 implementation
@@ -328,9 +328,20 @@ begin
   CheckNotNull(FCanvas.SelectedItem);
 end;
 
-procedure TestTThCanvasZoom.TestAfterZoomingOverRangeLineSelection;
+procedure TestTThCanvasZoom.BugTestAfterZoomingOverRangeLineSelection;
+var
+  I: Integer;
 begin
+//  ShowForm;
 
+  DrawLine(100, 100, 200, 200);
+  FCanvas.ClearSelection;
+
+  for I := 0 to 100 do
+    FCanvas.ZoomInAtPoint(100, 100);
+
+  TestLib.RunMouseClick(50, 50);
+  CheckNull(FCanvas.SelectedItem);
 end;
 
 initialization

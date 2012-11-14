@@ -52,6 +52,14 @@ var
   ViewportScale: Single;
   ScaledHighlightSize: Single;
 begin
+{
+  Result := TControl(FParent).ClipRect;
+  InflateRect(Result, HighlightSize + 1, HighlightSize + 1);
+Exit;
+  Result := TControl(FParent).AbsoluteRect;
+  Result.Offset(HighlightSize, HighlightSize);
+Exit;
+}
   Result := TControl(FParent).ClipRect;
   ViewportScale := TControl(FParent).AbsoluteScale.X;
     // Item의 스케일에서 Canvas의 Scale로 처리 필요
