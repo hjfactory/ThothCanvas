@@ -82,7 +82,7 @@ begin
 
   TestLib.RunMouseClick(180, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check(FCanvas.SelectedItem.Width = 1500, Format('Width : %f', [FCanvas.SelectedItem.Width]));
+  Check(Round(FCanvas.SelectedItem.Width) = 1500, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTLtoBROver;
@@ -225,7 +225,7 @@ begin
   .Add(EP);
   TestLib.RunMousePath(MousePath.Path);
 
-  // 1> 색상확인                                         a
+  // 1> 색상확인
   C := TestLib.GetControlPixelColor(FCanvas, EP.X-1, EP.Y);
   Check(C <> ItemResizeSpotOverColor);
 

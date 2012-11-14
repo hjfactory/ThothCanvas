@@ -11,6 +11,10 @@ uses
 
 procedure Debug(ALog: string); overload;
 procedure Debug(ALog: string; args: array of const); overload;
+procedure ConditionalDebug(ALog: string; args: array of const); overload;
+
+var
+  DebugStart: Boolean = False;
 
 implementation
   uses
@@ -23,7 +27,6 @@ implementation
     , WinAPI.Windows
 {$ENDIF}
   ;
-
 
 procedure Debug(ALog: string);
 begin
@@ -43,6 +46,12 @@ end;
 procedure Debug(ALog: string; args: array of const);
 begin
   Debug(Format(ALog, args));
+end;
+
+procedure ConditionalDebug(ALog: string; args: array of const);
+begin
+  if DebugStart then
+    Debug(Format(ALog, args));
 end;
 
 //function PtInCircle(const Point, Center: TPointF; Radius: Single): Boolean;

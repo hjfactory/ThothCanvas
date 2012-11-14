@@ -77,7 +77,7 @@ implementation
 
 uses
   System.Math, ThConsts, ThItemFactory, ThItemHighlighter,
-  ResizeUtils, ThItemResizer;
+  ResizeUtils, ThItemResizer, DebugUtils;
 
 { TThShape }
 
@@ -314,25 +314,25 @@ begin
     begin
       // 꼭지점과 직각인 사각형 포인트의 영역(ExtendRect)계산
       Rad := ArcTan(Rect.Height / Rect.Width);
-      BaseP := PointF(Sin(Rad) * RangeD, Cos(Rad) * RangeD);
-      LeftP   := Rect.TopLeft.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
-      TopP    := Rect.TopLeft.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
-      RightP  := Rect.BottomRight.Add(PointF(BaseP.X, -BaseP.Y)).Add(BaseP);
-      BottomP := Rect.BottomRight.Add(PointF(-BaseP.X, BaseP.Y)).Add(BaseP);
+      BaseP := PointF(RangeD / Sin(Rad), RangeD / Cos(Rad));
+      LeftP   := Rect.TopLeft.Add(PointF(-BaseP.X, BaseP.Y));
+      TopP    := Rect.TopLeft.Add(PointF(BaseP.X, -BaseP.Y));
+      RightP  := Rect.BottomRight.Add(PointF(BaseP.X, -BaseP.Y));
+      BottomP := Rect.BottomRight.Add(PointF(-BaseP.X, BaseP.Y));
       // 대각선에서 범위
       ExtendRect := RectF(LeftP.X, TopP.Y, RightP.X, BottomP.Y);
 
       if PtInRect(ExtendRect, PointF(PtX, PtY)) then
       begin
-        ExtendX := PtX - (Rect.Left - BaseP.X);
-        ExtendY := PtY - (Rect.Top - BaseP.Y);
+        ExtendX := PtX - BaseP.X;
+        ExtendY := PtY - BaseP.Y;
 
-        Result := PtInRect(RectF(LeftP.X, TopP.Y, TopP.X, LeftP.Y), PointF(ExtendX, ExtendY)) or
-                  PtInRect(RectF(BottomP.X, RightP.Y, RightP.X, BottomP.Y), PointF(ExtendX, ExtendY));
+        Result := PtInRect(RectF(LeftP.X, TopP.Y, TopP.X, LeftP.Y), PointF(PtX, PtY)) or
+                  PtInRect(RectF(BottomP.X, RightP.Y, RightP.X, BottomP.Y), PointF(PtX, PtY));
         if not Result then
         begin
-          Y1 := Round(Tan(Rad) * (ExtendX-TopP.X));
-          Y2 := Round(ExtendRect.Height - Tan(Rad) * (BottomP.X - ExtendX));
+          Y1 := Round(Tan(Rad) * ExtendX - BaseP.Y);
+          Y2 := Round(Tan(Rad) * ExtendX + BaseP.Y);
 //          Result := InRange(ExtendY, Y1, Y2);
           Result := InRange(Round(ExtendY), Y1, Y2);
         end;
@@ -344,8 +344,11 @@ end;
 procedure TThLine.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   P1, P2: TPointF;
+  LineThickness: Single;
 begin
-  Canvas.StrokeThickness := ItemLineThickness / AbsoluteScale.X;
+  LineThickness := ItemLineThickness / AbsoluteScale.X;
+
+  Canvas.StrokeThickness := LineThickness;
   Canvas.Stroke.Color := AFillColor;
   Canvas.StrokeCap := TStrokeCap.scRound;
 

@@ -191,6 +191,7 @@ procedure TItemResizeSpot.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   if FDisabled then
     Exit;
+
   inherited;
 
   if (FDownItemRect <> TControl(Parent).BoundsRect) then
@@ -400,8 +401,8 @@ begin
       ShapeR.Top := ShapeR.Bottom - MinSize.Y;
   end;
 
-  if ShapeR.Width = 0 then  ShapeR.Width := 1;
-  if ShapeR.Height = 0 then  ShapeR.Height := 1;
+  if ShapeR.Width < 1 then    ShapeR.Width := 1;
+  if ShapeR.Height < 1 then   ShapeR.Height := 1;
 
   ShapeR.Offset(FParentControl.Position.Point);
   FParentControl.BoundsRect := ShapeR;
