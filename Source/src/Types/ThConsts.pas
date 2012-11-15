@@ -35,9 +35,11 @@ const
   CanvasTrackAniCount   = 5;
   CanvasTrackDuration   = 0.5;
 
+  CanvasZoomOutRate      = 0.9;
+  CanvasZoomInRate       = 1.1;
   CanvasZoomScaleDefault = 0.1;
-  CanvasZoomScaleMax    = 15;
-  CanvasZoomScaleMin    = 0.001;
+  CanvasZoomScaleMax     = 15;
+  CanvasZoomScaleMin     = 0.001;
 
 implementation
 

@@ -46,7 +46,8 @@ uses
   ThSystemCommand in '..\src\Commands\ThSystemCommand.pas',
   TestThCanvasZoom in 'TestThCanvasZoom.pas',
   ThZoomAnimation in '..\src\Components\ThZoomAnimation.pas',
-  ThResourceString in '..\src\Types\ThResourceString.pas';
+  ThResourceString in '..\src\Types\ThResourceString.pas',
+  ThAlertAnimation in '..\src\Components\ThAlertAnimation.pas';
 
 {$R *.RES}
 

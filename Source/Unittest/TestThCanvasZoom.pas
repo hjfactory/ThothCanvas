@@ -68,11 +68,11 @@ begin
   DrawRectangle(50, 50, 150, 150);
 
   FCanvas.ZoomIn;
-  Check(FCanvas.ZoomScale > CanvasDefaultZoomScale, Format('ZoomIn: %f', [FCanvas.ZoomScale]));
+  Check(FCanvas.ZoomScale > CanvasZoomScaleDefault, Format('ZoomIn: %f', [FCanvas.ZoomScale]));
 
   FCanvas.ZoomHome;
   FCanvas.ZoomOut;
-  Check(FCanvas.ZoomScale < CanvasDefaultZoomScale, Format('ZoomOt: %f', [FCanvas.ZoomScale]));
+  Check(FCanvas.ZoomScale < CanvasZoomScaleDefault, Format('ZoomOt: %f', [FCanvas.ZoomScale]));
 end;
 
 procedure TestTThCanvasZoom.TestZoomAndSpotSizeMaintain;

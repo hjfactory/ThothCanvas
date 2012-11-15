@@ -19,6 +19,8 @@ type
     procedure Paint; override;
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
+
+    procedure DoAddObject(AObject: TFmxObject); override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -56,10 +58,9 @@ type
     FMouseCurrPos: TPointF; // MouseMove 시 좌표
 
     procedure Paint; override;
-    procedure AfterPaint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
-    function DoZoom(AScale: Single; ATargetPos: TPointF): Boolean;
+    procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomHome;
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
@@ -118,6 +119,16 @@ begin
   FZoomScale := 1;
 end;
 
+procedure TThContents.DoAddObject(AObject: TFmxObject);
+begin
+  inherited;
+
+  // 아이템 추가 시 화면에 기존아이템이 없을 경우 다시 그리지 않아
+  //  아이템이 표시되지 않음. 그래서 다시 그리도록 처리
+//  RecalcUpdateRect;
+  FRecalcUpdateRect := True;
+end;
+
 function TThContents.GetClipRect: TRectF;
 begin
   Result :=  TControl(Parent).ClipRect;
@@ -151,14 +162,32 @@ end;
 procedure TThContents.Paint;
 var
   R: TRectF;
+  I, T: Integer;
 begin
   inherited;
-
+{$IFDEF DEBUG}
   R := R.Empty;
   InflateRect(R, 100, 100);
 
   Canvas.Stroke.Color := $FFFF0000;
   Canvas.DrawEllipse(R, 1);
+{$ENDIF}
+
+  R := TControl(Parent).AbsoluteRect;
+  R.TopLeft := AbsoluteToLocal(R.TopLeft);
+  R.BottomRight := AbsoluteToLocal(R.BottomRight);
+
+  T := 500;
+  for I := 0 to Trunc(R.Width / T) do
+  begin
+    Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 1);
+  end;
+
+
+  if R.Width > 0 then
+  begin
+
+  end;
 end;
 
 procedure TThContents.SetZoomScale(const Value: Single);
@@ -200,8 +229,9 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
+  FContents.ZoomScale := CanvasZoomScaleDefault;
 
-  DoZoomHome;
+//  DoZoomHome;
 
   FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
   FHorzTrackAni := _CreateTrackAni('ViewPortPosition.X');
@@ -236,29 +266,15 @@ begin
     inherited;
 end;
 
-function TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF): Boolean;
+procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
 var
   P: TPointF;
 begin
-  if FContents.ZoomScale * AScale > CanvasZoomScaleMax then
-  begin
-    AlertMessage(MsgCanvasZoomInMaxAlert);
-    Exit(False);
-  end;
-
-  if FContents.ZoomScale * AScale < CanvasZoomScaleMin then
-  begin
-    AlertMessage(MsgCanvasZoomOutMinAlert);
-    Exit(False);
-  end;
-
   P := FContents.Position.Point;
   FContents.Position.X := P.X * AScale + (Width * (1 - AScale)) * (ATargetPos.X / Width);
   FContents.Position.Y := P.Y * AScale + (Height * (1 - AScale)) * (ATargetPos.Y / Height);
 
   FContents.ZoomScale := FContents.ZoomScale * AScale;
-
-  Result := True;
 end;
 
 procedure TThCanvas.DoZoomHome;
@@ -271,14 +287,29 @@ end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
 begin
-  if DoZoom(1.1, ATargetPos) and FZoomAnimated then
+  if FContents.ZoomScale * CanvasZoomOutRate > CanvasZoomScaleMax then
+  begin
+    AlertMessage(MsgCanvasZoomInMaxAlert);
+    Exit;
+  end;
+
+  if FZoomAnimated then
     FZoomAni.ZoomIn(ATargetPos);
+
+  DoZoom(CanvasZoomOutRate, ATargetPos);
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
 begin
-  if DoZoom(0.9, ATargetPos) and FZoomAnimated then
+  if FContents.ZoomScale * CanvasZoomInRate < CanvasZoomScaleMin then
+  begin
+    AlertMessage(MsgCanvasZoomOutMinAlert);
+    Exit;
+  end;
+
+  if FZoomAnimated then
     FZoomAni.ZoomOut(ATargetPos);
+  DoZoom(CanvasZoomInRate, ATargetPos);
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -382,12 +413,6 @@ begin
     Canvas.DrawLine(PointF(0, I*30), PointF(Width, I*30), 1);
   end;
 }
-end;
-
-procedure TThCanvas.AfterPaint;
-begin
-  inherited;
-
 end;
 
 procedure TThCanvas.AlertMessage(msg: string);

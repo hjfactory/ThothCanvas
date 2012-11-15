@@ -446,7 +446,7 @@ begin
   .Add(70, 70);
   TestLib.RunMousePath(MousePath.Path);
 
-  SizeP := DistanceSize(RectF(500, 500, 800, 800), ItemMinimumSize/CanvasDefaultZoomScale);
+  SizeP := DistanceSize(RectF(500, 500, 800, 800), ItemMinimumSize / CanvasZoomScaleDefault);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
 
