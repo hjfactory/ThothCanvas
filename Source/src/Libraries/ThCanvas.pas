@@ -17,6 +17,7 @@ type
     function GetScaledPoint: TPointF;
   protected
     procedure Paint; override;
+    procedure PaintGrid; virtual;
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
 
@@ -162,7 +163,6 @@ end;
 procedure TThContents.Paint;
 var
   R: TRectF;
-  I, T: Integer;
 begin
   inherited;
 {$IFDEF DEBUG}
@@ -173,21 +173,36 @@ begin
   Canvas.DrawEllipse(R, 1);
 {$ENDIF}
 
+  PaintGrid;
+end;
+
+procedure TThContents.PaintGrid;
+var
+  R: TRectF;
+  I, T: Integer;
+begin
   R := TControl(Parent).AbsoluteRect;
   R.TopLeft := AbsoluteToLocal(R.TopLeft);
   R.BottomRight := AbsoluteToLocal(R.BottomRight);
 
+  Canvas.BeginScene;
+  Canvas.Stroke.Color := $FFAAAAAA;
   T := 500;
   for I := 0 to Trunc(R.Width / T) do
   begin
-    Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 1);
+    if I mod 5 = 4 then
+      Canvas.StrokeThickness := 15
+    else if I mod 5 = 2 then
+      Canvas.StrokeThickness := 30
+    else if I mod 5 = 3 then
+      Canvas.StrokeThickness := 10
+    else
+      Canvas.StrokeThickness := 20
+    ;
+//      Canvas.StrokeThickness := 15;
+    Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 0.5);
   end;
-
-
-  if R.Width > 0 then
-  begin
-
-  end;
+  Canvas.EndScene;
 end;
 
 procedure TThContents.SetZoomScale(const Value: Single);
