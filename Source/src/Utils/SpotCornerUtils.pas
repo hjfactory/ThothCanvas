@@ -1,4 +1,4 @@
-unit ResizeUtils;
+unit SpotCornerUtils;
 
 interface
 

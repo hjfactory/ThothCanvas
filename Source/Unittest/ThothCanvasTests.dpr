@@ -33,7 +33,7 @@ uses
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
   TestThItemLine in 'TestThItemLine.pas',
   ThTypes in '..\src\Types\ThTypes.pas',
-  ResizeUtils in '..\src\Utils\ResizeUtils.pas',
+  SpotCornerUtils in '..\src\Utils\SpotCornerUtils.pas',
   TestThItemCircle in 'TestThItemCircle.pas',
   TestThItemControl in 'TestThItemControl.pas',
   TestThCommandHistory in 'TestThCommandHistory.pas',

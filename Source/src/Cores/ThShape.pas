@@ -77,7 +77,7 @@ implementation
 
 uses
   System.Math, ThConsts, ThItemFactory, ThItemHighlighter,
-  ResizeUtils, ThItemResizer, DebugUtils;
+  SpotCornerUtils, ThItemResizer, DebugUtils;
 
 { TThShape }
 

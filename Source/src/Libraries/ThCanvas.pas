@@ -179,30 +179,34 @@ end;
 procedure TThContents.PaintGrid;
 var
   R: TRectF;
-  I, T: Integer;
 begin
   R := TControl(Parent).AbsoluteRect;
   R.TopLeft := AbsoluteToLocal(R.TopLeft);
   R.BottomRight := AbsoluteToLocal(R.BottomRight);
-
+{
   Canvas.BeginScene;
   Canvas.Stroke.Color := $FFAAAAAA;
   T := 500;
   for I := 0 to Trunc(R.Width / T) do
   begin
-    if I mod 5 = 4 then
-      Canvas.StrokeThickness := 15
-    else if I mod 5 = 2 then
-      Canvas.StrokeThickness := 30
-    else if I mod 5 = 3 then
-      Canvas.StrokeThickness := 10
+    if I mod 5 = 0 then
+      Canvas.StrokeThickness := 1/ZoomScale
+//    else if I mod 5 = 2 then
+//      Canvas.StrokeThickness := 30
+//    else if I mod 5 = 3 then
+//      Canvas.StrokeThickness := 10
     else
-      Canvas.StrokeThickness := 20
+      Canvas.StrokeThickness := 1/ZoomScale/2
     ;
 //      Canvas.StrokeThickness := 15;
-    Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 0.5);
+    if I mod 5 = 0 then
+      Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 1)
+    else
+      Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 0.4)
+    ;
   end;
   Canvas.EndScene;
+}
 end;
 
 procedure TThContents.SetZoomScale(const Value: Single);
@@ -311,7 +315,7 @@ begin
   if FZoomAnimated then
     FZoomAni.ZoomIn(ATargetPos);
 
-  DoZoom(CanvasZoomOutRate, ATargetPos);
+  DoZoom(CanvasZoomInRate, ATargetPos);
 end;
 
 procedure TThCanvas.DoZoomOut(ATargetPos: TPointF);
@@ -324,7 +328,7 @@ begin
 
   if FZoomAnimated then
     FZoomAni.ZoomOut(ATargetPos);
-  DoZoom(CanvasZoomInRate, ATargetPos);
+  DoZoom(CanvasZoomOutRate, ATargetPos);
 end;
 
 procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
@@ -400,8 +404,6 @@ begin
 end;
 
 procedure TThCanvas.Paint;
-var
-  I: Integer;
 begin
   inherited;
 
@@ -414,20 +416,6 @@ begin
   Canvas.DrawLine(PointF(Width/2, Top), PointF(Width/2, Height), 1);
   Canvas.DrawLine(PointF(Left, Height/2), PointF(Width, Height/2), 1);
 {$ENDIF}
-{
-  Canvas.StrokeThickness := 1;
-  Canvas.Stroke.Color := $FF333333;
-
-  for I := 0 to (Trunc(Width) div 30) do
-  begin
-    Canvas.DrawLine(PointF(I*30, 0), PointF(I*30, Height), 1);
-  end;
-
-  for I := 0 to (Trunc(Height) div 30) do
-  begin
-    Canvas.DrawLine(PointF(0, I*30), PointF(Width, I*30), 1);
-  end;
-}
 end;
 
 procedure TThCanvas.AlertMessage(msg: string);

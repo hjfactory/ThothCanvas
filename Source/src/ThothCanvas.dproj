@@ -141,7 +141,7 @@
         <DCCReference Include="Types\ThConsts.pas"/>
         <DCCReference Include="Components\ThItemResizer.pas"/>
         <DCCReference Include="Types\ThTypes.pas"/>
-        <DCCReference Include="Utils\ResizeUtils.pas"/>
+        <DCCReference Include="Utils\SpotCornerUtils.pas"/>
         <DCCReference Include="Libraries\ThClasses.pas"/>
         <DCCReference Include="Controllers\ThCanvasController.pas"/>
         <DCCReference Include="Controllers\ThothController.pas"/>

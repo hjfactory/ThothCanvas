@@ -131,7 +131,7 @@
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
         <DCCReference Include="TestThItemLine.pas"/>
         <DCCReference Include="..\src\Types\ThTypes.pas"/>
-        <DCCReference Include="..\src\Utils\ResizeUtils.pas"/>
+        <DCCReference Include="..\src\Utils\SpotCornerUtils.pas"/>
         <DCCReference Include="TestThItemCircle.pas"/>
         <DCCReference Include="TestThItemControl.pas"/>
         <DCCReference Include="TestThCommandHistory.pas"/>

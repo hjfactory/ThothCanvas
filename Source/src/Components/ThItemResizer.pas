@@ -107,7 +107,7 @@ type
 implementation
 
 uses
-  System.UIConsts, ResizeUtils, System.Math;
+  System.UIConsts, SpotCornerUtils, System.Math;
 
 { TItemResizeSpot }
 

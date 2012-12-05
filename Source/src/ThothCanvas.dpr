@@ -13,7 +13,7 @@ uses
   ThConsts in 'Types\ThConsts.pas',
   ThItemResizer in 'Components\ThItemResizer.pas',
   ThTypes in 'Types\ThTypes.pas',
-  ResizeUtils in 'Utils\ResizeUtils.pas',
+  SpotCornerUtils in 'Utils\SpotCornerUtils.pas',
   ThClasses in 'Libraries\ThClasses.pas',
   ThCanvasController in 'Controllers\ThCanvasController.pas',
   ThothController in 'Controllers\ThothController.pas',

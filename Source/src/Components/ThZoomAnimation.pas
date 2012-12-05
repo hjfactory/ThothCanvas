@@ -11,7 +11,6 @@ type
   private
     FZoomAni: TFloatAnimation;
     FDiffuse: Single;
-    FFinished: Boolean;
 
     procedure SetDiffuse(const Value: Single);
     procedure FinishAni(Sender: TObject);
@@ -59,7 +58,6 @@ begin
   FWidth := 100;
   FHeight := 100;
 
-  FFinished := True;
   Visible := False;
 end;
 
@@ -96,11 +94,9 @@ begin
     FZoomAni.Stop;
   Visible := True;
 
-  FZoomAni.StartValue := 100;
-  FZoomAni.StopValue := 10;
+  FZoomAni.StartValue := 10;
+  FZoomAni.StopValue := 100;
   FZoomAni.Start;
-
-  FFinished := False;
 end;
 
 procedure TZoomAni.ZoomOut(ACenterPos: TPointF);
@@ -111,8 +107,8 @@ begin
     FZoomAni.Stop;
   Visible := True;
 
-  FZoomAni.StartValue := 10;
-  FZoomAni.StopValue := 100;
+  FZoomAni.StartValue := 100;
+  FZoomAni.StopValue := 10;
   FZoomAni.Start;
 end;
 
