@@ -30,6 +30,15 @@ type
     property ScaledPoint: TPointF read GetScaledPoint;
   end;
 
+  TThGridLayer = class(TControl)
+  private
+    FContents: TThContents;
+  protected
+    procedure Paint; override;
+  public
+    constructor Create(AOwner: TComponent; AContents: TThContents); reintroduce;
+  end;
+
   TThCanvas = class(TControl, IThCanvas, IThZoomObject)
   private
     FUseMouseTracking: Boolean;
@@ -55,6 +64,7 @@ type
     procedure AlertMessage(msg: string);
   protected
     FContents: TThContents;
+    FGridLayer: TThGridLayer;
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
     FMouseCurrPos: TPointF; // MouseMove ½Ã ÁÂÇ¥
 
@@ -219,6 +229,43 @@ begin
   Scale.Y := value;
 end;
 
+{ TThGridLayer }
+
+constructor TThGridLayer.Create(AOwner: TComponent; AContents: TThContents);
+begin
+  inherited Create(AOwner);
+
+  FContents := AContents;
+  Scale.X := 0.1;
+  Scale.Y := 0.1;
+end;
+
+procedure TThGridLayer.Paint;
+var
+  X, Y: single;
+begin
+  inherited;
+
+//  Canvas.StrokeThickness := 0.1;
+  X := 100;
+  Canvas.StrokeThickness := 0;
+  Canvas.Stroke.Color := claNull;
+  Canvas.Fill.Color := claRed;
+  Canvas.FillRect(RectF(X / Scale.X, 0, (X) / Scale.X +1, TControl(Parent).Height / Scale.Y), 0, 0, allCorners, 1);
+//  Canvas.DrawLine(PointF(1000, 0), PointF(1000, 5000), 1);
+
+  X := 140;
+//  Canvas.StrokeThickness := 1;
+  Canvas.Stroke.Color := claRed;
+  Canvas.DrawLine(PointF(X / Scale.X, 0), PointF(X / Scale.X, TControl(Parent).Height / Scale.Y), 1);
+
+  X := 340;
+//  Canvas.StrokeThickness := 10;
+  Canvas.Stroke.Color := claRed;
+  Canvas.DrawLine(PointF(X / Scale.X, 0), PointF(X / Scale.X, TControl(Parent).Height / Scale.Y), 1);
+
+end;
+
 { TThCanvas }
 
 constructor TThCanvas.Create(AOwner: TComponent);
@@ -250,6 +297,12 @@ begin
   FContents.Locked := True;
   FContents.ZoomScale := CanvasZoomScaleDefault;
 
+  FGridLayer := TThGridLayer.Create(Self, FContents);
+  FGridLayer.Parent := Self;
+  FGridLayer.HitTest := False;
+  FGridLayer.Stored := False;
+  FGridLayer.Locked := True;
+
 //  DoZoomHome;
 
   FVertTrackAni := _CreateTrackAni('ViewPortPosition.Y');
@@ -278,7 +331,7 @@ end;
 
 procedure TThCanvas.DoAddObject(AObject: TFmxObject);
 begin
-  if Assigned(FContents) and (AObject <> FContents)
+  if Assigned(FContents) and (AObject <> FContents) and (AObject <> FGridLayer)
       and (not (AObject is TAnimation)) and (not (AObject is TZoomAni)) and (not (AObject is TAlertAnimation)) then
     FContents.AddObject(AObject)
   else

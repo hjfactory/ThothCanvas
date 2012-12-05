@@ -355,6 +355,7 @@ var
   LineThickness: Single;
 begin
   LineThickness := ItemLineThickness / AbsoluteScale.X;
+//  LineThickness := ItemLineThickness;
 
   Canvas.StrokeThickness := LineThickness;
   Canvas.Stroke.Color := AFillColor;
