@@ -17,7 +17,6 @@ type
     function GetScaledPoint: TPointF;
   protected
     procedure Paint; override;
-    procedure PaintGrid; virtual;
     function GetClipRect: TRectF; override;
     function GetUpdateRect: TRectF; override;
 
@@ -186,41 +185,6 @@ begin
   Canvas.Stroke.Color := $FFFF0000;
   Canvas.DrawEllipse(R, 1);
 {$ENDIF}
-
-  PaintGrid;
-end;
-
-procedure TThContents.PaintGrid;
-var
-  R: TRectF;
-begin
-  R := TControl(Parent).AbsoluteRect;
-  R.TopLeft := AbsoluteToLocal(R.TopLeft);
-  R.BottomRight := AbsoluteToLocal(R.BottomRight);
-{
-  Canvas.BeginScene;
-  Canvas.Stroke.Color := $FFAAAAAA;
-  T := 500;
-  for I := 0 to Trunc(R.Width / T) do
-  begin
-    if I mod 5 = 0 then
-      Canvas.StrokeThickness := 1/ZoomScale
-//    else if I mod 5 = 2 then
-//      Canvas.StrokeThickness := 30
-//    else if I mod 5 = 3 then
-//      Canvas.StrokeThickness := 10
-    else
-      Canvas.StrokeThickness := 1/ZoomScale/2
-    ;
-//      Canvas.StrokeThickness := 15;
-    if I mod 5 = 0 then
-      Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 1)
-    else
-      Canvas.DrawLine(PointF(I*T, R.Top), PointF(I*T, R.Bottom), 0.4)
-    ;
-  end;
-  Canvas.EndScene;
-}
 end;
 
 procedure TThContents.SetZoomScale(const Value: Single);
@@ -252,7 +216,7 @@ var
   X, Y, T: single;
 begin
   inherited;
-
+Exit;
   ZS := 1 / FContents.ZoomScale;
 
   AbsR.TopLeft      := FContents.ScaledPoint;
@@ -260,8 +224,8 @@ begin
 
   T := 40 * ZS;
 
-  X := (AbsR.Left - (Round(AbsR.Left / T) * T)) * CanvasZoomScaleDefault;
-  Y := (AbsR.Top - (Round(AbsR.Top / T) * T)) * CanvasZoomScaleDefault;
+  X := (AbsR.Left - (Round(AbsR.Left / T) * T));// * CanvasZoomScaleDefault;
+  Y := (AbsR.Top - (Round(AbsR.Top / T) * T));// * CanvasZoomScaleDefault;
 
   C := Round((AbsR.Width - X) / T);
 
