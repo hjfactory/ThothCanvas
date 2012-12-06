@@ -147,9 +147,13 @@ begin
 end;
 
 function TThContents.GetScaledPoint: TPointF;
+var
+  ZS: Single;
 begin
-  Result.X := Position.X / ZoomScale;
-  Result.Y := Position.Y / ZoomScale;
+  ZS := 1 / ZoomScale;
+
+  Result.X := Position.X * ZS;
+  Result.Y := Position.Y * ZS;
 end;
 
 function TThContents.GetUpdateRect: TRectF;
@@ -242,9 +246,35 @@ end;
 
 procedure TThGridLayer.Paint;
 var
-  X, Y: single;
+  I, J, C: Integer;
+  AbsR: TRectF;
+  ZS: Single;
+  X, Y, T: single;
 begin
   inherited;
+
+  ZS := 1 / FContents.ZoomScale;
+
+  AbsR.TopLeft      := FContents.ScaledPoint;
+  ABsR.BottomRight  := AbsR.TopLeft.Add(PointF(TControl(Parent).Width * ZS, TControl(Parent).Height * ZS));
+
+  T := 40 * ZS;
+
+  X := (AbsR.Left - (Round(AbsR.Left / T) * T)) * CanvasZoomScaleDefault;
+  Y := (AbsR.Top - (Round(AbsR.Top / T) * T)) * CanvasZoomScaleDefault;
+
+  C := Round((AbsR.Width - X) / T);
+
+  Canvas.StrokeThickness := 0;
+  Canvas.Stroke.Color := claNull;
+  Canvas.Fill.Color := claRed;
+  for I := 0 to C-1 do
+  begin
+    Canvas.FillRect(RectF((I*T+X), 0, (I*T+X) +1, TControl(Parent).Height / Scale.Y), 0, 0, allCorners, 1);
+  end;
+Exit;
+//  for I := 0 to High do
+
 
 //  Canvas.StrokeThickness := 0.1;
   X := 100;
