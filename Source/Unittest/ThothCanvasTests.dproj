@@ -120,7 +120,7 @@
         </DCCReference>
         <DCCReference Include="lib\FMX.TestLib.pas"/>
         <DCCReference Include="..\src\Libraries\ThItem.pas"/>
-        <DCCReference Include="..\src\Cores\ThShape.pas"/>
+        <DCCReference Include="..\src\Cores\ThShapeItem.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
         <DCCReference Include="TestThItemRectangle.pas"/>
         <DCCReference Include="lib\BaseTestUnit.pas"/>

@@ -6,7 +6,7 @@
    - PaintItem  : 아이템을 캔버스에 그린다.(Paint에서 호출)
    - PtInItem   : Pt가 도형에 포함되는지 여부 반환
 }
-unit ThShape;
+unit ThShapeItem;
 
 interface
 
@@ -15,7 +15,7 @@ uses
   FMX.Types, ThTypes, ThItem;
 
 type
-  TThShape = class(TThItem, IItemHighlitObject, IItemResizerObject)
+  TThShapeItem = class(TThItem, IItemHighlitObject, IItemResizerObject)
   private
     procedure SetBgColor(const Value: TAlphaColor);
   strict protected
@@ -39,7 +39,7 @@ type
     property MinimumSize: TPointF read GetMinimumSize;
   end;
 
-  TThRectangle = class(TThShape)
+  TThRectangle = class(TThShapeItem)
   protected
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
@@ -47,7 +47,7 @@ type
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
-  TThLine = class(TThShape)
+  TThLine = class(TThShapeItem)
   private
     function IsTopLeftToBottomRight: Boolean;
     function IsHorizon: Boolean;
@@ -63,7 +63,7 @@ type
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
-  TThCircle = class(TThShape)
+  TThCircle = class(TThShapeItem)
   protected
     function CreateResizer: IItemResizer; override;
 
@@ -81,7 +81,7 @@ uses
 
 { TThShape }
 
-constructor TThShape.Create(AOwner: TComponent);
+constructor TThShapeItem.Create(AOwner: TComponent);
 begin
   inherited;
 
@@ -92,13 +92,13 @@ begin
   FBgColor := ItemShapeDefaultColor;
 end;
 
-destructor TThShape.Destroy;
+destructor TThShapeItem.Destroy;
 begin
 
   inherited;
 end;
 
-function TThShape.GetMinimumSize: TPointF;
+function TThShapeItem.GetMinimumSize: TPointF;
 var
   MinSize: Single;
 begin
@@ -107,7 +107,7 @@ begin
   Result := PointF(MinSize, MinSize);
 end;
 
-function TThShape.CreateHighlighter: IItemHighlighter;
+function TThShapeItem.CreateHighlighter: IItemHighlighter;
 var
   Highlighter: TThItemShadowHighlighter;
 begin
@@ -118,7 +118,7 @@ begin
   Result := Highlighter;
 end;
 
-function TThShape.CreateResizer: IItemResizer;
+function TThShapeItem.CreateResizer: IItemResizer;
 var
   Resizer: TThItemResizer;
 begin
@@ -130,7 +130,7 @@ begin
   Result := Resizer;
 end;
 
-procedure TThShape.Paint;
+procedure TThShapeItem.Paint;
 {$IFDEF DEBUG}
 var
   S: string;
@@ -147,7 +147,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TThShape.SetBgColor(const Value: TAlphaColor);
+procedure TThShapeItem.SetBgColor(const Value: TAlphaColor);
 begin
   if FBgColor = Value then
     Exit;

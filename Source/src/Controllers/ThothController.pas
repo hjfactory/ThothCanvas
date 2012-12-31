@@ -1,3 +1,7 @@
+{
+  ItemStroage 및 CommandManager를 컨트롤
+  Form등의 외부인터페이스에서 접근하여 처리 하는 클래스
+}
 unit ThothController;
 
 interface

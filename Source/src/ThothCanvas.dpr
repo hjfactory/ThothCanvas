@@ -2,9 +2,9 @@ program ThothCanvas;
 
 uses
   FMX.Forms,
-  MainForm in 'Forms\MainForm.pas' {Form1},
+  MainForm in 'Forms\MainForm.pas' {frmMainDraft},
   ThItem in 'Libraries\ThItem.pas',
-  ThShape in 'Cores\ThShape.pas',
+  ThShapeItem in 'Cores\ThShapeItem.pas',
   ThCanvasEditor in 'Cores\ThCanvasEditor.pas',
   ThCanvas in 'Libraries\ThCanvas.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
@@ -29,6 +29,6 @@ uses
 
 begin
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmMainDraft, frmMainDraft);
   Application.Run;
 end.

@@ -5,7 +5,7 @@
         <FrameworkType>FMX</FrameworkType>
         <MainSource>ThothCanvas.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>7</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -128,11 +128,11 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="Forms\MainForm.pas">
-            <Form>Form1</Form>
+            <Form>frmMainDraft</Form>
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="Libraries\ThItem.pas"/>
-        <DCCReference Include="Cores\ThShape.pas"/>
+        <DCCReference Include="Cores\ThShapeItem.pas"/>
         <DCCReference Include="Cores\ThCanvasEditor.pas"/>
         <DCCReference Include="Libraries\ThCanvas.pas"/>
         <DCCReference Include="Components\ThItemFactory.pas"/>

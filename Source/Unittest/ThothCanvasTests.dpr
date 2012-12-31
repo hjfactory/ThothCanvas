@@ -22,7 +22,7 @@ uses
   UnitTestForm in 'lib\UnitTestForm.pas' {frmUnitTest},
   FMX.TestLib in 'lib\FMX.TestLib.pas',
   ThItem in '..\src\Libraries\ThItem.pas',
-  ThShape in '..\src\Cores\ThShape.pas',
+  ThShapeItem in '..\src\Cores\ThShapeItem.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
   TestThItemRectangle in 'TestThItemRectangle.pas',
   BaseTestUnit in 'lib\BaseTestUnit.pas',
