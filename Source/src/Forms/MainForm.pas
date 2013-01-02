@@ -8,7 +8,7 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Dialogs, ThCanvasEditor,
+  FMX.Types, FMX.Controls, FMX.Forms, ThCanvasEditor,
   FMX.Objects, FMX.ExtCtrls, ThothController, ThCanvasController, ThTypes,
   FMX.Edit;
 
@@ -26,6 +26,7 @@ type
     btnZoomIn: TCornerButton;
     edtZoom: TEdit;
     btnHome: TCornerButton;
+    btnImage: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRectangleClick(Sender: TObject);
@@ -35,6 +36,7 @@ type
     procedure btnZoomOutClick(Sender: TObject);
     procedure btnZoomInClick(Sender: TObject);
     procedure btnHomeClick(Sender: TObject);
+    procedure btnImageClick(Sender: TObject);
   private
     { Private declarations }
     FController: TThothController;
@@ -120,6 +122,11 @@ end;
 procedure TfrmMainDraft.btnHomeClick(Sender: TObject);
 begin
   FCanvas.ZoomHome;
+end;
+
+procedure TfrmMainDraft.btnImageClick(Sender: TObject);
+begin
+  FCanvas.AppendItemById(TButton(Sender).Tag);
 end;
 
 procedure TfrmMainDraft.btnRectangleClick(Sender: TObject);

@@ -15,7 +15,7 @@ type
   TThCanvasEditor = class(TThCanvas)
   private
     FDrawItem: TThItem;
-    FDrawItemID: Integer;
+    FDrawItemId: Integer;
     FSelections: TThItems;
     FSelectedItem: TThItem;
 
@@ -26,7 +26,9 @@ type
 
     FIsMultiSelecting: Boolean; // BeginSelect, EndSelect
 
-    procedure SetDrawItemID(const Value: Integer);
+    function CreateItemById(const ItemId: Integer): TThItem;
+
+    procedure SetDrawItemId(const Value: Integer);
     function GetSelectionCount: Integer;
   protected
     procedure Paint; override;
@@ -41,7 +43,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    function AddItem(const ItemID: Integer): TThItem;
+    function AppendItemById(const ItemId: Integer): Boolean;
 
     function IsDrawingItem: Boolean; override;
     function IsMultiSelected: Boolean; override;
@@ -51,14 +53,14 @@ type
     procedure BeginSelect;
     procedure EndSelect;
 
+    procedure DeleteSelection;
+
+    property DrawItemId: Integer read FDrawItemId write SetDrawItemId;
+    property SelectionCount: Integer read GetSelectionCount;
+
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
-
-    procedure DeleteSelection;
-
-    property DrawItemID: Integer read FDrawItemID write SetDrawItemID;
-    property SelectionCount: Integer read GetSelectionCount;
 
     property OnItemAdded: TItemEvent read FOnItemAdded write FOnItemAdded;
     property OnItemDelete: TItemListEvent read FOnItemDelete write FOnItemDelete;
@@ -79,7 +81,7 @@ begin
 
   CanFocus := True; // Keyboard event
 
-  FDrawItemID := -1;
+  FDrawItemId := -1;
   FIsMultiSelecting := False;
 
   FSelections := TThItems.Create;
@@ -92,6 +94,24 @@ begin
   inherited;
 end;
 
+function TThCanvasEditor.AppendItemById(const ItemId: Integer): Boolean;
+begin
+  FDrawItemId := ItemId;
+  ClearSelection;
+  FDrawItem := CreateItemById(FDrawItemId);
+  FDrawItem.Position.Point := PointF(0,0).Subtract(FContents.ScaledPoint);
+
+  if IsDrawingItem and Assigned(FDrawItem) then
+  begin
+    FDrawItem.Selected := True;
+    if Assigned(FOnItemAdded) then
+      FOnItemAdded(FDrawItem);
+  end;
+
+  FDrawItem := nil;
+  FDrawItemId := -1;
+end;
+
 procedure TThCanvasEditor.BeginSelect;
 begin
   FIsMultiSelecting := True;
@@ -102,9 +122,9 @@ begin
   FIsMultiSelecting := False;
 end;
 
-function TThCanvasEditor.AddItem(const ItemID: Integer): TThItem;
+function TThCanvasEditor.CreateItemById(const ItemId: Integer): TThItem;
 begin
-  Result := ItemFactory.Get(ItemID);
+  Result := ItemFactory.Get(ItemId);
   if Assigned(Result) then
   begin
     Result.ParentCanvas := Self;
@@ -219,7 +239,7 @@ end;
 
 function TThCanvasEditor.IsDrawingItem: Boolean;
 begin
-  Result := FDrawItemID <> -1;
+  Result := FDrawItemId <> -1;
 end;
 
 function TThCanvasEditor.IsMultiSelected: Boolean;
@@ -237,7 +257,7 @@ begin
   if (Button = TMouseButton.mbLeft) and IsDrawingItem then
   begin
     ClearSelection;
-    FDrawItem := AddItem(FDrawItemID);
+    FDrawItem := CreateItemById(FDrawItemId);
     if Assigned(FDrawItem) then
     begin
       CurrP := PointF(X / ZoomScale, Y / ZoomScale);
@@ -276,7 +296,7 @@ begin
   end;
 
   FDrawItem := nil;
-  FDrawItemID := -1;
+  FDrawItemId := -1;
 end;
 
 procedure TThCanvasEditor.Paint;
@@ -328,9 +348,9 @@ begin
 //  Canvas.DrawLine(PointF(340, 0), PointF(340, Height), 1);
 end;
 
-procedure TThCanvasEditor.SetDrawItemID(const Value: Integer);
+procedure TThCanvasEditor.SetDrawItemId(const Value: Integer);
 begin
-  FDrawItemID := Value;
+  FDrawItemId := Value;
 end;
 
 end.

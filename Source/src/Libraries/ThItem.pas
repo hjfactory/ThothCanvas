@@ -50,6 +50,7 @@ type
     procedure DoMouseEnter; override;
     procedure DoMouseLeave; override;
 
+    // Virtual method
     procedure DoSelected(Value: Boolean; IsMultiSelect: Boolean = False); virtual;
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;

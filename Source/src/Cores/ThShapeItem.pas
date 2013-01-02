@@ -166,6 +166,13 @@ begin
     Exit;
 
   Result := PtInRect(GetItemRect, Pt);
+
+  if Result then
+  begin
+    Width := Width * 1;
+
+    Debug('%f.%f - %f', [GetItemRect.Left, GetItemRect.Right, Pt.X]);
+  end;
 end;
 
 procedure TThRectangle.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);

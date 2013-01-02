@@ -23,7 +23,8 @@ uses
   ThSystemCommand in 'Commands\ThSystemCommand.pas',
   ThZoomAnimation in 'Components\ThZoomAnimation.pas',
   ThResourceString in 'Types\ThResourceString.pas',
-  ThAlertAnimation in 'Components\ThAlertAnimation.pas';
+  ThAlertAnimation in 'Components\ThAlertAnimation.pas',
+  ThImageItem in 'Cores\ThImageItem.pas';
 
 {$R *.res}
 
