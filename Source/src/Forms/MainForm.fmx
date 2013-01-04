@@ -159,4 +159,13 @@ object frmMainDraft: TfrmMainDraft
     Width = 60.000000000000000000
     OnClick = btnImageClick
   end
+  object Button1: TButton
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 464.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'TEST'
+    Width = 80.000000000000000000
+    OnClick = Button1Click
+  end
 end

@@ -77,10 +77,13 @@ end;
 
 procedure TThCommandManager.Notifycation(ACommand: IThCommand);
 begin
-  FUndoStack.Push(ACommand);
+  if ACommand is TThItemCommand then
+  begin
+    FUndoStack.Push(ACommand);
 
-  // Undo된 TThCommandItemAdd 커맨드의 Items는 신규 커맨드 요청 시 해제(Free)
-  ClearRedoCommand;
+    // Undo된 TThCommandItemAdd 커맨드의 Items는 신규 커맨드 요청 시 해제(Free)
+    ClearRedoCommand;
+  end;
 end;
 
 procedure TThCommandManager.UndoAction;

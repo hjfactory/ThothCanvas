@@ -41,13 +41,16 @@ uses
   ThothController in '..\src\Controllers\ThothController.pas',
   ThCanvasController in '..\src\Controllers\ThCanvasController.pas',
   ThItemCommand in '..\src\Commands\ThItemCommand.pas',
-  ThCommandManager in '..\src\Commands\ThCommandManager.pas',
+  ThCommandManager in '..\src\Controllers\ThCommandManager.pas',
   ThItemStorage in '..\src\Controllers\ThItemStorage.pas',
   ThSystemCommand in '..\src\Commands\ThSystemCommand.pas',
   TestThCanvasZoom in 'TestThCanvasZoom.pas',
   ThZoomAnimation in '..\src\Components\ThZoomAnimation.pas',
   ThResourceString in '..\src\Types\ThResourceString.pas',
-  ThAlertAnimation in '..\src\Components\ThAlertAnimation.pas';
+  ThAlertAnimation in '..\src\Components\ThAlertAnimation.pas',
+  TestThItemImage in 'TestThItemImage.pas',
+  ThImageItem in '..\src\Cores\ThImageItem.pas',
+  ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas';
 
 {$R *.RES}
 

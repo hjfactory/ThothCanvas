@@ -44,6 +44,7 @@ type
     FZoomAnimated: Boolean;
 
     FAlert: TAlertAnimation;
+    FOnZoom: TNotifyEvent;
 
     function GetViewPortPosition: TPosition;
     function GetItemCount: Integer;
@@ -57,6 +58,8 @@ type
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
     FMouseCurrPos: TPointF; // MouseMove ½Ã ÁÂÇ¥
 
+    procedure Show; override;
+
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
@@ -69,6 +72,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    procedure Initialize;
 
     // Interface method
     function IsDrawingItem: Boolean; virtual;
@@ -95,6 +100,8 @@ type
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
     property ZoomAnimated: Boolean read FZoomAnimated write FZoomAnimated;
+
+    property OnZoom: TNotifyEvent read FOnZoom write FOnZoom;
    end;
 
 implementation
@@ -214,7 +221,6 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
-  FContents.ZoomScale := CanvasZoomScaleDefault;
 
 //  DoZoomHome;
 
@@ -260,14 +266,25 @@ begin
   FContents.Position.Y := P.Y * AScale + (Height * (1 - AScale)) * (ATargetPos.Y / Height);
 
   FContents.ZoomScale := FContents.ZoomScale * AScale;
+
+  if Assigned(FOnZoom) then
+    FOnZoom(Self);
 end;
 
 procedure TThCanvas.DoZoomHome;
+var
+  P: TPointF;
 begin
-  FContents.Position.Point := PointF(0, 0);
-//  FContents.Position.Point := PointF(-Width / FContents.Scale.X / 2,  -Height / FContents.Scale.Y / 2);
+  P := BoundsRect.CenterPoint;
+  P.X := P.X;
+  P.Y := P.Y;
+
+  FContents.Position.Point := P;//PointF(0, 0);
 
   FContents.ZoomScale := CanvasZoomScaleDefault;
+
+  if Assigned(FOnZoom) then
+    FOnZoom(Self);
 end;
 
 procedure TThCanvas.DoZoomIn(ATargetPos: TPointF);
@@ -402,6 +419,16 @@ begin
   Repaint;
 end;
 
+procedure TThCanvas.Show;
+begin
+  if Width > 0 then
+  begin
+
+  end;
+
+  DoZoomHome;
+end;
+
 procedure TThCanvas.ZoomHome;
 begin
   DoZoomHome;
@@ -430,6 +457,11 @@ end;
 function TThCanvas.GetZoomScale: Single;
 begin
   Result := FContents.ZoomScale;
+end;
+
+procedure TThCanvas.Initialize;
+begin
+  DoZoomHome;
 end;
 
 function TThCanvas.IsDrawingItem: Boolean;

@@ -6,58 +6,74 @@ uses
   ThTypes, ThClasses, ThItem, ThCanvas, ThCanvasEditor, System.Types;
 
 type
-  TThCanvasEditorController = class(TThInterfacedObject, IThObserver, IThCanvasController)
+  TThCanvasController = class(TThInterfacedObject, IThObserver, IThCanvasController)
   private
+    procedure CanvasZoom(Sender: TObject);
+  protected
     FCanvas: TThCanvasEditor;
     FSubject: IThSubject;
-
-    procedure ItemAdded(Item: TThItem);
-    procedure ItemDelete(Items: TThItems);
-    procedure ItemMove(Items: TThItems; Distance: TPointF);
-    procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
   public
-    constructor Create;
+    constructor Create(ThCanvas: IThCanvas); reintroduce; virtual;
     destructor Destroy; override;
-
-    procedure SetThCanvas(ThCanvas: IThCanvas);
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
   end;
 
+  TThCanvasEditorController = class(TThCanvasController)
+  private
+    procedure ItemAdded(Item: TThItem);
+    procedure ItemDelete(Items: TThItems);
+    procedure ItemMove(Items: TThItems; Distance: TPointF);
+    procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
+  public
+    constructor Create(ThCanvas: IThCanvas); override;
+  end;
+
 implementation
 
 uses
-  ThItemCommand;
+  ThCanvasCommand, ThItemCommand;
 
 { TThCanvasController }
 
-constructor TThCanvasEditorController.Create;
+procedure TThCanvasController.CanvasZoom(Sender: TObject);
 begin
-
+  FSubject.Subject(Self, TThCommandCanvasZoom.Create);
 end;
 
-destructor TThCanvasEditorController.Destroy;
+constructor TThCanvasController.Create(ThCanvas: IThCanvas);
+begin
+  FCanvas := TThCanvasEditor(ThCanvas);
+
+  FCanvas.OnZoom := CanvasZoom;
+end;
+
+destructor TThCanvasController.Destroy;
 begin
   FSubject.UnregistObserver(Self);
 
   inherited;
 end;
 
-procedure TThCanvasEditorController.Notifycation(ACommand: IThCommand);
+procedure TThCanvasController.Notifycation(ACommand: IThCommand);
 begin
+
 end;
 
-procedure TThCanvasEditorController.SetSubject(ASubject: IThSubject);
+procedure TThCanvasController.SetSubject(ASubject: IThSubject);
 begin
   FSubject := ASubject;
 
   ASubject.RegistObserver(Self);
 end;
 
-procedure TThCanvasEditorController.SetThCanvas(ThCanvas: IThCanvas);
+{ TThCanvasController }
+
+constructor TThCanvasEditorController.Create(ThCanvas: IThCanvas);
 begin
-  FCanvas := TThCanvasEditor(ThCanvas);
+  inherited;
+
   FCanvas.OnItemAdded := ItemAdded;
   FCanvas.OnItemDelete := ItemDelete;
   FCanvas.OnItemMove := ItemMove;

@@ -64,7 +64,7 @@ type
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, System.Math, DebugUtils;
+  FMX.TestLib, ThItem, ThShapeItem, ThItemFactory, ThConsts, System.Math, DebugUtils;
 
 { TestTThShape }
 

@@ -39,7 +39,7 @@ type
     procedure DrawCircle(R: TRectF); overload;
   end;
 
-  TBaseCommandTestUnit = class(TBaseTestUnit)
+  TBaseCommandHistoryTestUnit = class(TBaseTestUnit)
   private
     procedure CreateObject; override;
     procedure DestroyObject; override;
@@ -91,6 +91,7 @@ begin
   FCanvas.Position.Point  := CanvasRect.TopLeft;
   FCanvas.Width           := CanvasRect.Width;
   FCanvas.Height          := CanvasRect.Height;
+  FCanvas.Initialize;
 
   CreateObject;
 
@@ -187,17 +188,17 @@ end;
 
 { TBaseCommandTestUnit }
 
-procedure TBaseCommandTestUnit.CreateObject;
+procedure TBaseCommandHistoryTestUnit.CreateObject;
 begin
   inherited;
 
   FThothController := TThothController.Create;
-  FCanvasController := TThCanvasEditorController.Create;
+  FCanvasController := TThCanvasEditorController.Create(FCanvas);
   FCanvasController.SetSubject(FThothController);
-  FCanvasController.SetThCanvas(FCanvas);
+//  FCanvasController.SetThCanvas(FCanvas);
 end;
 
-procedure TBaseCommandTestUnit.DestroyObject;
+procedure TBaseCommandHistoryTestUnit.DestroyObject;
 begin
   inherited;
 

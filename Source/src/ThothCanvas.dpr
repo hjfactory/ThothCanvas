@@ -17,14 +17,15 @@ uses
   ThClasses in 'Libraries\ThClasses.pas',
   ThCanvasController in 'Controllers\ThCanvasController.pas',
   ThothController in 'Controllers\ThothController.pas',
-  ThCommandManager in 'Commands\ThCommandManager.pas',
+  ThCommandManager in 'Controllers\ThCommandManager.pas',
   ThItemCommand in 'Commands\ThItemCommand.pas',
   ThItemStorage in 'Controllers\ThItemStorage.pas',
   ThSystemCommand in 'Commands\ThSystemCommand.pas',
   ThZoomAnimation in 'Components\ThZoomAnimation.pas',
   ThResourceString in 'Types\ThResourceString.pas',
   ThAlertAnimation in 'Components\ThAlertAnimation.pas',
-  ThImageItem in 'Cores\ThImageItem.pas';
+  ThImageItem in 'Cores\ThImageItem.pas',
+  ThCanvasCommand in 'Commands\ThCanvasCommand.pas';
 
 {$R *.res}
 

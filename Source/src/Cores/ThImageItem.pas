@@ -25,6 +25,7 @@ type
     procedure DoBitmapChanged(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
+//    constructor Create(AOwner: TComponent; AFilename: string = ''); overload;
     destructor Destroy; override;
   end;
 
@@ -37,13 +38,23 @@ uses
 
 constructor TThImageItem.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
 
   FBitmap := TBitmap.Create(0, 0);
   FBitmap.OnChange := DoBitmapChanged;
 
   LoadImageFile;
 end;
+
+//constructor TThImageItem.Create(AOwner: TComponent; AFilename: string);
+//begin
+//  inherited Create(AOwner);
+//
+//  FBitmap := TBitmap.Create(0, 0);
+//  FBitmap.OnChange := DoBitmapChanged;
+//
+//  LoadImageFile;
+//end;
 
 destructor TThImageItem.Destroy;
 begin
@@ -127,12 +138,6 @@ end;
 function TThImageItem.PtInItem(Pt: TPointF): Boolean;
 begin
   Result := PtInRect(GetItemRect, Pt);
-
-//  Debug('%f.%f - %f / %f.%f - %f', [GetItemRect.Left, GetItemRect.Right, Pt.X, GetItemRect.Top, GetItemRect.Bottom, Pt.Y]);
-  if Result then
-  begin
-    Width := Width * 1;
-  end;
 end;
 
 procedure TThImageItem.SetBitmap(const Value: TBitmap);

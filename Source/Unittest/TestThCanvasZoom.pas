@@ -53,12 +53,15 @@ type
 
     // #204 확대 시 직선 주위를 선택해도 선택되는 버그
     procedure BugTestAfterZoomingOverRangeLineSelection;
+
+    // #214 H 버튼 클릭 시 현재 보이는 캔버스 영역의 중앙으로 맞추어져야 한다.
+    procedure BugZoomGoHome;
   end;
 
 implementation
 
 uses
-  FMX.TestLib, ThItem, ThShape, ThItemFactory, ThConsts, UITypes, FMX.Forms,
+  FMX.TestLib, ThItem, ThShapeItem, ThItemFactory, ThConsts, UITypes, FMX.Forms,
   DebugUtils;
 
 { TestTThCanvasZoom }
@@ -318,7 +321,7 @@ begin
 
   DrawRectangle(10, 10, 100, 100);
 
-   MousePath.New
+  MousePath.New
   .Add(100, 100)
   .Add(20, 20);
   TestLib.RunMousePath(MousePath.Path);
@@ -342,6 +345,35 @@ begin
 
   TestLib.RunMouseClick(50, 50);
   CheckNull(FCanvas.SelectedItem);
+end;
+
+procedure TestTThCanvasZoom.BugZoomGoHome;
+var
+  R: TRectF;
+begin
+  ShowForm;
+
+  R := FCanvas.BoundsRect;
+
+  DrawRectangle(R.CenterPoint.X - 50, R.CenterPoint.Y - 50, R.CenterPoint.X + 50, R.CenterPoint.Y + 50);
+
+  FCanvas.SetBounds(FCanvas.Position.X, FCanvas.Position.Y, 500, 500);
+  FCanvas.ZoomOutAtPoint(100, 100);
+  FCanvas.ZoomOutAtPoint(100, 100);
+  FCanvas.ZoomOutAtPoint(100, 100);
+
+  FCanvas.ZoomHome;
+
+  FCanvas.ClearSelection;
+
+  TestLib.RunMouseClick(FCanvas.BoundsRect.CenterPoint.X, FCanvas.BoundsRect.CenterPoint.Y);
+
+  Check(FCanvas.ZoomScale = CanvasZoomScaleDefault, Format('ZoomScale: %f(<> %f)', [FCanvas.ZoomScale, CanvasZoomScaleDefault]));
+  CheckNotNull(FCanvas.SelectedItem);
+
+//  FCanvas.c
+
+//  Check(FCanvas.CenterPoint.X * FCanvas.ZoomScale = FCanvas.BoundsRect.CenterPoint.X);
 end;
 
 initialization

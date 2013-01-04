@@ -27,6 +27,7 @@ type
     edtZoom: TEdit;
     btnHome: TCornerButton;
     btnImage: TButton;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRectangleClick(Sender: TObject);
@@ -37,6 +38,7 @@ type
     procedure btnZoomInClick(Sender: TObject);
     procedure btnHomeClick(Sender: TObject);
     procedure btnImageClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
     FController: TThothController;
@@ -45,6 +47,8 @@ type
 
     procedure Notifycation(ACommand: IThCommand);
     procedure SetSubject(ASubject: IThSubject);
+
+    procedure DisplayZoomValue(AZoom: Single);
   public
     { Public declarations }
   end;
@@ -55,7 +59,7 @@ var
 implementation
 
 uses
-  ThItem;
+  ThConsts, ThItem, ThItemCommand, ThCanvasCommand;
 
 {$R *.fmx}
 
@@ -64,32 +68,53 @@ begin
   FCanvas := TThCanvasEditor.Create(Self);
   FCanvas.Parent := Panel1;
   FCanvas.Align := TAlignLayout.alClient;
+  FCanvas.Initialize;
 
   FController := TThothController.Create;
   FController.RegistObserver(Self);
 
-  FCanvasController := TThCanvasEditorController.Create;
+  // 너는 ThothController 안으로 들어가야 한다.
+  FCanvasController := TThCanvasEditorController.Create(FCanvas);
   FCanvasController.SetSubject(FController);
-  FCanvasController.SetThCanvas(FCanvas);
 
-  edtZoom.Text := FloatToStr(FCanvas.ZoomScale);
+  DisplayZoomValue(FCanvas.ZoomScale);
 end;
 
 procedure TfrmMainDraft.FormDestroy(Sender: TObject);
 begin
   FCanvas.Free;
+  FCanvasController.Free;
+  FController.Free;
 end;
 
 procedure TfrmMainDraft.Notifycation(ACommand: IThCommand);
 begin
-  btnUndo.Enabled := FController.UndoCount > 0;
-  btnRedo.Enabled := FController.RedoCount > 0;
+  if ACommand is TThItemCommand then
+  begin
+    btnUndo.Enabled := FController.UndoCount > 0;
+    btnRedo.Enabled := FController.RedoCount > 0;
+  end
+  else if ACommand is TThCommandCanvasZoom then
+  begin
+    DisplayZoomValue(FCanvas.ZoomScale);
+  end;
 end;
 
 procedure TfrmMainDraft.SetSubject(ASubject: IThSubject);
 begin
   FController.RegistObserver(Self);
 end;
+
+procedure TfrmMainDraft.DisplayZoomValue(AZoom: Single);
+begin
+  AZoom := AZoom / CanvasZoomScaleDefault;
+
+  edtZoom.Text := FormatFloat('0.##', AZoom);
+end;
+
+{
+  Events
+}
 
 procedure TfrmMainDraft.btnRedoClick(Sender: TObject);
 begin
@@ -110,13 +135,16 @@ end;
 procedure TfrmMainDraft.btnZoomInClick(Sender: TObject);
 begin
   FCanvas.ZoomIn;
-  edtZoom.Text := FloatToStr(FCanvas.ZoomScale);
 end;
 
 procedure TfrmMainDraft.btnZoomOutClick(Sender: TObject);
 begin
   FCanvas.ZoomOut;
-  edtZoom.Text := FloatToStr(FCanvas.ZoomScale);
+end;
+
+procedure TfrmMainDraft.Button1Click(Sender: TObject);
+begin
+  FCanvas.Test;
 end;
 
 procedure TfrmMainDraft.btnHomeClick(Sender: TObject);

@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{66FC4B7D-A5FC-4222-8CCF-043A2FE6C24C}</ProjectGuid>
-        <ProjectVersion>14.3</ProjectVersion>
+        <ProjectVersion>14.4</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -139,13 +139,16 @@
         <DCCReference Include="..\src\Controllers\ThothController.pas"/>
         <DCCReference Include="..\src\Controllers\ThCanvasController.pas"/>
         <DCCReference Include="..\src\Commands\ThItemCommand.pas"/>
-        <DCCReference Include="..\src\Commands\ThCommandManager.pas"/>
+        <DCCReference Include="..\src\Controllers\ThCommandManager.pas"/>
         <DCCReference Include="..\src\Controllers\ThItemStorage.pas"/>
         <DCCReference Include="..\src\Commands\ThSystemCommand.pas"/>
         <DCCReference Include="TestThCanvasZoom.pas"/>
         <DCCReference Include="..\src\Components\ThZoomAnimation.pas"/>
         <DCCReference Include="..\src\Types\ThResourceString.pas"/>
         <DCCReference Include="..\src\Components\ThAlertAnimation.pas"/>
+        <DCCReference Include="TestThItemImage.pas"/>
+        <DCCReference Include="..\src\Cores\ThImageItem.pas"/>
+        <DCCReference Include="..\src\Commands\ThCanvasCommand.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

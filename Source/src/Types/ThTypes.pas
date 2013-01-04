@@ -29,11 +29,11 @@ type
     procedure Rollback;
   end;
 
-  IThItemCommand = interface(IThCommand)
-  end;
-
-  IThSystemCommand = interface(IThCommand)
-  end;
+//  IThItemCommand = interface(IThCommand)
+//  end;
+//
+//  IThSystemCommand = interface(IThCommand)
+//  end;
 
   /////////////////////////////////////////////////////////
   ///  Observer Pattern
@@ -60,7 +60,6 @@ type
   end;
 
   IThCanvasController = interface
-    procedure SetThCanvas(ThCanvas: IThCanvas);
   end;
 
   //////////////////////////////////////////////////////////////
@@ -110,6 +109,20 @@ type
     procedure RealignSpot;
   end;
 
+  TPointFHelper = record helper for TPointF
+  public
+    function Scale(const AFactor: Single): TPointF;
+  end;
+
+
 implementation
+
+{ TPointFHelper }
+
+function TPointFHelper.Scale(const AFactor: Single): TPointF;
+begin
+  Result.X := X * AFactor;
+  Result.Y := Y * AFactor;
+end;
 
 end.

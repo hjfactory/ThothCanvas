@@ -7,7 +7,7 @@ uses
   ThTypes, ThClasses, ThItem;
 
 type
-  TThAbstractCommandItem = class(TInterfacedObject, IThCommand)
+  TThItemCommand = class(TInterfacedObject, IThCommand)
   protected
     FItems: TThItems;
   public
@@ -19,7 +19,7 @@ type
     procedure Rollback; virtual; abstract;
   end;
 
-  TThCommandItemAdd = class(TThAbstractCommandItem)
+  TThCommandItemAdd = class(TThItemCommand)
   private
     FParent: TControl;
   public
@@ -31,7 +31,7 @@ type
     property Items: TThItems read FItems;
   end;
 
-  TThCommandItemDelete = class(TThAbstractCommandItem)
+  TThCommandItemDelete = class(TThItemCommand)
   private
     FParent: TControl;
   public
@@ -41,7 +41,7 @@ type
     procedure Rollback; override;
   end;
 
-  TThCommandItemMove = class(TThAbstractCommandItem)
+  TThCommandItemMove = class(TThItemCommand)
   private
     FDistance: TPointF;
   public
@@ -51,7 +51,7 @@ type
     procedure Rollback; override;
   end;
 
-  TThCommandItemResize = class(TThAbstractCommandItem)
+  TThCommandItemResize = class(TThItemCommand)
   private
     FBeforeRect,
     FAfterRect: TRectF;
@@ -69,18 +69,18 @@ uses
 
 { TThAbstractCommandItem }
 
-constructor TThAbstractCommandItem.Create(AItems: TThItems);
+constructor TThItemCommand.Create(AItems: TThItems);
 begin
   FItems := TThItems.Create(AItems);
 end;
 
-constructor TThAbstractCommandItem.Create(AItem: TThItem);
+constructor TThItemCommand.Create(AItem: TThItem);
 begin
   FItems := TThitems.Create;
   FItems.Add(AItem);
 end;
 
-destructor TThAbstractCommandItem.Destroy;
+destructor TThItemCommand.Destroy;
 begin
   FItems.Free;
 

@@ -43,7 +43,7 @@ implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
-  ThItem, ThShape, ThItemFactory, FMX.Forms, ThConsts;
+  ThItem, ThShapeItem, ThItemFactory, FMX.Forms, ThConsts;
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
@@ -125,7 +125,7 @@ begin
   TestLib.RunMouseClick(150, 10);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');  // 안보여도 선택은 됨
-  TThShape(FCanvas.SelectedItem).BgColor := claRed;
+  TThShapeItem(FCanvas.SelectedItem).BgColor := claRed;
   FCanvas.SelectedItem.Opacity := 1;
 
   // 색상비교

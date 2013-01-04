@@ -20,8 +20,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure ZoomIn(ACenterPos: TPointF);
-    procedure ZoomOut(ACenterPos: TPointF);
+    procedure ZoomIn(ATargetPos: TPointF);
+    procedure ZoomOut(ATargetPos: TPointF);
 
     property Diffuse: Single read FDiffuse write SetDiffuse;
   end;
@@ -86,9 +86,9 @@ begin
   Repaint;
 end;
 
-procedure TZoomAni.ZoomIn(ACenterPos: TPointF);
+procedure TZoomAni.ZoomIn(ATargetPos: TPointF);
 begin
-  Position.Point := ACenterPos.Subtract(PointF(Width / 2, Height / 2));
+  Position.Point := ATargetPos.Subtract(PointF(Width / 2, Height / 2));
 
   if FZoomAni.Running then
     FZoomAni.Stop;
@@ -99,9 +99,9 @@ begin
   FZoomAni.Start;
 end;
 
-procedure TZoomAni.ZoomOut(ACenterPos: TPointF);
+procedure TZoomAni.ZoomOut(ATargetPos: TPointF);
 begin
-  Position.Point := ACenterPos.Subtract(PointF(Width / 2, Height / 2));
+  Position.Point := ATargetPos.Subtract(PointF(Width / 2, Height / 2));
 
   if FZoomAni.Running then
     FZoomAni.Stop;

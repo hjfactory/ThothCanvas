@@ -8,7 +8,7 @@ uses
 
 type
   // #23 Undo/Redo기능을 이용하여 명령을 되돌린다.
-  TestTThCommandHistory = class(TBaseCommandTestUnit)
+  TestTThCommandHistory = class(TBaseCommandHistoryTestUnit)
   published
     // #123 사각형을 추가하고 Undo명령하면 도형이 선택되지 않아야 한다.
     procedure TestCommandHistoryAddUndo;
@@ -39,7 +39,7 @@ implementation
 
 uses
   UnitTestForm, FMX.TestLib, ThCanvas, ThCanvasEditor,
-  ThItem, ThShape, ThItemFactory;
+  ThItem, ThShapeItem, ThItemFactory;
 
 { TestTThCommandHistory }
 
