@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  Math, ThItemFactory;
+  Math, ThItemFactory, FMX.Dialogs;
 
 { TThCanvasEditor }
 
@@ -313,8 +313,18 @@ begin
 end;
 
 procedure TThCanvasEditor.Test;
+var
+  C, P: TControl;
 begin
-  FContents.RotationAngle := FContents.RotationAngle + 45;
+  if FContents.ChildrenCount < 2 then
+    Exit;
+
+  C := FContents.Children[0] as TControl;
+  P := FContents.Children[1] as TControl;
+
+  C.Parent := P;
+  C.Position.Point := C.Position.Point.Subtract( P.Position.Point);
+
 end;
 
 end.
