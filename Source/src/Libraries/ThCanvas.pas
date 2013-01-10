@@ -64,6 +64,9 @@ type
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
+    procedure DoGrouping(AItem: TThItem); virtual;
+    procedure DoDegrouping(AItem: TThItem); virtual;
+
     procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomHome;
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
@@ -257,6 +260,36 @@ begin
     FContents.AddObject(AObject)
   else
     inherited;
+end;
+
+procedure TThCanvas.DoGrouping(AItem: TThItem);
+var
+  R: TRectF;
+  Obj: TFMXObject;
+begin
+  R := AItem.BoundsRect;
+
+  for Obj in FContents.Children do
+  begin
+    if Obj = AItem then
+      Continue;
+    if R.Contains(TControl(Obj).BoundsRect) then
+    begin
+      Obj.Parent := AItem;
+      TControl(Obj).Position.Point := TControl(Obj).Position.Point.Subtract(AItem.Position.Point);
+    end;
+
+    if TControl(Obj).BoundsRect.Contains(R) then
+    begin
+      AItem.Parent := Obj;
+      AItem.Position.Point := AItem.Position.Point.Subtract(TControl(Obj).Position.Point);
+    end;
+  end;
+end;
+
+procedure TThCanvas.DoDegrouping(AItem: TThItem);
+begin
+
 end;
 
 procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);

@@ -178,6 +178,8 @@ procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
   P: TPointF;
 begin
+  DoGrouping(Item);
+
   if Assigned(FOnItemMove) then
   begin
     P := Item.Position.Point.Subtract(StartPos);

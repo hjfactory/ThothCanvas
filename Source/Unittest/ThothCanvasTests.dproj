@@ -59,7 +59,7 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <Manifest_File>None</Manifest_File>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_Define>_CONSOLE_TESTRUNNER;ON_HIGHLIGHT;$(DCC_Define)</DCC_Define>
+        <DCC_Define>_CONSOLE_TESTRUNNER;$(DCC_Define)</DCC_Define>
         <DCC_UnitSearchPath>$(BDS)\Source\DUnit\src;lib;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_DcuOutput>..\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>..\bin\$(Platform)\$(Config)</DCC_ExeOutput>
@@ -150,8 +150,8 @@
         <DCCReference Include="TestThItemImage.pas"/>
         <DCCReference Include="..\src\Cores\ThImageItem.pas"/>
         <DCCReference Include="..\src\Commands\ThCanvasCommand.pas"/>
-        <DCCReference Include="TestThItemGroupping.pas"/>
-        <RcItem Include="C:\Users\hjFactory\Dropbox\Datas\PT_Images\1355447708_CabrioletRed.png">
+        <DCCReference Include="TestThItemGrouping.pas"/>
+        <RcItem Include="..\res\1355447708_CabrioletRed.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>TEST_IMAGE</ResourceId>
         </RcItem>

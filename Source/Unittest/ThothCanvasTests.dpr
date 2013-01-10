@@ -16,6 +16,8 @@ program ThothCanvasTests;
 
 
 
+
+
 {$R *.dres}
 
 uses
@@ -55,7 +57,7 @@ uses
   TestThItemImage in 'TestThItemImage.pas',
   ThImageItem in '..\src\Cores\ThImageItem.pas',
   ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas',
-  TestThItemGroupping in 'TestThItemGroupping.pas';
+  TestThItemGrouping in 'TestThItemGrouping.pas';
 
 {$R *.RES}
 

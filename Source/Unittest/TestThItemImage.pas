@@ -100,7 +100,6 @@ var
 begin
   if TPlatformServices.Current.SupportsPlatformService(IFMXClipboardService, ServiceIntf) then
     (ServiceIntf as IFMXClipboardService).SetClipboard(TestImagePath);
-  thread := nil;
   thread := TThread.CreateAnonymousThread(
     procedure
     var
@@ -136,7 +135,6 @@ var
 begin
   if TPlatformServices.Current.SupportsPlatformService(IFMXClipboardService, ServiceIntf) then
     (ServiceIntf as IFMXClipboardService).SetClipboard(TestImagePath);
-  thread := nil;
   thread := TThread.CreateAnonymousThread(
     procedure
     var
