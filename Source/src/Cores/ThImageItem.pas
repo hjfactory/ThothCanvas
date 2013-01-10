@@ -7,7 +7,7 @@ uses
   FMX.Types, FMX.Objects, ThTypes, ThItem;
 
 type
-  TThImageItem = class(TThItem, IBitmapObject, IItemHighlitObject, IItemResizerObject)
+  TThImageItem = class(TThItem, IBitmapObject, IItemHighlitObject, IItemSelectionObject)
   private
     FItemData: TThFileItemData;
     FBitmap: TBitmap;
@@ -17,7 +17,7 @@ type
     procedure SetBitmap(const Value: TBitmap);
   protected
     function CreateHighlighter: IItemHighlighter; override;
-    function CreateResizer: IItemResizer; override;
+    function CreateSelection: IItemSelection; override;
 
     procedure Paint; override;
 
@@ -25,19 +25,19 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     function GetMinimumSize: TPointF; virtual;
 
-    property Bitmap: TBitmap read FBitmap write SetBitmap;
     procedure DoBitmapChanged(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     procedure SetItemData(AItemData: IThItemData); override;
+    property Bitmap: TBitmap read FBitmap write SetBitmap;
   end;
 
 implementation
 
 uses
-  FMX.Dialogs, ThConsts, ThItemFactory, ThItemResizer, ThItemHighlighter, DebugUtils;
+  FMX.Dialogs, ThConsts, ThItemFactory, ThItemSelection, ThItemHighlighter, DebugUtils;
 
 { TThImageItemData }
 
@@ -95,15 +95,15 @@ begin
   Result := Highlighter;
 end;
 
-function TThImageItem.CreateResizer: IItemResizer;
+function TThImageItem.CreateSelection: IItemSelection;
 var
-  Resizer: TThItemResizer;
+  Selection: TThItemSelection;
 begin
-  Resizer := TThItemResizer.Create(Self);
-  Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
-  Resizer.OnTracking := nil;
+  Selection := TThItemSelection.Create(Self);
+  Selection.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+  Selection.OnTracking := nil;
 
-  Result := Resizer;
+  Result := Selection;
 end;
 
 function TThImageItem.GetBitmap: TBitmap;

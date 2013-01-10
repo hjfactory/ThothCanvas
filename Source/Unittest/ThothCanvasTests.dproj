@@ -128,7 +128,7 @@
         <DCCReference Include="..\src\Utils\DebugUtils.pas"/>
         <DCCReference Include="..\src\Components\ThItemHighlighter.pas"/>
         <DCCReference Include="..\src\Types\ThConsts.pas"/>
-        <DCCReference Include="..\src\Components\ThItemResizer.pas"/>
+        <DCCReference Include="..\src\Components\ThItemSelection.pas"/>
         <DCCReference Include="TestThItemRectangleResizer.pas"/>
         <DCCReference Include="TestThItemLine.pas"/>
         <DCCReference Include="..\src\Types\ThTypes.pas"/>

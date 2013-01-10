@@ -16,6 +16,7 @@ type
   private
     FDrawItem: TThItem;
     FDrawItemId: Integer;
+
     FSelections: TThItems;
     FSelectedItem: TThItem;
 
@@ -137,6 +138,13 @@ begin
   Result := ItemFactory.Get(ItemId, AItemData);
   if Assigned(Result) then
   begin
+    if (Result.Width = 0) and (Result.Height = 0) then
+    begin
+      Result.Free;
+      Result := nil;
+      Exit;
+    end;
+
     Result.ParentCanvas := Self;
     Result.OnSelected := ItemSelect;
     Result.OnUnselected := ItemUnselect;

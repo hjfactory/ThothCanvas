@@ -87,10 +87,10 @@ type
   end;
 
   //////////////////////////////////////////////////////////////
-  /// Item Resizer and ResizeSpot
-  ///   IItemResizerObject is IItemResizer's parent
-  ///   IItemResizer is IItemResizeSpots parent
-  IItemResizerObject = interface(IThItem)
+  /// Item Selection and ResizeSpot
+  ///   IItemSelectionObject is IItemSelection's parent
+  ///   IItemSelection is IItemResizeSpots parent
+  IItemSelectionObject = interface(IThItem)
     function GetMinimumSize: TPointF;
     property MinimumSize: TPointF read GetMinimumSize;
   end;
@@ -98,9 +98,9 @@ type
   IItemResizeSpot = interface
   end;
 
-  IItemResizer = interface
-    function GetResizerRect: TRectF;
-    property ResizerRect: TRectF read GetResizerRect;
+  IItemSelection = interface
+    function GetSelectionRect: TRectF;
+    property SelectionRect: TRectF read GetSelectionRect;
     function GetCount: Integer;
     property Count: Integer read GetCount;
     function GetSpots(Index: Integer): IItemResizeSpot;

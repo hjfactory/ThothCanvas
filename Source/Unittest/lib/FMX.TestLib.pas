@@ -31,6 +31,7 @@ type
 
     procedure RunKeyDownShift; virtual; abstract;
     procedure RunKeyUpShift; virtual; abstract;
+    procedure RunKeyPress(Keys: array of Word);
 
     procedure RunMouseWheelUp(X, Y: Single);
     procedure RunMouseWheelDown(X, Y: Single);
@@ -146,6 +147,17 @@ begin
   finally
     Bitmap.Free;
   end;
+end;
+
+procedure TTestLib.RunKeyPress(Keys: array of Word);
+var
+  I: Integer;
+  W: Word;
+begin
+  for W in Keys do
+    KeyDown(W);
+  for I := Length(Keys) - 1 downto 0 do
+    KeyUp(Keys[I]);
 end;
 
 procedure TTestLib.RunMouseClick(X, Y: Single);

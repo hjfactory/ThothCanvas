@@ -11,7 +11,7 @@ uses
   DebugUtils in 'Utils\DebugUtils.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
   ThConsts in 'Types\ThConsts.pas',
-  ThItemResizer in 'Components\ThItemResizer.pas',
+  ThItemSelection in 'Components\ThItemSelection.pas',
   ThTypes in 'Types\ThTypes.pas',
   SpotCornerUtils in 'Utils\SpotCornerUtils.pas',
   ThClasses in 'Libraries\ThClasses.pas',

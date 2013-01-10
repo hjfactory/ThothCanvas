@@ -40,14 +40,14 @@ type
     procedure SetParentCanvas(const Value: IThCanvas);
   protected
     FHighlighter: IItemHighlighter;
-    FResizer: IItemResizer;
+    FSelection: IItemSelection;
     FBeforeSelect,
     FSelected: Boolean;
     FMouseDownPos,
     FDownItemPos: TPointF;
 
     function CreateHighlighter: IItemHighlighter; virtual;
-    function CreateResizer: IItemResizer; virtual;
+    function CreateSelection: IItemSelection; virtual;
 
     function GetUpdateRect: TRectF; override;
     function GetItemRect: TRectF; virtual;
@@ -72,7 +72,6 @@ type
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
     procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
-    procedure SetBounds(X, Y, AWidth, AHeight: Single); override;
 
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); virtual;
     procedure RealignSpot;
@@ -116,7 +115,7 @@ begin
 {$IFDEF ON_HIGHLIGHT}
   FHighlighter := CreateHighlighter;
 {$ENDIF}
-  FResizer := CreateResizer;
+  FSelection := CreateSelection;
 
   Cursor := crSizeAll;
 end;
@@ -124,18 +123,9 @@ end;
 destructor TThItem.Destroy;
 begin
   FHighlighter := nil;
-  FResizer := nil; // Interface Free(destory)
+  FSelection := nil; // Interface Free(destory)
 
   inherited;
-end;
-
-procedure TThItem.SetBounds(X, Y, AWidth, AHeight: Single);
-begin
-  inherited;
-
-  // 크기 변경 요청 시 Spot위치 조정(SpotCorner로 크기 조정 시 요청됨)
-//  if Assigned(FResizer) then
-//    FResizer.RealignSpot;
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);
@@ -152,7 +142,7 @@ function TThItem.CreateHighlighter: IItemHighlighter;
 begin
 end;
 
-function TThItem.CreateResizer: IItemResizer;
+function TThItem.CreateSelection: IItemSelection;
 begin
 end;
 
@@ -161,14 +151,14 @@ begin
   inherited;
 
 //  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
-//  if (IsMouseOver or (Assigned(FResizer) and (FResizer.IsMouseOver))) and Assigned(FHighlighter) then
+//  if (IsMouseOver or (Assigned(FSelection) and (FSelection.IsMouseOver))) and Assigned(FHighlighter) then
 {$IFDEF ON_HIGHLIGHT}
   if (IsMouseOver) and Assigned(FHighlighter) then
     FHighlighter.DrawHighlight;
 {$ENDIF}
 
-  if (IsMouseOver or Selected) and Assigned(FResizer) then
-    FResizer.DrawSelection;
+  if (IsMouseOver or Selected) and Assigned(FSelection) then
+    FSelection.DrawSelection;
 end;
 
 function TThItem.PointInObject(X, Y: Single): Boolean;
@@ -186,7 +176,6 @@ end;
 
 procedure TThItem.ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
 begin
-//  BeforeRect.Offset(Position.Point);
   if Assigned(FOnResize) then
     FOnResize(Self, BeforeRect);
 end;
@@ -219,43 +208,24 @@ begin
   Result := inherited GetUpdateRect;
   InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
   InflateRect(Result, 1, 1);
-{
-Exit;
-  // HighlightRect가 의미가 없나?
-  if Assigned(FHighlighter) then
-  begin
-    R := FHighlighter.HighlightRect;
-    R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
-    Result := UnionRect(Result, R);
-  end;
-
-  if Assigned(FResizer) then
-  begin
-    R := FResizer.ResizerRect;
-    R.Offset(AbsoluteRect.Left, AbsoluteRect.Top);
-    Result := UnionRect(Result, R);
-  end;
-
-  InflateRect(Result, 1, 1);
-}
 end;
 
 procedure TThItem.RealignSpot;
 begin
-  if Assigned(FResizer) then
-    FResizer.RealignSpot;
+  if Assigned(FSelection) then
+    FSelection.RealignSpot;
 end;
 
 procedure TThItem.ShowDisableSpots;
 begin
-  if Assigned(FResizer) then
-    FResizer.ShowDisableSpots;
+  if Assigned(FSelection) then
+    FSelection.ShowDisableSpots;
 end;
 
 procedure TThItem.ShowSpots;
 begin
-  if Assigned(FResizer) then
-    FResizer.ShowSpots;
+  if Assigned(FSelection) then
+    FSelection.ShowSpots;
 end;
 
 procedure TThItem.SetSelected(const Value: Boolean);
@@ -275,14 +245,14 @@ begin
   else if (not Value) and Assigned(FOnUnselected) then
     FOnUnselected(Self);
 
-  if Assigned(FResizer) then
+  if Assigned(FSelection) then
   begin
     if FSelected and FParentCanvas.IsMultiSelected then
-      FResizer.ShowDisableSpots
+      FSelection.ShowDisableSpots
     else if {(not FParentCanvas.IsMultiSelected) and} Value then
-      FResizer.ShowSpots
+      FSelection.ShowSpots
     else
-      FResizer.HideSpots;
+      FSelection.HideSpots;
   end;
 
   // 선택시는 다시 그릴 필요 없음(ResizeSpot만 추가되기 때문)

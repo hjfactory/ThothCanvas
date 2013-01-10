@@ -10,13 +10,14 @@ type
   // Test methods for class TThCanvasEditor
 
   TBaseTestUnit = class(TTestCase)
-  private
-    procedure CreateObject; virtual;
-    procedure DestroyObject; virtual;
   protected
     FClosing: Boolean;
     FForm: TForm;
     FCanvas: TThCanvasEditor;
+
+    procedure CreateObject; virtual;
+    procedure DestroyObject; virtual;
+
     function GetInitialPoint: TPointF;
     procedure SetTestControl(var FormRect, CanvasRect: TRectF); virtual;
 
@@ -43,12 +44,12 @@ type
   end;
 
   TBaseCommandHistoryTestUnit = class(TBaseTestUnit)
-  private
-    procedure CreateObject; override;
-    procedure DestroyObject; override;
   protected
     FThothController: TThothController;
     FCanvasController: TThCanvasEditorController;
+
+    procedure CreateObject; override;
+    procedure DestroyObject; override;
   end;
 
 implementation

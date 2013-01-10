@@ -102,7 +102,6 @@ end;
 
 procedure TTestLibWin.RunKeyDownShift;
 begin
-//  keybd_event(VK_SHIFT, MapVirtualKey(VK_SHIFT, 0), KEYEVENTF_KEYUP, 0);
   KeyDown(VK_SHIFT);
 end;
 

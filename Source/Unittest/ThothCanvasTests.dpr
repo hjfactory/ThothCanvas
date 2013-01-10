@@ -33,7 +33,7 @@ uses
   DebugUtils in '..\src\Utils\DebugUtils.pas',
   ThItemHighlighter in '..\src\Components\ThItemHighlighter.pas',
   ThConsts in '..\src\Types\ThConsts.pas',
-  ThItemResizer in '..\src\Components\ThItemResizer.pas',
+  ThItemSelection in '..\src\Components\ThItemSelection.pas',
   TestThItemRectangleResizer in 'TestThItemRectangleResizer.pas',
   TestThItemLine in 'TestThItemLine.pas',
   ThTypes in '..\src\Types\ThTypes.pas',

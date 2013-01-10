@@ -15,7 +15,7 @@ uses
   FMX.Types, ThTypes, ThItem;
 
 type
-  TThShapeItem = class(TThItem, IItemHighlitObject, IItemResizerObject)
+  TThShapeItem = class(TThItem, IItemHighlitObject, IItemSelectionObject)
   private
     procedure SetBgColor(const Value: TAlphaColor);
   strict protected
@@ -24,7 +24,7 @@ type
     FBgColor: TAlphaColor;
 
     function CreateHighlighter: IItemHighlighter; override;
-    function CreateResizer: IItemResizer; override;
+    function CreateSelection: IItemSelection; override;
 
     // Abstract method
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
@@ -53,7 +53,7 @@ type
     function IsHorizon: Boolean;
     function IsVertical: Boolean;
   protected
-    function CreateResizer: IItemResizer; override;
+    function CreateSelection: IItemSelection; override;
 
     function GetMinimumSize: TPointF; override;
 
@@ -65,7 +65,7 @@ type
 
   TThCircle = class(TThShapeItem)
   protected
-    function CreateResizer: IItemResizer; override;
+    function CreateSelection: IItemSelection; override;
 
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
@@ -77,7 +77,7 @@ implementation
 
 uses
   System.Math, ThConsts, ThItemFactory, ThItemHighlighter,
-  SpotCornerUtils, ThItemResizer, DebugUtils;
+  SpotCornerUtils, ThItemSelection, DebugUtils;
 
 { TThShape }
 
@@ -118,19 +118,19 @@ begin
   Result := Highlighter;
 end;
 
-function TThShapeItem.CreateResizer: IItemResizer;
+function TThShapeItem.CreateSelection: IItemSelection;
 var
-  Resizer: TThItemResizer;
+  Selection: TThItemSelection;
 begin
-  Resizer := TThItemResizer.Create(Self);
+  Selection := TThItemSelection.Create(Self);
 {$IFDEF ON_ALLCORNER_RESIZESPOT}
   Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ELSE}
-  Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+  Selection.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ENDIF}
-  Resizer.OnTracking := nil;
+  Selection.OnTracking := nil;
 
-  Result := Resizer;
+  Result := Selection;
 end;
 
 procedure TThShapeItem.Paint;
@@ -202,30 +202,30 @@ end;
 {$REGION LINE}
 { TThLine }
 
-function TThLine.CreateResizer: IItemResizer;
+function TThLine.CreateSelection: IItemSelection;
 var
-  Resizer: TThItemResizer;
+  Selection: TThItemSelection;
 begin
-  Resizer := TThLineResizer.Create(Self);
-  Resizer.SetResizeSpots([scTopLeft, scBottomRight]);
-  Resizer.OnTracking := nil;
+  Selection := TThLineSelection.Create(Self);
+  Selection.SetResizeSpots([scTopLeft, scBottomRight]);
+  Selection.OnTracking := nil;
 
-  Result := Resizer;
+  Result := Selection;
 end;
 
 function TThLine.IsTopLeftToBottomRight: Boolean;
 begin
-  Result := TItemResizeSpot(FResizer.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
+  Result := TItemResizeSpot(FSelection.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
 end;
 
 function TThLine.IsHorizon: Boolean;
 begin
-  Result := TItemResizeSpot(FResizer.Spots[0]).Position.Y = TItemResizeSpot(FResizer.Spots[1]).Position.Y;
+  Result := TItemResizeSpot(FSelection.Spots[0]).Position.Y = TItemResizeSpot(FSelection.Spots[1]).Position.Y;
 end;
 
 function TThLine.IsVertical: Boolean;
 begin
-  Result := TItemResizeSpot(FResizer.Spots[0]).Position.X = TItemResizeSpot(FResizer.Spots[1]).Position.X;
+  Result := TItemResizeSpot(FSelection.Spots[0]).Position.X = TItemResizeSpot(FSelection.Spots[1]).Position.X;
 end;
 
 function TThLine.GetMinimumSize: TPointF;
@@ -234,7 +234,7 @@ var
   Rad: Single;
   R: TRectF;
 begin
-  R := TThItemResizer(FResizer).GetActiveSpotsItemRect;
+  R := TThItemSelection(FSelection).GetActiveSpotsItemRect;
 
   MinSize := ItemMinimumSize / AbsoluteScale.X;
 
@@ -395,8 +395,8 @@ begin
   Rect := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   Rect.NormalizeRect;
 
-  BaseSpot    := TItemResizeSpot(FResizer.Spots[0]);
-  ActiveSpot  := TItemResizeSpot(FResizer.Spots[1]);
+  BaseSpot    := TItemResizeSpot(FSelection.Spots[0]);
+  ActiveSpot  := TItemResizeSpot(FSelection.Spots[1]);
   BaseSpot.Position.Point   := AFrom.Subtract(Position.Point);;
   ActiveSpot.Position.Point := ATo.Subtract(Position.Point);;
 
@@ -443,19 +443,19 @@ end;
 {$REGION Circle}
 { TThCircle }
 
-function TThCircle.CreateResizer: IItemResizer;
+function TThCircle.CreateSelection: IItemSelection;
 var
-  Resizer: TThItemResizer;
+  Selection: TThItemSelection;
 begin
-  Resizer := TThCircleResizer.Create(Self);
+  Selection := TThCircleSelection.Create(Self);
 {$IFDEF ON_ALLCORNER_RESIZESPOT}
-  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+  Selection.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ELSE}
-  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
+  Selection.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
 {$ENDIF}
-  Resizer.OnTracking := nil;
+  Selection.OnTracking := nil;
 
-  Result := Resizer;
+  Result := Selection;
 end;
 
 procedure TThCircle.DrawItemAtMouse(AFrom, ATo: TPointF);
