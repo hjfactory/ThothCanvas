@@ -54,7 +54,8 @@ uses
   ThAlertAnimation in '..\src\Components\ThAlertAnimation.pas',
   TestThItemImage in 'TestThItemImage.pas',
   ThImageItem in '..\src\Cores\ThImageItem.pas',
-  ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas';
+  ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas',
+  TestThItemGroupping in 'TestThItemGroupping.pas';
 
 {$R *.RES}
 

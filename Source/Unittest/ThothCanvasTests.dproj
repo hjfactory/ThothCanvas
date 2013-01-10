@@ -150,6 +150,7 @@
         <DCCReference Include="TestThItemImage.pas"/>
         <DCCReference Include="..\src\Cores\ThImageItem.pas"/>
         <DCCReference Include="..\src\Commands\ThCanvasCommand.pas"/>
+        <DCCReference Include="TestThItemGroupping.pas"/>
         <RcItem Include="C:\Users\hjFactory\Dropbox\Datas\PT_Images\1355447708_CabrioletRed.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>TEST_IMAGE</ResourceId>

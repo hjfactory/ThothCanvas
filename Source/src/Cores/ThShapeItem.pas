@@ -356,7 +356,8 @@ var
   P1, P2: TPointF;
   LineThickness: Single;
 begin
-  LineThickness := ItemLineThickness / AbsoluteScale.X;
+//  LineThickness := ItemLineThickness / AbsoluteScale.X;
+  LineThickness := ItemLineThickness / CanvasZoomScaleDefault;
 
   Canvas.StrokeThickness := LineThickness;
   Canvas.Stroke.Color := AFillColor;
