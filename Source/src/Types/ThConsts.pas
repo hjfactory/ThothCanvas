@@ -18,9 +18,14 @@ const
   ItemLineSelectionThickness = 15;    // 선 선택 범위
   ItemFocusMinimumSize = ItemMinimumSize * 0.5;
 
+//{$DEFINE ON_HIGHLIGHT}
+
   ItemHighlightSize = 3;
 //  ItemHighlightColor = $FFAAAAAA;
   ItemHighlightColor = claGray;
+
+  ItemSelectionSize = 3;
+  ItemSelectionColor = claSkyblue;
 
   ItemResizeSpotOverColor = claRed;
   ItemResizeSpotOutColor = claWhite;
@@ -31,6 +36,7 @@ const
   ItemFactoryIDRectangle  = 1100;
   ItemFactoryIDLine       = 1200;
   ItemFactoryIDCircle     = 1300;
+  ItemFactoryIDImageFile  = 2000;
 
   CanvasTrackAniCount: Single   = 5;
   CanvasTrackDuration: Single   = 0.5;

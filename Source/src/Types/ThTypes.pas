@@ -54,6 +54,9 @@ type
     procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
   end;
 
+  IThItemData = interface
+  end;
+
   IThCanvas = interface
     function IsDrawingItem: Boolean;
     function IsMultiSelected: Boolean;
@@ -102,6 +105,10 @@ type
     property Count: Integer read GetCount;
     function GetSpots(Index: Integer): IItemResizeSpot;
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots;
+    function GetIsMouseOver: Boolean;
+    property IsMouseOver: Boolean read GetIsMouseOver;
+
+    procedure DrawSelection;
 
     procedure ShowSpots;
     procedure ShowDisableSpots;

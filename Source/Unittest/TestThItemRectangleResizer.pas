@@ -304,7 +304,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
-  Check(FCanvas.SelectedItem.Position.X = 3950, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = 2450, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveCenter;
@@ -337,7 +337,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
-  Check(Round(FCanvas.SelectedItem.Position.Y) = 1500);
+  Check(Round(FCanvas.SelectedItem.Position.Y) = 0);
 end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveBottomToTop;
@@ -355,7 +355,7 @@ begin
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
   Check(Round(FCanvas.SelectedItem.Height) = 1000, Format('H : %f', [FCanvas.SelectedItem.Height]));
-  Check(Round(FCanvas.SelectedItem.Position.Y) = 500, Format('Y : %f', [FCanvas.SelectedItem.Position.Y]));
+  Check(Round(FCanvas.SelectedItem.Position.Y) = -1000, Format('Y : %f', [FCanvas.SelectedItem.Position.Y]));
 end;
 
 initialization

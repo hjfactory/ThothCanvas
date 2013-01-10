@@ -53,6 +53,7 @@ type
     function GetViewPortSize: TSizeF;
 
     procedure AlertMessage(msg: string);
+    function GetCenterPoint: TPointF;
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown ½Ã ÁÂÇ¥
@@ -100,6 +101,7 @@ type
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
     property ZoomAnimated: Boolean read FZoomAnimated write FZoomAnimated;
+    property CenterPoint: TPointF read GetCenterPoint;
 
     property OnZoom: TNotifyEvent read FOnZoom write FOnZoom;
    end;
@@ -483,6 +485,11 @@ function TThCanvas.GetViewPortSize: TSizeF;
 begin
   Result.Width  := Width / ZoomScale;
   Result.Height := Height / ZoomScale;
+end;
+
+function TThCanvas.GetCenterPoint: TPointF;
+begin
+  Result := PointF(Width / ZoomScale / 2, Height / ZoomScale / 2)
 end;
 
 function TThCanvas.GetItemCount: Integer;

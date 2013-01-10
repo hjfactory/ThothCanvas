@@ -26,7 +26,7 @@ type
 
     FIsMultiSelecting: Boolean; // BeginSelect, EndSelect
 
-    function CreateItemById(const ItemId: Integer): TThItem;
+    function CreateItemById(const ItemId: Integer; AItemData: IThItemData = nil): TThItem;
 
     procedure SetDrawItemId(const Value: Integer);
     function GetSelectionCount: Integer;
@@ -43,7 +43,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    function AppendItemById(const ItemId: Integer): Boolean;
+    function AppendFileItem(const ItemId: Integer; const AFileName: TFileName = ''): Boolean;
 
     function IsDrawingItem: Boolean; override;
     function IsMultiSelected: Boolean; override;
@@ -97,24 +97,29 @@ begin
 end;
 
 // ThothController에서 처리 할 것
-function TThCanvasEditor.AppendItemById(const ItemId: Integer): Boolean;
+function TThCanvasEditor.AppendFileItem(const ItemId: Integer;
+  const AFileName: TFileName): Boolean;
+var
+  P: TPointF;
+  Item: TThItem;
 begin
   Result := False;
 
-  FDrawItemId := ItemId;
   ClearSelection;
-  FDrawItem := CreateItemById(FDrawItemId);
-  FDrawItem.Position.Point := PointF(0,0).Subtract(FContents.ScaledPoint);
-
-  if IsDrawingItem and Assigned(FDrawItem) then
+  Item := CreateItemById(ItemId, TThFileItemData.Create(AFileName));
+  if Assigned(Item) then
   begin
-    FDrawItem.Selected := True;
-    if Assigned(FOnItemAdded) then
-      FOnItemAdded(FDrawItem);
-  end;
+    // Center position
+    P := CenterPoint.Subtract(PointF(Item.Width / 2, Item.Height / 2));
+    Item.Position.Point := P.Subtract(FContents.ScaledPoint);
 
-  FDrawItem := nil;
-  FDrawItemId := -1;
+    if IsDrawingItem and Assigned(Item) then
+    begin
+      Item.Selected := True;
+      if Assigned(FOnItemAdded) then
+        FOnItemAdded(Item);
+    end;
+  end;
 end;
 
 procedure TThCanvasEditor.BeginSelect;
@@ -127,9 +132,9 @@ begin
   FIsMultiSelecting := False;
 end;
 
-function TThCanvasEditor.CreateItemById(const ItemId: Integer): TThItem;
+function TThCanvasEditor.CreateItemById(const ItemId: Integer; AItemData: IThItemData): TThItem;
 begin
-  Result := ItemFactory.Get(ItemId);
+  Result := ItemFactory.Get(ItemId, AItemData);
   if Assigned(Result) then
   begin
     Result.ParentCanvas := Self;

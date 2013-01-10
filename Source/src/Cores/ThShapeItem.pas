@@ -123,8 +123,11 @@ var
   Resizer: TThItemResizer;
 begin
   Resizer := TThItemResizer.Create(Self);
-  Resizer.SetSpotClass(TThItemCircleResizeSpot);
+{$IFDEF ON_ALLCORNER_RESIZESPOT}
+  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+{$ELSE}
   Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+{$ENDIF}
   Resizer.OnTracking := nil;
 
   Result := Resizer;
@@ -204,7 +207,6 @@ var
   Resizer: TThItemResizer;
 begin
   Resizer := TThLineResizer.Create(Self);
-  Resizer.SetSpotClass(TThItemCircleResizeSpot);
   Resizer.SetResizeSpots([scTopLeft, scBottomRight]);
   Resizer.OnTracking := nil;
 
@@ -446,8 +448,11 @@ var
   Resizer: TThItemResizer;
 begin
   Resizer := TThCircleResizer.Create(Self);
-  Resizer.SetSpotClass(TThItemCircleResizeSpot);
+{$IFDEF ON_ALLCORNER_RESIZESPOT}
+  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+{$ELSE}
   Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
+{$ENDIF}
   Resizer.OnTracking := nil;
 
   Result := Resizer;
@@ -498,8 +503,8 @@ end;
 {$ENDREGION}
 
 initialization
-  RegisterItem(1100, TThRectangle);
-  RegisterItem(1200, TThLine);
-  RegisterItem(1300, TThCircle);
+  RegisterItem(ItemFactoryIDRectangle,  TThRectangle);
+  RegisterItem(ItemFactoryIDLine,       TThLine);
+  RegisterItem(ItemFactoryIDCircle,     TThCircle);
 
 end.

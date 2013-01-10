@@ -70,6 +70,9 @@ type
 
     // #182 다중 선택 시 하이라이트는 마우스오버된 경우만 표시되야 한다.
     procedure TestShowHighlightOnlyMouseOver;
+
+    // #229 아이템 Resize(ResizeSpot mouse over) 시 Highligher가 감춰짐
+    procedure BugHighlightResizeSpotMouserOver;
   end;
 
 implementation
@@ -186,7 +189,7 @@ begin
   TestLib.RunMouseClick(50, 50);
 
   Check(Assigned(FCanvas.SelectedItem), 'Assigned');
-  Check(Round(FCanvas.SelectedItem.Position.X) = 400, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = -1100, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.TestMultiselectAndDelete;
@@ -245,11 +248,11 @@ exit;
   TestLib.RunMouseClick(100, 100);
 
   Check(Assigned(FCanvas.SelectedItem), 'Assigned');
-  Check(Round(FCanvas.SelectedItem.Position.X) = 600, Format('Item.X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = -900, Format('Item.X: %f', [FCanvas.SelectedItem.Position.X]));
 
   TestLib.RunMouseClick(200, 200);
   Check(Assigned(FCanvas.SelectedItem), 'Assigned 2');
-  Check(Round(FCanvas.SelectedItem.Position.X) = 1600, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(Round(FCanvas.SelectedItem.Position.X) = 100, Format('Item2.X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.BugTestAnotherContrlShfitPressAndMultiselect;
@@ -351,7 +354,7 @@ begin
   .Add(200, 200);
   TestLib.RunMousePath(MousePath.Path);
   Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
-  Check(FCanvas.SelectedItem.Position.X = 1600, 'Change selection failed');
+  Check(Round(FCanvas.SelectedItem.Position.X) = 100, Format('Change selection failed X: %f', [FCanvas.SelectedItem.Position.X]));
   Check(FCanvas.SelectedItem.Width = 700, 'Change selection failed');
 end;
 
@@ -389,7 +392,7 @@ begin
   TestLib.RunMouseClick(160, 160);
   TestLib.RunKeyUpShift;
   Check(FCanvas.SelectionCount = 1, Format('Count: %d', [FCanvas.SelectionCount]));
-  Check(FCanvas.SelectedItem.Position.X = 100, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -1400, FOrmat('Position %f',[FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemControl.TestMultiselectDrawOutline;
@@ -461,6 +464,24 @@ begin
 
   AC := TestLib.GetControlPixelColor(FCanvas, 20, 100 + (ItemHighlightSize - 1));
   Check(AC <> ItemHighlightColor);
+end;
+
+procedure TestTThItemControl.BugHighlightResizeSpotMouserOver;
+var
+  AC: TAlphaColor;
+begin
+//  ShowForm;
+
+  Exit;
+
+  DrawRectangle(10, 10, 100, 100);
+  TestLib.RunMouseClick(50, 50);
+
+  TestLib.RunMouseMove(MousePath.Add(100, 100).Path);
+
+
+  AC := TestLib.GetControlPixelColor(FCanvas, 50, 100 + (ItemHighlightSize - 1));
+  Check(AC = ItemHighlightColor);
 end;
 
 initialization

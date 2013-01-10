@@ -50,6 +50,7 @@ type
 
   TThResizeSpots = TList<TItemResizeSpot>;
   TResizeSpotClass = class of TItemResizeSpot;
+  DefaultResizeSpotClass = TThItemCircleResizeSpot;
 
   TThItemResizer = class(TInterfacedObject, IItemResizer)
   private
@@ -63,6 +64,7 @@ type
     function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
 
     procedure DoResizeSpotTrack(Sender: TObject; X, Y: Single);
+    function GetIsMouseOver: Boolean;
   protected
     function GetResizerRect: TRectF; virtual;
 
@@ -74,14 +76,18 @@ type
     constructor Create(AParent: IItemResizerObject);
     destructor Destroy; override;
 
-    procedure SetSpotClass(ASpotClass: TResizeSpotClass);
+    procedure SetResizeSpotClass(ASpotClass: TResizeSpotClass);
     procedure SetResizeSpots(Spots: array of TSpotCorner);
 
     function GetActiveSpotsItemRect(ASpot: IItemResizeSpot = nil): TRectF; virtual;
 
+    property IsMouseOver: Boolean read GetIsMouseOver;
+
     procedure ShowSpots;
     procedure ShowDisableSpots;
     procedure HideSpots;
+
+    procedure DrawSelection; virtual;
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
@@ -94,6 +100,8 @@ type
     procedure NormalizeSpotCorner(ASpot: IItemResizeSpot); override;
 
     procedure RealignSpot; override;    // Width, Height가 1인 경우 발생
+  public
+    procedure DrawSelection; override;
   end;
 
   // 상하/좌우 크기만 변경되도록 예외
@@ -126,6 +134,7 @@ procedure TItemResizeSpot.DoMouseEnter;
 begin
   inherited;
 
+  TControl(Parent).Repaint;
   Repaint;
 end;
 
@@ -133,6 +142,7 @@ procedure TItemResizeSpot.DoMouseLeave;
 begin
   inherited;
 
+  TControl(Parent).Repaint;
   Repaint;
 end;
 
@@ -250,6 +260,8 @@ begin
   FParent := AParent;
   FParentControl := TControl(AParent);
   FSpots := TThResizeSpots.Create;
+
+  FSpotClass := DefaultResizeSpotClass;
 end;
 
 destructor TThItemResizer.Destroy;
@@ -283,7 +295,7 @@ begin
   end;
 end;
 
-procedure TThItemResizer.SetSpotClass(ASpotClass: TResizeSpotClass);
+procedure TThItemResizer.SetResizeSpotClass(ASpotClass: TResizeSpotClass);
 begin
   FSpotClass := ASpotClass;
 end;
@@ -291,6 +303,21 @@ end;
 function TThItemResizer.GetCount: Integer;
 begin
   Result := FSpots.Count;
+end;
+
+function TThItemResizer.GetIsMouseOver: Boolean;
+var
+  Spot: TItemResizeSpot;
+begin
+  Result := False;
+  for Spot in FSpots do
+  begin
+    if Spot.IsMouseOver then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
 end;
 
 function TThItemResizer.GetResizerRect: TRectF;
@@ -364,6 +391,23 @@ begin
 
   if Assigned(FOnTracking) then
     FOnTracking(Sender, X, Y);
+end;
+
+procedure TThItemResizer.DrawSelection;
+var
+  State: TCanvasSaveState;
+begin
+  with TControl(FParent) do
+  begin
+    State := Canvas.SaveState;
+    try
+      Canvas.Stroke.Color := ItemSelectionColor;
+      Canvas.Stroke.Thickness := ItemSelectionSize;
+      Canvas.DrawRect(ClipRect, 0, 0, AllCorners, 1);
+    finally
+      Canvas.RestoreState(State);
+    end;
+  end;
 end;
 
 procedure TThItemResizer.ResizeShapeBySpot(ASpot: IItemResizeSpot);
@@ -550,6 +594,10 @@ begin
 end;
 
 { TThLineResizer }
+
+procedure TThLineResizer.DrawSelection;
+begin
+end;
 
 procedure TThLineResizer.NormalizeSpotCorner(ASpot: IItemResizeSpot);
 var

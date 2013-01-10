@@ -7,17 +7,6 @@ uses
   ThItem, ThTypes;
 
 type
-  TThItemData = class(TObject)
-  private
-    FID: Integer;
-    FItemClass: TThItemClass;
-  public
-    constructor Create(ID: Integer; ItemClass: TThItemClass);
-
-    property ID: Integer read FID;
-    property ItemClass: TThItemClass read FItemClass;
-  end;
-
   TThItemClasses = class(TObject)
   private
     FList: TList;
@@ -37,7 +26,7 @@ type
     destructor Destroy; override;
 
     procedure AddItem(ID: Integer; ItemClass: TThItemClass);
-    function Get(AID: Integer): TThItem;
+    function Get(AID: Integer; AItemData: IThItemData = nil): TThItem;
   end;
 
   procedure RegisterItem(ID: Integer; ItemClass: TThItemClass);
@@ -62,9 +51,21 @@ begin
   Result := _Factory;
 end;
 
+type
+  TThItemClassData = class(TObject)
+  private
+    FID: Integer;
+    FItemClass: TThItemClass;
+  public
+    constructor Create(ID: Integer; ItemClass: TThItemClass);
+
+    property ID: Integer read FID;
+    property ItemClass: TThItemClass read FItemClass;
+  end;
+
 { TThItemData }
 
-constructor TThItemData.Create(ID: Integer; ItemClass: TThItemClass);
+constructor TThItemClassData.Create(ID: Integer; ItemClass: TThItemClass);
 begin
   FID := ID;
   FItemClass := ItemClass;
@@ -95,16 +96,16 @@ begin
   Result := nil;
 
   for I := 0 to FList.Count - 1 do
-    if TThItemData(FList[I]).ID = ID then
+    if TThItemClassData(FList[I]).ID = ID then
     begin
-      Result := TThItemData(FList[I]).ItemClass;
+      Result := TThItemClassData(FList[I]).ItemClass;
       Exit;
     end;
 end;
 
 procedure TThItemClasses.AddItem(ID: Integer; ItemClass: TThItemClass);
 begin
-  FList.Add(TThItemData.Create(ID, ItemClass));
+  FList.Add(TThItemClassData.Create(ID, ItemClass));
 end;
 
 { TThItemFactory }
@@ -126,7 +127,7 @@ begin
   FItemClasses.AddItem(ID, ItemClass);
 end;
 
-function TThItemFactory.Get(AID: Integer): TThItem;
+function TThItemFactory.Get(AID: Integer; AItemData: IThItemData): TThItem;
 var
   ItemClass: TThItemClass;
 begin
@@ -135,7 +136,10 @@ begin
   ItemClass := FItemClasses.GetItemClass(AID);
 
   if Assigned(ItemClass) then
+  begin
     Result := ItemClass.Create(nil);
+    Result.SetItemData(AItemData);
+  end;
 end;
 
 initialization

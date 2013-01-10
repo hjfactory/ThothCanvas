@@ -36,11 +36,13 @@ type
     // #53 캔버스 Tracking 시 Rectangle이 Canvas 영역 밖으로 나오지 않는다.
     procedure TestRectangleOutOfCanvas;
 
+{$IFDEF ON_HIGHLIGHT}
     // #68 도형 선택 시 하이라이트 효과가 나타나야 한다.
     procedure TestRectangleSelectionHighlight;
 
     // #38 도형에 마우스 오버시 하이라이트 효과가 나타난다.
     procedure TestRectangleMouseOverHighlight;
+{$ENDIF}
 
     // #37 끝점이 시작점 앞에 있어도 그려져야 한다.
     procedure TestDrawRectangleEx;
@@ -51,8 +53,10 @@ type
     // #72 캔버스 영역 밖으로 이동이 가능해야 한다.
     procedure TestMoveRectangleOutOfCanvas;
 
+{$IFDEF ON_HIGHLIGHT}
     // #69 도형 선택 후 다른 도형 선택 시 이전 도형의 하이라이트 효과는 없어져야 한다.
     procedure TestHideHighlightFromBeforeSelections;
+{$ENDIF}
 
     // #94 아이템 추가 후 바로 이동 시 TopLeft Spot의 잔상이 남음
     procedure BugTestCreateAndMoveAfterPaint;
@@ -111,7 +115,7 @@ begin
   Check(Assigned(Item), 'Check SelectedItem');
   Check(Item.ClassType = TThRectangle, 'Check Class type');
 
-  Check(Item.Position.X = 500, Format('X = %f', [Item.Position.X]));
+  Check(Item.Position.X = -1000, Format('X = %f', [Item.Position.X]));
   Check(Item.Width = 1500,     Format('Width = %f', [Item.Width]));
 end;
 
@@ -130,7 +134,7 @@ begin
   .Add(100, 50);
   TestLib.RunMousePath(MousePath.Path);
 
-  Check(FCanvas.ViewPortPosition.X = 100);
+  Check(FCanvas.ViewPortPosition.X = 250, Format('ViewPortPosition.X: %f', [FCanvas.ViewPortPosition.X]));
 
   // Draw Rectangle
   DrawRectangle(10, 10, 100, 100);
@@ -143,8 +147,8 @@ begin
   Item := FCanvas.SelectedItem;
 
   Check(Assigned(Item), 'not assigned');
-  Check(Item.Position.X = -900, Format('Postion.X : %f', [Item.Position.X]));
-  Check(Item.Position.Y = -400, Format('Postion.Y : %f', [Item.Position.Y]));
+  Check(Item.Position.X = -2400, Format('Postion.X : %f', [Item.Position.X]));
+  Check(Item.Position.Y = -1900, Format('Postion.Y : %f', [Item.Position.Y]));
 end;
 
 procedure TestTThRectangle.TestRectangleSelect;
@@ -189,6 +193,7 @@ begin
   Check(FTestClick, '버튼이 클릭되지 않음');
 end;
 
+{$IFDEF ON_HIGHLIGHT}
 procedure TestTThRectangle.TestRectangleSelectionHighlight;
 var
   AC: TAlphaColor;
@@ -231,6 +236,7 @@ begin
   Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(AC = claGray, 'Not matching Color');
 end;
+{$ENDIF}
 
 procedure TestTThRectangle.TestDrawRectangleEx;
 begin
@@ -239,21 +245,21 @@ begin
   TestLib.RunMouseClick(150, 50);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned BRToTL');
-  Check(FCanvas.SelectedItem.Position.X = 1100, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -400, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // TRToBL
   DrawRectangle(100, 110, 10, 200);
   TestLib.RunMouseClick(50, 150);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned TRToBL');
-  Check(FCanvas.SelectedItem.Position.X = 100, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -1400, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // BLToTR
   DrawRectangle(110, 200, 200, 110);
   TestLib.RunMouseClick(150, 150);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned BLToTR');
-  Check(FCanvas.SelectedItem.Position.X = 1100, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -400, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThRectangle.TestDrawRectangleMinSize;
@@ -302,6 +308,7 @@ begin
   Check(Assigned(Item), 'Not assigned');
 end;
 
+{$IFDEF ON_HIGHLIGHT}
 procedure TestTThRectangle.TestHideHighlightFromBeforeSelections;
 var
   AC: TAlphaColor;
@@ -328,6 +335,7 @@ begin
   AC := TestLib.GetControlPixelColor(FCanvas, 40 + (ItemHighlightSize - 1), 25);
   Check(AC = ItemHighlightColor, 'Check Show Highlight(A)');
 end;
+{$ENDIF}
 
 procedure TestTThRectangle.BugTestCreateAndMoveAfterPaint;
 var

@@ -14,6 +14,10 @@ program ThothCanvasTests;
 {$APPTYPE CONSOLE}
 {$ENDIF}
 
+
+
+{$R *.dres}
+
 uses
   DUnitTestRunner,
   TestThCanvasEditor in 'TestThCanvasEditor.pas',

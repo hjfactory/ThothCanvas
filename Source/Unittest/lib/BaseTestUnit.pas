@@ -10,6 +10,9 @@ type
   // Test methods for class TThCanvasEditor
 
   TBaseTestUnit = class(TTestCase)
+  private
+    procedure CreateObject; virtual;
+    procedure DestroyObject; virtual;
   protected
     FClosing: Boolean;
     FForm: TForm;
@@ -18,10 +21,8 @@ type
     procedure SetTestControl(var FormRect, CanvasRect: TRectF); virtual;
 
     procedure FormDestroy(Sender: TObject);
-  private
-    procedure CreateObject; virtual;
-    procedure DestroyObject; virtual;
 
+    function GetCenterPos: TPointF;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -37,6 +38,8 @@ type
 
     procedure DrawCircle(Left, Top, Right, Bottom: Single); overload;
     procedure DrawCircle(R: TRectF); overload;
+
+    property CenterPos: TPointF read GetCenterPos;
   end;
 
   TBaseCommandHistoryTestUnit = class(TBaseTestUnit)
@@ -54,6 +57,11 @@ uses
   UnitTestForm, FMX.Platform, FMX.TestLib, ThConsts;
 
 { TBastTestUnit }
+
+function TBaseTestUnit.GetCenterPos: TPointF;
+begin
+  Result := FCanvas.BoundsRect.CenterPoint;
+end;
 
 function TBaseTestUnit.GetInitialPoint: TPointF;
 begin

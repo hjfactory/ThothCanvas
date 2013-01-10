@@ -7,17 +7,21 @@ uses
   FMX.Types, FMX.Objects, ThTypes, ThItem;
 
 type
-  TThImageItem = class(TThItem, IBitmapObject, IItemResizerObject)
+  TThImageItem = class(TThItem, IBitmapObject, IItemHighlitObject, IItemResizerObject)
   private
+    FItemData: TThFileItemData;
     FBitmap: TBitmap;
-    procedure LoadImageFile;
+
+    procedure LoadImageFile(AFilename: TFileName);
     function GetBitmap: TBitmap;
     procedure SetBitmap(const Value: TBitmap);
   protected
+    function CreateHighlighter: IItemHighlighter; override;
     function CreateResizer: IItemResizer; override;
 
     procedure Paint; override;
 
+    procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
     function PtInItem(Pt: TPointF): Boolean; override;
     function GetMinimumSize: TPointF; virtual;
 
@@ -25,14 +29,22 @@ type
     procedure DoBitmapChanged(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
-//    constructor Create(AOwner: TComponent; AFilename: string = ''); overload;
     destructor Destroy; override;
+
+    procedure SetItemData(AItemData: IThItemData); override;
   end;
 
 implementation
 
 uses
-  FMX.Dialogs, ThConsts, ThItemFactory, ThItemResizer, DebugUtils;
+  FMX.Dialogs, ThConsts, ThItemFactory, ThItemResizer, ThItemHighlighter, DebugUtils;
+
+{ TThImageItemData }
+
+//constructor TThImageItemData.Create(AFileName: TFileName);
+//begin
+//  FFilename := AFileName;
+//end;
 
 { TThImageItem }
 
@@ -42,19 +54,7 @@ begin
 
   FBitmap := TBitmap.Create(0, 0);
   FBitmap.OnChange := DoBitmapChanged;
-
-  LoadImageFile;
 end;
-
-//constructor TThImageItem.Create(AOwner: TComponent; AFilename: string);
-//begin
-//  inherited Create(AOwner);
-//
-//  FBitmap := TBitmap.Create(0, 0);
-//  FBitmap.OnChange := DoBitmapChanged;
-//
-//  LoadImageFile;
-//end;
 
 destructor TThImageItem.Destroy;
 begin
@@ -64,10 +64,35 @@ begin
   inherited;
 end;
 
+procedure TThImageItem.SetItemData(AItemData: IThItemData);
+var
+  FN: TFileName;
+begin
+  inherited;
+
+  FItemData := TThFileItemData(AItemData);
+
+  if Assigned(FItemData) then
+    FN := FItemData.Filename;
+
+  LoadImageFile(FN);
+end;
+
 procedure TThImageItem.DoBitmapChanged(Sender: TObject);
 begin
   Repaint;
   UpdateEffects;
+end;
+
+function TThImageItem.CreateHighlighter: IItemHighlighter;
+var
+  Highlighter: TThItemRectBorderHighlighter;
+begin
+  Highlighter := TThItemRectBorderHighlighter.Create(Self);
+  Highlighter.HighlightColor := ItemHighlightColor;
+  Highlighter.HighlightSize := ItemHighlightSize;
+
+  Result := Highlighter;
 end;
 
 function TThImageItem.CreateResizer: IItemResizer;
@@ -75,7 +100,6 @@ var
   Resizer: TThItemResizer;
 begin
   Resizer := TThItemResizer.Create(Self);
-  Resizer.SetSpotClass(TThItemCircleResizeSpot);
   Resizer.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
   Resizer.OnTracking := nil;
 
@@ -96,25 +120,35 @@ begin
   Result := PointF(MinSize, MinSize);
 end;
 
-procedure TThImageItem.LoadImageFile;
+procedure TThImageItem.LoadImageFile(AFilename: TFileName);
 var
   Dialog: TOpenDialog;
 begin
-  Dialog := TOpenDialog.Create(nil);
-  try
-    Dialog.Filter := TBitmapCodecManager.GetFilterString;
-    if Dialog.Execute then
-    begin
-      FBitmap.LoadFromFile(Dialog.FileName);
-      Width := FBitmap.Width;
-      Height := FBitmap.Height;
+  if AFilename = '' then
+  begin
+    Dialog := TOpenDialog.Create(nil);
+    try
+      Dialog.Filter := TBitmapCodecManager.GetFilterString;
+      if Dialog.Execute then
+      begin
+        AFilename := Dialog.FileName;
+      end;
+    finally
+      Dialog.Free;
     end;
-  finally
-    Dialog.Free;
   end;
+
+  FBitmap.LoadFromFile(AFilename);
+  Width := FBitmap.Width;
+  Height := FBitmap.Height;
 end;
 
 procedure TThImageItem.Paint;
+begin
+  PaintItem(GetItemRect, claNull);
+end;
+
+procedure TThImageItem.PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
 var
   R: TRectF;
   B: TBitmap;
@@ -146,6 +180,6 @@ begin
 end;
 
 initialization
-  RegisterItem(2000, TThImageItem);
+  RegisterItem(ItemFactoryIDImageFile, TThImageItem);
 
 end.

@@ -76,7 +76,7 @@ begin
   Check(Assigned(Item), 'Check SelectedItem');
   Check(Item.ClassType = TThCircle, 'Check Class type');
 
-  Check(Item.Position.X = 500, Format('X = %f', [Item.Position.X]));
+  Check(Item.Position.X = -1000, Format('X = %f', [Item.Position.X]));
   Check(Item.Width = 1500,     Format('Width = %f', [Item.Width]));
 end;
 
@@ -92,7 +92,7 @@ begin
   Check(Assigned(Item), 'Check SelectedItem');
   Check(Item.ClassType = TThCircle, 'Check Class type');
 
-  Check(Item.Position.X = 500, Format('X = %f', [Item.Position.X]));
+  Check(Item.Position.X = -1000, Format('X = %f', [Item.Position.X]));
   Check(Item.Width = 1500,     Format('Width = %f', [Item.Width]));
 end;
 
@@ -143,7 +143,7 @@ begin
 
   TestLib.RunMouseClick(175, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check((FCanvas.SelectedItem.Width = 500) and (FCanvas.SelectedItem.height = 1000),
+  Check((Round(FCanvas.SelectedItem.Width) = 500) and (FCanvas.SelectedItem.Height = 1000),
     Format('W,H : %f, %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
 end;
 
@@ -161,7 +161,7 @@ begin
 
   TestLib.RunMouseClick(100, 175);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check((FCanvas.SelectedItem.Width = 1000) and (FCanvas.SelectedItem.height = 500),
+  Check((FCanvas.SelectedItem.Width = 1000) and (Round(FCanvas.SelectedItem.height) = 500),
     Format('W,H : %f, %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
 end;
 

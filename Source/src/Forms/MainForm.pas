@@ -154,7 +154,7 @@ end;
 
 procedure TfrmMainDraft.btnImageClick(Sender: TObject);
 begin
-  FCanvas.AppendItemById(TButton(Sender).Tag);
+  FCanvas.AppendFileItem(TButton(Sender).Tag);
 end;
 
 procedure TfrmMainDraft.btnRectangleClick(Sender: TObject);

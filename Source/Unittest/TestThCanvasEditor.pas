@@ -61,7 +61,9 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ViewPortPosition.X = 150) and (FCanvas.ViewPortPosition.X = 150)
+    // Canvas의 중심이 0.0이므로 초기 ViewPortPosition.X는 150
+    // 가로로 150 이동하여 최종 300
+    (FCanvas.ViewPortPosition.X = 300) and (FCanvas.ViewPortPosition.X = 300)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
@@ -78,7 +80,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ViewPortPosition.X <= -150) and (FCanvas.ViewPortPosition.X <= -150)
+    (FCanvas.ViewPortPosition.X <= 0) and (FCanvas.ViewPortPosition.X <= 0)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
@@ -94,7 +96,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(
-    (FCanvas.ViewPortPosition.X = -250)
+    (FCanvas.ViewPortPosition.X = -100)
     , Format('FCanvas.Postion : %f, %f', [FCanvas.ViewPortPosition.X, FCanvas.ViewPortPosition.X])
   );
 end;
@@ -169,7 +171,7 @@ begin
 
   TestLib.Delay(1000);
 
-  Check(FCanvas.ViewPortPosition.X = (45 + 5 * CanvasTrackAniCount), Format('X: %f', [FCanvas.ViewPortPosition.X]));
+  Check(FCanvas.ViewPortPosition.X = (45 + 5 * CanvasTrackAniCount + CenterPos.X), Format('X: %f', [FCanvas.ViewPortPosition.X]));
 end;
 
 initialization

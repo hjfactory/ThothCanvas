@@ -3,7 +3,7 @@ unit ThItem;
 interface
 
 uses
-  System.Classes, System.Types, System.UITypes, System.UIConsts,
+  System.Classes, System.Types, System.UITypes, System.UIConsts, System.SysUtils,
   FMX.Types, ThTypes, System.Generics.Collections;
 
 type
@@ -17,6 +17,14 @@ type
 
   TItemListEvent = procedure(Items: TThItems) of object;
   TItemListPointvent = procedure(Items: TThItems; Distance: TPointF) of object;
+
+  TThItemData = class(TInterfacedObject, IThItemData)
+  private
+    FInt: Integer;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
 
   TThItem = class(TControl, IThItem)
   private
@@ -55,8 +63,11 @@ type
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
+//    constructor Create(AOwner: TComponent; AItemData: TThItemData = nil); reintroduce; virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    procedure SetItemData(AItemData: IThItemData); virtual;
 
     procedure Painting; override;
     function PointInObject(X, Y: Single): Boolean; override;
@@ -77,8 +88,16 @@ type
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
     property OnResize: TItemResizeEvent read FOnResize write FOnResize;
   end;
-
   TThItemClass = class of TThItem;
+
+  TThFileItemData = class(TThItemData)
+  private
+    FFilename: TFileName;
+  public
+    constructor Create(AFileName: TFileName);
+
+    property Filename: TFileName read FFilename;
+  end;
 
 implementation
 
@@ -87,14 +106,19 @@ uses
 
 { TThItem }
 
+//constructor TThItem.Create(AOwner: TComponent; AItemData: TThItemData);
 constructor TThItem.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
 
   AutoCapture := True;
 
+{$IFDEF ON_HIGHLIGHT}
   FHighlighter := CreateHighlighter;
+{$ENDIF}
   FResizer := CreateResizer;
+
+  Cursor := crSizeAll;
 end;
 
 destructor TThItem.Destroy;
@@ -112,6 +136,10 @@ begin
   // 크기 변경 요청 시 Spot위치 조정(SpotCorner로 크기 조정 시 요청됨)
 //  if Assigned(FResizer) then
 //    FResizer.RealignSpot;
+end;
+
+procedure TThItem.SetItemData(AItemData: IThItemData);
+begin
 end;
 
 procedure TThItem.SetParentCanvas(const Value: IThCanvas);
@@ -133,8 +161,14 @@ begin
   inherited;
 
 //  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
+//  if (IsMouseOver or (Assigned(FResizer) and (FResizer.IsMouseOver))) and Assigned(FHighlighter) then
+{$IFDEF ON_HIGHLIGHT}
   if (IsMouseOver) and Assigned(FHighlighter) then
     FHighlighter.DrawHighlight;
+{$ENDIF}
+
+  if (IsMouseOver or Selected) and Assigned(FResizer) then
+    FResizer.DrawSelection;
 end;
 
 function TThItem.PointInObject(X, Y: Single): Boolean;
@@ -304,6 +338,31 @@ begin
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
       FOnMove(Self, FDownItemPos);
   end;
+end;
+
+{ TThItemData }
+
+constructor TThItemData.Create;
+begin
+
+end;
+
+destructor TThItemData.Destroy;
+begin
+  if FInt > 0 then
+  begin
+
+  end;
+
+
+  inherited;
+end;
+
+{ TThFileItem }
+
+constructor TThFileItemData.Create(AFileName: TFileName);
+begin
+  FFilename := AFileName;
 end;
 
 end.

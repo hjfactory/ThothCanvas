@@ -28,8 +28,10 @@ type
     procedure TestDrawLineBLtoTR;
     procedure TestDrawLineBRtoTL;
 
+{$IFDEF ON_HIGHLIGHT}
     // #76 도형에 마우스 오버시 하이라이트 효과가 나타난다.
     procedure TestLineMouseOverHighlight;
+{$ENDIF}
 
     // #99 선을 넘어서는 일직선 범위를 클릭 시 선이 선택된다.
     procedure BugTestLineOutOfRange;
@@ -128,6 +130,7 @@ begin
   Check(TestLib.GetControlPixelColor(FCanvas, 90, 90) = ItemShapeDefaultColor, 'BottomRight > TopLeft - 2');
 end;
 
+{$IFDEF ON_HIGHLIGHT}
 procedure TestTThLine.TestLineMouseOverHighlight;
 var
   AC: TAlphaColor;
@@ -155,6 +158,7 @@ begin
   Check(AC = ItemHighlightColor, 'Not matching Color');
 //  Check(AC = claGray, 'Not matching Color');
 end;
+{$ENDIF}
 
 procedure TestTThLine.BugTestLineOutOfRange;
 begin

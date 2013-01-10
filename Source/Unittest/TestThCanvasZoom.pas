@@ -25,7 +25,9 @@ type
 
     // #192 Zoom 되도 ResizeSpot 및 Highlight의 크기는 변경되지 않아야 한다.
     procedure TestZoomAndSpotSizeMaintain;
+{$IFDEF ON_HIGHLIGHT}
     procedure TestZoomAndHighlightSizeMaintain;
+{$ENDIF}
 
     // #196 명령을 통한 확대 축소는 중심점을 기준으로 Zoom 되어야 한다.
     procedure TestZoomCenterPosition;
@@ -94,6 +96,7 @@ begin
   Check(AC = ItemResizeSpotOutColor, Format('[Left] Not matching color ZoomOut(%d, %d)', [AC, ItemResizeSpotOutColor]));
 end;
 
+{$IFDEF ON_HIGHLIGHT}
 procedure TestTThCanvasZoom.TestZoomAndHighlightSizeMaintain;
 var
   l, c: single;
@@ -114,6 +117,7 @@ begin
   AC := TestLib.GetControlPixelColor(FCanvas, Trunc(l)+ItemHighlightSize-1, Trunc(c));
   Check(AC = ItemHighlightColor, Format('[Left: %f] Not matching color ZoomOut(%d, %d)', [l, AC, ItemHighlightColor]));
 end;
+{$ENDIF}
 
 procedure TestTThCanvasZoom.TestZoomCenterPosition;
 begin
@@ -351,8 +355,6 @@ procedure TestTThCanvasZoom.BugZoomGoHome;
 var
   R: TRectF;
 begin
-  ShowForm;
-
   R := FCanvas.BoundsRect;
 
   DrawRectangle(R.CenterPoint.X - 50, R.CenterPoint.Y - 50, R.CenterPoint.X + 50, R.CenterPoint.Y + 50);
