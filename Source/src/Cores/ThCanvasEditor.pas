@@ -178,6 +178,7 @@ procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
   P: TPointF;
 begin
+  DoDegrouping(Item);
   DoGrouping(Item);
 
   if Assigned(FOnItemMove) then

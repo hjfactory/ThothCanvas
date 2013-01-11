@@ -8,7 +8,7 @@ uses
 
 type
   // #140 아이템을 캔버스에서 제거한다.
-  TestTThItemControl = class(TBaseTestUnit)
+  TestTThItemControl = class(TThCanvasBaseTestUnit)
   published
     // #141 아이템 삭제 후 캔버스에 표시되지 않아야 한다.
     procedure TestItemDelete;

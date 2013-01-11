@@ -4,12 +4,12 @@ interface
 
 uses
   TestFramework, ThCanvasEditor, ThothController, ThCanvasController,
-  System.Types, FMX.Types, FMX.Forms, System.SysUtils;
+  System.Types, FMX.Types, FMX.Forms, System.SysUtils, ThItem;
 
 type
   // Test methods for class TThCanvasEditor
 
-  TBaseTestUnit = class(TTestCase)
+  TThCanvasBaseTestUnit = class(TTestCase)
   protected
     FClosing: Boolean;
     FForm: TForm;
@@ -31,19 +31,19 @@ type
     procedure ShowForm;
 
     function DistanceSize(R: TRectF; D: Single): TPointF;
-    procedure DrawRectangle(Left, Top, Right, Bottom: Single); overload;
-    procedure DrawRectangle(R: TRectF); overload;
+    function DrawRectangle(Left, Top, Right, Bottom: Single): TThItem; overload;
+    function DrawRectangle(R: TRectF): TThItem; overload;
 
-    procedure DrawLine(Left, Top, Right, Bottom: Single); overload;
-    procedure DrawLine(R: TRectF); overload;
+    function DrawLine(Left, Top, Right, Bottom: Single): TThItem; overload;
+    function DrawLine(R: TRectF): TThItem; overload;
 
-    procedure DrawCircle(Left, Top, Right, Bottom: Single); overload;
-    procedure DrawCircle(R: TRectF); overload;
+    function DrawCircle(Left, Top, Right, Bottom: Single): TThItem; overload;
+    function DrawCircle(R: TRectF): TThItem; overload;
 
     property CenterPos: TPointF read GetCenterPos;
   end;
 
-  TBaseCommandHistoryTestUnit = class(TBaseTestUnit)
+  TBaseCommandHistoryTestUnit = class(TThCanvasBaseTestUnit)
   protected
     FThothController: TThothController;
     FCanvasController: TThCanvasEditorController;
@@ -59,17 +59,17 @@ uses
 
 { TBastTestUnit }
 
-function TBaseTestUnit.GetCenterPos: TPointF;
+function TThCanvasBaseTestUnit.GetCenterPos: TPointF;
 begin
   Result := FCanvas.BoundsRect.CenterPoint;
 end;
 
-function TBaseTestUnit.GetInitialPoint: TPointF;
+function TThCanvasBaseTestUnit.GetInitialPoint: TPointF;
 begin
   Result := IControl(FCanvas).LocalToScreen(PointF(0, 0));
 end;
 
-procedure TBaseTestUnit.SetTestControl(var FormRect, CanvasRect: TRectF);
+procedure TThCanvasBaseTestUnit.SetTestControl(var FormRect, CanvasRect: TRectF);
 begin
   FormRect.Top := 300;
   FormRect.Left := 300;
@@ -79,7 +79,7 @@ begin
   CanvasRect := RectF(50, 50, 350, 350);
 end;
 
-procedure TBaseTestUnit.SetUp;
+procedure TThCanvasBaseTestUnit.SetUp;
 var
   FormRect, CanvasRect: TRectF;
 begin
@@ -108,7 +108,7 @@ begin
   Application.ProcessMessages;
 end;
 
-procedure TBaseTestUnit.TearDown;
+procedure TThCanvasBaseTestUnit.TearDown;
 begin
   if not FClosing then
     Exit;
@@ -116,16 +116,16 @@ begin
   FForm.Free;
 end;
 
-procedure TBaseTestUnit.FormDestroy(Sender: TObject);
+procedure TThCanvasBaseTestUnit.FormDestroy(Sender: TObject);
 begin
   DestroyObject;
 end;
 
-procedure TBaseTestUnit.CreateObject;
+procedure TThCanvasBaseTestUnit.CreateObject;
 begin
 end;
 
-procedure TBaseTestUnit.DestroyObject;
+procedure TThCanvasBaseTestUnit.DestroyObject;
 begin
   if Assigned(FCanvas) then
   begin
@@ -134,17 +134,12 @@ begin
   end;
 end;
 
-procedure TBaseTestUnit.ShowForm;
+procedure TThCanvasBaseTestUnit.ShowForm;
 begin
   FClosing := False;
 end;
 
-procedure TBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single);
-begin
-  DrawLine(RectF(Left, Top, Right, Bottom));
-end;
-
-function TBaseTestUnit.DistanceSize(R: TRectF; D: Single): TPointF;
+function TThCanvasBaseTestUnit.DistanceSize(R: TRectF; D: Single): TPointF;
 var
   Rad: Single;
 begin
@@ -153,12 +148,14 @@ begin
   Result := PointF(Cos(Rad) * D, Sin(Rad) * D);
 end;
 
-procedure TBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single);
+function TThCanvasBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single): TThItem;
 begin
   DrawCircle(RectF(Left, Top, Right, Bottom));
+
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
 end;
 
-procedure TBaseTestUnit.DrawCircle(R: TRectF);
+function TThCanvasBaseTestUnit.DrawCircle(R: TRectF): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDCircle;
   MousePath.New
@@ -166,9 +163,17 @@ begin
   .Add(R.CenterPoint)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
+
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
 end;
 
-procedure TBaseTestUnit.DrawLine(R: TRectF);
+function TThCanvasBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single): TThItem;
+begin
+  DrawLine(RectF(Left, Top, Right, Bottom));
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+end;
+
+function TThCanvasBaseTestUnit.DrawLine(R: TRectF): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDLine;   // 1100 is Rectangles ID
   MousePath.New
@@ -178,14 +183,16 @@ begin
   .Add(R.Left, R.Top + 1)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
 end;
 
-procedure TBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single);
+function TThCanvasBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single): TThItem;
 begin
   DrawRectangle(RectF(Left, Top, Right, Bottom));
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
 end;
 
-procedure TBaseTestUnit.DrawRectangle(R: TRectF);
+function TThCanvasBaseTestUnit.DrawRectangle(R: TRectF): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDRectangle;
   MousePath.New
@@ -193,6 +200,7 @@ begin
   .Add(R.CenterPoint)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
+  Result := FCanvas.Items[FCanvas.ItemCount - 1];
 end;
 
 { TBaseCommandTestUnit }

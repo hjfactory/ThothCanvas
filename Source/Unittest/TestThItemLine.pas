@@ -17,7 +17,7 @@ uses
 
 type
   // #19 캔버스에 선을 추가한다.
-  TestTThLine = class(TBaseTestUnit)
+  TestTThLine = class(TThCanvasBaseTestUnit)
   published
     procedure TestItemFactory;
 

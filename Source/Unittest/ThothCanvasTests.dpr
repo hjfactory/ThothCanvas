@@ -14,10 +14,6 @@ program ThothCanvasTests;
 {$APPTYPE CONSOLE}
 {$ENDIF}
 
-
-
-
-
 {$R *.dres}
 
 uses

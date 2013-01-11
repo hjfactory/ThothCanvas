@@ -78,6 +78,9 @@ type
     procedure ShowSpots;
     procedure ShowDisableSpots;
 
+    function IsContain(AItem: TThItem): Boolean; virtual;
+    procedure Contain(AItem: TThItem); virtual;
+
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
 
@@ -105,7 +108,6 @@ uses
 
 { TThItem }
 
-//constructor TThItem.Create(AOwner: TComponent; AItemData: TThItemData);
 constructor TThItem.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -126,6 +128,16 @@ begin
   FSelection := nil; // Interface Free(destory)
 
   inherited;
+end;
+function TThItem.IsContain(AItem: TThItem): Boolean;
+begin
+  Result := False;
+end;
+
+procedure TThItem.Contain(AItem: TThItem);
+begin
+  AItem.Parent := Self;
+  AItem.Position.Point := AItem.Position.Point.Subtract(Position.Point)
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);

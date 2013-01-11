@@ -8,7 +8,7 @@ uses
 
 type
   // #18 캔버스에 사각형을 추가한다.
-  TestTThImage = class(TBaseTestUnit)
+  TestTThImage = class(TThCanvasBaseTestUnit)
   protected
     procedure CreateObject; override;
   published

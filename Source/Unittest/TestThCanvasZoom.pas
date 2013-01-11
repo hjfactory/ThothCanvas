@@ -18,7 +18,7 @@ uses
 type
   // Test methods for class TThInterfacedObject
 
-  TestTThCanvasZoom = class(TBaseTestUnit)
+  TestTThCanvasZoom = class(TThCanvasBaseTestUnit)
   published
     // #191 지정된 비율로 캔버스가 확대/축소 되어야 한다.
     procedure TestZoomBasic;

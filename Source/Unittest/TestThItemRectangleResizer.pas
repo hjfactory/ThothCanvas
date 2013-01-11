@@ -18,7 +18,7 @@ uses
 
 type
   // #39 사각형 모서리를 드레그 하여 크기를 변경한다.
-  TestTThItemRectangleResizer = class(TBaseTestUnit)
+  TestTThItemRectangleResizer = class(TThCanvasBaseTestUnit)
   published
     // #81 사각형 선택 시 4개의 ResizeSpot이 표시되야 한다.
     procedure TestShowResizeSpot;

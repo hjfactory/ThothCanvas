@@ -17,7 +17,7 @@ uses
 
 type
   // #18 캔버스에 사각형을 추가한다.
-  TestTThRectangle = class(TBaseTestUnit)
+  TestTThRectangle = class(TThCanvasBaseTestUnit)
   private
     FTestClick: Boolean;
     procedure _Test(Sender: TObject);

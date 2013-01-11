@@ -54,6 +54,7 @@ type
 
     procedure AlertMessage(msg: string);
     function GetCenterPoint: TPointF;
+    function GetItems(Index: Integer): TThItem;
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown 시 좌표
@@ -99,6 +100,8 @@ type
 
     property ViewPortPosition: TPosition read GetViewPortPosition;
     property ViewPortSize: TSizeF read GetViewPortSize;
+
+    property Items[Index: Integer] : TThItem read GetItems;
     property ItemCount: Integer read GetItemCount;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
@@ -264,25 +267,28 @@ end;
 
 procedure TThCanvas.DoGrouping(AItem: TThItem);
 var
-  R: TRectF;
+  I: Integer;
   Obj: TFMXObject;
 begin
-  R := AItem.BoundsRect;
-
+  // AItem에 그루핑(Search children)
   for Obj in FContents.Children do
   begin
     if Obj = AItem then
       Continue;
-    if R.Contains(TControl(Obj).BoundsRect) then
-    begin
-      Obj.Parent := AItem;
-      TControl(Obj).Position.Point := TControl(Obj).Position.Point.Subtract(AItem.Position.Point);
-    end;
+    if AItem.IsContain(TThItem(Obj)) then
+      AItem.Contain(TThItem(Obj));
+  end;
 
-    if TControl(Obj).BoundsRect.Contains(R) then
+  // AItem이 그루핑(Change parent)
+  for I := FContents.ChildrenCount - 1 downto 0 do
+  begin
+    Obj := FContents.Children[I];
+    if Obj = AItem then
+      Continue;
+    if TThItem(Obj).IsContain(AItem) then
     begin
-      AItem.Parent := Obj;
-      AItem.Position.Point := AItem.Position.Point.Subtract(TControl(Obj).Position.Point);
+      TThItem(Obj).Contain(AItem);
+      Break;
     end;
   end;
 end;
@@ -528,6 +534,13 @@ end;
 function TThCanvas.GetItemCount: Integer;
 begin
   Result := FContents.ChildrenCount;
+end;
+
+function TThCanvas.GetItems(Index: Integer): TThItem;
+begin
+  Result := nil;
+  if FContents.ChildrenCount > Index then
+    Result := TThItem(FContents.Children[Index]);
 end;
 
 end.

@@ -19,7 +19,7 @@ type
   // Test methods for class TThCircle
 
   // #21 캔버스에 원을 추가한다.
-  TestTThCircle = class(TBaseTestUnit)
+  TestTThCircle = class(TThCanvasBaseTestUnit)
   published
     procedure TestItemFactory;
 

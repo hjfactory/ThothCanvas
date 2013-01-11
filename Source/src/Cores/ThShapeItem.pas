@@ -44,6 +44,8 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
+    function IsContain(AItem: TThItem): Boolean; override;
+
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
@@ -182,6 +184,11 @@ begin
   Canvas.Fill.Color := AFillColor;
   Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
+end;
+
+function TThRectangle.IsContain(AItem: TThItem): Boolean;
+begin
+  Result := AbsoluteRect.Contains(AItem.AbsoluteRect);
 end;
 
 procedure TThRectangle.DrawItemAtMouse(AFrom, ATo: TPointF);
