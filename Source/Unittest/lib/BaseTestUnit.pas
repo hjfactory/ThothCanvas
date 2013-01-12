@@ -27,6 +27,7 @@ type
   public
     procedure SetUp; override;
     procedure TearDown; override;
+    procedure Fail(msg: string; ErrorAddrs: Pointer = nil); override;
 
     procedure ShowForm;
 
@@ -114,6 +115,13 @@ begin
     Exit;
 
   FForm.Free;
+end;
+
+procedure TThCanvasBaseTestUnit.Fail(msg: string; ErrorAddrs: Pointer);
+begin
+  ShowForm;
+
+  inherited;
 end;
 
 procedure TThCanvasBaseTestUnit.FormDestroy(Sender: TObject);

@@ -339,8 +339,6 @@ procedure TestTThCanvasZoom.BugTestAfterZoomingOverRangeLineSelection;
 var
   I: Integer;
 begin
-//  ShowForm;
-
   DrawLine(100, 100, 200, 200);
   FCanvas.ClearSelection;
 

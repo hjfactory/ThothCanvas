@@ -470,9 +470,7 @@ procedure TestTThItemControl.BugHighlightResizeSpotMouserOver;
 var
   AC: TAlphaColor;
 begin
-//  ShowForm;
-
-  Exit;
+Exit;
 
   DrawRectangle(10, 10, 100, 100);
   TestLib.RunMouseClick(50, 50);

@@ -1,3 +1,7 @@
+{
+  ON_HIGHLIGHT이 설정된 경우만 하이라이트(그림자) 효과가 발생함
+   - $DEFINE ON_HIGHLIGHT
+}
 unit ThItemHighlighter;
 
 interface

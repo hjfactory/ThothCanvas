@@ -114,7 +114,7 @@ begin
     P := CenterPoint.Subtract(PointF(Item.Width / 2, Item.Height / 2));
     Item.Position.Point := P.Subtract(FContents.ScaledPoint);
 
-    if IsDrawingItem and Assigned(Item) then
+    if Assigned(Item) then
     begin
       Item.Selected := True;
       if Assigned(FOnItemAdded) then
@@ -178,7 +178,6 @@ procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
   P: TPointF;
 begin
-  DoDegrouping(Item);
   DoGrouping(Item);
 
   if Assigned(FOnItemMove) then
@@ -190,6 +189,8 @@ end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
 begin
+  DoGrouping(Item);
+
   if Assigned(FOnItemResize) then
     FOnItemResize(Item, BeforeRect);
 end;
@@ -309,6 +310,7 @@ begin
   if IsDrawingItem and Assigned(FDrawItem) then
   begin
     FDrawItem.Selected := True;
+    DoGrouping(FDrawItem);
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);
   end;

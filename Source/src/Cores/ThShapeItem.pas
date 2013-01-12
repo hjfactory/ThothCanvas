@@ -35,6 +35,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    function IsContain(AItem: TThItem): Boolean; override;
+
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property MinimumSize: TPointF read GetMinimumSize;
   end;
@@ -44,8 +46,6 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    function IsContain(AItem: TThItem): Boolean; override;
-
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
@@ -62,6 +62,8 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
+    function IsContain(AItem: TThItem): Boolean; override;
+
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
 
@@ -109,6 +111,11 @@ begin
   Result := PointF(MinSize, MinSize);
 end;
 
+function TThShapeItem.IsContain(AItem: TThItem): Boolean;
+begin
+  Result := AbsoluteRect.Contains(AItem.AbsoluteRect);
+end;
+
 function TThShapeItem.CreateHighlighter: IItemHighlighter;
 var
   Highlighter: TThItemShadowHighlighter;
@@ -144,7 +151,7 @@ begin
   PaintItem(GetItemRect, FBgColor);
 
 {$IFDEF DEBUG}
-  S := Format('Position(%f, %f)', [Position.X, Position.Y]);
+  S := Format('(%s<P:%s>)Position(%f, %f)', [Name, Parent.ClassName, Position.X, Position.Y]);
   S := S + Format(' W, H(%f, %f)', [Width, Height]);
   Canvas.Fill.Color := claRed;
   Canvas.Font.Size := 10 / AbsoluteScale.X;
@@ -186,11 +193,6 @@ begin
   Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity, TCornerType.ctRound);
 end;
 
-function TThRectangle.IsContain(AItem: TThItem): Boolean;
-begin
-  Result := AbsoluteRect.Contains(AItem.AbsoluteRect);
-end;
-
 procedure TThRectangle.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
@@ -223,6 +225,11 @@ end;
 function TThLine.IsTopLeftToBottomRight: Boolean;
 begin
   Result := TItemResizeSpot(FSelection.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
+end;
+
+function TThLine.IsContain(AItem: TThItem): Boolean;
+begin
+  Result := False;
 end;
 
 function TThLine.IsHorizon: Boolean;

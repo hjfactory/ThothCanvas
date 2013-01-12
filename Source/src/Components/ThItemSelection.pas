@@ -402,7 +402,7 @@ begin
     State := Canvas.SaveState;
     try
       Canvas.Stroke.Color := ItemSelectionColor;
-      Canvas.Stroke.Thickness := ItemSelectionSize;
+      Canvas.Stroke.Thickness := ItemSelectionSize/AbsoluteScale.X;
       Canvas.DrawRect(ClipRect, 0, 0, AllCorners, 1);
     finally
       Canvas.RestoreState(State);

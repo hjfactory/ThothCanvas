@@ -66,7 +66,7 @@ type
     procedure DoAddObject(AObject: TFmxObject); override;
 
     procedure DoGrouping(AItem: TThItem); virtual;
-    procedure DoDegrouping(AItem: TThItem); virtual;
+//    procedure DoDegrouping(AItem: TThItem); virtual;
 
     procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomHome;
@@ -269,8 +269,9 @@ procedure TThCanvas.DoGrouping(AItem: TThItem);
 var
   I: Integer;
   Obj: TFMXObject;
+  NewParent: TThItem;
 begin
-  // AItem에 그루핑(Search children)
+  // AItem에 다른 아이템 넣어주기(Search children)
   for Obj in FContents.Children do
   begin
     if Obj = AItem then
@@ -279,7 +280,8 @@ begin
       AItem.Contain(TThItem(Obj));
   end;
 
-  // AItem이 그루핑(Change parent)
+  // AItem의 부모찾기(Change parent)
+  NewParent := nil;
   for I := FContents.ChildrenCount - 1 downto 0 do
   begin
     Obj := FContents.Children[I];
@@ -287,16 +289,26 @@ begin
       Continue;
     if TThItem(Obj).IsContain(AItem) then
     begin
-      TThItem(Obj).Contain(AItem);
+      NewParent := TThItem(Obj);
       Break;
     end;
   end;
-end;
 
-procedure TThCanvas.DoDegrouping(AItem: TThItem);
-begin
+  if Assigned(NewParent) then
+  begin
+    if NewParent = AItem.Parent then
+      Exit;
 
+    NewParent.Contain(AItem)
+  end
+  else if AItem.Parent is TThItem then
+    AItem.ReleaseContain;
 end;
+//
+//procedure TThCanvas.DoDegrouping(AItem: TThItem);
+//begin
+//
+//end;
 
 procedure TThCanvas.DoZoom(AScale: Single; ATargetPos: TPointF);
 var

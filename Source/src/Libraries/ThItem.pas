@@ -80,6 +80,7 @@ type
 
     function IsContain(AItem: TThItem): Boolean; virtual;
     procedure Contain(AItem: TThItem); virtual;
+    procedure ReleaseContain; virtual;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -113,7 +114,6 @@ begin
   inherited Create(AOwner);
 
   AutoCapture := True;
-
 {$IFDEF ON_HIGHLIGHT}
   FHighlighter := CreateHighlighter;
 {$ENDIF}
@@ -138,6 +138,16 @@ procedure TThItem.Contain(AItem: TThItem);
 begin
   AItem.Parent := Self;
   AItem.Position.Point := AItem.Position.Point.Subtract(Position.Point)
+end;
+
+procedure TThItem.ReleaseContain;
+var
+  P: TThitem;
+begin
+  P := TThItem(Parent);
+  Parent := TFmxObject(FParentCanvas);
+  if Assigned(P) then
+    Position.Point := Position.Point.Add(P.Position.Point);
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);
@@ -219,7 +229,6 @@ function TThItem.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
   InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
-  InflateRect(Result, 1, 1);
 end;
 
 procedure TThItem.RealignSpot;
@@ -294,7 +303,7 @@ end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
 var
-  Gap: TPointF;
+  Distance: TPointF;
 begin
   inherited;
 
@@ -302,8 +311,8 @@ begin
   begin
     if FSelected and Assigned(FOnTracking) then
     begin
-      Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
-      FOnTracking(Self, Gap.X, Gap.Y);
+      Distance := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
+      FOnTracking(Self, Distance.X, Distance.Y);
     end;
   end;
 end;

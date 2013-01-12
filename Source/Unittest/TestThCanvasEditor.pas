@@ -47,10 +47,6 @@ uses
 
 procedure TestTThCanvasEditor.TestTracking;
 begin
-//  ShowForm;
-
-//  DrawRectangle(50, 200, 100, 250);
-
   FCanvas.TrackAnimated := False;
   MousePath.New
   .Add(50, 50)
