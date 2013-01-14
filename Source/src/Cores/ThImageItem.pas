@@ -30,6 +30,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    function IsContain(AItem: TThItem): Boolean; override;
+
     procedure SetItemData(AItemData: IThItemData); override;
     property Bitmap: TBitmap read FBitmap write SetBitmap;
   end;
@@ -118,6 +120,11 @@ begin
   MinSize := ItemMinimumSize / AbsoluteScale.X;
 
   Result := PointF(MinSize, MinSize);
+end;
+
+function TThImageItem.IsContain(AItem: TThItem): Boolean;
+begin
+  Result := AbsoluteRect.Contains(AItem.AbsoluteRect);
 end;
 
 procedure TThImageItem.LoadImageFile(AFilename: TFileName);

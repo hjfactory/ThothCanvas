@@ -48,18 +48,29 @@ type
     procedure SetSubject(ASubject: IThSubject);
   end;
 
-
+  // Basic item
   IThItem = interface
     function GetItemRect: TRectF;
     procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
   end;
 
-  IThItemData = interface
-  end;
-
+  // Basig canvas
   IThCanvas = interface
     function IsDrawingItem: Boolean;
     function IsMultiSelected: Boolean;
+  end;
+
+  // Optional item data(e.g. Image item`s filepath)
+  IThItemData = interface
+  end;
+
+  // Contain item control
+  IThItemContainer = interface
+    function GetItem(Index: Integer): IThItem;
+    function GetItemCount: Integer;
+    property Items[Index: Integer]: IThItem read GetItem;
+    property ItemCount: Integer read GetItemCount;
+    function GetContainItem(AItem: IThItem): IThItem;
   end;
 
   IThCanvasController = interface

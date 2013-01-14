@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
   end;
 
-  TThItem = class(TControl, IThItem)
+  TThItem = class(TControl, IThItem, IThItemContainer)
   private
     FParentCanvas: IThCanvas;
     FSpotCount: Integer;
@@ -39,8 +39,10 @@ type
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
-    function GetItem(Index: Integer): TThItem;
+    function GetItem(Index: Integer): IThItem;
     function GetItemCount: Integer;
+
+    function GetAbsolutePoint(APoint: TPointF): TPointF;
   protected
     FHighlighter: IItemHighlighter;
     FSelection: IItemSelection;
@@ -94,8 +96,9 @@ type
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
     property OnResize: TItemResizeEvent read FOnResize write FOnResize;
 
-    property Items[Index: Integer]: TThItem read GetItem;
+    property Items[Index: Integer]: IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
+    function GetContainItem(AItem: IThItem): IThItem;
   end;
   TThItemClass = class of TThItem;
 
@@ -145,9 +148,12 @@ begin
 end;
 
 procedure TThItem.Contain(AItem: TThItem);
+var
+  AbsoluteP: TPointF;
 begin
   AItem.Parent := Self;
-  AItem.Position.Point := AItem.Position.Point.Subtract(Position.Point)
+  AbsoluteP := GetAbsolutePoint(PointF(0, 0));
+  AItem.Position.Point := AItem.Position.Point.Subtract(AbsoluteP)
 end;
 
 procedure TThItem.ReleaseContain;
@@ -230,8 +236,38 @@ procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
 end;
 
-function TThItem.GetItem(Index: Integer): TThItem;
+function TThItem.GetAbsolutePoint(APoint: TPointF): TPointF;
 begin
+  Result := APoint.Add(Position.Point);
+  if Parent is TThItem then
+    Result := TThItem(Parent).GetAbsolutePoint(Result);
+end;
+
+function TThItem.GetContainItem(AItem: IThItem): IThItem;
+var
+  I: Integer;
+  Item: TThItem;
+begin
+  Result := nil;
+  if IsContain(TThItem(AItem)) then
+  begin
+    for I := ItemCount - 1 downto 0 do
+    begin
+      Item := TThItem(Items[I]);
+      if Item = TThItem(AItem) then
+        Continue;
+
+      Result := Item.GetContainItem(AItem);
+      if Assigned(Result) then
+        Exit;
+    end;
+    Result := Self;
+  end;
+end;
+
+function TThItem.GetItem(Index: Integer): IThItem;
+begin
+  Result := nil;
   if ChildrenCount > (Index + FSpotCount) then
     Result := TThItem(FChildren[Index + FSpotCount]);
 end;

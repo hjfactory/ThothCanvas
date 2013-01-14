@@ -29,7 +29,7 @@ type
     property ScaledPoint: TPointF read GetScaledPoint;
   end;
 
-  TThCanvas = class(TControl, IThCanvas, IThZoomObject)
+  TThCanvas = class(TControl, IThCanvas, IThZoomObject, IThItemContainer)
   private
     FUseMouseTracking: Boolean;
     FBgColor: TAlphaColor;
@@ -47,14 +47,15 @@ type
     FOnZoom: TNotifyEvent;
 
     function GetViewPortPosition: TPosition;
-    function GetItemCount: Integer;
     procedure SetBgColor(const Value: TAlphaColor);
     function GetZoomScale: Single;
     function GetViewPortSize: TSizeF;
 
     procedure AlertMessage(msg: string);
     function GetCenterPoint: TPointF;
-    function GetItems(Index: Integer): TThItem;
+
+    function GetItem(Index: Integer): IThItem;
+    function GetItemCount: Integer;
   protected
     FContents: TThContents;
     FMouseDownPos,          // MouseDown 시 좌표
@@ -65,13 +66,13 @@ type
     procedure Paint; override;
     procedure DoAddObject(AObject: TFmxObject); override;
 
-    procedure DoGrouping(AItem: TThItem); virtual;
-//    procedure DoDegrouping(AItem: TThItem); virtual;
-
     procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomHome;
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
+
+    procedure DoGrouping(AItem: TThItem); virtual;
+//    procedure DoDegrouping(AItem: TThItem); virtual;
 
     procedure ClickCanvas; virtual;
   public
@@ -101,8 +102,9 @@ type
     property ViewPortPosition: TPosition read GetViewPortPosition;
     property ViewPortSize: TSizeF read GetViewPortSize;
 
-    property Items[Index: Integer] : TThItem read GetItems;
+    property Items[Index: Integer] : IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
+    function GetContainItem(AItem: IThItem): IThItem;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
@@ -271,10 +273,10 @@ var
   Obj: TFMXObject;
   Item, NewParent: TThItem;
 begin
-  // 아이템 풀어주기
+  // (Resize 시)아이템 풀어주기
   for I := 0 to AItem.ItemCount -1 do
   begin
-    Item := AItem.Items[I];
+    Item := TThItem(AItem.Items[I]);
     if not AItem.IsContain(Item) then
       Item.ReleaseContain;
   end;
@@ -289,18 +291,10 @@ begin
   end;
 
   // AItem의 부모찾기(Change parent)
-  NewParent := nil;
-  for I := FContents.ChildrenCount - 1 downto 0 do
-  begin
-    Item := TThItem(FContents.Children[I]);
-    if Item = AItem then
-      Continue;
-    if Item.IsContain(AItem) then
-    begin
-      NewParent := Item;
-      Break;
-    end;
-  end;
+  NewParent := TThItem(GetContainItem(AItem));
+
+  if AItem.Parent is TThItem then
+    AItem.ReleaseContain;
 
   if Assigned(NewParent) then
   begin
@@ -308,9 +302,8 @@ begin
       Exit;
 
     NewParent.Contain(AItem)
-  end
-  else if AItem.Parent is TThItem then
-    AItem.ReleaseContain;
+  end;
+//  else
 end;
 //
 //procedure TThCanvas.DoDegrouping(AItem: TThItem);
@@ -551,12 +544,34 @@ begin
   Result := PointF(Width / ZoomScale / 2, Height / ZoomScale / 2)
 end;
 
+function TThCanvas.GetContainItem(AItem: IThItem): IThItem;
+var
+  I: Integer;
+  Item: TThItem;
+begin
+  for I := ItemCount - 1 downto 0 do
+  begin
+    Item := TThItem(Items[I]);
+    if Item = TThItem(AItem) then
+      Continue;
+
+    Result := Item.GetContainItem(AItem);
+    if Assigned(Result) then
+      Exit;
+//    if Item.IsContain(AItem) then
+//    begin
+//      NewParent := Item;
+//      Break;
+//    end;
+  end;
+end;
+
 function TThCanvas.GetItemCount: Integer;
 begin
   Result := FContents.ChildrenCount;
 end;
 
-function TThCanvas.GetItems(Index: Integer): TThItem;
+function TThCanvas.GetItem(Index: Integer): IThItem;
 begin
   Result := nil;
   if FContents.ChildrenCount > Index then

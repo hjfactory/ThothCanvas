@@ -4,7 +4,7 @@ interface
 
 uses
   TestFramework, ThCanvasEditor, ThothController, ThCanvasController,
-  System.Types, FMX.Types, FMX.Forms, System.SysUtils, ThItem;
+  System.Types, System.Classes, FMX.Types, FMX.Forms, System.SysUtils, ThItem;
 
 type
   // Test methods for class TThCanvasEditor
@@ -33,17 +33,19 @@ type
 
     function DistanceSize(R: TRectF; D: Single): TPointF;
 
-    function DrawRectangle(Left, Top, Right, Bottom: Single): TThItem; overload;
-    function DrawRectangle(R: TRectF): TThItem; overload;
+    function DrawRectangle(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem; overload;
+    function DrawRectangle(TopLeft, BottomRight: TPointF; AName: string = ''): TThItem; overload;
+    function DrawRectangle(R: TRectF; AName: string = ''): TThItem; overload;
 
-    function DrawLine(Left, Top, Right, Bottom: Single): TThItem; overload;
-    function DrawLine(R: TRectF): TThItem; overload;
+    function DrawLine(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem; overload;
+    function DrawLine(R: TRectF; AName: string = ''): TThItem; overload;
 
-    function DrawCircle(Left, Top, Right, Bottom: Single): TThItem; overload;
-    function DrawCircle(R: TRectF): TThItem; overload;
+    function DrawCircle(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem; overload;
+    function DrawCircle(R: TRectF; AName: string = ''): TThItem; overload;
 
     function GetItem(X, Y: Single): TThItem; overload;
     function GetItem(Pt: TPointF): TThItem; overload;
+    function GetImagePath: string;
 
     property CenterPos: TPointF read GetCenterPos;
   end;
@@ -67,6 +69,27 @@ uses
 function TThCanvasBaseTestUnit.GetCenterPos: TPointF;
 begin
   Result := FCanvas.BoundsRect.CenterPoint;
+end;
+
+function TThCanvasBaseTestUnit.GetImagePath: string;
+var
+  Bitmap: TBitmap;
+  Stream: TResourceStream;
+begin
+  Result := ExtractFilePath(ParamStr(0)) + 'TEST_IMAGE.PNG';
+  // Create Image file from resource
+  if not FileExists(Result) then
+  begin
+    Bitmap := TBitmap.Create(0, 0);
+    Stream := TResourceStream.Create(HInstance, 'TEST_IMAGE', RT_RCDATA);
+    try
+      Bitmap.LoadFromStream(Stream);
+      Bitmap.SaveToFile(Result);
+    finally
+      Bitmap.Free;
+      Stream.Free;
+    end;
+  end;
 end;
 
 function TThCanvasBaseTestUnit.GetInitialPoint: TPointF;
@@ -171,12 +194,12 @@ begin
   Result := PointF(Cos(Rad) * D, Sin(Rad) * D);
 end;
 
-function TThCanvasBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single): TThItem;
+function TThCanvasBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem;
 begin
-  Result := DrawCircle(RectF(Left, Top, Right, Bottom));
+  Result := DrawCircle(RectF(Left, Top, Right, Bottom), AName);
 end;
 
-function TThCanvasBaseTestUnit.DrawCircle(R: TRectF): TThItem;
+function TThCanvasBaseTestUnit.DrawCircle(R: TRectF; AName: string = ''): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDCircle;
   MousePath.New
@@ -186,14 +209,16 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Result := GetItem(R.CenterPoint);
+  if Assigned(Result) then
+    Result.Name := AName;
 end;
 
-function TThCanvasBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single): TThItem;
+function TThCanvasBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem;
 begin
-  Result := DrawLine(RectF(Left, Top, Right, Bottom));
+  Result := DrawLine(RectF(Left, Top, Right, Bottom), AName);
 end;
 
-function TThCanvasBaseTestUnit.DrawLine(R: TRectF): TThItem;
+function TThCanvasBaseTestUnit.DrawLine(R: TRectF; AName: string = ''): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDLine;   // 1100 is Rectangles ID
   MousePath.New
@@ -205,14 +230,22 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Result := GetItem(R.CenterPoint);
+  if Assigned(Result) then
+    Result.Name := AName;
 end;
 
-function TThCanvasBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single): TThItem;
+function TThCanvasBaseTestUnit.DrawRectangle(TopLeft, BottomRight: TPointF;
+  AName: string): TThItem;
 begin
-  Result := DrawRectangle(RectF(Left, Top, Right, Bottom));
+  Result := DrawRectangle(RectF(TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y), AName);
 end;
 
-function TThCanvasBaseTestUnit.DrawRectangle(R: TRectF): TThItem;
+function TThCanvasBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single; AName: string = ''): TThItem;
+begin
+  Result := DrawRectangle(RectF(Left, Top, Right, Bottom), AName);
+end;
+
+function TThCanvasBaseTestUnit.DrawRectangle(R: TRectF; AName: string = ''): TThItem;
 begin
   FCanvas.DrawItemID := ItemFactoryIDRectangle;
   MousePath.New
@@ -222,6 +255,8 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Result := GetItem(R.CenterPoint);
+  if Assigned(Result) then
+    Result.Name := AName;
 end;
 
 { TBaseCommandTestUnit }

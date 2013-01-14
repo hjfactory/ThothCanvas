@@ -37,29 +37,12 @@ var
 { TestTThImage }
 
 procedure TestTThImage.CreateObject;
-var
-  Bitmap: TBitmap;
-  Stream: TResourceStream;
 begin
   inherited;
 
   if TestImagePath <> '' then
     Exit;
-  TestImagePath := ExtractFilePath(ParamStr(0)) + 'TEST_IMAGE.PNG';
-
-  // Create Image file from resource
-  if not FileExists(TestImagePath) then
-  begin
-    Bitmap := TBitmap.Create(0, 0);
-    Stream := TResourceStream.Create(HInstance, 'TEST_IMAGE', RT_RCDATA);
-    try
-      Bitmap.LoadFromStream(Stream);
-      Bitmap.SaveToFile(TestImagePath);
-    finally
-      Bitmap.Free;
-      Stream.Free;
-    end;
-  end;
+  TestImagePath := GetImagePath;
 end;
 
 procedure TestTThImage.TestItemFactory;

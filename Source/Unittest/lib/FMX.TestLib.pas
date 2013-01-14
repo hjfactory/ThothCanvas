@@ -24,7 +24,8 @@ type
   public
     procedure SetInitialMousePoint(Pos: TPointF);
 
-    procedure RunMouseClick(X, Y: Single);
+    procedure RunMouseClick(X, Y: Single); overload;
+    procedure RunMouseClick(Pt: TPointF); overload;
 
     procedure RunMousePath(Path: array of TPointF);
     procedure RunMouseMove(Path: array of TPointF);
@@ -165,6 +166,11 @@ begin
   MouseDown(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
   MouseUp(TMouseButton.mbLeft, [], FInitialMousePoint.X+X, FInitialMousePoint.Y+Y);
   Application.ProcessMessages;
+end;
+
+procedure TTestLib.RunMouseClick(Pt: TPointF);
+begin
+  RunMouseClick(Pt.X, Pt.Y);
 end;
 
 procedure TTestLib.RunMousePath(Path: array of TPointF);

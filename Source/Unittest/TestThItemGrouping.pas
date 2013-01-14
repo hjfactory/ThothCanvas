@@ -52,6 +52,15 @@ type
     procedure TestResizeReleaseChild;
     // #257 P1의 크기를 C1보다 작게 조정하는 경우 그루핑이 해제되야 한다.
     procedure TestResizeReleaseParent;
+
+    // #237 C1이 P1에서 P2의 영역으로 이동 시 그뤂핑이 재설정 된다.
+    procedure TestChangeGrouping;
+
+    // #259 P1위의 P2에 C1을 올리면 P1>P2>C1으로 그루핑 된다.
+    procedure TestOverlapItem;
+
+    // #268 이미지 위에 아이템이 그루핑 되어야 한다.
+    procedure TestImageGrouping;
   end;
 
 implementation
@@ -282,12 +291,12 @@ end;
 
 procedure TestTThItemGroupping.TestMoveGroupingGroupItemRelease;
 var
-  P1, C1, C2: TThItem;
+  P1, C2: TThItem;
 begin
   // C2를 그린다
   C2 := DrawRectangle(190, 190, 270, 270);
   // C2위에 C1을 그린다.
-  C1 := DrawRectangle(220, 220, 260, 260);
+  DrawRectangle(220, 220, 260, 260);
 
   // P1을 그린다.
   P1 := DrawRectangle(10, 10, 150, 150);
@@ -309,8 +318,6 @@ begin
 
   // C2의 부모가 P1이 아닌 것을 확인
   Check(C2.Parent <> P1, 'C2');
-
-  ShowForm;
 end;
 
 procedure TestTThItemGroupping.TestResizeReleaseChild;
@@ -352,6 +359,64 @@ begin
 
   // C1의 부모 확인
   Check(C1.Parent <> P1, 'Parent check');
+end;
+
+procedure TestTThItemGroupping.TestChangeGrouping;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 120, 120);
+  P2 := DrawRectangle(150, 10, 290, 120);
+
+  C1 := DrawRectangle(20, 20, 80, 80);
+
+  Check(C1.Parent = P1, 'Parent is P1');
+  CheckEquals(C1.Position.X, 100);
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(30, 30)
+  .Add(100, 30)
+  .Add(170, 30).Path);
+
+  Check(C1.Parent = P2, 'Parent is P2');
+  CheckEquals(C1.Position.X, 100);
+end;
+
+procedure TestTThItemGroupping.TestOverlapItem;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 200, 200, 'P1');
+  P2 := DrawCircle(30, 30, 180, 180, 'P2');
+  C1 := DrawRectangle(70, 70, 120, 120, 'C1');
+
+  Check(P2.Parent = P1, Format('P2 parent is %s(not P1)', [P2.Parent.Name]));
+  Check(C1.Parent = P2, Format('C1 parent is %s(not P2)', [C1.Parent.Name]));
+  CheckEquals(C1.Position.X, 400, Format('C1.Position.X = %f', [C1.Position.X]));
+end;
+
+procedure TestTThItemGroupping.TestImageGrouping;
+var
+  TestImagePath: string;
+  P1, C1: TThItem;
+  R: TRectF;
+begin
+  TestImagePath := GetImagePath;
+  FCanvas.AppendFileItem(ItemFactoryIDImageFile, TestImagePath);
+
+//  TestLib.RunMouseClick(FCanvas.CenterPoint);
+  P1 := FCanvas.SelectedItem;
+  CheckNotNull(P1);
+
+  R := P1.AbsoluteRect;
+  R.Offset(-FCanvas.Position.X, -FCanvas.Position.Y);
+  R.Offset(10, 10);
+  R.Width := R.Width - 20;
+  R.Height := R.Height - 20;
+
+  C1 := DrawRectangle(R);
+
+  Check(C1.Parent = P1);
 end;
 
 initialization
