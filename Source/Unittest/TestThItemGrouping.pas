@@ -41,6 +41,17 @@ type
 
     // #238 P1 크기를 변경경하여 C1을 포함한 경우 그루핑 된다.
     procedure TestGroupingFromResize;
+
+    // #240 C2를 포함한 C1을 P1으로 이동 시 P1과 그루핑되어야 한다.
+    procedure TestMoveGroupingGroupItem;
+
+    // #241 C2를 포함한 C1을 P1영역에서 밖으로 이동하는 경우 P1과 그루핑이 해제되야한다.
+    procedure TestMoveGroupingGroupItemRelease;
+
+    // #239 C1크기변경하여 P1의 영역을 넘어서는 경우 그루핑 해제된다.
+    procedure TestResizeReleaseChild;
+    // #257 P1의 크기를 C1보다 작게 조정하는 경우 그루핑이 해제되야 한다.
+    procedure TestResizeReleaseParent;
   end;
 
 implementation
@@ -241,6 +252,106 @@ begin
   .Add(130, 130).Path);
 
   CheckEquals(FCanvas.ItemCount, 1);
+end;
+
+procedure TestTThItemGroupping.TestMoveGroupingGroupItem;
+var
+  P1, C1, C2: TThItem;
+begin
+  // C2를 그린다
+  C2 := DrawRectangle(190, 190, 270, 270);
+  // C2위에 C1을 그린다.
+  C1 := DrawRectangle(200, 200, 250, 250);
+  Check(C1.Parent = C2, 'C1.Parent');
+
+  // P1을 그린다.
+  P1 := DrawRectangle(10, 10, 150, 150);
+
+  // C2를 P1에 올린다.
+  TestLib.RunMousePath(MousePath.New
+  .Add(195, 195)
+  .Add(100, 100)
+  .Add(20, 20).Path);
+
+  // C2의 부모가 P1임을 확인한다.
+  Check(C2.Parent = P1, 'C2.Parent');
+
+  // C2의 자식이 C1임을 확인한다.
+  Check(C1.Parent = C2, 'C1.Parent2');
+end;
+
+procedure TestTThItemGroupping.TestMoveGroupingGroupItemRelease;
+var
+  P1, C1, C2: TThItem;
+begin
+  // C2를 그린다
+  C2 := DrawRectangle(190, 190, 270, 270);
+  // C2위에 C1을 그린다.
+  C1 := DrawRectangle(220, 220, 260, 260);
+
+  // P1을 그린다.
+  P1 := DrawRectangle(10, 10, 150, 150);
+
+  // C2를 P1에 올린다.
+  TestLib.RunMousePath(MousePath.New
+  .Add(195, 195)
+  .Add(100, 100)
+  .Add(20, 20).Path);
+
+  // C2의 부모가 P1임을 확인한다.
+  Check(C2.Parent = P1, 'C2.Parent');
+
+  // C2를 빈곳으로 이동한다.
+  TestLib.RunMousePath(MousePath.New
+  .Add(30, 30)
+  .Add(100, 100)
+  .Add(190, 190).Path);
+
+  // C2의 부모가 P1이 아닌 것을 확인
+  Check(C2.Parent <> P1, 'C2');
+
+  ShowForm;
+end;
+
+procedure TestTThItemGroupping.TestResizeReleaseChild;
+var
+  P1, C1: TThItem;
+begin
+  // P1 그리기
+  P1 := DrawRectangle(10, 10, 110, 110);
+
+  // C1 그리기
+  C1 := DrawRectangle(40, 40, 80, 80);
+
+  // C1을 P1이 넘도록 크기 변경
+  TestLib.RunMousePath(MousePath.New
+  .Add(80, 80)
+  .Add(100, 100)
+  .Add(190, 100).Path);
+
+  // C1의 부모 확인
+  Check(C1.Parent <> P1, 'Parent check');
+end;
+
+procedure TestTThItemGroupping.TestResizeReleaseParent;
+var
+  P1, C1: TThItem;
+begin
+  // P1 그리기
+  P1 := DrawRectangle(10, 10, 200, 200);
+
+  // C1 그리기
+  C1 := DrawRectangle(40, 40, 150, 150);
+
+  // C1을 P1이 넘도록 크기 변경
+  TestLib.RunMouseClick(195, 195);
+  TestLib.RunMousePath(MousePath.New
+  .Add(200, 200)
+  .Add(100, 100)
+  .Add(100, 100).Path);
+
+  // C1의 부모 확인
+  Check(C1.Parent <> P1, 'Parent check');
 end;
 
 initialization

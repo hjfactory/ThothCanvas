@@ -32,6 +32,7 @@ type
     procedure ShowForm;
 
     function DistanceSize(R: TRectF; D: Single): TPointF;
+
     function DrawRectangle(Left, Top, Right, Bottom: Single): TThItem; overload;
     function DrawRectangle(R: TRectF): TThItem; overload;
 
@@ -40,6 +41,9 @@ type
 
     function DrawCircle(Left, Top, Right, Bottom: Single): TThItem; overload;
     function DrawCircle(R: TRectF): TThItem; overload;
+
+    function GetItem(X, Y: Single): TThItem; overload;
+    function GetItem(Pt: TPointF): TThItem; overload;
 
     property CenterPos: TPointF read GetCenterPos;
   end;
@@ -68,6 +72,17 @@ end;
 function TThCanvasBaseTestUnit.GetInitialPoint: TPointF;
 begin
   Result := IControl(FCanvas).LocalToScreen(PointF(0, 0));
+end;
+
+function TThCanvasBaseTestUnit.GetItem(Pt: TPointF): TThItem;
+begin
+  Result := GetItem(Pt.X, Pt.Y);
+end;
+
+function TThCanvasBaseTestUnit.GetItem(X, Y: Single): TThItem;
+begin
+  TestLib.RunMouseClick(X, Y);
+  Result := FCanvas.SelectedItem;
 end;
 
 procedure TThCanvasBaseTestUnit.SetTestControl(var FormRect, CanvasRect: TRectF);
@@ -158,9 +173,7 @@ end;
 
 function TThCanvasBaseTestUnit.DrawCircle(Left, Top, Right, Bottom: Single): TThItem;
 begin
-  DrawCircle(RectF(Left, Top, Right, Bottom));
-
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+  Result := DrawCircle(RectF(Left, Top, Right, Bottom));
 end;
 
 function TThCanvasBaseTestUnit.DrawCircle(R: TRectF): TThItem;
@@ -172,13 +185,12 @@ begin
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
 
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+  Result := GetItem(R.CenterPoint);
 end;
 
 function TThCanvasBaseTestUnit.DrawLine(Left, Top, Right, Bottom: Single): TThItem;
 begin
-  DrawLine(RectF(Left, Top, Right, Bottom));
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+  Result := DrawLine(RectF(Left, Top, Right, Bottom));
 end;
 
 function TThCanvasBaseTestUnit.DrawLine(R: TRectF): TThItem;
@@ -191,13 +203,13 @@ begin
   .Add(R.Left, R.Top + 1)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+
+  Result := GetItem(R.CenterPoint);
 end;
 
 function TThCanvasBaseTestUnit.DrawRectangle(Left, Top, Right, Bottom: Single): TThItem;
 begin
-  DrawRectangle(RectF(Left, Top, Right, Bottom));
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+  Result := DrawRectangle(RectF(Left, Top, Right, Bottom));
 end;
 
 function TThCanvasBaseTestUnit.DrawRectangle(R: TRectF): TThItem;
@@ -208,7 +220,8 @@ begin
   .Add(R.CenterPoint)
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
-  Result := FCanvas.Items[FCanvas.ItemCount - 1];
+
+  Result := GetItem(R.CenterPoint);
 end;
 
 { TBaseCommandTestUnit }

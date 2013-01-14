@@ -269,8 +269,16 @@ procedure TThCanvas.DoGrouping(AItem: TThItem);
 var
   I: Integer;
   Obj: TFMXObject;
-  NewParent: TThItem;
+  Item, NewParent: TThItem;
 begin
+  // 아이템 풀어주기
+  for I := 0 to AItem.ItemCount -1 do
+  begin
+    Item := AItem.Items[I];
+    if not AItem.IsContain(Item) then
+      Item.ReleaseContain;
+  end;
+
   // AItem에 다른 아이템 넣어주기(Search children)
   for Obj in FContents.Children do
   begin
@@ -284,12 +292,12 @@ begin
   NewParent := nil;
   for I := FContents.ChildrenCount - 1 downto 0 do
   begin
-    Obj := FContents.Children[I];
-    if Obj = AItem then
+    Item := TThItem(FContents.Children[I]);
+    if Item = AItem then
       Continue;
-    if TThItem(Obj).IsContain(AItem) then
+    if Item.IsContain(AItem) then
     begin
-      NewParent := TThItem(Obj);
+      NewParent := Item;
       Break;
     end;
   end;

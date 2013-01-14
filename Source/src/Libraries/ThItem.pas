@@ -29,6 +29,7 @@ type
   TThItem = class(TControl, IThItem)
   private
     FParentCanvas: IThCanvas;
+    FSpotCount: Integer;
 
     FOnSelected: TItemSelectedEvent;
     FOnUnselected: TItemEvent;
@@ -38,6 +39,8 @@ type
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
+    function GetItem(Index: Integer): TThItem;
+    function GetItemCount: Integer;
   protected
     FHighlighter: IItemHighlighter;
     FSelection: IItemSelection;
@@ -90,6 +93,9 @@ type
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
     property OnResize: TItemResizeEvent read FOnResize write FOnResize;
+
+    property Items[Index: Integer]: TThItem read GetItem;
+    property ItemCount: Integer read GetItemCount;
   end;
   TThItemClass = class of TThItem;
 
@@ -118,6 +124,10 @@ begin
   FHighlighter := CreateHighlighter;
 {$ENDIF}
   FSelection := CreateSelection;
+
+  FSpotCount := 0;
+  if Assigned(FSelection) then
+    FSpotCount := FSelection.Count;
 
   Cursor := crSizeAll;
 end;
@@ -218,6 +228,18 @@ end;
 
 procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
+end;
+
+function TThItem.GetItem(Index: Integer): TThItem;
+begin
+  if ChildrenCount > (Index + FSpotCount) then
+    Result := TThItem(FChildren[Index + FSpotCount]);
+end;
+
+function TThItem.GetItemCount: Integer;
+begin
+
+  Result := ChildrenCount - FSpotCount;
 end;
 
 function TThItem.GetItemRect: TRectF;
