@@ -174,7 +174,10 @@ var
   I: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
+  begin
     FItems[I].Position.Point := FItems[I].Position.Point.Add(FDistance);
+    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
+  end;
 end;
 
 procedure TThCommandItemMove.Rollback;
@@ -182,7 +185,10 @@ var
   I: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
+  begin
     FItems[I].Position.Point := FItems[I].Position.Point.Subtract(FDistance);
+    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
+  end;
 end;
 
 { TThCommandItemResize }

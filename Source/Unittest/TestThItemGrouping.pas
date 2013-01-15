@@ -7,7 +7,8 @@ uses
   System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
-  // #19 캔버스에 선을 추가한다.
+  // #252 겹친 아이템은 그루핑되어야 한다.
+  // #253 겹친 부분 해제되는 경우 그루핑이 풀려야 한다.
   TestTThItemGroupping = class(TThCanvasBaseTestUnit)
   published
     // #244 P1이 C1을 포함하는 영역으로 이동하는 경우 C1이 그룹핑 되어야 한다.
@@ -55,9 +56,6 @@ type
 
     // #237 C1이 P1에서 P2의 영역으로 이동 시 그뤂핑이 재설정 된다.
     procedure TestChangeGrouping;
-
-    // #259 P1위의 P2에 C1을 올리면 P1>P2>C1으로 그루핑 된다.
-    procedure TestOverlapItem;
 
     // #268 이미지 위에 아이템이 그루핑 되어야 한다.
     procedure TestImageGrouping;
@@ -380,19 +378,6 @@ begin
 
   Check(C1.Parent = P2, 'Parent is P2');
   CheckEquals(C1.Position.X, 100);
-end;
-
-procedure TestTThItemGroupping.TestOverlapItem;
-var
-  P1, P2, C1: TThItem;
-begin
-  P1 := DrawRectangle(10, 10, 200, 200, 'P1');
-  P2 := DrawCircle(30, 30, 180, 180, 'P2');
-  C1 := DrawRectangle(70, 70, 120, 120, 'C1');
-
-  Check(P2.Parent = P1, Format('P2 parent is %s(not P1)', [P2.Parent.Name]));
-  Check(C1.Parent = P2, Format('C1 parent is %s(not P2)', [C1.Parent.Name]));
-  CheckEquals(C1.Position.X, 400, Format('C1.Position.X = %f', [C1.Position.X]));
 end;
 
 procedure TestTThItemGroupping.TestImageGrouping;

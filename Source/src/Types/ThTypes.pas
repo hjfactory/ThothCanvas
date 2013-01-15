@@ -3,7 +3,7 @@ unit ThTypes;
 interface
 
 uses
-  FMX.Types, System.Types, System.UITypes;
+  FMX.Types, System.Types, System.UITypes, System.Generics.Collections;
 
 type
   TSpotCorner = (
@@ -54,8 +54,10 @@ type
     procedure ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
   end;
 
+
   // Basig canvas
   IThCanvas = interface
+    procedure DoGrouping(AIItem: IThItem);
     function IsDrawingItem: Boolean;
     function IsMultiSelected: Boolean;
   end;
@@ -65,12 +67,14 @@ type
   end;
 
   // Contain item control
+  IThItems =  TList<IThItem>;
   IThItemContainer = interface
     function GetItem(Index: Integer): IThItem;
     function GetItemCount: Integer;
     property Items[Index: Integer]: IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
-    function GetContainItem(AItem: IThItem): IThItem;
+    function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
+    function GetContainParentItem(AItem: IThItem): IThItem;
   end;
 
   IThCanvasController = interface

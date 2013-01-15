@@ -83,7 +83,7 @@ type
     procedure ShowSpots;
     procedure ShowDisableSpots;
 
-    function IsContain(AItem: TThItem): Boolean; virtual;
+    function IsContain(AItem: IThItem): Boolean; virtual;
     procedure Contain(AItem: TThItem); virtual;
     procedure ReleaseContain; virtual;
 
@@ -98,7 +98,8 @@ type
 
     property Items[Index: Integer]: IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
-    function GetContainItem(AItem: IThItem): IThItem;
+    function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
+    function GetContainParentItem(AItem: IThItem): IThItem;
   end;
   TThItemClass = class of TThItem;
 
@@ -142,7 +143,7 @@ begin
 
   inherited;
 end;
-function TThItem.IsContain(AItem: TThItem): Boolean;
+function TThItem.IsContain(AItem: IThItem): Boolean;
 begin
   Result := False;
 end;
@@ -151,9 +152,10 @@ procedure TThItem.Contain(AItem: TThItem);
 var
   AbsoluteP: TPointF;
 begin
-  AItem.Parent := Self;
   AbsoluteP := GetAbsolutePoint(PointF(0, 0));
-  AItem.Position.Point := AItem.Position.Point.Subtract(AbsoluteP)
+//  AItem.Position.Point := AItem.Position.Point.Subtract(AbsoluteP)
+  AItem.Position.Point := AItem.GetAbsolutePoint(PointF(0, 0)).Subtract(AbsoluteP);
+  AItem.Parent := Self;
 end;
 
 procedure TThItem.ReleaseContain;
@@ -243,7 +245,29 @@ begin
     Result := TThItem(Parent).GetAbsolutePoint(Result);
 end;
 
-function TThItem.GetContainItem(AItem: IThItem): IThItem;
+function TThItem.GetContainChildrenItems(AItem: IThItem;
+  AChildren: IThItems): Boolean;
+var
+  I: Integer;
+begin
+  Result := AbsoluteRect.IntersectsWith(TThItem(AItem).AbsoluteRect);
+  if not Result then
+    Exit;
+
+  for I := 0 to ItemCount - 1 do
+  begin
+    if AItem = Items[I] then
+      Continue;
+
+    if TThItem(AItem).IsContain(Items[I]) then
+      AChildren.Add(Items[I])
+    ;
+  end;
+
+  Result := AChildren.Count > 0;
+end;
+
+function TThItem.GetContainParentItem(AItem: IThItem): IThItem;
 var
   I: Integer;
   Item: TThItem;
@@ -257,7 +281,7 @@ begin
       if Item = TThItem(AItem) then
         Continue;
 
-      Result := Item.GetContainItem(AItem);
+      Result := Item.GetContainParentItem(AItem);
       if Assigned(Result) then
         Exit;
     end;

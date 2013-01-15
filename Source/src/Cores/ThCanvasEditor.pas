@@ -178,13 +178,12 @@ procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
   P: TPointF;
 begin
-  DoGrouping(Item);
+  P := Item.Position.Point.Subtract(StartPos);
 
   if Assigned(FOnItemMove) then
-  begin
-    P := Item.Position.Point.Subtract(StartPos);
     FOnItemMove(FSelections, P);
-  end;
+
+  DoGrouping(Item);
 end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);

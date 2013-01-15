@@ -71,7 +71,7 @@ type
     procedure DoZoomIn(ATargetPos: TPointF); virtual;
     procedure DoZoomOut(ATargetPos: TPointF); virtual;
 
-    procedure DoGrouping(AItem: TThItem); virtual;
+    procedure DoGrouping(AItem: IThItem); virtual;
 //    procedure DoDegrouping(AItem: TThItem); virtual;
 
     procedure ClickCanvas; virtual;
@@ -104,7 +104,8 @@ type
 
     property Items[Index: Integer] : IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
-    function GetContainItem(AItem: IThItem): IThItem;
+    function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
+    function GetContainParentItem(AItem: IThItem): IThItem;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
@@ -117,6 +118,7 @@ type
 implementation
 
 uses
+  System.Generics.Collections,
   ThConsts, FMX.Forms, ThResourceString;
 
 { TThContent }
@@ -267,41 +269,50 @@ begin
     inherited;
 end;
 
-procedure TThCanvas.DoGrouping(AItem: TThItem);
+procedure TThCanvas.DoGrouping(AItem: IThItem);
 var
   I: Integer;
-  Obj: TFMXObject;
-  Item, NewParent: TThItem;
+  Item: TThItem;
+  _Item, NewParent: TThItem;
+  Child: IThItem;
+  Children: IThItems;
 begin
+  Item := TThItem(AItem);
+
   // (Resize 시)아이템 풀어주기
-  for I := 0 to AItem.ItemCount -1 do
+  for I := 0 to Item.ItemCount -1 do
   begin
-    Item := TThItem(AItem.Items[I]);
-    if not AItem.IsContain(Item) then
-      Item.ReleaseContain;
+    _Item := TThItem(Item.Items[I]);
+    if not Item.IsContain(_Item) then
+      _Item.ReleaseContain;
   end;
 
   // AItem에 다른 아이템 넣어주기(Search children)
-  for Obj in FContents.Children do
-  begin
-    if Obj = AItem then
-      Continue;
-    if AItem.IsContain(TThItem(Obj)) then
-      AItem.Contain(TThItem(Obj));
+  Children := TList<IThItem>.Create;
+  try
+    if GetContainChildrenItems(AItem, Children) then
+    begin
+      for Child in Children do
+        Item.Contain(TThItem(Child));
+    end;
+  finally
+    Children.Free;
   end;
 
   // AItem의 부모찾기(Change parent)
-  NewParent := TThItem(GetContainItem(AItem));
+  NewParent := TThItem(GetContainParentItem(Item));
 
-  if AItem.Parent is TThItem then
-    AItem.ReleaseContain;
+  if Item.Parent is TThItem then
+    Item.ReleaseContain;
 
   if Assigned(NewParent) then
   begin
-    if NewParent = AItem.Parent then
+    if NewParent = Item.Parent then
       Exit;
 
-    NewParent.Contain(AItem)
+    // 부모의 자식 중에서 자식 찾기
+
+    NewParent.Contain(Item)
   end;
 //  else
 end;
@@ -544,7 +555,27 @@ begin
   Result := PointF(Width / ZoomScale / 2, Height / ZoomScale / 2)
 end;
 
-function TThCanvas.GetContainItem(AItem: IThItem): IThItem;
+function TThCanvas.GetContainChildrenItems(AItem: IThItem;
+  AChildren: IThItems): Boolean;
+var
+  I: Integer;
+begin
+  for I := 0 to ItemCount - 1 do
+  begin
+    if AItem = Items[I] then
+      Continue;
+
+    if TThItem(AItem).IsContain(Items[I]) then
+      AChildren.Add(Items[I])
+    else
+      TThItem(Items[I]).GetContainChildrenItems(AItem, AChildren);
+    ;
+  end;
+
+  Result := AChildren.Count > 0;
+end;
+
+function TThCanvas.GetContainParentItem(AItem: IThItem): IThItem;
 var
   I: Integer;
   Item: TThItem;
@@ -555,7 +586,7 @@ begin
     if Item = TThItem(AItem) then
       Continue;
 
-    Result := Item.GetContainItem(AItem);
+    Result := Item.GetContainParentItem(AItem);
     if Assigned(Result) then
       Exit;
 //    if Item.IsContain(AItem) then

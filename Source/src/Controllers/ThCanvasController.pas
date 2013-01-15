@@ -58,7 +58,7 @@ end;
 
 procedure TThCanvasController.Notifycation(ACommand: IThCommand);
 begin
-
+//  FCanvas.DoGrouping(ACommand.;
 end;
 
 procedure TThCanvasController.SetSubject(ASubject: IThSubject);
