@@ -20,7 +20,8 @@ type
     // #265 Undo/Redo 시 부모가 원복 되어야 한다.
     procedure TestCmdHistoryRecoveryParent_Move;
     procedure TestCmdHistoryRecoveryParent_Add;
-    procedure TestCmdHistoryRecoveryParent_Delete;
+    procedure TestCmdHistoryRecoveryParent_DeleteChild;
+    procedure TestCmdHistoryRecoveryParent_DeleteParent;
     procedure TestCmdHistoryRecoveryParent_Resize;
   end;
 
@@ -64,19 +65,9 @@ begin
   CheckEquals(C1.Position.X, 200, 3, Format('C1.X : %f', [C1.Position.X]));
 end;
 
-procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_Add;
-begin
-
-end;
-
-procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_Delete;
-begin
-
-end;
-
 procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_Move;
 var
-  P1, P2, C1: TThItem;
+  P1, C1: TThItem;
 begin
   P1 := DrawRectangle(10, 10, 150, 150, 'P1');
   C1 := DrawRectangle(160, 160, 210, 210, 'C1');
@@ -90,12 +81,104 @@ begin
 
   FThothController.Undo;
 
-  Check(C1.Parent <> P1, Format('After Undo: %s', [C1.Parent.Name]));
+  Check(C1.Parent <> P1, Format('Undo: %s', [C1.Parent.Name]));
+
+  FThothController.Redo;
+
+  Check(C1.Parent = P1, Format('Redo: %s', [C1.Parent.Name]));
+end;
+
+procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_Add;
+var
+  P1, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C1 := DrawRectangle(30, 30, 130, 130, 'C1');
+
+  Check(C1.Parent = P1, 'Contain');
+
+  FThothController.Undo;
+
+  Check(not Assigned(C1.Parent), Format('Undo: %s', ['C1.Parent is not null']));
+
+  FThothController.Redo;
+
+  Check(C1.Parent = P1, Format('Redo: %s', [C1.Parent.Name]));
+end;
+
+procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_DeleteChild;
+var
+  P1, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C1 := DrawRectangle(30, 30, 130, 130, 'C1');
+
+  Check(C1.Parent = P1, 'Contain');
+
+  TestLib.RunMouseClick(100, 100);
+  FCanvas.DeleteSelection;
+
+  Check(not Assigned(C1.Parent), Format('Delete: %s', ['C1.Parent is not null']));
+
+  FThothController.Undo;
+
+  Check(C1.Parent = P1, Format('Undo: %s', [C1.Parent.Name]));
+
+  FThothController.Redo;
+
+  CheckEquals(P1.ItemCount, 0, Format('ItemCount: %d', [P1.ItemCount]));
+end;
+
+procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_DeleteParent;
+var
+  P1, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C1 := DrawRectangle(30, 30, 130, 130, 'C1');
+
+  Check(C1.Parent = P1, 'Contain');
+
+  TestLib.RunMouseClick(20, 20);
+  FCanvas.DeleteSelection;
+
+  // Parent 지우면 자식도 지워짐
+  Check(not Assigned(P1.Parent), Format('P1.Parent is not null', []));
+
+  FThothController.Undo;
+
+  Check(Assigned(P1.Parent), Format('Undo: %s', [P1.Parent.Name]));
+  Check(C1.Parent = P1, Format('Undo>C1.Parent: %s', [P1.Parent.Name]));
+
+  FThothController.Redo;
+
+  Check(not Assigned(P1.Parent), Format('Redo> P1.Parent is not null', []));
 end;
 
 procedure TestTThItemGrouppingMulti.TestCmdHistoryRecoveryParent_Resize;
+var
+  P1, C1: TThItem;
 begin
+  P1 := DrawRectangle(110, 110, 250, 250, 'P1');
+  C1 := DrawRectangle(130, 130, 290, 290, 'C1');
 
+  Check(C1.Parent <> P1, 'Not contain');
+
+  TestLib.RunMouseClick(200, 200);
+  TestLib.RunMousePath(MousePath.New
+  .Add(290, 290)
+  .Add(200, 200)
+  .Add(230, 230).Path);
+
+  Check(C1.Parent = P1, 'Contain');
+
+  FThothController.Undo;
+
+  Check(C1.Parent <> P1, 'Undo> Not contain');
+  CheckEquals(C1.Position.X, 200, Format('C1.Position.X : %f', [C1.Position.X]));
+Check(False);
+  FThothController.Redo;
+
+  Check(C1.Parent = P1, 'Redo> Contain');
 end;
 
 initialization

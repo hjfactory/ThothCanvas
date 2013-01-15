@@ -101,7 +101,7 @@ var
   Item: TThItem;
 begin
   Item := FItems[0];
-  Item.Parent := FParent;
+  Item.Parent := TFMXObject(Item.TagObject);
   Item.Visible := True;
   Item.Selected := True;
 //  Item.Repaint;
@@ -113,6 +113,7 @@ var
 begin
   Item := FItems[0];
   Item.Selected := False;
+  Item.TagObject := Item.Parent;
   Item.Parent := nil;
   Item.Visible := False;
 end;
@@ -132,6 +133,7 @@ var
 begin
   for I := 0 to FItems.Count - 1 do
   begin
+    FItems[I].TagObject := FItems[I].Parent;
     FItems[I].Parent := nil;
     FItems[I].Visible := False;
     FItems[I].Selected := False;
@@ -150,7 +152,7 @@ begin
   try
     for I := 0 to FItems.Count - 1 do
     begin
-      FItems[I].Parent := FParent;
+      FItems[I].Parent := TFMXObject(FItems[I].TagObject);
       FItems[I].Index := FItems[I].Tag;
       FItems[I].Visible := True;
       FItems[I].Selected := True;
@@ -210,6 +212,7 @@ begin
 
   Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
   Item.RealignSpot;
+  Item.ParentCanvas.DoGrouping(Item);
 end;
 
 procedure TThCommandItemResize.Rollback;
@@ -220,6 +223,7 @@ begin
 
   Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
   Item.RealignSpot;
+  Item.ParentCanvas.DoGrouping(Item);
 end;
 
 end.
