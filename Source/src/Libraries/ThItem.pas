@@ -43,6 +43,10 @@ type
     function GetItemCount: Integer;
 
     function GetAbsolutePoint(APoint: TPointF): TPointF;
+    function GetBeforeParent: TFmxObject;
+    procedure SetBeforeParent(const Value: TFmxObject);
+    function GetBeforendex: Integer;
+    procedure SetBeforeIndex(const Value: Integer);
   protected
     FHighlighter: IItemHighlighter;
     FSelection: IItemSelection;
@@ -86,6 +90,9 @@ type
     function IsContain(AItem: IThItem): Boolean; virtual;
     procedure Contain(AItem: TThItem); virtual;
     procedure ReleaseContain; virtual;
+
+    property BeforeParent: TFmxObject read GetBeforeParent write SetBeforeParent;
+    property BeforeIndex: Integer read GetBeforendex write SetBeforeIndex;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -143,6 +150,17 @@ begin
 
   inherited;
 end;
+
+function TThItem.CreateHighlighter: IItemHighlighter;
+begin
+end;
+
+function TThItem.CreateSelection: IItemSelection;
+begin
+end;
+
+//////////////////////////////////////
+// Contain functions
 function TThItem.IsContain(AItem: IThItem): Boolean;
 begin
   Result := False;
@@ -153,8 +171,9 @@ var
   AbsoluteP: TPointF;
 begin
   AbsoluteP := GetAbsolutePoint(PointF(0, 0));
-//  AItem.Position.Point := AItem.Position.Point.Subtract(AbsoluteP)
+
   AItem.Position.Point := AItem.GetAbsolutePoint(PointF(0, 0)).Subtract(AbsoluteP);
+  AItem.BeforeParent := AItem.Parent;
   AItem.Parent := Self;
 end;
 
@@ -163,27 +182,9 @@ var
   P: TThitem;
 begin
   P := TThItem(Parent);
-  Parent := TFmxObject(FParentCanvas);
+  Parent := BeforeParent;
   if Assigned(P) then
     Position.Point := Position.Point.Add(P.Position.Point);
-end;
-
-procedure TThItem.SetItemData(AItemData: IThItemData);
-begin
-end;
-
-procedure TThItem.SetParentCanvas(const Value: IThCanvas);
-begin
-  FParentCanvas := Value;
-  Parent := TFMXObject(Value);
-end;
-
-function TThItem.CreateHighlighter: IItemHighlighter;
-begin
-end;
-
-function TThItem.CreateSelection: IItemSelection;
-begin
 end;
 
 procedure TThItem.Painting;
@@ -306,6 +307,40 @@ function TThItem.GetItemRect: TRectF;
 begin
   Result := LocalRect;
 end;
+
+///////////////////////////////////////
+// Setter & Getter
+procedure TThItem.SetItemData(AItemData: IThItemData);
+begin
+end;
+
+procedure TThItem.SetBeforeIndex(const Value: Integer);
+begin
+  Tag := Value;
+end;
+
+procedure TThItem.SetBeforeParent(const Value: TFmxObject);
+begin
+  TagObject := Value;
+end;
+
+procedure TThItem.SetParentCanvas(const Value: IThCanvas);
+begin
+  FParentCanvas := Value;
+  Parent := TFMXObject(Value);
+end;
+
+function TThItem.GetBeforendex: Integer;
+begin
+  Result := Tag;
+end;
+
+function TThItem.GetBeforeParent: TFmxObject;
+begin
+  Result := TFmxObject(TagObject);
+end;
+// Setter & Getter
+///////////////////////////////////////
 
 function TThItem.GetUpdateRect: TRectF;
 begin

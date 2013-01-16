@@ -273,7 +273,7 @@ procedure TThCanvas.DoGrouping(AItem: IThItem);
 var
   I: Integer;
   Item: TThItem;
-  _Item, NewParent: TThItem;
+  CurrItem, NewParent: TThItem;
   Child: IThItem;
   Children: IThItems;
 begin
@@ -282,9 +282,9 @@ begin
   // (Resize 시)아이템 풀어주기
   for I := 0 to Item.ItemCount -1 do
   begin
-    _Item := TThItem(Item.Items[I]);
-    if not Item.IsContain(_Item) then
-      _Item.ReleaseContain;
+    CurrItem := TThItem(Item.Items[I]);
+    if not Item.IsContain(CurrItem) then
+      CurrItem.ReleaseContain;
   end;
 
   // AItem에 다른 아이템 넣어주기(Search children)
@@ -311,7 +311,6 @@ begin
       Exit;
 
     // 부모의 자식 중에서 자식 찾기
-
     NewParent.Contain(Item)
   end;
 //  else

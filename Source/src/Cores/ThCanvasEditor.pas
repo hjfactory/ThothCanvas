@@ -176,18 +176,19 @@ end;
 
 procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
-  P: TPointF;
+  Distance: TPointF;
 begin
-  P := Item.Position.Point.Subtract(StartPos);
-
-  if Assigned(FOnItemMove) then
-    FOnItemMove(FSelections, P);
+  Distance := Item.Position.Point.Subtract(StartPos);
 
   DoGrouping(Item);
+
+  if Assigned(FOnItemMove) then
+    FOnItemMove(FSelections, Distance);
 end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
 begin
+  Item.BeforeParent := Item.Parent;
   DoGrouping(Item);
 
   if Assigned(FOnItemResize) then
@@ -243,8 +244,8 @@ begin
 
   for I := FSelections.Count - 1 downto 0 do
   begin
-    FSelections[I].Tag := FSelections[I].Index; // Rollback 시 Index 복구용
-    FSelections[I].TagObject := FSelections[I].Parent;
+    FSelections[I].BeforeIndex := FSelections[I].Index; // Rollback 시 Index 복구용
+    FSelections[I].BeforeParent := FSelections[I].Parent;
     FSelections[I].Parent := nil;
     FSelections[I].Visible := False;
     FSelections[I].Selected := False;

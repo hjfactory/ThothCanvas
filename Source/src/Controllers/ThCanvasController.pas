@@ -100,7 +100,6 @@ procedure TThCanvasEditorController.ItemResize(Item: TThItem;
   BeforeRect: TRectF);
 begin
   FSubject.Subject(Self, TThCommandItemResize.Create(Item, BeforeRect));
-
 end;
 
 end.
