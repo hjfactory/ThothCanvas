@@ -203,8 +203,8 @@ end;
 
 procedure TestTThItemGroupping.TestMoveOutDegrouping;
 begin
-  DrawRectangle(50, 50, 130, 130, 'P1'); // P1
-  DrawRectangle(70, 70, 120, 120, 'C1');
+  DrawRectangle(50, 50, 130, 130); // P1
+  DrawRectangle(70, 70, 120, 120);
 
   CheckEquals(FCanvas.ItemCount, 1);
 
@@ -242,7 +242,6 @@ begin
   TestLib.RunMouseClick(150, 150);
   C1 := FCanvas.SelectedItem;
 
-  CheckNotNull(C1);
   CheckEquals(C1.Position.X, 500);
 
   TestLib.RunMousePath(MousePath.New
@@ -330,10 +329,10 @@ var
   P1, C1: TThItem;
 begin
   // P1 그리기
-  P1 := DrawRectangle(10, 10, 110, 110, 'P1');
+  P1 := DrawRectangle(10, 10, 110, 110);
 
   // C1 그리기
-  C1 := DrawRectangle(40, 40, 80, 80, 'C1');
+  C1 := DrawRectangle(40, 40, 80, 80);
 
   // C1을 P1이 넘도록 크기 변경
   TestLib.RunMousePath(MousePath.New
@@ -350,10 +349,10 @@ var
   P1, C1: TThItem;
 begin
   // P1 그리기
-  P1 := DrawRectangle(10, 10, 200, 200, 'P1');
+  P1 := DrawRectangle(10, 10, 200, 200);
 
   // C1 그리기
-  C1 := DrawRectangle(40, 40, 150, 150, 'C1');
+  C1 := DrawRectangle(40, 40, 150, 150);
 
   // C1을 P1이 넘도록 크기 변경
   TestLib.RunMouseClick(195, 195);

@@ -174,50 +174,22 @@ end;
 procedure TThCommandItemMove.Execute;
 var
   I: Integer;
-  Item: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
   begin
-    Item        := FItems[I];
-    CurrParent  := Item.Parent;
-    CurrIndex   := Item.Index;
-
-    Item.Parent := Item.BeforeParent;
-    Item.Index  := Item.BeforeIndex;
-    Item.BeforeParent := CurrParent;
-    Item.BeforeIndex  := CurrIndex;
-    Item.Position.Point := Item.Position.Point.Add(FDistance);
-    if Item.Parent is TThItem then
-    Item.Position.Point := Item.Position.Point.Subtract(TThItem(Item.Parent).GetAbsolutePoint);
-//    if Item.Parent is TThItem then
-//      TThItem(Item.Parent).Contain(Item);
-//    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
+    FItems[I].Position.Point := FItems[I].Position.Point.Add(FDistance);
+    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
   end;
 end;
 
 procedure TThCommandItemMove.Rollback;
 var
   I: Integer;
-  Item: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
 begin
   for I := 0 to FItems.Count - 1 do
   begin
-    Item        := FItems[I];
-    CurrParent  := Item.Parent;
-    CurrIndex   := Item.Index;
-
-    if CurrParent is TThItem then
-      Item.Position.Point := Item.GetAbsolutePoint;
-    Item.Parent := Item.BeforeParent;
-    Item.Index  := Item.BeforeIndex;
-    Item.BeforeParent := CurrParent;
-    Item.BeforeIndex  := CurrIndex;
-    Item.Position.Point := Item.Position.Point.Subtract(FDistance);
-//    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
+    FItems[I].Position.Point := FItems[I].Position.Point.Subtract(FDistance);
+    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
   end;
 end;
 
@@ -235,19 +207,13 @@ end;
 procedure TThCommandItemResize.Execute;
 var
   Item: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
+  P: TFmxObject;
 begin
   Item := FItems[0];
 
-  CurrParent  := Item.Parent;
-  CurrIndex   := Item.Index;
-
+  P := Item.Parent;
   Item.Parent := Item.BeforeParent;
-  Item.Index  := Item.BeforeIndex;
-  Item.BeforeParent := CurrParent;
-  Item.BeforeIndex  := CurrIndex;
-//
+  Item.BeforeParent := P;
   Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
   Item.RealignSpot;
   Item.ParentCanvas.DoGrouping(Item);
@@ -256,19 +222,13 @@ end;
 procedure TThCommandItemResize.Rollback;
 var
   Item: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
+  P: TFmxObject;
 begin
   Item := FItems[0];
 
-  CurrParent  := Item.Parent;
-  CurrIndex   := Item.Index;
-
+  P := Item.Parent;
   Item.Parent := Item.BeforeParent;
-  Item.Index  := Item.BeforeIndex;
-  Item.BeforeParent := CurrParent;
-  Item.BeforeIndex  := CurrIndex;
-
+  Item.BeforeParent := P;
   Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
   Item.RealignSpot;
   Item.ParentCanvas.DoGrouping(Item);
