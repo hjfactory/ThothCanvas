@@ -81,8 +81,10 @@ var
   ServiceIntf: IInterface;
   thread: TThread;
 begin
+  // Clipboard¿¡ Ãß°¡
   if TPlatformServices.Current.SupportsPlatformService(IFMXClipboardService, ServiceIntf) then
     (ServiceIntf as IFMXClipboardService).SetClipboard(TestImagePath);
+
   thread := TThread.CreateAnonymousThread(
     procedure
     var
@@ -90,9 +92,12 @@ begin
     begin
       for I := 0 to 20 do
       begin
-        Sleep(100);
+        Sleep(1000);
         TestLib.RunKeyPress([vkControl, Ord('V')]);
         TestLib.RunKeyPress([vkReturn]);
+
+        if FCanvas.ItemCount > 0 then
+          Break;
       end;
     end
   );

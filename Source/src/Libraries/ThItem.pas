@@ -42,7 +42,6 @@ type
     function GetItem(Index: Integer): IThItem;
     function GetItemCount: Integer;
 
-    function GetAbsolutePoint(APoint: TPointF): TPointF;
     function GetBeforeParent: TFmxObject;
     procedure SetBeforeParent(const Value: TFmxObject);
     function GetBeforendex: Integer;
@@ -72,7 +71,6 @@ type
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
-//    constructor Create(AOwner: TComponent; AItemData: TThItemData = nil); reintroduce; virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -91,6 +89,9 @@ type
     procedure Contain(AItem: TThItem); virtual;
     procedure ReleaseContain; virtual;
 
+    function GetAbsolutePoint(APoint: TPointF): TPointF; overload;
+    function GetAbsolutePoint: TPointF; overload;
+
     property BeforeParent: TFmxObject read GetBeforeParent write SetBeforeParent;
     property BeforeIndex: Integer read GetBeforendex write SetBeforeIndex;
 
@@ -108,6 +109,7 @@ type
     function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
     function GetContainParentItem(AItem: IThItem): IThItem;
   end;
+
   TThItemClass = class of TThItem;
 
   TThFileItemData = class(TThItemData)
@@ -170,21 +172,22 @@ procedure TThItem.Contain(AItem: TThItem);
 var
   AbsoluteP: TPointF;
 begin
-  AbsoluteP := GetAbsolutePoint(PointF(0, 0));
+  AbsoluteP := GetAbsolutePoint;
 
-  AItem.Position.Point := AItem.GetAbsolutePoint(PointF(0, 0)).Subtract(AbsoluteP);
+  AItem.Position.Point := AItem.GetAbsolutePoint.Subtract(AbsoluteP);
   AItem.BeforeParent := AItem.Parent;
   AItem.Parent := Self;
 end;
 
 procedure TThItem.ReleaseContain;
 var
-  P: TThitem;
+  CurrParent: TFMXObject;
 begin
-  P := TThItem(Parent);
+  CurrParent := Parent;
   Parent := BeforeParent;
-  if Assigned(P) then
-    Position.Point := Position.Point.Add(P.Position.Point);
+  BeforeParent := CurrParent;
+  if Assigned(CurrParent) then
+    Position.Point := Position.Point.Add(TControl(CurrParent).Position.Point);
 end;
 
 procedure TThItem.Painting;
@@ -244,6 +247,11 @@ begin
   Result := APoint.Add(Position.Point);
   if Parent is TThItem then
     Result := TThItem(Parent).GetAbsolutePoint(Result);
+end;
+
+function TThItem.GetAbsolutePoint: TPointF;
+begin
+  Result := GetAbsolutePoint(PointF(0, 0));
 end;
 
 function TThItem.GetContainChildrenItems(AItem: IThItem;

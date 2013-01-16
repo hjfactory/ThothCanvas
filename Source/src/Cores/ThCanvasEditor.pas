@@ -179,6 +179,7 @@ var
   Distance: TPointF;
 begin
   Distance := Item.Position.Point.Subtract(StartPos);
+  Item.BeforeParent := Item.Parent;
 
   DoGrouping(Item);
 
@@ -188,7 +189,6 @@ end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
 begin
-  Item.BeforeParent := Item.Parent;
   DoGrouping(Item);
 
   if Assigned(FOnItemResize) then

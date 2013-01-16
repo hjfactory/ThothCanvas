@@ -30,7 +30,7 @@ type
     procedure TestResizeParent;
 
     // #249 Undo / Redo 시 ItemIndex가 원래대로 돌아와야 한다.
-    procedure TestRecoveryItemIndex_Move;
+    procedure TestRecoveryIndexMove;
   end;
 
 implementation
@@ -60,20 +60,22 @@ begin
   FThothController.Undo;
 
   Check(C1.Parent <> P1, Format('Undo: %s', [C1.Parent.Name]));
-  Check(C1.Position.Point = C1P_O);
+  CheckEquals(C1.Position.Point.X, C1P_O.X, 'C1P_O');
+//  Check(C1.Position.Point = C1P_O, Format('C1P_O(%f,%f)', [C1P_O.X, C1P_O.Y]));
 
   FThothController.Redo;
 
   Check(C1.Parent = P1, Format('Redo: %s', [C1.Parent.Name]));
-  Check(C1.Position.Point = C1P_N);
+  Check(C1.Position.Point = C1P_N, 'C1P_N');
 end;
 
 procedure TestTThItemGrouppingHistory.TestMoveParent;
 var
-  P1, C1: TThItem;
+  P1, C1, C2: TThItem;
 begin
-  P1 := DrawRectangle(10, 10, 100, 100, 'P1');
-  C1 := DrawRectangle(110, 110, 160, 160, 'C1');
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C1 := DrawRectangle(130, 130, 180, 180, 'C1');
+  C2 := DrawRectangle(20, 20, 50, 50, 'C2');
 
   // P1으로 C1 덮기
   TestLib.RunMouseClick(20, 20);
@@ -90,6 +92,7 @@ begin
   TestLib.RunMouseClick(150, 150);
   Check(FCanvas.SelectedItem = C1);
   Check(C1.Parent <> P1, Format('C1.Parent is %s(Not Parent <> P1)', [C1.Parent.Name]));
+  Check(C2.Parent = P1, 'C2.Parent is P1');
 
   FThothController.Redo;
 
@@ -156,13 +159,15 @@ begin
   Check(C1.Parent = P1, 'Contain');
 
   FThothController.Undo;
+  Application.ProcessMessages;
 
   Check(C1.Parent <> P1, 'Undo> Not contain');
   CheckEquals(C1.Position.X, -200, Format('Undo> C1.Position.X : %f', [C1.Position.X]));
 
   FThothController.Redo;
+  Application.ProcessMessages;
 
-  Check(C1.Parent = P1, 'Redo> Contain');
+  Check(C1.Parent = P1, 'Contain');
 end;
 
 procedure TestTThItemGrouppingHistory.TestResizeParent;
@@ -193,9 +198,10 @@ begin
   Check(C1.Parent <> P1, 'Redo> Not contain');
 end;
 
-procedure TestTThItemGrouppingHistory.TestRecoveryItemIndex_Move;
+procedure TestTThItemGrouppingHistory.TestRecoveryIndexMove;
 var
   P1, P2, C1: TThItem;
+  C1P: TPointF;
 begin
   // C1위에 P2를 겹치게 그리고
   // C1을 P1에 올린 후 Undo 시 C1이 그대로 P2아래에 있어야 한다.
@@ -203,6 +209,8 @@ begin
   P1 := DrawRectangle(10, 10, 130, 130, 'P1');
   C1 := DrawRectangle(150, 150, 200, 200, 'C1');
   P2 := DrawRectangle(170, 170, 250, 250, 'P2');
+
+  C1P := C1.Position.Point;
 
   TestLib.RunMouseClick(180, 180);
   Check(FCanvas.SelectedItem = P2);
@@ -218,6 +226,7 @@ begin
 
   TestLib.RunMouseClick(180, 180);
   Check(FCanvas.SelectedItem = P2, Format('Selection Item = %s(Not P2)', [FCanvas.SelectedItem.Name]));
+  Check(C1.Position.Point = C1P, Format('C1.Position.Point: %f.%f', [C1.Position.Point.X, C1.Position.Point.Y]));
 end;
 
 initialization
