@@ -11,6 +11,9 @@ type
   // #253 겹친 부분 해제되는 경우 그루핑이 풀려야 한다.
   TestTThItemGroupping = class(TThCanvasBaseTestUnit)
   published
+    // 기능 테스트
+    procedure TestGetAbsolutePoint;
+
     // #244 P1이 C1을 포함하는 영역으로 이동하는 경우 C1이 그룹핑 되어야 한다.
     procedure TestP1MoveOuterC1;
 
@@ -65,6 +68,9 @@ type
 
     // #251 P1에 C1이 올라간 상태서 P2를 C1보다 크게 P1에 올리면 P1>P2>C1으로 그루핑된다.
     procedure TestMoveGroupingAndContain;
+
+    // #283 C1을 포함하여 그리는 경우 C1이 포함되어야 한다.
+    procedure TestDrawOverRange;
   end;
 
 implementation
@@ -73,6 +79,30 @@ uses
   FMX.TestLib, ThItem, ThShapeItem, ThItemFactory, ThConsts, System.Math, DebugUtils;
 
 { TestTThItemGroupping }
+
+procedure TestTThItemGroupping.TestGetAbsolutePoint;
+var
+  D1, D2, D3: TThItem;
+  P: TPointF;
+begin
+  D1 := DrawRectangle(100, 120, 250, 250, 'D1');
+  D2 := DrawRectangle(120, 140, 200, 240, 'D2');
+  D3 := DrawRectangle(160, 190, 190, 220, 'D3');
+
+  P := D1.GetAbsolutePoint;
+  CheckEquals(P.X, -500,  'D1.X');
+  CheckEquals(P.Y, -300,  'D1.Y');
+
+  P := D2.GetAbsolutePoint;
+  Check(D2.Parent = D1, Format('D2.Parent = %s(%s)', [D2.Parent.Name, D2.Parent.ClassName]));
+  CheckEquals(P.X, -300,    'D2.X');
+  CheckEquals(P.Y, -100,  'D2.Y');
+
+  P := D3.GetAbsolutePoint;
+  Check(D3.Parent = D2, Format('D3.Parent = %s(%s)', [D3.Parent.Name, D3.Parent.ClassName]));
+  CheckEquals(P.X, 100,  'D3.X');
+  CheckEquals(P.Y, 400,  'D3.Y');
+end;
 
 procedure TestTThItemGroupping.TestP1MoveOuterC1;
 begin
@@ -442,6 +472,17 @@ begin
   Check(C1.Parent = P2, C1.Parent.Name);
   CheckEquals(P2.Position.X, 100, 3, Format('P2.X : %f', [P2.Position.X]));
   CheckEquals(C1.Position.X, 200, 3, Format('C1.X : %f', [C1.Position.X]));
+end;
+
+procedure TestTThItemGroupping.TestDrawOverRange;
+var
+  P1, C1: TThItem;
+begin
+  C1 := DrawRectangle(40, 40, 110, 110, 'C1');
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+
+  Check(C1.Parent = P1, 'parent');
+  CheckEquals(C1.Position.X, 300);
 end;
 
 initialization

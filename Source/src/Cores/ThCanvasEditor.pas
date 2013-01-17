@@ -179,7 +179,7 @@ var
   Distance: TPointF;
 begin
   Distance := Item.Position.Point.Subtract(StartPos);
-  Item.BeforeParent := Item.Parent;
+//  Item.BeforeParent := Item.Parent;
 
   DoGrouping(Item);
 
@@ -311,7 +311,10 @@ begin
   if IsDrawingItem and Assigned(FDrawItem) then
   begin
     FDrawItem.Selected := True;
-    DoGrouping(FDrawItem);
+//    DoGrouping(FDrawItem);
+// HJF
+    DoContainParent(FDrawItem);
+//HJF
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);
   end;

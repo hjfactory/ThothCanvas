@@ -74,6 +74,11 @@ type
     procedure DoGrouping(AItem: IThItem); virtual;
 //    procedure DoDegrouping(AItem: TThItem); virtual;
 
+    procedure DoReleaseParent(AItem: TThItem);
+    procedure DoContainParent(AItem: TThItem);
+    procedure DoReleaseChildren(AItem: TThItem);
+    procedure DoContainsChildren(AItem: TThItem);
+
     procedure ClickCanvas; virtual;
   public
     constructor Create(AOwner: TComponent); override;
@@ -104,6 +109,7 @@ type
 
     property Items[Index: Integer] : IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
+
     function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
     function GetContainParentItem(AItem: IThItem): IThItem;
 
@@ -269,6 +275,58 @@ begin
     inherited;
 end;
 
+procedure TThCanvas.DoContainParent(AItem: TThItem);
+var
+  I: Integer;
+  CurrItem, NewParent: TThItem;
+begin
+  if AItem.Parent = Self then
+    Exit;
+
+  for I := ItemCount - 1 downto 0 do
+  begin
+    CurrItem := TThItem(Items[I]);
+
+    if CurrItem = AItem then
+      Continue;
+
+    NewParent := TThItem(CurrItem.GetContainParentItem(AItem));
+    if Assigned(NewParent) then
+      NewParent.Contain(AItem);
+//
+//    if TThItem(AItem).IsContain(Items[I]) then
+//      AChildren.Add(Items[I])
+//    else
+//      TThItem(Items[I]).GetContainChildrenItems(AItem, AChildren);
+//    ;
+//
+//    if CurrItem.IsContain(AItem) then
+//    begin
+//      CurrItem.Contain(AItem);
+//      Exit;
+//    end;
+  end;
+end;
+
+procedure TThCanvas.DoReleaseParent(AItem: TThItem);
+begin
+  if AItem.Parent = Self then
+    Exit;
+
+  AItem.Position.Point := AItem.GetAbsolutePoint;
+  AItem.Parent := Self;
+end;
+
+procedure TThCanvas.DoContainsChildren(AItem: TThItem);
+begin
+  //
+end;
+
+procedure TThCanvas.DoReleaseChildren(AItem: TThItem);
+begin
+
+end;
+
 procedure TThCanvas.DoGrouping(AItem: IThItem);
 var
   I: Integer;
@@ -315,6 +373,7 @@ begin
   end;
 //  else
 end;
+
 //
 //procedure TThCanvas.DoDegrouping(AItem: TThItem);
 //begin

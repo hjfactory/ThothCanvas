@@ -73,16 +73,22 @@ procedure TestTThItemGrouppingHistory.TestMoveParent;
 var
   P1, C1, C2: TThItem;
 begin
+  // C2가 올라간 P1으로 C1을 덮도록 이동한다.
+  // Undo 시 P1이 C2를 포함하여 제자리에 가고
+  // C1이 그대로 위치하는지 확인한다.
   P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C2 := DrawRectangle(20, 50, 50, 50, 'C2');
+  TThRectangle(C2).BgColor := claBlue;
+
   C1 := DrawRectangle(130, 130, 180, 180, 'C1');
-  C2 := DrawRectangle(20, 20, 50, 50, 'C2');
+  TThRectangle(C1).BgColor := claRed;
 
   // P1으로 C1 덮기
   TestLib.RunMouseClick(20, 20);
   TestLib.RunMousePath(MousePath.New
   .Add(50, 50)
   .Add(100, 100)
-  .Add(130, 130).Path);
+  .Add(140, 140).Path);
 
   Check(C1.Parent = P1, 'Contain');
 
@@ -90,7 +96,7 @@ begin
 
   // C1의 위치, 부모 확인
   TestLib.RunMouseClick(150, 150);
-  Check(FCanvas.SelectedItem = C1);
+  Check(FCanvas.SelectedItem = C1, 'Not selected C1');
   Check(C1.Parent <> P1, Format('C1.Parent is %s(Not Parent <> P1)', [C1.Parent.Name]));
   Check(C2.Parent = P1, 'C2.Parent is P1');
 

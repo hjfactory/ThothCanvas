@@ -336,6 +336,7 @@ procedure TThItem.SetParentCanvas(const Value: IThCanvas);
 begin
   FParentCanvas := Value;
   Parent := TFMXObject(Value);
+  BeforeParent := Parent;
 end;
 
 function TThItem.GetBeforendex: Integer;

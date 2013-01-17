@@ -254,7 +254,8 @@ begin
   .Add(R.BottomRight);
   TestLib.RunMousePath(MousePath.Path);
 
-  Result := GetItem(R.CenterPoint);
+//  Result := GetItem(R.CenterPoint);
+  Result := FCanvas.SelectedItem;
   if Assigned(Result) then
     Result.Name := AName;
 end;
