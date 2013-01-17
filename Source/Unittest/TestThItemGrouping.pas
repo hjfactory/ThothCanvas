@@ -14,6 +14,12 @@ type
     // 기능 테스트
     procedure TestGetAbsolutePoint;
 
+    // #250 P1에 C1을 드루윙하면 그루핑 되어야 한다.
+    procedure TestDrawToParent;
+
+    // #283 C1을 포함하여 그리는 경우 C1이 포함되어야 한다.
+    procedure TestDrawOverChildRange;
+
     // #244 P1이 C1을 포함하는 영역으로 이동하는 경우 C1이 그룹핑 되어야 한다.
     procedure TestP1MoveOuterC1;
 
@@ -27,9 +33,6 @@ type
     // #246 부모영역에 온전히 포함된 경우만 그루핑되어야 한다.
     procedure TestCotainRangeTopLeft; // (1/4)
     procedure TestCotainRangeTopLeft2; // (99% contain)
-
-    // #250 P1에 C1을 드루윙하면 그루핑 되어야 한다.
-    procedure TestParentDrawing;
 
     // #248 선안에는 아이템이 포함되지 않아야 한다.
     procedure TestDecontainLineItem;
@@ -68,9 +71,6 @@ type
 
     // #251 P1에 C1이 올라간 상태서 P2를 C1보다 크게 P1에 올리면 P1>P2>C1으로 그루핑된다.
     procedure TestMoveGroupingAndContain;
-
-    // #283 C1을 포함하여 그리는 경우 C1이 포함되어야 한다.
-    procedure TestDrawOverRange;
   end;
 
 implementation
@@ -89,19 +89,45 @@ begin
   D2 := DrawRectangle(120, 140, 200, 240, 'D2');
   D3 := DrawRectangle(160, 190, 190, 220, 'D3');
 
-  P := D1.GetAbsolutePoint;
+  P := D1.AbsolutePoint;
   CheckEquals(P.X, -500,  'D1.X');
   CheckEquals(P.Y, -300,  'D1.Y');
 
-  P := D2.GetAbsolutePoint;
-  Check(D2.Parent = D1, Format('D2.Parent = %s(%s)', [D2.Parent.Name, D2.Parent.ClassName]));
+  P := D2.AbsolutePoint;
+//  Check(D2.Parent = D1, Format('D2.Parent = %s(%s)', [D2.Parent.Name, D2.Parent.ClassName]));
   CheckEquals(P.X, -300,    'D2.X');
   CheckEquals(P.Y, -100,  'D2.Y');
 
-  P := D3.GetAbsolutePoint;
-  Check(D3.Parent = D2, Format('D3.Parent = %s(%s)', [D3.Parent.Name, D3.Parent.ClassName]));
+  P := D3.AbsolutePoint;
+//  Check(D3.Parent = D2, Format('D3.Parent = %s(%s)', [D3.Parent.Name, D3.Parent.ClassName]));
   CheckEquals(P.X, 100,  'D3.X');
   CheckEquals(P.Y, 400,  'D3.Y');
+end;
+
+procedure TestTThItemGroupping.TestDrawToParent;
+var
+  P1, C1: TThItem;
+begin
+  P1 := DrawRectangle(50, 50, 250, 250); // P1
+  P1.Name := 'P1';
+  DrawRectangle(100, 100, 200, 200);
+  TestLib.RunMouseClick(150, 150);
+  C1 := FCanvas.SelectedItem;
+  C1.Name := 'C1';
+
+  CheckEquals(FCanvas.ItemCount, 1);
+  Check(C1.Parent = P1, C1.Parent.ClassName);
+end;
+
+procedure TestTThItemGroupping.TestDrawOverChildRange;
+var
+  P1, C1: TThItem;
+begin
+  C1 := DrawRectangle(40, 40, 110, 110, 'C1');
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+
+  Check(C1.Parent = P1, 'parent');
+  CheckEquals(C1.Position.X, 300);
 end;
 
 procedure TestTThItemGroupping.TestP1MoveOuterC1;
@@ -116,6 +142,9 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(FCanvas.ItemCount = 1, Format('ItemCount = %d', [FCanvas.ItemCount]));
+  FCanvas.ClearSelection;
+  TestLib.RunMouseClick(150, 150);
+  CheckNotNull(FCanvas.SelectedItem);
 end;
 
 procedure TestTThItemGroupping.TestC1MoveInnerP1;
@@ -206,21 +235,6 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(C1.Parent <> P1, Format('C1.Parent : %s', [C1.Parent.ClassName]));
-end;
-
-procedure TestTThItemGroupping.TestParentDrawing;
-var
-  P1, C1: TThItem;
-begin
-  P1 := DrawRectangle(50, 50, 250, 250); // P1
-  P1.Name := 'P1';
-  DrawRectangle(100, 100, 200, 200);
-  TestLib.RunMouseClick(150, 150);
-  C1 := FCanvas.SelectedItem;
-  C1.Name := 'C1';
-
-  CheckEquals(FCanvas.ItemCount, 1);
-  Check(C1.Parent = P1, C1.Parent.ClassName);
 end;
 
 procedure TestTThItemGroupping.TestDecontainLineItem;
@@ -472,17 +486,6 @@ begin
   Check(C1.Parent = P2, C1.Parent.Name);
   CheckEquals(P2.Position.X, 100, 3, Format('P2.X : %f', [P2.Position.X]));
   CheckEquals(C1.Position.X, 200, 3, Format('C1.X : %f', [C1.Position.X]));
-end;
-
-procedure TestTThItemGroupping.TestDrawOverRange;
-var
-  P1, C1: TThItem;
-begin
-  C1 := DrawRectangle(40, 40, 110, 110, 'C1');
-  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
-
-  Check(C1.Parent = P1, 'parent');
-  CheckEquals(C1.Position.X, 300);
 end;
 
 initialization

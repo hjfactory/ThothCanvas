@@ -35,7 +35,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    function IsContain(AItem: IThItem): Boolean; override;
+    function IsContain(AChild: TThItem): Boolean; override;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property MinimumSize: TPointF read GetMinimumSize;
@@ -62,7 +62,7 @@ type
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
   public
-    function IsContain(AItem: IThItem): Boolean; override;
+    function IsContain(AChild: TThItem): Boolean; override;
 
     procedure DrawItemAtMouse(AFrom, ATo: TPointF); override;
   end;
@@ -111,9 +111,9 @@ begin
   Result := PointF(MinSize, MinSize);
 end;
 
-function TThShapeItem.IsContain(AItem: IThItem): Boolean;
+function TThShapeItem.IsContain(AChild: TThItem): Boolean;
 begin
-  Result := AbsoluteRect.Contains(TThItem(AItem).AbsoluteRect);
+  Result := AbsoluteRect.Contains(AChild.AbsoluteRect);
 end;
 
 function TThShapeItem.CreateHighlighter: IItemHighlighter;
@@ -227,7 +227,7 @@ begin
   Result := TItemResizeSpot(FSelection.Spots[0]).SpotCorner in [scTopLeft, scBottomRight];
 end;
 
-function TThLine.IsContain(AItem: IThItem): Boolean;
+function TThLine.IsContain(AChild: TThItem): Boolean;
 begin
   Result := False;
 end;

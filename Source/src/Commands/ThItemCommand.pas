@@ -190,7 +190,7 @@ begin
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Add(FDistance);
     if Item.Parent is TThItem then
-    Item.Position.Point := Item.Position.Point.Subtract(TThItem(Item.Parent).GetAbsolutePoint);
+    Item.Position.Point := Item.Position.Point.Subtract(TThItem(Item.Parent).AbsolutePoint);
 //    if Item.Parent is TThItem then
 //      TThItem(Item.Parent).Contain(Item);
 //    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
@@ -211,7 +211,7 @@ begin
     CurrIndex   := Item.Index;
 
     if CurrParent is TThItem then
-      Item.Position.Point := Item.GetAbsolutePoint;
+      Item.Position.Point := Item.AbsolutePoint;
     Item.Parent := Item.BeforeParent;
     Item.Index  := Item.BeforeIndex;
     Item.BeforeParent := CurrParent;
@@ -250,7 +250,7 @@ begin
 //
   Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
   Item.RealignSpot;
-  Item.ParentCanvas.DoGrouping(Item);
+//  Item.ParentCanvas.DoGrouping(Item);
 end;
 
 procedure TThCommandItemResize.Rollback;
@@ -271,7 +271,7 @@ begin
 
   Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
   Item.RealignSpot;
-  Item.ParentCanvas.DoGrouping(Item);
+//  Item.ParentCanvas.DoGrouping(Item);
 end;
 
 end.

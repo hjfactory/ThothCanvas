@@ -53,8 +53,7 @@ uses
   TestThItemImage in 'TestThItemImage.pas',
   ThImageItem in '..\src\Cores\ThImageItem.pas',
   ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas',
-  TestThItemGrouping in 'TestThItemGrouping.pas',
-  TestThItemGroupingHistory in 'TestThItemGroupingHistory.pas';
+  TestThItemGrouping in 'TestThItemGrouping.pas';
 
 {$R *.RES}
 

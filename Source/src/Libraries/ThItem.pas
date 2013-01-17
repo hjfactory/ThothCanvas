@@ -26,9 +26,23 @@ type
     destructor Destroy; override;
   end;
 
+  IThItemContainer = interface
+    function GetItem(Index: Integer): TThItem;
+    function GetItemCount: Integer;
+    property Items[Index: Integer]: TThItem read GetItem;
+    property ItemCount: Integer read GetItemCount;
+
+    function FindParent(AItem: TThItem): TFMXObject;
+    procedure ContainChildren(AItem: TThItem);
+
+    procedure DoAddObject(AObject: TFmxObject);
+    procedure DoRemoveObject(AObject: TFmxObject);
+  end;
+
   TThItem = class(TControl, IThItem, IThItemContainer)
   private
     FParentCanvas: IThCanvas;
+
     FSpotCount: Integer;
 
     FOnSelected: TItemSelectedEvent;
@@ -36,17 +50,20 @@ type
     FOnTracking: TTrackingEvent;
     FOnMove: TItemMoveEvent;
     FOnResize: TItemResizeEvent;
+
+    // 최종 포함된 자식 목록(Undo시 필요)
     FLastContainItems: TThItems;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
-    function GetItem(Index: Integer): IThItem;
-    function GetItemCount: Integer;
-
-    function GetBeforeParent: TFmxObject;
-    procedure SetBeforeParent(const Value: TFmxObject);
     function GetBeforendex: Integer;
+    function GetBeforeParent: TFmxObject;
     procedure SetBeforeIndex(const Value: Integer);
+    procedure SetBeforeParent(const Value: TFmxObject);
+    function GetAbsolutePoint: TPointF; overload;
+    function GetAbsolutePoint(APoint: TPointF): TPointF; overload;
+    function GetItem(Index: Integer): TThItem;
+    function GetItemCount: Integer;
   protected
     FHighlighter: IItemHighlighter;
     FSelection: IItemSelection;
@@ -54,6 +71,9 @@ type
     FSelected: Boolean;
     FMouseDownPos,
     FDownItemPos: TPointF;
+
+    procedure DoAddObject(AObject: TFmxObject); override;
+    procedure DoRemoveObject(AObject: TFmxObject); override;
 
     function CreateHighlighter: IItemHighlighter; virtual;
     function CreateSelection: IItemSelection; virtual;
@@ -72,8 +92,12 @@ type
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
+//    constructor Create(AOwner: TComponent; AItemData: TThItemData = nil); reintroduce; virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    property Items[Index: Integer]: TThItem read GetItem;
+    property ItemCount: Integer read GetItemCount;
 
     procedure SetItemData(AItemData: IThItemData); virtual;
 
@@ -86,33 +110,29 @@ type
     procedure ShowSpots;
     procedure ShowDisableSpots;
 
-    function IsContain(AItem: IThItem): Boolean; virtual;
+    function FindParent(AItem: TThItem): TFMXObject;
+    procedure ContainChildren(AItem: TThItem);
+
+    function IsContain(AChild: TThItem): Boolean; virtual;
     procedure Contain(AItem: TThItem); virtual;
     procedure ReleaseContain; virtual;
 
-    function GetAbsolutePoint(APoint: TPointF): TPointF; overload;
-    function GetAbsolutePoint: TPointF; overload;
+
+    property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
+    property Selected: Boolean read FSelected write SetSelected;
 
     property BeforeParent: TFmxObject read GetBeforeParent write SetBeforeParent;
     property BeforeIndex: Integer read GetBeforendex write SetBeforeIndex;
     property LastContainItems: TThItems read FLastContainItems;
 
-    property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
-    property Selected: Boolean read FSelected write SetSelected;
+    property AbsolutePoint: TPointF read GetAbsolutePoint;
 
     property OnSelected: TItemSelectedEvent read FOnSelected write FOnSelected;
     property OnUnselected: TItemEvent read FOnUnselected write FOnUnselected;
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
     property OnResize: TItemResizeEvent read FOnResize write FOnResize;
-
-    property Items[Index: Integer]: IThItem read GetItem;
-    property ItemCount: Integer read GetItemCount;
-    function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
-    function GetContainParentItem(AItem: IThItem): IThItem;
-    procedure LoadIncludeChildren(AItem: IThItem);
   end;
-
   TThItemClass = class of TThItem;
 
   TThFileItemData = class(TThItemData)
@@ -131,11 +151,31 @@ uses
 
 { TThItem }
 
+//constructor TThItem.Create(AOwner: TComponent; AItemData: TThItemData);
+procedure TThItem.Contain(AItem: TThItem);
+var
+  AbsoluteP: TPointF;
+begin
+  AbsoluteP := GetAbsolutePoint;
+
+  AItem.Position.Point := AItem.AbsolutePoint.Subtract(AbsoluteP);
+  AItem.BeforeParent := AItem.Parent;
+  AItem.Parent := Self;end;
+
+procedure TThItem.ContainChildren(AItem: TThItem);
+begin
+
+end;
+
 constructor TThItem.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  Cursor := crSizeAll;
   AutoCapture := True;
+
+  FLastContainItems := TList<TThItem>.Create;
+
 {$IFDEF ON_HIGHLIGHT}
   FHighlighter := CreateHighlighter;
 {$ENDIF}
@@ -144,20 +184,36 @@ begin
   FSpotCount := 0;
   if Assigned(FSelection) then
     FSpotCount := FSelection.Count;
-
-  FLastContainItems := TList<TThITem>.Create;
-
-  Cursor := crSizeAll;
 end;
 
 destructor TThItem.Destroy;
 begin
-  FLastContainItems.Free;
-
   FHighlighter := nil;
   FSelection := nil; // Interface Free(destory)
 
+  FLastContainItems.Free;
+
   inherited;
+end;
+
+procedure TThItem.SetBeforeIndex(const Value: Integer);
+begin
+
+end;
+
+procedure TThItem.SetBeforeParent(const Value: TFmxObject);
+begin
+
+end;
+
+procedure TThItem.SetItemData(AItemData: IThItemData);
+begin
+end;
+
+procedure TThItem.SetParentCanvas(const Value: IThCanvas);
+begin
+  FParentCanvas := Value;
+  Parent := TFMXObject(Value);
 end;
 
 function TThItem.CreateHighlighter: IItemHighlighter;
@@ -166,35 +222,6 @@ end;
 
 function TThItem.CreateSelection: IItemSelection;
 begin
-end;
-
-//////////////////////////////////////
-// Contain functions
-function TThItem.IsContain(AItem: IThItem): Boolean;
-begin
-  Result := False;
-end;
-
-procedure TThItem.Contain(AItem: TThItem);
-var
-  AbsoluteP: TPointF;
-begin
-  AbsoluteP := GetAbsolutePoint;
-
-  AItem.Position.Point := AItem.GetAbsolutePoint.Subtract(AbsoluteP);
-  AItem.BeforeParent := AItem.Parent;
-  AItem.Parent := Self;
-end;
-
-procedure TThItem.ReleaseContain;
-var
-  CurrParent: TFMXObject;
-begin
-  CurrParent := Parent;
-  Parent := BeforeParent;
-  BeforeParent := CurrParent;
-  if Assigned(CurrParent) then
-    Position.Point := Position.Point.Add(TControl(CurrParent).Position.Point);
 end;
 
 procedure TThItem.Painting;
@@ -225,10 +252,29 @@ begin
   Result := PtInItem(P);
 end;
 
+function TThItem.IsContain(AChild: TThItem): Boolean;
+begin
+  Result := False;
+end;
+
 procedure TThItem.ItemResizeBySpot(Sender: TObject; BeforeRect: TRectF);
 begin
   if Assigned(FOnResize) then
     FOnResize(Self, BeforeRect);
+end;
+
+procedure TThItem.DoAddObject(AObject: TFmxObject);
+//  AObject.Parent = nil 임
+var
+  Item: TThItem;
+begin
+  if not (AObject is TThItem) then
+    Exit;
+
+  Item := TThItem(AObject);
+  Item.Position.Point := Item.AbsolutePoint.Subtract(Position.Point);
+
+  inherited;
 end;
 
 procedure TThItem.DoMouseEnter;
@@ -245,15 +291,41 @@ begin
   Repaint;
 end;
 
+procedure TThItem.DoRemoveObject(AObject: TFmxObject);
+var
+  Item: TThItem;
+begin
+  if (AObject is TThItem) then
+  begin
+    Item := TThItem(AObject);
+    Item.BeforeParent := Self;
+    Item.BeforeIndex := AObject.Index;
+  end;
+
+  // 초기화 전에 하장
+  inherited;
+end;
+
 procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
 end;
 
-function TThItem.GetAbsolutePoint(APoint: TPointF): TPointF;
+function TThItem.FindParent(AItem: TThItem): TFMXObject;
+var
+  I: Integer;
+  Item: TThItem;
 begin
-  Result := APoint.Add(Position.Point);
-  if Parent is TThItem then
-    Result := TThItem(Parent).GetAbsolutePoint(Result);
+  Result := nil;
+  for I := ItemCount - 1 downto 0 do
+  begin
+    Item := Items[I];
+    if Item = AItem then
+      Continue;
+
+    Result := Item.FindParent(AItem);
+    if Assigned(Result) then
+      Exit;
+  end;
 end;
 
 function TThItem.GetAbsolutePoint: TPointF;
@@ -261,112 +333,11 @@ begin
   Result := GetAbsolutePoint(PointF(0, 0));
 end;
 
-function TThItem.GetContainChildrenItems(AItem: IThItem;
-  AChildren: IThItems): Boolean;
-var
-  I: Integer;
+function TThItem.GetAbsolutePoint(APoint: TPointF): TPointF;
 begin
-  Result := AbsoluteRect.IntersectsWith(TThItem(AItem).AbsoluteRect);
-  if not Result then
-    Exit;
-
-  for I := 0 to ItemCount - 1 do
-  begin
-    if AItem = Items[I] then
-      Continue;
-
-    if TThItem(AItem).IsContain(Items[I]) then
-      AChildren.Add(Items[I])
-    ;
-  end;
-
-  Result := AChildren.Count > 0;
-end;
-
-function TThItem.GetContainParentItem(AItem: IThItem): IThItem;
-var
-  I: Integer;
-  Item: TThItem;
-begin
-  Result := nil;
-
-  if IsContain(TThItem(AItem)) then
-  begin
-    for I := ItemCount - 1 downto 0 do
-    begin
-      Item := TThItem(Items[I]);
-      if Item = TThItem(AItem) then
-        Continue;
-
-      Result := Item.GetContainParentItem(AItem);
-      if Assigned(Result) then
-        Exit;
-    end;
-    Result := Self;
-  end;
-end;
-
-procedure TThItem.LoadIncludeChildren(AItem: IThItem);
-var
-  I: Integer;
-  Items: TThItems;
-begin
-  Items := TThItem(AItem).LastContainItems;
-  Items.Clear;
-
-  if not AbsoluteRect.IntersectsWith(TThItem(AItem).AbsoluteRect) then
-    Exit;
-
-  for I := 0 to ItemCount - 1 do
-  begin
-    if TThItem(AItem) = Items[I] then
-      Continue;
-
-    if TThItem(AItem).IsContain(Items[I]) then
-      Items.Add(Items[I]);
-  end;
-end;
-
-function TThItem.GetItem(Index: Integer): IThItem;
-begin
-  Result := nil;
-  if ChildrenCount > (Index + FSpotCount) then
-    Result := TThItem(FChildren[Index + FSpotCount]);
-end;
-
-function TThItem.GetItemCount: Integer;
-begin
-
-  Result := ChildrenCount - FSpotCount;
-end;
-
-function TThItem.GetItemRect: TRectF;
-begin
-  Result := LocalRect;
-end;
-
-///////////////////////////////////////
-// Setter & Getter
-procedure TThItem.SetItemData(AItemData: IThItemData);
-begin
-end;
-
-procedure TThItem.SetBeforeIndex(const Value: Integer);
-begin
-  Tag := Value;
-end;
-
-procedure TThItem.SetBeforeParent(const Value: TFmxObject);
-begin
-  TagObject := Value;
-end;
-
-procedure TThItem.SetParentCanvas(const Value: IThCanvas);
-begin
-  FParentCanvas := Value;
-  Parent := TFMXObject(Value);
-  BeforeParent := Parent;
-end;
+  Result := APoint.Add(Position.Point);
+  if Parent is TThItem then
+    Result := TThItem(Parent).GetAbsolutePoint(Result);end;
 
 function TThItem.GetBeforendex: Integer;
 begin
@@ -375,21 +346,46 @@ end;
 
 function TThItem.GetBeforeParent: TFmxObject;
 begin
-  Result := TFmxObject(TagObject);
+  Result := TFMXObject(TagObject);
 end;
-// Setter & Getter
-///////////////////////////////////////
+
+function TThItem.GetItem(Index: Integer): TThItem;
+begin
+  Result := TThItem(FChildren[Index + FSpotCount]);
+end;
+
+function TThItem.GetItemCount: Integer;
+begin
+  Result := ChildrenCount - FSpotCount;
+end;
+
+function TThItem.GetItemRect: TRectF;
+begin
+  Result := LocalRect;
+end;
 
 function TThItem.GetUpdateRect: TRectF;
 begin
   Result := inherited GetUpdateRect;
   InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
+  InflateRect(Result, 1, 1);
 end;
 
 procedure TThItem.RealignSpot;
 begin
   if Assigned(FSelection) then
     FSelection.RealignSpot;
+end;
+
+procedure TThItem.ReleaseContain;
+var
+  CurrParent: TFMXObject;
+begin
+  CurrParent := Parent;
+  Parent := BeforeParent;
+  BeforeParent := CurrParent;
+  if Assigned(CurrParent) then
+    Position.Point := Position.Point.Add(TControl(CurrParent).Position.Point);
 end;
 
 procedure TThItem.ShowDisableSpots;
@@ -458,7 +454,7 @@ end;
 
 procedure TThItem.MouseMove(Shift: TShiftState; X, Y: Single);
 var
-  Distance: TPointF;
+  Gap: TPointF;
 begin
   inherited;
 
@@ -466,8 +462,8 @@ begin
   begin
     if FSelected and Assigned(FOnTracking) then
     begin
-      Distance := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
-      FOnTracking(Self, Distance.X, Distance.Y);
+      Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
+      FOnTracking(Self, Gap.X, Gap.Y);
     end;
   end;
 end;

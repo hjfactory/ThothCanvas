@@ -114,7 +114,7 @@ begin
     P := CenterPoint.Subtract(PointF(Item.Width / 2, Item.Height / 2));
     Item.Position.Point := P.Subtract(FContents.ScaledPoint);
 
-    if Assigned(Item) then
+    if IsDrawingItem and Assigned(Item) then
     begin
       Item.Selected := True;
       if Assigned(FOnItemAdded) then
@@ -176,21 +176,26 @@ end;
 
 procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
-  Distance: TPointF;
+  DistanceP: TPointF;
+  NewParent: TFMXObject;
 begin
-  Distance := Item.Position.Point.Subtract(StartPos);
-//  Item.BeforeParent := Item.Parent;
+  // Set Parent
+  NewParent := FContents.FindParent(Item);
+  if Assigned(NewParent) then
+    Item.Parent := NewParent;
 
-  DoGrouping(Item);
+  // Contain Children
+  FContents.ContainChildren(Item);
 
   if Assigned(FOnItemMove) then
-    FOnItemMove(FSelections, Distance);
+  begin
+    DistanceP := Item.Position.Point.Subtract(StartPos);
+    FOnItemMove(FSelections, DistanceP);
+  end;
 end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
 begin
-  DoGrouping(Item);
-
   if Assigned(FOnItemResize) then
     FOnItemResize(Item, BeforeRect);
 end;
@@ -244,8 +249,7 @@ begin
 
   for I := FSelections.Count - 1 downto 0 do
   begin
-    FSelections[I].BeforeIndex := FSelections[I].Index; // Rollback 시 Index 복구용
-    FSelections[I].BeforeParent := FSelections[I].Parent;
+    FSelections[I].Tag := FSelections[I].Index; // Rollback 시 Index 복구용
     FSelections[I].Parent := nil;
     FSelections[I].Visible := False;
     FSelections[I].Selected := False;
@@ -305,17 +309,23 @@ end;
 
 procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  NewParent: TFMXObject;
 begin
   inherited;
 
   if IsDrawingItem and Assigned(FDrawItem) then
   begin
     FDrawItem.Selected := True;
-//    DoGrouping(FDrawItem);
-// HJF
-    DoContainParent(FDrawItem);
-    DoContainsChildren(FDrawItem);
-//HJF
+
+    // Set Parent
+    NewParent := FContents.FindParent(FDrawItem);
+    if Assigned(NewParent) then
+      FDrawItem.Parent := NewParent;
+
+    // Contain Children
+    FContents.ContainChildren(FDrawItem);
+
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);
   end;

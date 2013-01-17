@@ -30,7 +30,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    function IsContain(AItem: IThItem): Boolean; override;
+    function IsContain(AItem: TThItem): Boolean; override;
 
     procedure SetItemData(AItemData: IThItemData); override;
     property Bitmap: TBitmap read FBitmap write SetBitmap;
@@ -122,7 +122,7 @@ begin
   Result := PointF(MinSize, MinSize);
 end;
 
-function TThImageItem.IsContain(AItem: IThItem): Boolean;
+function TThImageItem.IsContain(AItem: TThItem): Boolean;
 begin
   Result := AbsoluteRect.Contains(TThItem(AItem).AbsoluteRect);
 end;
