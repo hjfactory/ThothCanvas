@@ -36,6 +36,7 @@ type
     FOnTracking: TTrackingEvent;
     FOnMove: TItemMoveEvent;
     FOnResize: TItemResizeEvent;
+    FLastContainItems: TThItems;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
@@ -94,6 +95,7 @@ type
 
     property BeforeParent: TFmxObject read GetBeforeParent write SetBeforeParent;
     property BeforeIndex: Integer read GetBeforendex write SetBeforeIndex;
+    property LastContainItems: TThItems read FLastContainItems;
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -108,6 +110,7 @@ type
     property ItemCount: Integer read GetItemCount;
     function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
     function GetContainParentItem(AItem: IThItem): IThItem;
+    procedure LoadIncludeChildren(AItem: IThItem);
   end;
 
   TThItemClass = class of TThItem;
@@ -142,11 +145,15 @@ begin
   if Assigned(FSelection) then
     FSpotCount := FSelection.Count;
 
+  FLastContainItems := TList<TThITem>.Create;
+
   Cursor := crSizeAll;
 end;
 
 destructor TThItem.Destroy;
 begin
+  FLastContainItems.Free;
+
   FHighlighter := nil;
   FSelection := nil; // Interface Free(destory)
 
@@ -282,6 +289,7 @@ var
   Item: TThItem;
 begin
   Result := nil;
+
   if IsContain(TThItem(AItem)) then
   begin
     for I := ItemCount - 1 downto 0 do
@@ -295,6 +303,27 @@ begin
         Exit;
     end;
     Result := Self;
+  end;
+end;
+
+procedure TThItem.LoadIncludeChildren(AItem: IThItem);
+var
+  I: Integer;
+  Items: TThItems;
+begin
+  Items := TThItem(AItem).LastContainItems;
+  Items.Clear;
+
+  if not AbsoluteRect.IntersectsWith(TThItem(AItem).AbsoluteRect) then
+    Exit;
+
+  for I := 0 to ItemCount - 1 do
+  begin
+    if TThItem(AItem) = Items[I] then
+      Continue;
+
+    if TThItem(AItem).IsContain(Items[I]) then
+      Items.Add(Items[I]);
   end;
 end;
 

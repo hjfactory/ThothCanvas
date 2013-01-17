@@ -112,6 +112,7 @@ type
 
     function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
     function GetContainParentItem(AItem: IThItem): IThItem;
+    procedure LoadIncludeChildren(AItem: IThItem);
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
     property TrackAnimated: Boolean read FTrackAnimated write FTrackAnimated;
@@ -293,18 +294,6 @@ begin
     NewParent := TThItem(CurrItem.GetContainParentItem(AItem));
     if Assigned(NewParent) then
       NewParent.Contain(AItem);
-//
-//    if TThItem(AItem).IsContain(Items[I]) then
-//      AChildren.Add(Items[I])
-//    else
-//      TThItem(Items[I]).GetContainChildrenItems(AItem, AChildren);
-//    ;
-//
-//    if CurrItem.IsContain(AItem) then
-//    begin
-//      CurrItem.Contain(AItem);
-//      Exit;
-//    end;
   end;
 end;
 
@@ -318,8 +307,17 @@ begin
 end;
 
 procedure TThCanvas.DoContainsChildren(AItem: TThItem);
+var
+  Child: TThItem;
+  ItemContainer: IThItemContainer;
 begin
-  //
+  if Supports(AItem.Parent, IThItemContainer, ItemContainer) then
+    ItemContainer.LoadIncludeChildren(AItem);
+  if AItem.LastContainItems.Count = 0 then
+    Exit;
+
+  for Child in AItem.LastContainItems do
+    AItem.Contain(Child);
 end;
 
 procedure TThCanvas.DoReleaseChildren(AItem: TThItem);
@@ -368,7 +366,6 @@ begin
     if NewParent = Item.Parent then
       Exit;
 
-    // 부모의 자식 중에서 자식 찾기
     NewParent.Contain(Item)
   end;
 //  else
@@ -658,6 +655,27 @@ end;
 function TThCanvas.GetItemCount: Integer;
 begin
   Result := FContents.ChildrenCount;
+end;
+
+procedure TThCanvas.LoadIncludeChildren(AItem: IThItem);
+var
+  I: Integer;
+  Items: TThItems;
+begin
+  Items := TThItem(AItem).LastContainItems;
+  Items.Clear;
+
+  for I := 0 to ItemCount - 1 do
+  begin
+    if TThItem(AItem) = Items[I] then
+      Continue;
+
+    if TThItem(AItem).IsContain(Items[I]) then
+      Items.Add(Items[I]);
+//    else
+//      TThItem(Items[I]).GetContainChildrenItems(AItem, AChildren);
+//    ;
+  end;
 end;
 
 function TThCanvas.GetItem(Index: Integer): IThItem;

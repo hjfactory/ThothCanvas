@@ -314,6 +314,7 @@ begin
 //    DoGrouping(FDrawItem);
 // HJF
     DoContainParent(FDrawItem);
+    DoContainsChildren(FDrawItem);
 //HJF
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);

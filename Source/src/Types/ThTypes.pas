@@ -69,12 +69,15 @@ type
   // Contain item control
   IThItems =  TList<IThItem>;
   IThItemContainer = interface
+  ['{3A900F12-9FF7-4796-93E4-DE2BF798F420}']
     function GetItem(Index: Integer): IThItem;
     function GetItemCount: Integer;
     property Items[Index: Integer]: IThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
     function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
     function GetContainParentItem(AItem: IThItem): IThItem;
+
+    procedure LoadIncludeChildren(AItem: IThItem);
   end;
 
   IThCanvasController = interface
