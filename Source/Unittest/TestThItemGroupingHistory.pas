@@ -94,7 +94,9 @@ begin
   FThothController.Undo;
 
   // C1의 위치, 부모 확인
+  FCanvas.ClearSelection;
   TestLib.RunMouseClick(150, 150);
+  CheckEquals(C1.Index, 1, 'C1.Index');
   Check(FCanvas.SelectedItem = C1, 'Not selected C1');
   Check(C1.Parent <> P1, Format('C1.Parent is %s(Not Parent <> P1)', [C1.Parent.Name]));
   Check(C2.Parent = P1, 'C2.Parent is P1');

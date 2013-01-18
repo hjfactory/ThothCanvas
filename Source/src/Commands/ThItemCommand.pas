@@ -4,7 +4,7 @@ interface
 
 uses
   FMX.Types, System.Types, System.SysUtils,
-  ThTypes, ThClasses, ThItem;
+  ThTypes, ThClasses, ThItem, System.Generics.Collections;
 
 type
   TThItemCommand = class(TInterfacedObject, IThCommand)
@@ -44,8 +44,10 @@ type
   TThCommandItemMove = class(TThItemCommand)
   private
     FDistance: TPointF;
+    FLastContainItems: TList<TThItems>;
   public
     constructor Create(AItems: TThItems; ADistance: TPointF); overload;
+    destructor Destroy; override;
 
     procedure Execute; override;
     procedure Rollback; override;
@@ -165,16 +167,34 @@ end;
 { TThCommandItemMove }
 
 constructor TThCommandItemMove.Create(AItems: TThItems; ADistance: TPointF);
+var
+  I: Integer;
 begin
   inherited Create(AItems);
 
+  FLastContainItems := TList<TThItems>.Create;
+  for I := 0 to FItems.Count - 1 do
+    FLastContainItems.Add(TThItems.Create(FItems[I].LastContainItems));
+
   FDistance := ADistance;
+end;
+
+destructor TThCommandItemMove.Destroy;
+var
+  I: Integer;
+begin
+  for I := FLastContainItems.Count - 1 downto 0 do
+    FLastContainItems[I].Free;
+
+  FLastContainItems.Free;
+
+  inherited;
 end;
 
 procedure TThCommandItemMove.Execute;
 var
   I: Integer;
-  Item: TThItem;
+  Item, RelItem: TThItem;
   CurrParent: TFmxObject;
   CurrIndex: Integer;
 begin
@@ -184,18 +204,22 @@ begin
     CurrParent  := Item.Parent;
     CurrIndex   := Item.Index;
 
-    Item.Parent := Item.BeforeParent;
-    Item.Index  := Item.BeforeIndex;
+    if Assigned(Item.BeforeParent) then
+      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
+
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Add(FDistance);
+
+    for RelItem in FLastContainItems[I] do
+      RelItem.Parent := RelItem.BeforeParent;
   end;
 end;
 
 procedure TThCommandItemMove.Rollback;
 var
-  I: Integer;
-  Item: TThItem;
+  I, J: Integer;
+  Item, RelItem: TThItem;
   CurrParent: TFmxObject;
   CurrIndex: Integer;
 begin
@@ -205,8 +229,13 @@ begin
     CurrParent  := Item.Parent;
     CurrIndex   := Item.Index;
 
-    Item.Parent := Item.BeforeParent;
-    Item.Index  := Item.BeforeIndex;
+    if Assigned(Item.BeforeParent) then
+      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
+
+    // 마지막 이동에서 포함된 자식들 반환
+    for RelItem in FLastContainItems[I] do
+      RelItem.BeforeParent.InsertObject(RelItem.BeforeIndex, RelItem);
+
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Subtract(FDistance);
@@ -236,8 +265,11 @@ begin
   CurrParent  := Item.Parent;
   CurrIndex   := Item.Index;
 
-  Item.Parent := Item.BeforeParent;
-  Item.Index  := Item.BeforeIndex;
+//  Item.Parent := Item.BeforeParent;
+//  Item.Index  := Item.BeforeIndex;
+
+  if Assigned(Item.BeforeParent) then
+    Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
   Item.BeforeParent := CurrParent;
   Item.BeforeIndex  := CurrIndex;
 //
@@ -262,8 +294,11 @@ begin
   CurrParent  := Item.Parent;
   CurrIndex   := Item.Index;
 
-  Item.Parent := Item.BeforeParent;
-  Item.Index  := Item.BeforeIndex;
+//  Item.Parent := Item.BeforeParent;
+//  Item.Index  := Item.BeforeIndex;
+
+  if Assigned(Item.BeforeParent) then
+    Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
   Item.BeforeParent := CurrParent;
   Item.BeforeIndex  := CurrIndex;
 

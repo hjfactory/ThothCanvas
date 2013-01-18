@@ -16,10 +16,12 @@ type
 
     // #222 로컬의 이미지를 선택하여 로드한다.
     procedure TestAddImage;
+{$IFDEF RELEASE}
     procedure TestAddSelectImage;
 
     // #223 이미지 추가 시 경로 미선택 시 추가가 취소되어야 한다.
     procedure TestAddSelectImageCancel;
+{$ENDIF}
 
     // #224 이미지 추가 시 중앙에 위치해야 한다.
     procedure TestAddImageCenterPosition;
@@ -76,6 +78,7 @@ begin
   Check(FCanvas.ItemCount = 1);
 end;
 
+{$IFDEF RELEASE}
 procedure TestTThImage.TestAddSelectImage;
 var
   ServiceIntf: IInterface;
@@ -147,6 +150,7 @@ begin
 
   Check(FCanvas.ItemCount = 0);
 end;
+{$ENDIF}
 
 procedure TestTThImage.TestAddImageCenterPosition;
 begin

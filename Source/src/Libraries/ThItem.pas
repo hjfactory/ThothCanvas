@@ -344,9 +344,6 @@ procedure TThItem.DoRemoveObject(AObject: TFmxObject);
 var
   Item: TThItem;
 begin
-//  if Component then
-
-
   if not (csDestroying in ComponentState) and (AObject is TThItem) then
   begin
     Item := TThItem(AObject);

@@ -272,7 +272,7 @@ begin
 
   for I := FSelections.Count - 1 downto 0 do
   begin
-    FSelections[I].Tag := FSelections[I].Index; // Rollback 시 Index 복구용
+    FSelections[I].BeforeIndex := FSelections[I].Index; // Rollback 시 Index 복구용
     FSelections[I].Parent := nil;
     FSelections[I].Visible := False;
     FSelections[I].Selected := False;
