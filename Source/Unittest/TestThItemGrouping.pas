@@ -261,9 +261,11 @@ begin
 end;
 
 procedure TestTThItemGroupping.TestDegroupingSameAbsPoint;
+var
+  C1: TThItem;
 begin
-  DrawRectangle(50, 50, 130, 130); // P1
-  DrawRectangle(70, 70, 120, 120);
+  DrawRectangle(50, 50, 130, 130, 'P1'); // P1
+  C1 := DrawRectangle(70, 70, 120, 120, 'C1');
 
   CheckEquals(FCanvas.ItemCount, 1);
 
@@ -273,7 +275,8 @@ begin
   .Add(160, 160).Path);
 
   CheckEquals(FCanvas.ItemCount, 2, 'ItemCount');
-  CheckNotNull(FCanvas.SelectedItem);
+  TestLib.RunMouseClick(160, 160);
+  Check(FCanvas.SelectedItem = C1, 'Not selected C1');
   CheckEquals(FCanvas.SelectedItem.Position.X, 0, 4, 'Zero point');
 end;
 
@@ -283,6 +286,7 @@ var
 begin
   DrawRectangle(50, 50, 250, 250); // P1
   DrawRectangle(100, 100, 200, 200);
+
   TestLib.RunMouseClick(150, 150);
   C1 := FCanvas.SelectedItem;
 
@@ -440,7 +444,7 @@ begin
   TestImagePath := GetImagePath;
   FCanvas.AppendFileItem(ItemFactoryIDImageFile, TestImagePath);
 
-//  TestLib.RunMouseClick(FCanvas.CenterPoint);
+  TestLib.RunMouseClick(150, 150);
   P1 := FCanvas.SelectedItem;
   CheckNotNull(P1);
 

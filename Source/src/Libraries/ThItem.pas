@@ -27,13 +27,14 @@ type
   end;
 
   IThItemContainer = interface
+  ['{76A11805-EA40-40B6-84A1-71B4DF277DCD}']
     function GetItem(Index: Integer): TThItem;
     function GetItemCount: Integer;
     property Items[Index: Integer]: TThItem read GetItem;
     property ItemCount: Integer read GetItemCount;
 
     function FindParent(AItem: TThItem): TFMXObject;
-    procedure ContainChildren(AItem: TThItem);
+    procedure ContainChildren(AContainer: TThItem);
 
     procedure DoAddObject(AObject: TFmxObject);
     procedure DoRemoveObject(AObject: TFmxObject);
@@ -110,13 +111,11 @@ type
     procedure ShowSpots;
     procedure ShowDisableSpots;
 
-    function FindParent(AItem: TThItem): TFMXObject;
-    procedure ContainChildren(AItem: TThItem);
+    function FindParent(AChild: TThItem): TFMXObject;
+    procedure ContainChildren(AContainer: TThItem);
+    procedure ReleaseChildren;
 
     function IsContain(AChild: TThItem): Boolean; virtual;
-    procedure Contain(AItem: TThItem); virtual;
-    procedure ReleaseContain; virtual;
-
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
@@ -152,19 +151,62 @@ uses
 { TThItem }
 
 //constructor TThItem.Create(AOwner: TComponent; AItemData: TThItemData);
-procedure TThItem.Contain(AItem: TThItem);
+
+procedure TThItem.ContainChildren(AContainer: TThItem);
 var
-  AbsoluteP: TPointF;
+  I: Integer;
+  CurrItem: TThItem;
 begin
-  AbsoluteP := GetAbsolutePoint;
+  AContainer.LastContainItems.Clear;
 
-  AItem.Position.Point := AItem.AbsolutePoint.Subtract(AbsoluteP);
-  AItem.BeforeParent := AItem.Parent;
-  AItem.Parent := Self;end;
+  for I := 0 to ItemCount - 1 do
+  begin
+    CurrItem := Items[I];
+    if AContainer = CurrItem then
+      Continue;
 
-procedure TThItem.ContainChildren(AItem: TThItem);
+    if AContainer.IsContain(CurrItem) then
+      // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
+//      CurrItem.Parent := AParent;
+      AContainer.LastContainItems.Add(CurrItem);
+  end;
+  for CurrItem in AContainer.LastContainItems do
+    CurrItem.Parent := AContainer;
+end;
+
+procedure TThItem.ReleaseChildren;
+var
+  I: Integer;
+  CurrItem: TThItem;
+  NewParent: TFmxObject;
+  ItemContainer: IThItemContainer;
 begin
+  // e.g.
+  // 1> 크기변경 시 자식이 범위에 없을 경우(분리 할 경우)
+  // 부모의 자식(형재) 중에서 찾는다.
+  // 포함하는 형재가 없을 경우 부모를 부모로 설정한다.
 
+  LastContainItems.Clear;
+
+  for I := 0 to ItemCount - 1 do
+  begin
+    CurrItem := Items[I];
+    if not IsContain(CurrItem) then
+      // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
+//      CurrItem.Parent := AParent;
+      LastContainItems.Add(CurrItem);
+  end;
+
+  for CurrItem in LastContainItems do
+  begin
+    if Supports(Parent, IThItemContainer, ItemContainer) then
+      NewParent := ItemContainer.FindParent(CurrItem);
+
+    if Assigned(NewParent) then
+      CurrItem.Parent := NewParent
+    else
+      CurrItem.Parent := Parent;
+  end;
 end;
 
 constructor TThItem.Create(AOwner: TComponent);
@@ -198,12 +240,12 @@ end;
 
 procedure TThItem.SetBeforeIndex(const Value: Integer);
 begin
-
+  Tag := Value;
 end;
 
 procedure TThItem.SetBeforeParent(const Value: TFmxObject);
 begin
-
+  TagObject := Value;
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);
@@ -214,6 +256,7 @@ procedure TThItem.SetParentCanvas(const Value: IThCanvas);
 begin
   FParentCanvas := Value;
   Parent := TFMXObject(Value);
+  BeforeParent := TFMXObject(Value);
 end;
 
 function TThItem.CreateHighlighter: IItemHighlighter;
@@ -263,20 +306,6 @@ begin
     FOnResize(Self, BeforeRect);
 end;
 
-procedure TThItem.DoAddObject(AObject: TFmxObject);
-//  AObject.Parent = nil 임
-var
-  Item: TThItem;
-begin
-  if not (AObject is TThItem) then
-    Exit;
-
-  Item := TThItem(AObject);
-  Item.Position.Point := Item.AbsolutePoint.Subtract(Position.Point);
-
-  inherited;
-end;
-
 procedure TThItem.DoMouseEnter;
 begin
   inherited;
@@ -291,11 +320,34 @@ begin
   Repaint;
 end;
 
+procedure TThItem.DoAddObject(AObject: TFmxObject);
+//  AObject.Parent = nil 임
+var
+  Item: TThItem;
+  P: TPointF;
+begin
+  if AObject is TThItem then
+  begin
+    Item := TThItem(AObject);
+    //
+    if Assigned(Item.BeforeParent) and (Item.BeforeParent is TThItem) then
+      P := TThItem(Item.BeforeParent).AbsolutePoint
+    else
+      P := PointF(0, 0);
+    Item.Position.Point := P.Subtract(AbsolutePoint).Add(Item.Position.Point);
+  end;
+
+  inherited;
+end;
+
 procedure TThItem.DoRemoveObject(AObject: TFmxObject);
 var
   Item: TThItem;
 begin
-  if (AObject is TThItem) then
+//  if Component then
+
+
+  if not (csDestroying in ComponentState) and (AObject is TThItem) then
   begin
     Item := TThItem(AObject);
     Item.BeforeParent := Self;
@@ -310,21 +362,27 @@ procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
 end;
 
-function TThItem.FindParent(AItem: TThItem): TFMXObject;
+function TThItem.FindParent(AChild: TThItem): TFMXObject;
 var
   I: Integer;
-  Item: TThItem;
+  CurrItem: TThItem;
 begin
   Result := nil;
   for I := ItemCount - 1 downto 0 do
   begin
-    Item := Items[I];
-    if Item = AItem then
+    CurrItem := Items[I];
+    if CurrItem = AChild then
       Continue;
 
-    Result := Item.FindParent(AItem);
-    if Assigned(Result) then
-      Exit;
+    if CurrItem.IsContain(AChild) then
+    begin
+      Result := CurrItem.FindParent(AChild);
+      if not Assigned(Result) then
+      begin
+        Result := CurrItem;
+        Exit;
+      end;
+    end;
   end;
 end;
 
@@ -375,17 +433,6 @@ procedure TThItem.RealignSpot;
 begin
   if Assigned(FSelection) then
     FSelection.RealignSpot;
-end;
-
-procedure TThItem.ReleaseContain;
-var
-  CurrParent: TFMXObject;
-begin
-  CurrParent := Parent;
-  Parent := BeforeParent;
-  BeforeParent := CurrParent;
-  if Assigned(CurrParent) then
-    Position.Point := Position.Point.Add(TControl(CurrParent).Position.Point);
 end;
 
 procedure TThItem.ShowDisableSpots;

@@ -61,7 +61,6 @@ begin
 
   Check(C1.Parent <> P1, Format('Undo: %s', [C1.Parent.Name]));
   CheckEquals(C1.Position.Point.X, C1P_O.X, 'C1P_O');
-//  Check(C1.Position.Point = C1P_O, Format('C1P_O(%f,%f)', [C1P_O.X, C1P_O.Y]));
 
   FThothController.Redo;
 

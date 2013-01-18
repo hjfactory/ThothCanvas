@@ -189,11 +189,6 @@ begin
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Add(FDistance);
-    if Item.Parent is TThItem then
-    Item.Position.Point := Item.Position.Point.Subtract(TThItem(Item.Parent).AbsolutePoint);
-//    if Item.Parent is TThItem then
-//      TThItem(Item.Parent).Contain(Item);
-//    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
   end;
 end;
 
@@ -210,14 +205,11 @@ begin
     CurrParent  := Item.Parent;
     CurrIndex   := Item.Index;
 
-    if CurrParent is TThItem then
-      Item.Position.Point := Item.AbsolutePoint;
     Item.Parent := Item.BeforeParent;
     Item.Index  := Item.BeforeIndex;
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Subtract(FDistance);
-//    FItems[I].ParentCanvas.DoGrouping(FItems[I]);
   end;
 end;
 
@@ -236,6 +228,7 @@ procedure TThCommandItemResize.Execute;
 var
   Item: TThItem;
   CurrParent: TFmxObject;
+  ItemContainer: IThItemContainer;
   CurrIndex: Integer;
 begin
   Item := FItems[0];
@@ -250,6 +243,10 @@ begin
 //
   Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
   Item.RealignSpot;
+
+  Item.ReleaseChildren;
+  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
+    ItemContainer.ContainChildren(Item);
 //  Item.ParentCanvas.DoGrouping(Item);
 end;
 
@@ -258,6 +255,7 @@ var
   Item: TThItem;
   CurrParent: TFmxObject;
   CurrIndex: Integer;
+  ItemContainer: IThItemContainer;
 begin
   Item := FItems[0];
 
@@ -271,6 +269,11 @@ begin
 
   Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
   Item.RealignSpot;
+
+  Item.ReleaseChildren;
+  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
+    ItemContainer.ContainChildren(Item);
+//  Item.ContainChildren();
 //  Item.ParentCanvas.DoGrouping(Item);
 end;
 

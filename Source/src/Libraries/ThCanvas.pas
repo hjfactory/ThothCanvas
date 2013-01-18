@@ -32,7 +32,7 @@ type
     procedure AddTrackingPos(const Value: TPointF);
 
     function FindParent(AChild: TThItem): TFMXObject;
-    procedure ContainChildren(AParent: TThItem);
+    procedure ContainChildren(AContainer: TThItem);
 
     property ZoomScale: Single read FZoomScale write SetZoomScale;
     property ScaledPoint: TPointF read GetScaledPoint;
@@ -133,26 +133,26 @@ begin
   Position.Y := Position.Y + Value.Y;
 end;
 
-procedure TThContents.ContainChildren(AParent: TThItem);
+procedure TThContents.ContainChildren(AContainer: TThItem);
 var
   I: Integer;
   CurrItem: TThItem;
 begin
-  AParent.LastContainItems.Clear;
+  AContainer.LastContainItems.Clear;
 
   for I := 0 to ItemCount - 1 do
   begin
     CurrItem := Items[I];
-    if AParent = CurrItem then
+    if AContainer = CurrItem then
       Continue;
 
-    if AParent.IsContain(CurrItem) then
+    if AContainer.IsContain(CurrItem) then
       // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
 //      CurrItem.Parent := AParent;
-      AParent.LastContainItems.Add(CurrItem);
+      AContainer.LastContainItems.Add(CurrItem);
   end;
-  for CurrItem in AParent.LastContainItems do
-    CurrItem.Parent := AParent;
+  for CurrItem in AContainer.LastContainItems do
+    CurrItem.Parent := AContainer;
 end;
 
 constructor TThContents.Create(AOwner: TComponent);
@@ -163,7 +163,16 @@ begin
 end;
 
 procedure TThContents.DoAddObject(AObject: TFmxObject);
+var
+  Item: TThItem;
 begin
+  if AObject is TThItem then
+  begin
+    Item := TThItem(AObject);
+    if Assigned(Item.BeforeParent) and (Item.BeforeParent is TThItem) then
+      Item.Position.Point := TThItem(Item.BeforeParent).Position.Point.Add(Item.Position.Point);
+  end;
+
   inherited;
 
   // 아이템 추가 시 화면에 기존아이템이 없을 경우 다시 그리지 않아
@@ -176,7 +185,7 @@ procedure TThContents.DoRemoveObject(AObject: TFmxObject);
 var
   Item: TThItem;
 begin
-  if (AObject is TThItem) then
+  if not (csDestroying in ComponentState) and (AObject is TThItem) then
   begin
     Item := TThItem(AObject);
     Item.BeforeParent := Self;
@@ -203,9 +212,14 @@ begin
     begin
       Result := CurrItem.FindParent(AChild);
       if not Assigned(Result) then
+      begin
         Result := CurrItem;
+        Exit;
+      end;
     end;
   end;
+  if not Assigned(Result) then
+    Result := Self;
 end;
 
 function TThContents.GetClipRect: TRectF;

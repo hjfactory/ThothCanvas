@@ -177,25 +177,48 @@ end;
 procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
 var
   DistanceP: TPointF;
-  NewParent: TFMXObject;
+  ItemContainer: IThItemContainer;
 begin
+  { TODO : Selections로 처리해야 함 }
+
   // Set Parent
-  NewParent := FContents.FindParent(Item);
-  if Assigned(NewParent) then
-    Item.Parent := NewParent;
+  Item.Parent := FContents.FindParent(Item);
 
   // Contain Children
-  FContents.ContainChildren(Item);
+  // 왜안되징
+  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
+    ItemContainer.ContainChildren(Item)
+  else
+  begin
+    raise Exception.Create('[TThCanvasEditor.ItemMove] Not supported Supports function');
+//    if Item.Parent is TThContents then
+//      TThContents(Item.Parent).ContainChildren(Item)
+//    else if Item.Parent is TThItem then
+//      TThItem(Item.parent).ContainChildren(Item)
+  end;
+  ;
 
   if Assigned(FOnItemMove) then
   begin
-    DistanceP := Item.Position.Point.Subtract(StartPos);
+//    DistanceP := Item.Position.Point.Subtract(StartPos);
+    DistanceP := Item.AbsolutePoint.Subtract(StartPos);
     FOnItemMove(FSelections, DistanceP);
   end;
 end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
+var
+  ItemContainer: IThItemContainer;
 begin
+  // Set Parent
+  Item.Parent := FContents.FindParent(Item);
+
+  // Contain Children
+  FContents.ContainChildren(Item);
+
+  // Release Children
+  Item.ReleaseChildren;
+
   if Assigned(FOnItemResize) then
     FOnItemResize(Item, BeforeRect);
 end;
@@ -309,8 +332,6 @@ end;
 
 procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
-var
-  NewParent: TFMXObject;
 begin
   inherited;
 
@@ -319,9 +340,7 @@ begin
     FDrawItem.Selected := True;
 
     // Set Parent
-    NewParent := FContents.FindParent(FDrawItem);
-    if Assigned(NewParent) then
-      FDrawItem.Parent := NewParent;
+    FDrawItem.Parent := FContents.FindParent(FDrawItem);
 
     // Contain Children
     FContents.ContainChildren(FDrawItem);
