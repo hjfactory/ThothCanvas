@@ -7,9 +7,20 @@ uses
   ThTypes, ThClasses, ThItem, System.Generics.Collections;
 
 type
+  TUpdateState = record
+    Item: TThItem;
+    Parent, BeforeParent: TFmxObject;
+    Index, BeforeIndex: Integer;
+  public
+    constructor Create(AItem: TThItem);
+  end;
+
   TThItemCommand = class(TInterfacedObject, IThCommand)
+  private
+    procedure UpdateState;
   protected
     FItems: TThItems;
+    FUpdateStateItems: TList<TUpdateState>;
   public
     constructor Create(AItem: TThItem); overload;
     constructor Create(AItems: TThItems); overload;
@@ -41,18 +52,9 @@ type
     procedure Rollback; override;
   end;
 
-  TUpdateData = record
-    Parent, BParent: TFmxObject;
-    Index, BIndex: Integer;
-    Items: TThItems;
-  public
-    constructor Create(AParent: TFmxObject; AIndex: Integer; AItems: TThItems); overload;
-    constructor Create(AItem: TThItem); overload;
-  end;
   TThCommandItemMove = class(TThItemCommand)
   private
     FDistance: TPointF;
-    FLastContainItems: TList<TUpdateData>;
   public
     constructor Create(AItems: TThItems; ADistance: TPointF); overload;
     destructor Destroy; override;
@@ -82,19 +84,44 @@ uses
 constructor TThItemCommand.Create(AItems: TThItems);
 begin
   FItems := TThItems.Create(AItems);
+
+  UpdateState;
 end;
 
 constructor TThItemCommand.Create(AItem: TThItem);
 begin
   FItems := TThitems.Create;
   FItems.Add(AItem);
+
+  UpdateState;
 end;
 
 destructor TThItemCommand.Destroy;
 begin
   FItems.Free;
+  if Assigned(FUpdateStateItems) then
+
+  FUpdateStateItems.Free;
 
   inherited;
+end;
+
+procedure TThItemCommand.UpdateState;
+var
+  Item, Child: TThItem;
+begin
+  FUpdateStateItems := TList<TUpdateState>.Create;
+  for Item in FItems do
+  begin
+    if Item.Parent <> Item.BeforeParent then
+      FUpdateStateItems.Add(TUpdateState.Create(Item));
+
+    for Child in Item.LastContainItems do
+    begin
+      if Child.Parent <> Child.BeforeParent then
+        FUpdateStateItems.Add(TUpdateState.Create(Child));
+    end;
+  end;
 end;
 
 { TThCommandItemAdd }
@@ -175,85 +202,40 @@ end;
 { TThCommandItemMove }
 
 constructor TThCommandItemMove.Create(AItems: TThItems; ADistance: TPointF);
-var
-  I: Integer;
 begin
   inherited Create(AItems);
-
-  FLastContainItems := TList<TUpdateData>.Create;
-  for I := 0 to FItems.Count - 1 do
-    FLastContainItems.Add(TUpdateData.Create(FItems[I]));
 
   FDistance := ADistance;
 end;
 
 destructor TThCommandItemMove.Destroy;
-var
-  I: Integer;
 begin
-  for I := FLastContainItems.Count - 1 downto 0 do
-    FLastContainItems[I].Items.Free;
-
-  FLastContainItems.Free;
 
   inherited;
 end;
 
 procedure TThCommandItemMove.Execute;
 var
-  I: Integer;
-  Item, RelItem: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
+  UpdateState: TUpdateState;
+  Item: TThItem;
 begin
-  for I := 0 to FItems.Count - 1 do
-  begin
-    Item        := FItems[I];
-    CurrParent  := Item.Parent;
-    CurrIndex   := Item.Index;
-
-    if Assigned(Item.BeforeParent) then
-      FLastContainItems[I].Parent.InsertObject(FLastContainItems[I].Index, Item);
-//      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
-
-    Item.BeforeParent := CurrParent;
-    Item.BeforeIndex  := CurrIndex;
+  for Item in FItems do
     Item.Position.Point := Item.Position.Point.Add(FDistance);
 
-    for RelItem in FLastContainItems[I].Items do
-      RelItem.Parent := RelItem.BeforeParent;
-  end;
+  for UpdateState in FUpdateStateItems do
+    UpdateState.Parent.InsertObject(UpdateState.Index, UpdateState.Item);
 end;
 
 procedure TThCommandItemMove.Rollback;
 var
-  I: Integer;
-  Item, RelItem: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
+  UpdateState: TUpdateState;
+  Item: TThItem;
 begin
-  for I := 0 to FItems.Count - 1 do
-  begin
-    Item        := FItems[I];
+  for UpdateState in FUpdateStateItems do
+    UpdateState.BeforeParent.InsertObject(UpdateState.BeforeIndex, UpdateState.Item);
 
-// ChangedParent
-    CurrParent  := Item.Parent;
-    CurrIndex   := Item.Index;
-
-    if Assigned(Item.BeforeParent) then
-      FLastContainItems[I].BParent.InsertObject(FLastContainItems[I].BIndex, Item);
-//      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
-
-    // 마지막 이동에서 포함된 자식들 반환
-    for RelItem in FLastContainItems[I].Items do
-      RelItem.BeforeParent.InsertObject(RelItem.BeforeIndex, RelItem);
-
-    Item.BeforeParent := CurrParent;
-    Item.BeforeIndex  := CurrIndex;
-// ChangedParent
-
+  for Item in FItems do
     Item.Position.Point := Item.Position.Point.Subtract(FDistance);
-  end;
 end;
 
 { TThCommandItemResize }
@@ -268,81 +250,62 @@ begin
 end;
 
 procedure TThCommandItemResize.Execute;
+//var
+//  Item: TThItem;
+//  CurrParent: TFmxObject;
+//  CurrIndex: Integer;
 var
+  UpdateState: TUpdateState;
   Item: TThItem;
-  CurrParent: TFmxObject;
   ItemContainer: IThItemContainer;
-  CurrIndex: Integer;
 begin
-  Item := FItems[0];
+  for UpdateState in FUpdateStateItems do
+    UpdateState.Parent.InsertObject(UpdateState.Index, UpdateState.Item);
 
-  CurrParent  := Item.Parent;
-  CurrIndex   := Item.Index;
+  for Item in FItems do
+  begin
+    Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
+    Item.RealignSpot;
 
-//  Item.Parent := Item.BeforeParent;
-//  Item.Index  := Item.BeforeIndex;
-
-  if Assigned(Item.BeforeParent) then
-    Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
-  Item.BeforeParent := CurrParent;
-  Item.BeforeIndex  := CurrIndex;
-//
-  Item.SetBounds(FAfterRect.Left, FAfterRect.Top, FAfterRect.Width, FAfterRect.Height);
-  Item.RealignSpot;
-
-  Item.ReleaseChildren;
-  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
-    ItemContainer.ContainChildren(Item);
-//  Item.ParentCanvas.DoGrouping(Item);
+    Item.ReleaseChildren;
+    if Supports(Item.Parent, IThItemContainer, ItemContainer) then
+      ItemContainer.ContainChildren(Item);
+  end;
 end;
 
 procedure TThCommandItemResize.Rollback;
+//var
+//  Item: TThItem;
+//  CurrParent: TFmxObject;
+//  CurrIndex: Integer;
 var
+  UpdateState: TUpdateState;
   Item: TThItem;
-  CurrParent: TFmxObject;
-  CurrIndex: Integer;
   ItemContainer: IThItemContainer;
 begin
-  Item := FItems[0];
+  for UpdateState in FUpdateStateItems do
+    UpdateState.BeforeParent.InsertObject(UpdateState.BeforeIndex, UpdateState.Item);
 
-  CurrParent  := Item.Parent;
-  CurrIndex   := Item.Index;
+  for Item in FItems do
+  begin
+    Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
+    Item.RealignSpot;
 
-//  Item.Parent := Item.BeforeParent;
-//  Item.Index  := Item.BeforeIndex;
-
-  if Assigned(Item.BeforeParent) then
-    Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
-  Item.BeforeParent := CurrParent;
-  Item.BeforeIndex  := CurrIndex;
-
-  Item.SetBounds(FBeforeRect.Left, FBeforeRect.Top, FBeforeRect.Width, FBeforeRect.Height);
-  Item.RealignSpot;
-
-  Item.ReleaseChildren;
-  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
-    ItemContainer.ContainChildren(Item);
-//  Item.ContainChildren();
-//  Item.ParentCanvas.DoGrouping(Item);
+    Item.ReleaseChildren;
+    if Supports(Item.Parent, IThItemContainer, ItemContainer) then
+      ItemContainer.ContainChildren(Item);
+  end;
 end;
 
 { TUpdateData }
 
-constructor TUpdateData.Create(AParent: TFmxObject; AIndex: Integer;
-  AItems: TThItems);
+constructor TUpdateState.Create(AItem: TThItem);
 begin
-  Parent := AParent;
-  Index := AIndex;
-  AItems := AItems;
-end;
-
-constructor TUpdateData.Create(AItem: TThItem);
-begin
-  BParent := AItem.BeforeParent;
+  Item := AItem;
+  BeforeParent := AItem.BeforeParent;
   Parent := AItem.Parent;
-  BIndex := AItem.BeforeIndex;
+  BeforeIndex := AItem.BeforeIndex;
   Index := AItem.Index;
-  Items := TThItems.Create(AItem.LastContainItems);
 end;
 
 end.

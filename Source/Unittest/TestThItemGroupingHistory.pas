@@ -7,8 +7,7 @@ uses
   System.UITypes, System.Types, System.SysUtils, FMX.Controls, System.UIConsts;
 
 type
-  // #260 중복 그루핑이 처리되야 한다.
-  // #256 그루핑 예외 및 기타
+  // #275 Grouping이 Undo / Redo 시에도 적용되어야 한다.
   TestTThItemGrouppingHistory = class(TBaseCommandHistoryTestUnit)
   published
     // #277 P1에 C1을 올리고 Undo / Redo 후 C1의 부모와 위치 확인
@@ -39,6 +38,12 @@ type
       // 여러 부모로 이동 후 Undo 시 이전으로 원복되야 한다.
     procedure TestParentCmdHistory;
     procedure BugUndoRedoIncorrectParent;
+
+    // #291 P1, C1에서 P1으로 C1을 덮고 Undo*2 이후 Redo*2 시 P1은 C1을 포함해야 한다.
+    procedure TestMoveContainChildUndo2Redo2;
+
+    // #290: P1>P2>P3>P4위에 C1을 그리고 크기를 변경해서 P3>P2>P1으로 부모 변경 후 Undo시 부...
+    procedure TestResizeParentAndParent;
   end;
 
 implementation
@@ -349,6 +354,120 @@ begin
   Application.ProcessMessages;
 
   Check(C1.Parent <> P1, C1.Parent.Name);
+end;
+
+procedure TestTThItemGrouppingHistory.TestMoveContainChildUndo2Redo2;
+var
+  P1, C1: TThItem;
+begin
+  // P1에 C1 그림
+  P1 := DrawRectangle(10, 10, 100, 100, 'P1');
+  C1 := DrawRectangle(150, 150, 180, 180, 'C1');
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(80, 80)
+  .Add(100, 100)
+  .Add(170, 170).Path);
+
+  Check(C1.Parent = P1, '[0] C1.Parent = P1');
+  CheckEquals(C1.Position.X, 500, 4, Format('[0] %f', [C1.Position.X]));
+
+  FThothController.Undo;  // C1 Move
+  Application.ProcessMessages;
+//  FThothController.Undo;  // P1 Move
+  FThothController.Undo;  // Draw C1
+  Application.ProcessMessages;
+
+  FThothController.Redo;  // Draw C1
+  Application.ProcessMessages;
+//  FThothController.Redo;  // P1 Move
+  FThothController.Redo;  // C1 Move
+  Application.ProcessMessages;
+
+  Check(C1.Parent = P1, '[1] C1.Parent = P1');
+  CheckEquals(C1.Position.X, 500, 4, Format('[1] %f', [C1.Position.X]));
+end;
+
+procedure TestTThItemGrouppingHistory.TestResizeParentAndParent;
+var
+  P1, P2, P3, P4, C1: TThItem;
+begin
+  // P1에 C1 그림
+  P1 := DrawRectangle(10, 10, 250, 250, 'P1');
+  P2 := DrawRectangle(20, 20, 220, 220, 'P2');
+  P3 := DrawRectangle(30, 30, 190, 190, 'P3');
+  P4 := DrawRectangle(40, 40, 160, 160, 'P4');
+
+  C1 := DrawRectangle(100, 100, 130, 130, 'C1');
+  Check(C1.Parent = P4, '[0] P4');
+  CheckEquals(C1.Position.X, 600);
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(130, 130).Add(100, 100)
+  .Add(170, 170).Path);
+  Check(C1.Parent = P3, '[0] P3');
+  CheckEquals(C1.Position.X, 700);
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(170, 170).Add(100, 100)
+  .Add(200, 200).Path);
+  Check(C1.Parent = P2, '[0] P2');
+  CheckEquals(C1.Position.X, 800);
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(200, 200).Add(100, 100)
+  .Add(230, 230).Path);
+  Check(C1.Parent = P1, '[0] P1');
+  CheckEquals(C1.Position.X, 900);
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(230, 230).Add(100, 100)
+  .Add(260, 260).Path);
+  Check(C1.Parent <> P1, '[0] P1');
+  CheckEquals(C1.Position.X, -500);
+
+// Undo Action
+
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P1, '[1] P1');
+  CheckEquals(C1.Position.X, 900);
+
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P2, '[1] P2');
+  CheckEquals(C1.Position.X, 800);
+
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P3, '[1] P3');
+  CheckEquals(C1.Position.X, 700);
+
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P4, '[1] P4');
+  CheckEquals(C1.Position.X, 600);
+
+// RedoAction
+  FThothController.Redo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P3, '[2] P3');
+  CheckEquals(C1.Position.X, 700);
+
+  FThothController.Redo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P2, '[2] P2');
+  CheckEquals(C1.Position.X, 800);
+
+  FThothController.Redo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P1, '[2] P1');
+  CheckEquals(C1.Position.X, 900);
+
+  FThothController.Redo;
+  Application.ProcessMessages;
+  Check(C1.Parent <> P1, '[2] P1');
+  CheckEquals(C1.Position.X, -500);
 end;
 
 initialization
