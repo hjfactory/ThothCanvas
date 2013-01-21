@@ -38,7 +38,7 @@ type
     procedure ItemSelect(Item: TThItem; IsMultiSelect: Boolean);
     procedure ItemUnselect(Item: TThItem);
     procedure ItemTracking(Sender: TObject; X, Y: Single);
-    procedure ItemMove(Item: TThItem; StartPos: TPointF);
+    procedure ItemMove(Item: TThItem; DistancePos: TPointF);
     procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
   public
     constructor Create(AOwner: TComponent); override;
@@ -169,46 +169,36 @@ var
 begin
   for I := 0 to FSelections.Count - 1 do
   begin
+    if FSelections[I].IsParentSelected then
+      Continue;
+
     P := FSelections[I].Position.Point.Add(PointF(X, Y));
     FSelections[I].Position.Point := P;
   end;
 end;
 
-procedure TThCanvasEditor.ItemMove(Item: TThItem; StartPos: TPointF);
+procedure TThCanvasEditor.ItemMove(Item: TThItem; DistancePos: TPointF);
 var
-  DistanceP: TPointF;
+  CurrItem: TThItem;
   ItemContainer: IThItemContainer;
 begin
   { TODO : Selections로 처리해야 함 }
 
-  // Set Parent
-  Item.Parent := FContents.FindParent(Item);
-
-  // Contain Children
-  // 왜안되징
-  if Supports(Item.Parent, IThItemContainer, ItemContainer) then
-    ItemContainer.ContainChildren(Item)
-  else
+  for CurrItem in FSelections do
   begin
-    raise Exception.Create('[TThCanvasEditor.ItemMove] Not supported Supports function');
-//    if Item.Parent is TThContents then
-//      TThContents(Item.Parent).ContainChildren(Item)
-//    else if Item.Parent is TThItem then
-//      TThItem(Item.parent).ContainChildren(Item)
+    // Set Parent
+    CurrItem.Parent := FContents.FindParent(CurrItem);
+
+    // Contain Children
+    if Supports(CurrItem.Parent, IThItemContainer, ItemContainer) then
+      ItemContainer.ContainChildren(CurrItem);
   end;
-  ;
 
   if Assigned(FOnItemMove) then
-  begin
-//    DistanceP := Item.Position.Point.Subtract(StartPos);
-    DistanceP := Item.AbsolutePoint.Subtract(StartPos);
-    FOnItemMove(FSelections, DistanceP);
-  end;
+    FOnItemMove(FSelections, DistancePos);
 end;
 
 procedure TThCanvasEditor.ItemResize(Item: TThItem; BeforeRect: TRectF);
-var
-  ItemContainer: IThItemContainer;
 begin
   // Set Parent
   Item.Parent := FContents.FindParent(Item);
@@ -332,6 +322,8 @@ end;
 
 procedure TThCanvasEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Single);
+var
+  ItemContainer: IThItemContainer;
 begin
   inherited;
 
@@ -343,7 +335,9 @@ begin
     FDrawItem.Parent := FContents.FindParent(FDrawItem);
 
     // Contain Children
-    FContents.ContainChildren(FDrawItem);
+//    FContents.ContainChildren(FDrawItem);
+  if Supports(FDrawItem.Parent, IThItemContainer, ItemContainer) then
+    ItemContainer.ContainChildren(FDrawItem);
 
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);

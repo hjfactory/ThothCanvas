@@ -31,6 +31,14 @@ type
 
     // #249 Undo / Redo 시 ItemIndex가 원래대로 돌아와야 한다.
     procedure TestRecoveryIndexMove;
+
+    // #285: P1에 C1을 그리고 C1을 밖으로 뺀 후 Undo / Redo
+    procedure TestMoveReleaseUndo;
+
+    // #288 Undo / Redo 반복 시 Contain 오류
+      // 여러 부모로 이동 후 Undo 시 이전으로 원복되야 한다.
+    procedure TestParentCmdHistory;
+    procedure BugUndoRedoIncorrectParent;
   end;
 
 implementation
@@ -234,6 +242,111 @@ begin
   TestLib.RunMouseClick(180, 180);
   Check(FCanvas.SelectedItem = P2, Format('Selection Item = %s(Not P2)', [FCanvas.SelectedItem.Name]));
   Check(C1.Position.Point = C1P, Format('C1.Position.Point: %f.%f', [C1.Position.Point.X, C1.Position.Point.Y]));
+end;
+
+procedure TestTThItemGrouppingHistory.TestMoveReleaseUndo;
+var
+  P1, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 140, 140, 'P1');
+  C1 := DrawRectangle(50, 50, 120, 120, 'C1');
+  Check(C1.Parent = P1, Format('[0] C1.Parent = %s', [C1.Name]));
+  CheckEquals(C1.Position.X, 400);
+
+//  TestLib.RunMouseClick(65, 65);
+  TestLib.RunMousePath(MousePath.New
+  .Add(65, 65)
+  .Add(100, 100)
+  .Add(165, 165).Path);
+  Check(C1.Parent <> P1, Format('[1] C1.Parent <> %s', [C1.Name]));
+  CheckEquals(C1.AbsolutePoint.X, 0);
+
+  FThothController.Undo;
+
+  Check(C1.Parent = P1, Format('[2] C1.Parent = %s', [C1.Name]));
+  CheckEquals(C1.Position.X, 400);
+end;
+
+procedure TestTThItemGrouppingHistory.TestParentCmdHistory;
+var
+  P1, P2, P3, C1: TThItem;
+begin
+  // P1에 C1 그림
+  P1 := DrawRectangle(10, 210, 60, 260, 'P1');
+  P2 := DrawRectangle(70, 210, 120, 260, 'P2');
+  P3 := DrawRectangle(130, 210, 180, 260, 'P3');
+  C1 := DrawRectangle(10, 10, 40, 40, 'C1');
+
+  // Contain P1
+  TestLib.RunMousePath(MousePath.New
+  .Add(20, 20).Add(100, 100).Add(20, 220).Path);
+  Check(C1.Parent = P1, '[0] P1');
+
+  // Contain P2
+  TestLib.RunMousePath(MousePath.New
+  .Add(20, 220).Add(100, 100).Add(80, 220).Path);
+  Check(C1.Parent = P2, '[0] P2');
+
+  // Contain P3
+  TestLib.RunMousePath(MousePath.New
+  .Add(80, 220).Add(100, 100).Add(140, 220).Path);
+  Check(C1.Parent = P3, '[0] P3');
+
+  // Contain P3
+  TestLib.RunMousePath(MousePath.New
+  .Add(140, 220).Add(100, 100).Add(140, 20).Path);
+  Check(C1.Parent = FCanvas.Controls[0], '[0] Cotents');
+
+  Debug('Undo start');
+
+// 부모 되돌리기
+  FThothController.Undo;
+  Check(C1.Parent = P3, '[1] P3');
+
+  FThothController.Undo;
+  Check(C1.Parent = P2, '[1] P2');
+
+  FThothController.Undo;
+  Check(C1.Parent = P1, '[1] P1');
+
+  FThothController.Undo;
+  Check(C1.Parent = FCanvas.Controls[0], '[1] Cotents');
+
+  Check(False);
+end;
+
+procedure TestTThItemGrouppingHistory.BugUndoRedoIncorrectParent;
+var
+  P1, C1: TThItem;
+begin
+  // P1에 C1 그림
+  P1 := DrawRectangle(10, 10, 140, 140, 'P1');
+  C1 := DrawRectangle(50, 50, 120, 120, 'C1');
+  Check(C1.Parent = P1);
+
+  // P1이동
+//  TestLib.RunMousePath(MousePath.New
+//  .Add(20, 20)
+//  .Add(100, 100)
+//  .Add(40, 40).Path);
+
+  // C1이동
+  TestLib.RunMousePath(MousePath.New
+  .Add(100, 100)
+  .Add(100, 100)
+  .Add(180, 180).Path);
+
+  Check(C1.Parent <> P1);
+
+  FThothController.Undo;  // C1 Move
+//  FThothController.Undo;  // P1 Move
+  FThothController.Undo;  // Draw C1
+
+  FThothController.Redo;  // Draw C1
+//  FThothController.Redo;  // P1 Move
+  FThothController.Redo;  // C1 Move
+
+  Check(C1.Parent <> P1, C1.Parent.Name);
 end;
 
 initialization

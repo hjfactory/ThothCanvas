@@ -152,6 +152,7 @@
         <DCCReference Include="..\src\Commands\ThCanvasCommand.pas"/>
         <DCCReference Include="TestThItemGrouping.pas"/>
         <DCCReference Include="TestThItemGroupingHistory.pas"/>
+        <DCCReference Include="TestThItemGroupingMultiple.pas"/>
         <RcItem Include="res\1355447708_CabrioletRed.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>TEST_IMAGE</ResourceId>

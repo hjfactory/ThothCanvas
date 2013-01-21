@@ -12,7 +12,7 @@ type
 
   TItemEvent = procedure(Item: TThItem) of object;
   TItemSelectedEvent = procedure(Item: TThItem; IsMultiSelect: Boolean) of object;
-  TItemMoveEvent = procedure(Item: TThItem; StartPos: TPointF) of object;
+  TItemMoveEvent = procedure(Item: TThItem; DistancePos: TPointF) of object;
   TItemResizeEvent = procedure(Item: TThItem; BeforeRect: TRectF) of object;
 
   TItemListEvent = procedure(Items: TThItems) of object;
@@ -65,6 +65,7 @@ type
     function GetAbsolutePoint(APoint: TPointF): TPointF; overload;
     function GetItem(Index: Integer): TThItem;
     function GetItemCount: Integer;
+    function GetIsParentSelected: Boolean;
   protected
     FHighlighter: IItemHighlighter;
     FSelection: IItemSelection;
@@ -119,6 +120,7 @@ type
 
     property ParentCanvas: IThCanvas read FParentCanvas write SetParentCanvas;
     property Selected: Boolean read FSelected write SetSelected;
+    property IsParentSelected: Boolean read GetIsParentSelected;
 
     property BeforeParent: TFmxObject read GetBeforeParent write SetBeforeParent;
     property BeforeIndex: Integer read GetBeforendex write SetBeforeIndex;
@@ -146,7 +148,7 @@ type
 implementation
 
 uses
-  ThConsts;
+  ThConsts, DebugUtils;
 
 { TThItem }
 
@@ -199,6 +201,7 @@ begin
 
   for CurrItem in LastContainItems do
   begin
+    NewParent := nil;
     if Supports(Parent, IThItemContainer, ItemContainer) then
       NewParent := ItemContainer.FindParent(CurrItem);
 
@@ -246,6 +249,9 @@ end;
 procedure TThItem.SetBeforeParent(const Value: TFmxObject);
 begin
   TagObject := Value;
+
+  if Name <> '' then
+    Debug(Format('(%s) BeforeParent : %s(%s)', [Name, Value.Name, Value.ClassName]));
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);
@@ -404,6 +410,19 @@ begin
   Result := TFMXObject(TagObject);
 end;
 
+function TThItem.GetIsParentSelected: Boolean;
+begin
+  if Parent is TThItem then
+  begin
+    Result := TThItem(Parent).Selected;
+    if not Result then
+      Result := TThItem(Parent).IsParentSelected
+  end
+  else
+    Result := False
+  ;
+end;
+
 function TThItem.GetItem(Index: Integer): TThItem;
 begin
   Result := TThItem(FChildren[Index + FSpotCount]);
@@ -522,7 +541,7 @@ begin
     if ((ssShift in Shift) or (ssCtrl in Shift)) and (FDownItemPos = Position.Point) and FBeforeSelect then
       DoSelected(False, True)
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
-      FOnMove(Self, FDownItemPos);
+      FOnMove(Self, Position.Point.Subtract(FDownItemPos));
   end;
 end;
 

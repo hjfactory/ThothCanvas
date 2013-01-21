@@ -174,7 +174,7 @@ begin
 
   FLastContainItems := TList<TThItems>.Create;
   for I := 0 to FItems.Count - 1 do
-    FLastContainItems.Add(TThItems.Create(FItems[I].LastContainItems));
+    FLastContainItems.Add(FItems[I].LastContainItems);
 
   FDistance := ADistance;
 end;
@@ -218,7 +218,7 @@ end;
 
 procedure TThCommandItemMove.Rollback;
 var
-  I, J: Integer;
+  I: Integer;
   Item, RelItem: TThItem;
   CurrParent: TFmxObject;
   CurrIndex: Integer;

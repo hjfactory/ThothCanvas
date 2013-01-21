@@ -170,7 +170,7 @@ begin
   begin
     Item := TThItem(AObject);
     if Assigned(Item.BeforeParent) and (Item.BeforeParent is TThItem) then
-      Item.Position.Point := TThItem(Item.BeforeParent).Position.Point.Add(Item.Position.Point);
+      Item.Position.Point := TThItem(Item.BeforeParent).AbsolutePoint.Add(Item.Position.Point);
   end;
 
   inherited;
@@ -317,6 +317,9 @@ begin
   FContents.HitTest := False;
   FContents.Stored := False;
   FContents.Locked := True;
+{$IFDEF DEBUG}
+  FContents.Name := FContents.ClassName;
+{$ENDIF}
 
 //  DoZoomHome;
 
