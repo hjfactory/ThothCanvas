@@ -114,7 +114,7 @@ begin
     P := CenterPoint.Subtract(PointF(Item.Width / 2, Item.Height / 2));
     Item.Position.Point := P.Subtract(FContents.ScaledPoint);
 
-    if IsDrawingItem and Assigned(Item) then
+    if Assigned(Item) then
     begin
       Item.Selected := True;
       if Assigned(FOnItemAdded) then
@@ -182,8 +182,6 @@ var
   CurrItem: TThItem;
   ItemContainer: IThItemContainer;
 begin
-  { TODO : Selections로 처리해야 함 }
-
   for CurrItem in FSelections do
   begin
     // Set Parent

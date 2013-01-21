@@ -15,8 +15,8 @@ type
     constructor Create(AItems: TThItems); overload;
     destructor Destroy; override;
 
-    procedure Execute; virtual; abstract;
-    procedure Rollback; virtual; abstract;
+    procedure Execute; virtual; abstract;   // BeforeParent로 처리
+    procedure Rollback; virtual; abstract;  // ItemHistory에서 Parent 찾기
   end;
 
   TThCommandItemAdd = class(TThItemCommand)
@@ -41,10 +41,18 @@ type
     procedure Rollback; override;
   end;
 
+  TUpdateData = record
+    Parent, BParent: TFmxObject;
+    Index, BIndex: Integer;
+    Items: TThItems;
+  public
+    constructor Create(AParent: TFmxObject; AIndex: Integer; AItems: TThItems); overload;
+    constructor Create(AItem: TThItem); overload;
+  end;
   TThCommandItemMove = class(TThItemCommand)
   private
     FDistance: TPointF;
-    FLastContainItems: TList<TThItems>;
+    FLastContainItems: TList<TUpdateData>;
   public
     constructor Create(AItems: TThItems; ADistance: TPointF); overload;
     destructor Destroy; override;
@@ -172,9 +180,9 @@ var
 begin
   inherited Create(AItems);
 
-  FLastContainItems := TList<TThItems>.Create;
+  FLastContainItems := TList<TUpdateData>.Create;
   for I := 0 to FItems.Count - 1 do
-    FLastContainItems.Add(FItems[I].LastContainItems);
+    FLastContainItems.Add(TUpdateData.Create(FItems[I]));
 
   FDistance := ADistance;
 end;
@@ -184,7 +192,7 @@ var
   I: Integer;
 begin
   for I := FLastContainItems.Count - 1 downto 0 do
-    FLastContainItems[I].Free;
+    FLastContainItems[I].Items.Free;
 
   FLastContainItems.Free;
 
@@ -205,13 +213,14 @@ begin
     CurrIndex   := Item.Index;
 
     if Assigned(Item.BeforeParent) then
-      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
+      FLastContainItems[I].Parent.InsertObject(FLastContainItems[I].Index, Item);
+//      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
 
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
     Item.Position.Point := Item.Position.Point.Add(FDistance);
 
-    for RelItem in FLastContainItems[I] do
+    for RelItem in FLastContainItems[I].Items do
       RelItem.Parent := RelItem.BeforeParent;
   end;
 end;
@@ -226,18 +235,23 @@ begin
   for I := 0 to FItems.Count - 1 do
   begin
     Item        := FItems[I];
+
+// ChangedParent
     CurrParent  := Item.Parent;
     CurrIndex   := Item.Index;
 
     if Assigned(Item.BeforeParent) then
-      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
+      FLastContainItems[I].BParent.InsertObject(FLastContainItems[I].BIndex, Item);
+//      Item.BeforeParent.InsertObject(Item.BeforeIndex, Item);
 
     // 마지막 이동에서 포함된 자식들 반환
-    for RelItem in FLastContainItems[I] do
+    for RelItem in FLastContainItems[I].Items do
       RelItem.BeforeParent.InsertObject(RelItem.BeforeIndex, RelItem);
 
     Item.BeforeParent := CurrParent;
     Item.BeforeIndex  := CurrIndex;
+// ChangedParent
+
     Item.Position.Point := Item.Position.Point.Subtract(FDistance);
   end;
 end;
@@ -310,6 +324,25 @@ begin
     ItemContainer.ContainChildren(Item);
 //  Item.ContainChildren();
 //  Item.ParentCanvas.DoGrouping(Item);
+end;
+
+{ TUpdateData }
+
+constructor TUpdateData.Create(AParent: TFmxObject; AIndex: Integer;
+  AItems: TThItems);
+begin
+  Parent := AParent;
+  Index := AIndex;
+  AItems := AItems;
+end;
+
+constructor TUpdateData.Create(AItem: TThItem);
+begin
+  BParent := AItem.BeforeParent;
+  Parent := AItem.Parent;
+  BIndex := AItem.BeforeIndex;
+  Index := AItem.Index;
+  Items := TThItems.Create(AItem.LastContainItems);
 end;
 
 end.

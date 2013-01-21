@@ -114,13 +114,13 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="TestThCanvasEditor.pas"/>
-        <DCCReference Include="..\src\Libraries\ThCanvas.pas"/>
+        <DCCReference Include="..\src\Cores\ThCanvas.pas"/>
         <DCCReference Include="..\src\Cores\ThCanvasEditor.pas"/>
         <DCCReference Include="lib\UnitTestForm.pas">
             <Form>frmUnitTest</Form>
         </DCCReference>
         <DCCReference Include="lib\FMX.TestLib.pas"/>
-        <DCCReference Include="..\src\Libraries\ThItem.pas"/>
+        <DCCReference Include="..\src\Cores\ThItem.pas"/>
         <DCCReference Include="..\src\Cores\ThShapeItem.pas"/>
         <DCCReference Include="..\src\Components\ThItemFactory.pas"/>
         <DCCReference Include="TestThItemRectangle.pas"/>
@@ -153,6 +153,7 @@
         <DCCReference Include="TestThItemGrouping.pas"/>
         <DCCReference Include="TestThItemGroupingHistory.pas"/>
         <DCCReference Include="TestThItemGroupingMultiple.pas"/>
+        <DCCReference Include="..\src\Cores\ThItemHistory.pas"/>
         <RcItem Include="res\1355447708_CabrioletRed.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>TEST_IMAGE</ResourceId>

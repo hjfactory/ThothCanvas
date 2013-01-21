@@ -19,11 +19,11 @@ program ThothCanvasTests;
 uses
   DUnitTestRunner,
   TestThCanvasEditor in 'TestThCanvasEditor.pas',
-  ThCanvas in '..\src\Libraries\ThCanvas.pas',
+  ThCanvas in '..\src\Cores\ThCanvas.pas',
   ThCanvasEditor in '..\src\Cores\ThCanvasEditor.pas',
   UnitTestForm in 'lib\UnitTestForm.pas' {frmUnitTest},
   FMX.TestLib in 'lib\FMX.TestLib.pas',
-  ThItem in '..\src\Libraries\ThItem.pas',
+  ThItem in '..\src\Cores\ThItem.pas',
   ThShapeItem in '..\src\Cores\ThShapeItem.pas',
   ThItemFactory in '..\src\Components\ThItemFactory.pas',
   TestThItemRectangle in 'TestThItemRectangle.pas',
@@ -55,7 +55,8 @@ uses
   ThCanvasCommand in '..\src\Commands\ThCanvasCommand.pas',
   TestThItemGrouping in 'TestThItemGrouping.pas',
   TestThItemGroupingHistory in 'TestThItemGroupingHistory.pas',
-  TestThItemGroupingMultiple in 'TestThItemGroupingMultiple.pas';
+  TestThItemGroupingMultiple in 'TestThItemGroupingMultiple.pas',
+  ThItemHistory in '..\src\Cores\ThItemHistory.pas';
 
 {$R *.RES}
 

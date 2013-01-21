@@ -311,8 +311,6 @@ begin
 
   FThothController.Undo;
   Check(C1.Parent = FCanvas.Controls[0], '[1] Cotents');
-
-  Check(False);
 end;
 
 procedure TestTThItemGrouppingHistory.BugUndoRedoIncorrectParent;
@@ -330,7 +328,7 @@ begin
 //  .Add(100, 100)
 //  .Add(40, 40).Path);
 
-  // C1이동
+  // C1이동(벗어나기)
   TestLib.RunMousePath(MousePath.New
   .Add(100, 100)
   .Add(100, 100)
@@ -339,12 +337,16 @@ begin
   Check(C1.Parent <> P1);
 
   FThothController.Undo;  // C1 Move
+  Application.ProcessMessages;
 //  FThothController.Undo;  // P1 Move
   FThothController.Undo;  // Draw C1
+  Application.ProcessMessages;
 
   FThothController.Redo;  // Draw C1
+  Application.ProcessMessages;
 //  FThothController.Redo;  // P1 Move
   FThothController.Redo;  // C1 Move
+  Application.ProcessMessages;
 
   Check(C1.Parent <> P1, C1.Parent.Name);
 end;

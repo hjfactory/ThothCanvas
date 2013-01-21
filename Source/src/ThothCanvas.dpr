@@ -3,10 +3,10 @@ program ThothCanvas;
 uses
   FMX.Forms,
   MainForm in 'Forms\MainForm.pas' {frmMainDraft},
-  ThItem in 'Libraries\ThItem.pas',
+  ThItem in 'Cores\ThItem.pas',
   ThShapeItem in 'Cores\ThShapeItem.pas',
   ThCanvasEditor in 'Cores\ThCanvasEditor.pas',
-  ThCanvas in 'Libraries\ThCanvas.pas',
+  ThCanvas in 'Cores\ThCanvas.pas',
   ThItemFactory in 'Components\ThItemFactory.pas',
   DebugUtils in 'Utils\DebugUtils.pas',
   ThItemHighlighter in 'Components\ThItemHighlighter.pas',
