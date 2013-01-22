@@ -142,23 +142,28 @@ end;
 procedure TThCommandItemAdd.Execute;
 var
   Item: TThItem;
+  UpdateState: TUpdateState;
 begin
-  Item := FItems[0];
-  Item.Parent := Item.BeforeParent;
-  Item.Visible := True;
-  Item.Selected := True;
-//  Item.Repaint;
+  for UpdateState in FUpdateStateItems do
+    UpdateState.Parent.InsertObject(UpdateState.Index, UpdateState.Item);
+
+  for Item in FItems do
+    Item.Selected := True;
 end;
 
 procedure TThCommandItemAdd.Rollback;
 var
   Item: TThItem;
+  UpdateState: TUpdateState;
 begin
-  Item := FItems[0];
-  Item.Selected := False;
-  Item.BeforeParent := Item.Parent;
-  Item.Parent := nil;
-  Item.Visible := False;
+  for UpdateState in FUpdateStateItems do
+    UpdateState.BeforeParent.InsertObject(UpdateState.BeforeIndex, UpdateState.Item);
+
+  for Item in FItems do
+  begin
+    Item.Selected := False;
+    Item.Parent := nil;
+  end;
 end;
 
 { TThCommandItemDelete }
@@ -172,34 +177,38 @@ end;
 
 procedure TThCommandItemDelete.Execute;
 var
-  I: Integer;
+  Item: TThItem;
+  UpdateState: TUpdateState;
 begin
-  for I := 0 to FItems.Count - 1 do
+  for UpdateState in FUpdateStateItems do
   begin
-    FItems[I].BeforeParent := FItems[I].Parent;
-    FItems[I].Parent := nil;
-    FItems[I].Visible := False;
-    FItems[I].Selected := False;
+    UpdateState.Item.Parent := UpdateState.Parent;
+    UpdateState.Item.Index := UpdateState.Index;
+  end;
+
+  for Item in FItems do
+  begin
+    Item.Parent := nil;
+    Item.Selected := False;
   end;
 end;
 
 procedure TThCommandItemDelete.Rollback;
 var
   I: Integer;
+  Item: TThItem;
   Canvas: TThCanvasEditor;
+  UpdateState: TUpdateState;
 begin
-  Canvas := TThCanvasEditor(FParent);
+  for UpdateState in FUpdateStateItems do
+    UpdateState.BeforeParent.InsertObject(UpdateState.BeforeIndex, UpdateState.Item);
 
+  Canvas := TThCanvasEditor(FParent);
   Canvas.ClearSelection;
   Canvas.BeginSelect;
   try
-    for I := 0 to FItems.Count - 1 do
-    begin
-      FItems[I].Parent := FItems[I].BeforeParent;
-      FItems[I].Index := FItems[I].BeforeIndex;
-      FItems[I].Visible := True;
-      FItems[I].Selected := True;
-    end;
+    for Item in FItems do
+      Item.Selected := True;
   finally
     Canvas.EndSelect;
   end;
@@ -222,8 +231,8 @@ end;
 
 procedure TThCommandItemMove.Execute;
 var
-  UpdateState: TUpdateState;
   Item: TThItem;
+  UpdateState: TUpdateState;
 begin
   for Item in FItems do
     Item.Position.Point := Item.Position.Point.Add(FDistance);
@@ -234,8 +243,8 @@ end;
 
 procedure TThCommandItemMove.Rollback;
 var
-  UpdateState: TUpdateState;
   Item: TThItem;
+  UpdateState: TUpdateState;
 begin
   for UpdateState in FUpdateStateItems do
     UpdateState.BeforeParent.InsertObject(UpdateState.BeforeIndex, UpdateState.Item);
@@ -256,10 +265,6 @@ begin
 end;
 
 procedure TThCommandItemResize.Execute;
-//var
-//  Item: TThItem;
-//  CurrParent: TFmxObject;
-//  CurrIndex: Integer;
 var
   UpdateState: TUpdateState;
   Item: TThItem;

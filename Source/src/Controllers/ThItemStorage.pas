@@ -68,6 +68,8 @@ begin
     for I := 0 to TTHCommandSystemItemDestroy(ACommand).Items.Count - 1 do
     begin
       Item := TTHCommandSystemItemDestroy(ACommand).Items[I];
+      if not Assigned(Item) then
+        Continue;
       FItems.Remove(Item);
       Item.Free;
     end;

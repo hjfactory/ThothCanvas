@@ -119,6 +119,7 @@ var
   Radius: Single;
   R, R2: TRectF;
   P: TPointF;
+  State: TCanvasSaveState;
 begin
   inherited;
 
@@ -129,16 +130,21 @@ begin
 
   InflateRect(R, Radius, Radius);
 
-  Canvas.StrokeThickness := 3;
-  Canvas.StrokeDash := TStrokeDash.sdDot;
-  Canvas.Stroke.Color := claDarkGray;
-  Canvas.DrawEllipse(R, 1);
+  State := Canvas.SaveState;
+  try
+    Canvas.StrokeThickness := 3;
+    Canvas.StrokeDash := TStrokeDash.sdDot;
+    Canvas.Stroke.Color := claDarkGray;
+    Canvas.DrawEllipse(R, 1);
 
-  // 원이 크면 서브 원 표시
-  if Radius > (Width / 4) then
-  begin
-    InflateRect(R2, Radius / 2, Radius / 2);
-    Canvas.DrawEllipse(R2, 1);
+    // 원이 크면 서브 원 표시
+    if Radius > (Width / 4) then
+    begin
+      InflateRect(R2, Radius / 2, Radius / 2);
+      Canvas.DrawEllipse(R2, 1);
+    end;
+  finally
+    Canvas.RestoreState(State);
   end;
 end;
 

@@ -47,6 +47,12 @@ type
 
     // #293 크기변경>부모이동 후 Undo 2회 시 크기변경과 이동이 됨
     procedure TestResizeAndMoveUndo2;
+
+    // #287 P1에 C1을 올리고 P2로 C1을 덮고, Delete 후 Undo*2 시 C1도 사라짐
+    procedure TestDeleteParentUndoHideChild;
+
+    // #286 P1에서 P2로 이동한 C1을 Undo
+    procedure TestMoveBetweenParentUndo;
   end;
 
 implementation
@@ -156,6 +162,7 @@ begin
 
   FThothController.Undo;
 
+  Check(Assigned(C1.Parent), Format('Undo: %s', ['C1.Parent is null']));
   Check(C1.Parent = P1, Format('Undo: %s', [C1.Parent.Name]));
 
   FThothController.Redo;
@@ -500,6 +507,47 @@ begin
   Application.ProcessMessages;
   Check(C1.Parent = P2, '[3] C1.Parent = P2');
   CheckEquals(C1.Position.X, 100);
+end;
+
+procedure TestTThItemGrouppingHistory.TestDeleteParentUndoHideChild;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 150, 150, 'P1');
+  C1 := DrawRectangle(80, 80, 120, 120, 'C1');
+
+  P2 := DrawRectangle(30, 30, 140, 140, 'P2');
+  Check(C1.Parent = P2, '[0] C1.Parent = P2');
+
+  FCanvas.DeleteSelection;
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P2, '[1] C1.Parent = P2');
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P1, '[2] C1.Parent = P1');
+end;
+
+procedure TestTThItemGrouppingHistory.TestMoveBetweenParentUndo;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 140, 290, 'P1');
+  P2 := DrawRectangle(160, 10, 290, 290, 'P2');
+
+  C1 := DrawRectangle(170, 20, 200, 50, 'C1');
+  Check(C1.Parent = P2, '[0] C1.Parent = P2');
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(185, 35).Add(100, 100)
+  .Add(35, 35).Path);
+  Check(C1.Parent = P1, '[1] C1.Parent = P1');
+
+  FThothController.Undo;
+  Check(C1.Parent = P2, '[2] C1.Parent = P2');
+
+  FThothController.Redo;
+  Check(C1.Parent = P1, '[3] C1.Parent = P1');
 end;
 
 initialization

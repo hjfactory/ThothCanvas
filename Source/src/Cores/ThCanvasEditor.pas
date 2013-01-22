@@ -255,16 +255,13 @@ begin
   if FSelections.Count = 0 then
     Exit;
 
+  for I := FSelections.Count - 1 downto 0 do
+    FSelections[I].Parent := nil;
+
   if Assigned(FOnItemDelete) then
     FOnItemDelete(FSelections);
 
-  for I := FSelections.Count - 1 downto 0 do
-  begin
-    FSelections[I].BeforeIndex := FSelections[I].Index; // Rollback 시 Index 복구용
-    FSelections[I].Parent := nil;
-    FSelections[I].Visible := False;
-    FSelections[I].Selected := False;
-  end;
+  ClearSelection;
 end;
 
 function TThCanvasEditor.GetSelectionCount: Integer;
@@ -333,9 +330,8 @@ begin
     FDrawItem.Parent := FContents.FindParent(FDrawItem);
 
     // Contain Children
-//    FContents.ContainChildren(FDrawItem);
-  if Supports(FDrawItem.Parent, IThItemContainer, ItemContainer) then
-    ItemContainer.ContainChildren(FDrawItem);
+    if Supports(FDrawItem.Parent, IThItemContainer, ItemContainer) then
+      ItemContainer.ContainChildren(FDrawItem);
 
     if Assigned(FOnItemAdded) then
       FOnItemAdded(FDrawItem);
