@@ -44,6 +44,9 @@ type
 
     // #290: P1>P2>P3>P4위에 C1을 그리고 크기를 변경해서 P3>P2>P1으로 부모 변경 후 Undo시 부...
     procedure TestResizeParentAndParent;
+
+    // #293 크기변경>부모이동 후 Undo 2회 시 크기변경과 이동이 됨
+    procedure TestResizeAndMoveUndo2;
   end;
 
 implementation
@@ -468,6 +471,35 @@ begin
   Application.ProcessMessages;
   Check(C1.Parent <> P1, '[2] P1');
   CheckEquals(C1.Position.X, -500);
+end;
+
+procedure TestTThItemGrouppingHistory.TestResizeAndMoveUndo2;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 140, 290, 'P1');
+  P2 := DrawRectangle(160, 10, 290, 290, 'P2');
+
+  C1 := DrawRectangle(170, 20, 280, 150, 'C1');
+  Check(C1.Parent = P2, '[0] C1.Parent = P2');
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(280, 150).Add(100, 100)
+  .Add(220, 80).Path);
+  Check(C1.Parent = P2, '[1] C1.Parent = P2');
+
+  TestLib.RunMousePath(MousePath.New
+  .Add(180, 30).Add(100, 100)
+  .Add(30, 30).Path);
+  Check(C1.Parent = P1, '[1] C1.Parent = P1');
+
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P2, '[2] C1.Parent = P2');
+  FThothController.Undo;
+  Application.ProcessMessages;
+  Check(C1.Parent = P2, '[3] C1.Parent = P2');
+  CheckEquals(C1.Position.X, 100);
 end;
 
 initialization

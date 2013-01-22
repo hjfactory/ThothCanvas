@@ -249,8 +249,6 @@ end;
 procedure TThItem.SetBeforeParent(const Value: TFmxObject);
 begin
   TagObject := Value;
-
-  Debug(Format('(%s) BeforeParent : %s(%s)', [Name, Value.Name, Value.ClassName]));
 end;
 
 procedure TThItem.SetItemData(AItemData: IThItemData);

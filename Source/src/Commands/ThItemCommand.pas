@@ -114,12 +114,18 @@ begin
   for Item in FItems do
   begin
     if Item.Parent <> Item.BeforeParent then
+    begin
       FUpdateStateItems.Add(TUpdateState.Create(Item));
+      Item.BeforeParent := Item.Parent;
+    end;
 
     for Child in Item.LastContainItems do
     begin
       if Child.Parent <> Child.BeforeParent then
+      begin
         FUpdateStateItems.Add(TUpdateState.Create(Child));
+        Child.BeforeParent := Child.Parent;
+      end;
     end;
   end;
 end;
@@ -274,10 +280,6 @@ begin
 end;
 
 procedure TThCommandItemResize.Rollback;
-//var
-//  Item: TThItem;
-//  CurrParent: TFmxObject;
-//  CurrIndex: Integer;
 var
   UpdateState: TUpdateState;
   Item: TThItem;
