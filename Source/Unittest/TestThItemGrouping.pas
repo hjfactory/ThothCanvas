@@ -481,7 +481,6 @@ end;
 procedure TestTThItemGroupping.TestResizeRightToLeftChildMove;
 var
   P1, C1: TThItem;
-  P: TPointF;
 begin
   P1 := DrawRectangle(110, 110, 240, 240, 'P1');
   C1 := DrawRectangle(150, 150, 220, 220, 'C1');
@@ -505,7 +504,6 @@ end;
 procedure TestTThItemGroupping.TestResizeRightToLeftAfterNearLeft;
 var
   P1, C1: TThItem;
-  P: TPointF;
 begin
   P1 := DrawRectangle(110, 110, 240, 240, 'P1');
   C1 := DrawRectangle(150, 150, 220, 220, 'C1');
@@ -526,7 +524,6 @@ end;
 procedure TestTThItemGroupping.TestResizeRightToLeftNearLeft;
 var
   P1, C1: TThItem;
-  P: TPointF;
 begin
   P1 := DrawRectangle(110, 110, 240, 240, 'P1');
   C1 := DrawRectangle(150, 150, 220, 220, 'C1');
@@ -542,6 +539,7 @@ begin
 
   PrintLog;
 
+  Check(C1.Parent <> P1);
   CheckEquals(C1.AbsolutePoint.X, 0, 4, '[1]X');
 //  CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[1]Y');
 end;

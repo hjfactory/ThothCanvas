@@ -22,6 +22,7 @@ type
   TThItemData = class(TInterfacedObject, IThItemData)
   end;
 
+  // Item을 담는 객체는 상속받아야 한다.
   IThItemContainer = interface
   ['{76A11805-EA40-40B6-84A1-71B4DF277DCD}']
     function GetItem(Index: Integer): TThItem;
@@ -78,6 +79,8 @@ type
     function CreateHighlighter: IItemHighlighter; virtual;
     function CreateSelection: IItemSelection; virtual;
 
+    procedure SpotTracking(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
+
     function GetUpdateRect: TRectF; override;
     function GetItemRect: TRectF; virtual;
 
@@ -92,7 +95,6 @@ type
 
     function PtInItem(Pt: TPointF): Boolean; virtual; abstract;
   public
-//    constructor Create(AOwner: TComponent; AItemData: TThItemData = nil); reintroduce; virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -151,6 +153,36 @@ uses
 
 { TThItem }
 
+constructor TThItem.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  Cursor := crSizeAll;
+  AutoCapture := True;
+
+  // Resize, Move 등의 마지막 액션으로 추가된 자식들
+  FLastContainItems := TList<TThItem>.Create;
+
+{$IFDEF ON_HIGHLIGHT}
+  FHighlighter := CreateHighlighter;
+{$ENDIF}
+  FSelection := CreateSelection;
+
+  FSpotCount := 0;
+  if Assigned(FSelection) then
+    FSpotCount := FSelection.Count;
+end;
+
+destructor TThItem.Destroy;
+begin
+  FHighlighter := nil;
+  FSelection := nil; // Interface Free(destory)
+
+  FLastContainItems.Free;
+
+  inherited;
+end;
+
 procedure TThItem.ContainChildren(AContainer: TThItem);
 var
   I: Integer;
@@ -173,6 +205,11 @@ begin
     CurrItem.Parent := AContainer;
     AContainer.ContainChildren(CurrItem);
   end;
+end;
+
+procedure TThItem.SpotTracking(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean);
+begin
+  DoResizing(SpotCorner, X, Y, SwapHorz, SwapVert);
 end;
 
 procedure TThItem.ReleaseChildren;
@@ -209,35 +246,6 @@ begin
     else
       CurrItem.Parent := Parent;
   end;
-end;
-
-constructor TThItem.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-
-  Cursor := crSizeAll;
-  AutoCapture := True;
-
-  FLastContainItems := TList<TThItem>.Create;
-
-{$IFDEF ON_HIGHLIGHT}
-  FHighlighter := CreateHighlighter;
-{$ENDIF}
-  FSelection := CreateSelection;
-
-  FSpotCount := 0;
-  if Assigned(FSelection) then
-    FSpotCount := FSelection.Count;
-end;
-
-destructor TThItem.Destroy;
-begin
-  FHighlighter := nil;
-  FSelection := nil; // Interface Free(destory)
-
-  FLastContainItems.Free;
-
-  inherited;
 end;
 
 procedure TThItem.SetBeforeIndex(const Value: Integer);

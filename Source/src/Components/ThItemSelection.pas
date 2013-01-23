@@ -7,7 +7,7 @@ uses
   System.Generics.Collections, ThConsts, ThTypes;
 
 type
-  TSpotTrackingEvent = procedure(Sender: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean) of object;
+  TSpotTrackingEvent = procedure(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean) of object;
   TItemResizeSpot = class(TControl, IItemResizeSpot)
   private
     FMouseDownPos: TPointF;
@@ -391,53 +391,53 @@ var
 begin
   SpotCorner := ActiveSpot.SpotCorner;
 
-//  Debug('X : %f', [TControl(FParent).Position.X]);
-
   BeforeSize := TControl(FParent).BoundsRect.Size;
 
   ResizeItemBySpot(ActiveSpot);
   NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
 
-  SwapHorz := False;
-  SwapVert := False;
-  if ChangeHorizonSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
-  begin
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-      X := -TControl(FParent).Width
-    else
-      X := BeforeSize.Width;
-
-    SwapHorz := True;
-  end
-  else if TControl(FParent).Width <= FParent.MinimumSize.Width then
-  begin
-    if BeforeSize.Width <= FParent.MinimumSize.Width then
-      X := 0
-    else if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-    begin
-      X := BeforeSize.Width - FParent.MinimumSize.Width;
-    end;
-  end;
-
-  if ChangeVerticalSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
-  begin
-    if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-      Y := -TControl(FParent).Height
-    else
-      Y := BeforeSize.Height;
-    SwapVert := True;
-  end
-  else if TControl(FParent).Height <= FParent.MinimumSize.Height then
-  begin
-    if BeforeSize.Height <= FParent.MinimumSize.Height then
-      Y := 0
-    else if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-      Y := BeforeSize.Height - FParent.MinimumSize.Height;
-  end;
-
   if Assigned(FOnTracking) then
-    FOnTracking(Sender, X, Y, SwapHorz, SwapVert);
+  begin
+  //////////////////////////////////////////////
+  ///  최소크기 및 반전(RightSpot -> LeftSpot)에 대한 예외사항
+    SwapHorz := False;
+    SwapVert := False;
+    if ChangeHorizonSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
+    begin
+      if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+        X := -TControl(FParent).Width
+      else
+        X := BeforeSize.Width;
+
+      SwapHorz := True;
+    end
+    else if TControl(FParent).Width <= FParent.MinimumSize.Width then
+    begin
+      if BeforeSize.Width <= FParent.MinimumSize.Width then
+        X := 0
+      else if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+        X := BeforeSize.Width - FParent.MinimumSize.Width;
+    end;
+
+    if ChangeVerticalSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
+    begin
+      if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
+        Y := -TControl(FParent).Height
+      else
+        Y := BeforeSize.Height;
+      SwapVert := True;
+    end
+    else if TControl(FParent).Height <= FParent.MinimumSize.Height then
+    begin
+      if BeforeSize.Height <= FParent.MinimumSize.Height then
+        Y := 0
+      else if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
+        Y := BeforeSize.Height - FParent.MinimumSize.Height;
+    end;
+
+    FOnTracking(SpotCorner, X, Y, SwapHorz, SwapVert);
+  end;
 end;
 
 procedure TThItemSelection.DrawSelection;

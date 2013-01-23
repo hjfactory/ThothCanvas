@@ -99,7 +99,7 @@ var
 begin
   Selection := TThItemSelection.Create(Self);
   Selection.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
-  Selection.OnTracking := nil;
+  Selection.OnTracking := SpotTracking;
 
   Result := Selection;
 end;

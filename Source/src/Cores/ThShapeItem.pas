@@ -29,7 +29,6 @@ type
     // Abstract method
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
-    procedure SoptTracking(Spot: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
 
     function GetMinimumSize: TSizeF; virtual;
   public
@@ -134,11 +133,11 @@ var
 begin
   Selection := TThItemSelection.Create(Self);
 {$IFDEF ON_ALLCORNER_RESIZESPOT}
-  Resizer.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
+  Selection.SetResizeSpots([scLeft, scTop, scRight, scBottom, scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ELSE}
   Selection.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ENDIF}
-  Selection.OnTracking := SoptTracking;
+  Selection.OnTracking := SpotTracking;
 
   Result := Selection;
 end;
@@ -167,11 +166,6 @@ begin
 
   FBgColor := Value;
   Repaint;
-end;
-
-procedure TThShapeItem.SoptTracking(Spot: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean);
-begin
-  DoResizing(TItemResizeSpot(Spot).SpotCorner, X, Y, SwapHorz, SwapVert);
 end;
 
 {$REGION RECTANGLE}
@@ -474,7 +468,7 @@ begin
 {$ELSE}
   Selection.SetResizeSpots([scLeft, scTop, scRight, scBottom]);
 {$ENDIF}
-  Selection.OnTracking := nil;
+  Selection.OnTracking := SpotTracking;
 
   Result := Selection;
 end;
