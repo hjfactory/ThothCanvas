@@ -152,7 +152,10 @@ begin
       AContainer.LastContainItems.Add(CurrItem);
   end;
   for CurrItem in AContainer.LastContainItems do
+  begin
     CurrItem.Parent := AContainer;
+    AContainer.ContainChildren(CurrItem);
+  end;
 end;
 
 constructor TThContents.Create(AOwner: TComponent);

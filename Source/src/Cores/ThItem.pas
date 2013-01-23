@@ -168,12 +168,14 @@ begin
       Continue;
 
     if AContainer.IsContain(CurrItem) then
-      // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
-//      CurrItem.Parent := AParent;
+//      CurrItem.Parent := AParent; // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
       AContainer.LastContainItems.Add(CurrItem);
   end;
   for CurrItem in AContainer.LastContainItems do
+  begin
     CurrItem.Parent := AContainer;
+    AContainer.ContainChildren(CurrItem);
+  end;
 end;
 
 procedure TThItem.ReleaseChildren;

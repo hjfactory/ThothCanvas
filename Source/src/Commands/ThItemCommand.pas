@@ -195,7 +195,6 @@ end;
 
 procedure TThCommandItemDelete.Rollback;
 var
-  I: Integer;
   Item: TThItem;
   Canvas: TThCanvasEditor;
   UpdateState: TUpdateState;

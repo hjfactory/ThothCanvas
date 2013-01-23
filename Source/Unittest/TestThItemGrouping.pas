@@ -65,6 +65,9 @@ type
 
     // #268 이미지 위에 아이템이 그루핑 되어야 한다.
     procedure TestImageGrouping;
+
+    // #261 아이템크기를 음수영역(TopLeft)으로 변경하는 경우 자식아이템 위치는 그대로여야 한다.
+    procedure TestResizeTopLeftChildPoint;
   end;
 
 implementation

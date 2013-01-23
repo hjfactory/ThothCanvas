@@ -36,6 +36,9 @@ type
 
     // #269: P1>P2>C1 구조에서 3개를 선택하고 이동 시 P1에 따라 이동되어야 한다.
     procedure TestMoveMultiselected;
+
+    // #284 P1>C1에서 P1을 이동하여 P2가 C1을 포함하는 경우 P2에 C1이 포함되야 한다.
+    procedure TestMoveContainChildOfParent;
   end;
 
 implementation
@@ -256,6 +259,27 @@ begin
 
   CheckEquals(P2.Position.X, 200, 4, 'P2');
   CheckEquals(C1.Position.X, 200, 4, 'C1');
+end;
+
+procedure TestTThItemGrouppingMultiple.TestMoveContainChildOfParent;
+var
+  P1, P2, C1: TThItem;
+begin
+  P1 := DrawRectangle(10, 10, 140, 140, 'P1');
+  C1 := DrawRectangle(50, 50, 80, 80, 'C1');
+
+  P2 := DrawRectangle(160, 30, 220, 100, 'P2');
+
+  Check(C1.Parent = P1, '[0] C1.Parent = P1');
+
+  TestLib.RunMouseClick(20, 15);
+  TestLib.RunMousePath(MousePath.New
+  .Add(20, 20)
+  .Add(130, 130)
+  .Add(150, 20).Path);
+
+  Check(P2.Parent = P1, '[1] P2.Parent');
+  Check(C1.Parent = P2, '[1] C1.Parent');
 end;
 
 initialization

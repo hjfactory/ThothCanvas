@@ -150,6 +150,7 @@ begin
     Result.OnUnselected := ItemUnselect;
     Result.OnTracking := ItemTracking;
     Result.OnMove := ItemMove;
+//    Result.OnResizing := ItemResizing;
     Result.OnResize := ItemResize;
     // Zoom적용된 최소사이즈 적용
     Result.Width := Result.Width / ZoomScale;
