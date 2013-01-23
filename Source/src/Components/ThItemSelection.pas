@@ -391,6 +391,8 @@ var
 begin
   SpotCorner := ActiveSpot.SpotCorner;
 
+//  Debug('X : %f', [TControl(FParent).Position.X]);
+
   BeforeSize := TControl(FParent).BoundsRect.Size;
 
   ResizeItemBySpot(ActiveSpot);
@@ -401,32 +403,38 @@ begin
   SwapVert := False;
   if ChangeHorizonSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
   begin
-    X :=  IfThen(TControl(FParent).Width < FParent.MinimumSize.Width, FParent.MinimumSize.Width, TControl(FParent).Width);
     if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
-      X := -X;
+      X := -TControl(FParent).Width
+    else
+      X := BeforeSize.Width;
 
     SwapHorz := True;
   end
   else if TControl(FParent).Width <= FParent.MinimumSize.Width then
-    Exit;
-
-    // HJF
-//  Debug('##### X : %f(%f)', [x, TControl(FParent).Width]);
-//  if TControl(FParent).Width - X < FParent.MinimumSize.Width then
-//    X := FParent.MinimumSize.Width - (TControl(FParent).Width - X);
+  begin
+    if BeforeSize.Width <= FParent.MinimumSize.Width then
+      X := 0
+    else if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+    begin
+      X := BeforeSize.Width - FParent.MinimumSize.Width;
+    end;
+  end;
 
   if ChangeVerticalSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
   begin
-    Y :=  IfThen(TControl(FParent).Height < FParent.MinimumSize.Height, FParent.MinimumSize.Height, TControl(FParent).Height);
     if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
-      Y := -Y;
-//    Debug('##### Y : %f', [Y]);
+      Y := -TControl(FParent).Height
+    else
+      Y := BeforeSize.Height;
     SwapVert := True;
   end
   else if TControl(FParent).Height <= FParent.MinimumSize.Height then
-    Exit;
-
-//  Debug('$$$ %f %f %f/%f', [X, Y, TControl(FParent).Width, TControl(FParent).BoundsRect.Size.Width]);
+  begin
+    if BeforeSize.Height <= FParent.MinimumSize.Height then
+      Y := 0
+    else if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
+      Y := BeforeSize.Height - FParent.MinimumSize.Height;
+  end;
 
   if Assigned(FOnTracking) then
     FOnTracking(Sender, X, Y, SwapHorz, SwapVert);

@@ -71,6 +71,8 @@ type
 
     // #295 그룹된 아이템 크기 변경 시 BottomRight를 TopLeft로 이동 시 자식의 위치가 엉뚱하게 표시 됨
     procedure TestResizeRightToLeftChildMove;
+    procedure TestResizeRightToLeftAfterNearLeft;
+    procedure TestResizeRightToLeftNearLeft;
   end;
 
 implementation
@@ -498,6 +500,50 @@ begin
 
   CheckEquals(C1.AbsolutePoint.X, 0, 4, '[2]X');
   CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[2]Y');
+end;
+
+procedure TestTThItemGroupping.TestResizeRightToLeftAfterNearLeft;
+var
+  P1, C1: TThItem;
+  P: TPointF;
+begin
+  P1 := DrawRectangle(110, 110, 240, 240, 'P1');
+  C1 := DrawRectangle(150, 150, 220, 220, 'C1');
+
+  CheckEquals(C1.AbsolutePoint.X, 0, 4, '[0]X');
+  CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[0]Y');
+
+  TestLib.RunMouseClick(120, 120);
+  TestLib.RunMousePath(MousePath.New[240, 240]
+    [100,100][50,50]
+    [100, 100]
+  );
+
+  CheckEquals(C1.AbsolutePoint.X, 0, 4, '[1]X');
+  CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[1]Y');
+end;
+
+procedure TestTThItemGroupping.TestResizeRightToLeftNearLeft;
+var
+  P1, C1: TThItem;
+  P: TPointF;
+begin
+  P1 := DrawRectangle(110, 110, 240, 240, 'P1');
+  C1 := DrawRectangle(150, 150, 220, 220, 'C1');
+
+  CheckEquals(C1.AbsolutePoint.X, 0, 4, '[0]X');
+  CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[0]Y');
+
+  TestLib.RunMouseClick(120, 120);
+  TestLib.RunMousePath(MousePath.New[240, 240]
+//    [150, 240][111, 240]
+    [90, 240][100, 240]
+  );
+
+  PrintLog;
+
+  CheckEquals(C1.AbsolutePoint.X, 0, 4, '[1]X');
+//  CheckEquals(C1.AbsolutePoint.Y, 0, 4, '[1]Y');
 end;
 
 initialization

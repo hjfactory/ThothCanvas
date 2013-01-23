@@ -3,7 +3,7 @@ unit DebugUtils;
 interface
 
 uses
-  System.Types;
+  System.Types, System.Classes;
 
 //function PtInCircle(const Point, Center: TPointF; Radius: Single): Boolean; overload;
 //function PtInCircle(const Point, Center: TPoint; Radius: Integer): Boolean; overload;
@@ -11,14 +11,19 @@ uses
 
 procedure Debug(ALog: string); overload;
 procedure Debug(ALog: string; args: array of const); overload;
+procedure AddDebug(ALog: string); overload;
+procedure AddDebug(ALog: string; args: array of const); overload;
+procedure PrintLog;
 procedure ConditionalDebug(ALog: string; args: array of const); overload;
 
 var
   DebugStart: Boolean = False;
+  List: TStringList;
 
 implementation
-  uses
-    System.SysUtils
+
+uses
+  System.SysUtils
 {$IFDEF MACOS}
 
 {$ENDIF}
@@ -48,6 +53,29 @@ begin
   Debug(Format(ALog, args));
 end;
 
+procedure AddDebug(ALog: string);
+begin
+  if not Assigned(List) then
+    List := TStringList.Create;
+
+  List.Add(ALog);
+end;
+
+procedure AddDebug(ALog: string; args: array of const);
+begin
+  AddDebug(Format(ALog, args));
+end;
+
+procedure PrintLog;
+var
+  Log: string;
+begin
+  if not Assigned(List) then
+    Exit;
+  for Log in List do
+    Debug(Log);
+end;
+
 procedure ConditionalDebug(ALog: string; args: array of const);
 begin
   if DebugStart then
@@ -67,5 +95,11 @@ end;
 //    Result := False;
 //  end;
 //end;
+
+initialization
+
+finalization
+  if Assigned(List) then
+    List.Free;
 
 end.
