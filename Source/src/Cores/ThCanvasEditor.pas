@@ -40,6 +40,8 @@ type
     procedure ItemTracking(Sender: TObject; X, Y: Single);
     procedure ItemMove(Item: TThItem; DistancePos: TPointF);
     procedure ItemResize(Item: TThItem; BeforeRect: TRectF);
+    procedure ItemResizing(Item: TThItem; SpotCorner: TSpotCorner; X, Y: Single;
+      SwapHorz, SwapVert: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -74,7 +76,7 @@ type
 implementation
 
 uses
-  Math, ThItemFactory;
+  Math, SpotCornerUtils, ThItemFactory, DebugUtils;
 
 { TThCanvasEditor }
 
@@ -150,8 +152,8 @@ begin
     Result.OnUnselected := ItemUnselect;
     Result.OnTracking := ItemTracking;
     Result.OnMove := ItemMove;
-//    Result.OnResizing := ItemResizing;
     Result.OnResize := ItemResize;
+    Result.OnResizing := ItemResizing;
     // Zoom적용된 최소사이즈 적용
     Result.Width := Result.Width / ZoomScale;
     Result.Height := Result.Height / ZoomScale;
@@ -210,6 +212,26 @@ begin
 
   if Assigned(FOnItemResize) then
     FOnItemResize(Item, BeforeRect);
+end;
+
+procedure TThCanvasEditor.ItemResizing(Item: TThItem; SpotCorner: TSpotCorner;
+  X, Y: Single; SwapHorz, SwapVert: Boolean);
+var
+  I: Integer;
+  P: TPointF;
+begin
+  P := PointF(0, 0);
+
+  if SwapHorz or ContainSpotCorner(SpotCorner, scLeft) then
+    P.X := P.X - X;
+  if SwapVert or ContainSpotCorner(SpotCorner, scTop) then
+    P.Y := P.Y - Y;
+
+  if P <> PointF(0, 0) then
+  begin
+    for I := 0 to Item.ItemCount - 1 do
+      Item.Items[I].Position.Point := Item.Items[I].Position.Point.Add(P);
+  end;
 end;
 
 procedure TThCanvasEditor.ItemSelect(Item: TThItem; IsMultiSelect: Boolean);

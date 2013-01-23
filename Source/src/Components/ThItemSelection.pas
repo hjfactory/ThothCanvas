@@ -7,6 +7,7 @@ uses
   System.Generics.Collections, ThConsts, ThTypes;
 
 type
+  TSpotTrackingEvent = procedure(Sender: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean) of object;
   TItemResizeSpot = class(TControl, IItemResizeSpot)
   private
     FMouseDownPos: TPointF;
@@ -58,7 +59,7 @@ type
     FSpotClass: TResizeSpotClass;
     FParentControl: TControl;
     FSpots: TThResizeSpots;
-    FOnTracking: TTrackingEvent;
+    FOnTracking: TSpotTrackingEvent;
     function GetSpots(Index: Integer): IItemResizeSpot;
     function GetCount: Integer;
     function GetSpot(SpotCorner: TSpotCorner): TItemResizeSpot;
@@ -91,7 +92,7 @@ type
 
     property Spots[Index: Integer] : IItemResizeSpot read GetSpots; default;
     property Count: Integer read GetCount;
-    property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
+    property OnTracking: TSpotTrackingEvent read FOnTracking write FOnTracking;
   end;
 
   // 수직/수평선(Width, Height = 0) 예외처리
@@ -115,7 +116,7 @@ type
 implementation
 
 uses
-  System.UIConsts, SpotCornerUtils, System.Math;
+  System.UIConsts, SpotCornerUtils, System.Math, DebugUtils;
 
 { TItemResizeSpot }
 
@@ -384,13 +385,51 @@ end;
 procedure TThItemSelection.DoResizeSpotTrack(Sender: TObject; X, Y: Single);
 var
   ActiveSpot: TThItemCircleResizeSpot absolute Sender;
+  SpotCorner: TSpotCorner;
+  BeforeSize: TSizeF;
+  SwapHorz, SwapVert: Boolean;
 begin
+  SpotCorner := ActiveSpot.SpotCorner;
+
+  BeforeSize := TControl(FParent).BoundsRect.Size;
+
   ResizeItemBySpot(ActiveSpot);
   NormalizeSpotCorner(ActiveSpot);
   RealignSpot;
 
+  SwapHorz := False;
+  SwapVert := False;
+  if ChangeHorizonSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
+  begin
+    X :=  IfThen(TControl(FParent).Width < FParent.MinimumSize.Width, FParent.MinimumSize.Width, TControl(FParent).Width);
+    if ContainSpotCorner(ActiveSpot.SpotCorner, scLeft) then
+      X := -X;
+
+    SwapHorz := True;
+  end
+  else if TControl(FParent).Width <= FParent.MinimumSize.Width then
+    Exit;
+
+    // HJF
+//  Debug('##### X : %f(%f)', [x, TControl(FParent).Width]);
+//  if TControl(FParent).Width - X < FParent.MinimumSize.Width then
+//    X := FParent.MinimumSize.Width - (TControl(FParent).Width - X);
+
+  if ChangeVerticalSpotCorner(SpotCorner, ActiveSpot.SpotCorner) then
+  begin
+    Y :=  IfThen(TControl(FParent).Height < FParent.MinimumSize.Height, FParent.MinimumSize.Height, TControl(FParent).Height);
+    if ContainSpotCorner(ActiveSpot.SpotCorner, scTop) then
+      Y := -Y;
+//    Debug('##### Y : %f', [Y]);
+    SwapVert := True;
+  end
+  else if TControl(FParent).Height <= FParent.MinimumSize.Height then
+    Exit;
+
+//  Debug('$$$ %f %f %f/%f', [X, Y, TControl(FParent).Width, TControl(FParent).BoundsRect.Size.Width]);
+
   if Assigned(FOnTracking) then
-    FOnTracking(Sender, X, Y);
+    FOnTracking(Sender, X, Y, SwapHorz, SwapVert);
 end;
 
 procedure TThItemSelection.DrawSelection;
@@ -583,7 +622,14 @@ begin
   if FDisabled then
     Canvas.Fill.Color := ItemResizeSpotDisableColor
   else if IsMouseOver then
+  begin
+//    if SpotCorner = scBottomLeft then
+//      Canvas.Fill.Color := claGreen
+//    else if SpotCorner = scBottomRight then
+//      Canvas.Fill.Color := claBlue
+//    else
     Canvas.Fill.Color := ItemResizeSpotOverColor
+  end
   else
     Canvas.Fill.Color := ItemResizeSpotOutColor;
 

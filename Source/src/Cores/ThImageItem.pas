@@ -23,7 +23,7 @@ type
 
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
     function PtInItem(Pt: TPointF): Boolean; override;
-    function GetMinimumSize: TPointF; virtual;
+    function GetMinimumSize: TSizeF; virtual;
 
     procedure DoBitmapChanged(Sender: TObject); virtual;
   public
@@ -41,18 +41,14 @@ implementation
 uses
   FMX.Dialogs, ThConsts, ThItemFactory, ThItemSelection, ThItemHighlighter, DebugUtils;
 
-{ TThImageItemData }
-
-//constructor TThImageItemData.Create(AFileName: TFileName);
-//begin
-//  FFilename := AFileName;
-//end;
-
 { TThImageItem }
 
 constructor TThImageItem.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+
+  FRecalcOpacity := False;
+  FAbsoluteOpacity := 1;
 
   FBitmap := TBitmap.Create(0, 0);
   FBitmap.OnChange := DoBitmapChanged;
@@ -60,7 +56,6 @@ end;
 
 destructor TThImageItem.Destroy;
 begin
-//  FImage.Free;
   FBitmap.Free;
 
   inherited;
@@ -74,6 +69,7 @@ begin
 
   FItemData := TThFileItemData(AItemData);
 
+  FN := '';
   if Assigned(FItemData) then
     FN := FItemData.Filename;
 
@@ -113,7 +109,7 @@ begin
   Result := FBitmap;
 end;
 
-function TThImageItem.GetMinimumSize: TPointF;
+function TThImageItem.GetMinimumSize: TSizeF;
 var
   MinSize: Single;
 begin
@@ -137,15 +133,14 @@ begin
     try
       Dialog.Filter := TBitmapCodecManager.GetFilterString;
       if Dialog.Execute then
-      begin
         AFilename := Dialog.FileName;
-      end;
     finally
       Dialog.Free;
     end;
   end;
 
   FBitmap.LoadFromFile(AFilename);
+
   Width := FBitmap.Width;
   Height := FBitmap.Height;
 end;
@@ -164,7 +159,7 @@ begin
   begin
     R := LocalRect;
     InflateRect(R, -0.5, -0.5);
-    Canvas.DrawDashRect(R, 0, 0, AllCorners, AbsoluteOpacity, $A0909090);
+    Canvas.DrawDashRect(R, 0, 0, AllCorners, FAbsoluteOpacity, $A0909090);
   end;
 
   B := FBitmap;
@@ -173,7 +168,7 @@ begin
 
   R := LocalRect;
   Canvas.DrawBitmap(B, RectF(0, 0, B.Width, B.Height), R,
-    AbsoluteOpacity, False)
+    FAbsoluteOpacity, False)
 end;
 
 function TThImageItem.PtInItem(Pt: TPointF): Boolean;

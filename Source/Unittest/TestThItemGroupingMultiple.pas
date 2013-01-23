@@ -273,10 +273,7 @@ begin
   Check(C1.Parent = P1, '[0] C1.Parent = P1');
 
   TestLib.RunMouseClick(20, 15);
-  TestLib.RunMousePath(MousePath.New
-  .Add(20, 20)
-  .Add(130, 130)
-  .Add(150, 20).Path);
+  TestLib.RunMousePath(MousePath.New[20, 20][130,130][150,20]);
 
   Check(P2.Parent = P1, '[1] P2.Parent');
   Check(C1.Parent = P2, '[1] C1.Parent');

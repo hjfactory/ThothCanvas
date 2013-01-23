@@ -14,16 +14,12 @@ type
   TItemSelectedEvent = procedure(Item: TThItem; IsMultiSelect: Boolean) of object;
   TItemMoveEvent = procedure(Item: TThItem; DistancePos: TPointF) of object;
   TItemResizeEvent = procedure(Item: TThItem; BeforeRect: TRectF) of object;
+  TItemResizingEvent = procedure(Item: TThItem; SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean) of object;
 
   TItemListEvent = procedure(Items: TThItems) of object;
   TItemListPointvent = procedure(Items: TThItems; Distance: TPointF) of object;
 
   TThItemData = class(TInterfacedObject, IThItemData)
-  private
-    FInt: Integer;
-  public
-    constructor Create;
-    destructor Destroy; override;
   end;
 
   IThItemContainer = interface
@@ -54,6 +50,7 @@ type
 
     // 최종 포함된 자식 목록(Undo시 필요)
     FLastContainItems: TThItems;
+    FOnResizing: TItemResizingEvent;
 
     procedure SetSelected(const Value: Boolean);
     procedure SetParentCanvas(const Value: IThCanvas);
@@ -76,6 +73,7 @@ type
 
     procedure DoAddObject(AObject: TFmxObject); override;
     procedure DoRemoveObject(AObject: TFmxObject); override;
+    procedure DoResizing(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
 
     function CreateHighlighter: IItemHighlighter; virtual;
     function CreateSelection: IItemSelection; virtual;
@@ -133,6 +131,7 @@ type
     property OnTracking: TTrackingEvent read FOnTracking write FOnTracking;
     property OnMove: TItemMoveEvent read FOnMove write FOnMove;
     property OnResize: TItemResizeEvent read FOnResize write FOnResize;
+    property OnResizing: TItemResizingEvent read FOnResizing write FOnResizing;
   end;
   TThItemClass = class of TThItem;
 
@@ -151,8 +150,6 @@ uses
   ThConsts, DebugUtils;
 
 { TThItem }
-
-//constructor TThItem.Create(AOwner: TComponent; AItemData: TThItemData);
 
 procedure TThItem.ContainChildren(AContainer: TThItem);
 var
@@ -276,8 +273,6 @@ procedure TThItem.Painting;
 begin
   inherited;
 
-//  if (FSelected or IsMouseOver) and Assigned(FHighlighter) then
-//  if (IsMouseOver or (Assigned(FSelection) and (FSelection.IsMouseOver))) and Assigned(FHighlighter) then
 {$IFDEF ON_HIGHLIGHT}
   if (IsMouseOver) and Assigned(FHighlighter) then
     FHighlighter.DrawHighlight;
@@ -360,6 +355,12 @@ begin
   inherited;
 end;
 
+procedure TThItem.DoResizing(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean);
+begin
+  if Assigned(FOnResizing) then
+    FOnResizing(Self, SpotCorner, X, Y, SwapHorz, SwapVert);
+end;
+
 procedure TThItem.DrawItemAtMouse(AFrom, ATo: TPointF);
 begin
 end;
@@ -397,7 +398,8 @@ function TThItem.GetAbsolutePoint(APoint: TPointF): TPointF;
 begin
   Result := APoint.Add(Position.Point);
   if Parent is TThItem then
-    Result := TThItem(Parent).GetAbsolutePoint(Result);end;
+    Result := TThItem(Parent).GetAbsolutePoint(Result);
+end;
 
 function TThItem.GetBeforendex: Integer;
 begin
@@ -418,8 +420,7 @@ begin
       Result := TThItem(Parent).IsParentSelected
   end
   else
-    Result := False
-  ;
+    Result := False;
 end;
 
 function TThItem.GetItem(Index: Integer): TThItem;
@@ -542,24 +543,6 @@ begin
     else if (FDownItemPos <> Position.Point) and Assigned(FOnMove) then
       FOnMove(Self, Position.Point.Subtract(FDownItemPos));
   end;
-end;
-
-{ TThItemData }
-
-constructor TThItemData.Create;
-begin
-
-end;
-
-destructor TThItemData.Destroy;
-begin
-  if FInt > 0 then
-  begin
-
-  end;
-
-
-  inherited;
 end;
 
 { TThFileItem }

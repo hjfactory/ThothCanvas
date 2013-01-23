@@ -68,18 +68,6 @@ type
 
   // Contain item control
   IThItems =  TList<IThItem>;
-//  IThItemContainer = interface
-//    function GetItem(Index: Integer): IThItem;
-//    function GetItemCount: Integer;
-//    property Items[Index: Integer]: IThItem read GetItem;
-//    property ItemCount: Integer read GetItemCount;
-//
-//    function FindParent(AItem: IThItem): TFMXObject;
-////    function GetContainChildrenItems(AItem: IThItem; AChildren: IThItems): Boolean;
-////    function GetContainParentItem(AItem: IThItem): IThItem;
-//
-////    procedure LoadIncludeChildren(AItem: IThItem);
-//  end;
 
   IThCanvasController = interface
   end;
@@ -110,8 +98,8 @@ type
   ///   IItemSelectionObject is IItemSelection's parent
   ///   IItemSelection is IItemResizeSpots parent
   IItemSelectionObject = interface(IThItem)
-    function GetMinimumSize: TPointF;
-    property MinimumSize: TPointF read GetMinimumSize;
+    function GetMinimumSize: TSizeF;
+    property MinimumSize: TSizeF read GetMinimumSize;
   end;
 
   IItemResizeSpot = interface

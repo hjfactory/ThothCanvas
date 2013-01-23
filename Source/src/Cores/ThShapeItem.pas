@@ -29,8 +29,9 @@ type
     // Abstract method
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); virtual; abstract;
     function PtInItem(Pt: TPointF): Boolean; override; abstract;
+    procedure SoptTracking(Spot: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
 
-    function GetMinimumSize: TPointF; virtual;
+    function GetMinimumSize: TSizeF; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -38,7 +39,7 @@ type
     function IsContain(AChild: TThItem): Boolean; override;
 
     property BgColor: TAlphaColor read FBgColor write SetBgColor;
-    property MinimumSize: TPointF read GetMinimumSize;
+    property MinimumSize: TSizeF read GetMinimumSize;
   end;
 
   TThRectangle = class(TThShapeItem)
@@ -57,7 +58,7 @@ type
   protected
     function CreateSelection: IItemSelection; override;
 
-    function GetMinimumSize: TPointF; override;
+    function GetMinimumSize: TSizeF; override;
 
     function PtInItem(Pt: TPointF): Boolean; override;
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor); override;
@@ -89,8 +90,8 @@ constructor TThShapeItem.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FWidth := MinimumSize.X;
-  FHeight := MinimumSize.Y;
+  FWidth := MinimumSize.Width;
+  FHeight := MinimumSize.Height;
 
   FOpacity := ItemDefaultOpacity;
   FBgColor := ItemShapeDefaultColor;
@@ -102,7 +103,7 @@ begin
   inherited;
 end;
 
-function TThShapeItem.GetMinimumSize: TPointF;
+function TThShapeItem.GetMinimumSize: TSizeF;
 var
   MinSize: Single;
 begin
@@ -137,7 +138,7 @@ begin
 {$ELSE}
   Selection.SetResizeSpots([scTopLeft, scTopRight, scBottomLeft, scBottomRight]);
 {$ENDIF}
-  Selection.OnTracking := nil;
+  Selection.OnTracking := SoptTracking;
 
   Result := Selection;
 end;
@@ -166,6 +167,11 @@ begin
 
   FBgColor := Value;
   Repaint;
+end;
+
+procedure TThShapeItem.SoptTracking(Spot: TObject; X, Y: Single; SwapHorz, SwapVert: Boolean);
+begin
+  DoResizing(TItemResizeSpot(Spot).SpotCorner, X, Y, SwapHorz, SwapVert);
 end;
 
 {$REGION RECTANGLE}
@@ -197,10 +203,10 @@ procedure TThRectangle.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
 begin
-  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.X;
-  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Y;
+  if Abs(AFrom.X - ATo.X) < MinimumSize.Width then
+    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.Width;
+  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Height then
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Height;
 
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   R.NormalizeRect;
@@ -242,7 +248,7 @@ begin
   Result := TItemResizeSpot(FSelection.Spots[0]).Position.X = TItemResizeSpot(FSelection.Spots[1]).Position.X;
 end;
 
-function TThLine.GetMinimumSize: TPointF;
+function TThLine.GetMinimumSize: TSizeF;
 var
   MinSize,
   Rad: Single;
@@ -259,8 +265,8 @@ begin
   else
   begin
     Rad := ArcTan(R.Height / R.Width);
-    Result.X := Cos(Rad) * MinSize;
-    Result.Y := Sin(Rad) * MinSize;
+    Result.Width := Cos(Rad) * MinSize;
+    Result.Height := Sin(Rad) * MinSize;
   end;
 end;
 
@@ -477,10 +483,10 @@ procedure TThCircle.DrawItemAtMouse(AFrom, ATo: TPointF);
 var
   R: TRectF;
 begin
-  if Abs(AFrom.X - ATo.X) < MinimumSize.X then
-    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.X;
-  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Y then
-    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Y;
+  if Abs(AFrom.X - ATo.X) < MinimumSize.Width then
+    ATo.X := AFrom.X + IfThen(AFrom.X > ATo.X, -1, 1) * MinimumSize.Width;
+  if Abs(AFrom.Y - ATo.Y) < MinimumSize.Height then
+    ATo.Y := AFrom.Y + IfThen(AFrom.Y > ATo.Y, -1, 1) * MinimumSize.Height;
 
   R := RectF(AFrom.X, AFrom.Y, ATo.X, ATo.Y);
   R.NormalizeRect;

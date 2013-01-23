@@ -9,6 +9,7 @@ uses
 type
   PointFArray = array of array[0..1] of Single;
 
+  TTestMousePath = class;
 
   TTestLib = class(TObject)
   protected
@@ -27,7 +28,8 @@ type
     procedure RunMouseClick(X, Y: Single); overload;
     procedure RunMouseClick(Pt: TPointF); overload;
 
-    procedure RunMousePath(Path: array of TPointF);
+    procedure RunMousePath(AMousePathData: TTestMousePath); overload;
+    procedure RunMousePath(Path: array of TPointF); overload;
     procedure RunMouseMove(Path: array of TPointF);
 
     procedure RunKeyDownShift; virtual; abstract;
@@ -47,18 +49,19 @@ type
 
   TTestLibClass = class of TTestLib;
 
-type
   TMousePathData = array of TPointF;
   TTestMousePath = class
   private
     FPaths: array of TPointF;
     function GetPath: TMousePathData;
+    function GetAddPoint(const X, Y: Single): TTestMousePath;
   public
     procedure Clear;
     function New: TTestMousePath;
     function Add(const X, Y: Single): TTestMousePath; overload;
     function Add(Pos: TPointF): TTestMousePath; overload;
     property Path: TMousePathData read GetPath;
+    property AddPoint[const X, Y: Single]: TTestMousePath read GetAddPoint; default;
   end;
 
 var
@@ -190,8 +193,26 @@ begin
       MouseMove([], Pos.X, Pos.Y)
     ;
     Application.ProcessMessages;
-//    Sleep(500);
   end;
+end;
+
+procedure TTestLib.RunMouseMove(Path: array of TPointF);
+var
+  I: Integer;
+  Pos: TPointF;
+begin
+  for I := Low(Path) to High(Path) do
+  begin
+    Pos := FInitialMousePoint.Add(Path[I]);
+
+    MouseMove([], Pos.X, Pos.Y);
+    Application.ProcessMessages;
+  end;
+end;
+
+procedure TTestLib.RunMousePath(AMousePathData: TTestMousePath);
+begin
+  RunMousePath(AMousePathData.Path);
 end;
 
 procedure TTestLib.RunMouseWheelDown(X, Y: Single);
@@ -214,20 +235,6 @@ begin
   MouseWheel(-120);
 end;
 
-procedure TTestLib.RunMouseMove(Path: array of TPointF);
-var
-  I: Integer;
-  Pos: TPointF;
-begin
-  for I := Low(Path) to High(Path) do
-  begin
-    Pos := FInitialMousePoint.Add(Path[I]);
-
-    MouseMove([], Pos.X, Pos.Y);
-    Application.ProcessMessages;
-  end;
-end;
-
 { TTestMousePath }
 
 procedure TTestMousePath.Clear;
@@ -248,6 +255,11 @@ begin
   FPaths[High(FPaths)] := Pos;
 
   Result := Self;
+end;
+
+function TTestMousePath.GetAddPoint(const X, Y: Single): TTestMousePath;
+begin
+  Result := Add(X, Y);
 end;
 
 function TTestMousePath.GetPath: TMousePathData;
