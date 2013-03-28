@@ -280,16 +280,13 @@ var
 begin
   Result := False;
 
-//  Rect := GetItemRect;
-//  RangeD := (ItemLineSelectionThickness-1)/2 / AbsoluteScale.X;
-
   // 나누면 모두 1이하로 계산되기때문에 곱하여 계산처리로 변경
   Rect := GetItemRect;
   Rect.TopLeft      := ScalePoint(Rect.TopLeft, AbsoluteScale.X, AbsoluteScale.Y);
   Rect.BottomRight  := ScalePoint(Rect.BottomRight, AbsoluteScale.X, AbsoluteScale.Y);
-  Pt := ScalePoint(Pt, AbsoluteScale.X, AbsoluteScale.Y);
-  RangeD := (ItemLineSelectionThickness-1) / 2;
+  Pt                := ScalePoint(Pt, AbsoluteScale.X, AbsoluteScale.Y);
 
+  RangeD := (ItemLineSelectionThickness-1) / 2;
 
   if (Rect.TopLeft.Distance(Rect.BottomRight) < ItemFocusMinimumSize) then
     Exit;
@@ -339,6 +336,7 @@ begin
       // 꼭지점과 직각인 사각형 포인트의 영역(ExtendRect)계산
       Rad := ArcTan(Rect.Height / Rect.Width);
       BaseP := PointF(RangeD / Sin(Rad), RangeD / Cos(Rad));
+
       LeftP   := Rect.TopLeft.Add(PointF(-BaseP.X, BaseP.Y));
       TopP    := Rect.TopLeft.Add(PointF(BaseP.X, -BaseP.Y));
       RightP  := Rect.BottomRight.Add(PointF(BaseP.X, -BaseP.Y));
