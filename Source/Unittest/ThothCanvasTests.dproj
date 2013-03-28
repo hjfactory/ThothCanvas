@@ -4,7 +4,7 @@
         <ProjectVersion>14.4</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>5</TargetedPlatforms>
         <AppType>Console</AppType>
@@ -165,6 +165,8 @@
         <DCCReference Include="TestThItemGroupingHistory.pas"/>
         <DCCReference Include="TestThItemGroupingMultiple.pas"/>
         <DCCReference Include="..\src\Cores\ThItemHistory.pas"/>
+        <DCCReference Include="..\src\Cores\ThTextItem.pas"/>
+        <DCCReference Include="TestThItemText.pas"/>
         <RcItem Include="res\1355447708_CabrioletRed.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>TEST_IMAGE</ResourceId>

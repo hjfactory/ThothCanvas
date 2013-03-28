@@ -25,7 +25,8 @@ uses
   ThResourceString in 'Types\ThResourceString.pas',
   ThAlertAnimation in 'Components\ThAlertAnimation.pas',
   ThImageItem in 'Cores\ThImageItem.pas',
-  ThCanvasCommand in 'Commands\ThCanvasCommand.pas';
+  ThCanvasCommand in 'Commands\ThCanvasCommand.pas',
+  ThTextItem in 'Cores\ThTextItem.pas';
 
 {$R *.res}
 

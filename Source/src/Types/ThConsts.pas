@@ -36,7 +36,8 @@ const
   ItemFactoryIDRectangle  = 1100;
   ItemFactoryIDLine       = 1200;
   ItemFactoryIDCircle     = 1300;
-  ItemFactoryIDImageFile  = 2000;
+  ItemFactoryIDText       = 2000;
+  ItemFactoryIDImageFile  = 3000;
 
   CanvasTrackAniCount: Single   = 5;
   CanvasTrackDuration: Single   = 0.5;

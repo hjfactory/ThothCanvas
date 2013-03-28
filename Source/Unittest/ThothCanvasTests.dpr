@@ -57,7 +57,9 @@ uses
   TestThItemGrouping in 'TestThItemGrouping.pas',
   TestThItemGroupingHistory in 'TestThItemGroupingHistory.pas',
   TestThItemGroupingMultiple in 'TestThItemGroupingMultiple.pas',
-  ThItemHistory in '..\src\Cores\ThItemHistory.pas';
+  ThItemHistory in '..\src\Cores\ThItemHistory.pas',
+  ThTextItem in '..\src\Cores\ThTextItem.pas',
+  TestThItemText in 'TestThItemText.pas';
 
 {$R *.RES}
 

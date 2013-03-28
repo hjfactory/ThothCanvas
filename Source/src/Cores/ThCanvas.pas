@@ -143,7 +143,7 @@ begin
   for I := 0 to ItemCount - 1 do
   begin
     CurrItem := Items[I];
-    if AContainer = CurrItem then
+    if not Assigned(CurrItem) or (AContainer = CurrItem) then
       Continue;
 
     if AContainer.IsContain(CurrItem) then
@@ -208,7 +208,7 @@ begin
   for I := ItemCount - 1 downto 0 do
   begin
     CurrItem := Items[I];
-    if CurrItem = AChild then
+    if not Assigned(CurrItem) or (CurrItem = AChild) then
       Continue;
 
     if CurrItem.IsContain(AChild) then
@@ -233,7 +233,9 @@ end;
 
 function TThContents.GetItem(Index: Integer): TThItem;
 begin
-  Result := TThItem(FChildren[Index]);
+  Result := nil;
+  if (FChildren.Count > Index) and not (FChildren[Index].ClassType = TThItem) then
+    Result := TThItem(FChildren[Index]);
 end;
 
 function TThContents.GetItemCount: Integer;

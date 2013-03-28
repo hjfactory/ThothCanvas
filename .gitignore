@@ -18,3 +18,4 @@ Source/bin/OSX32/*
 *.deployproj
 *.tvsconfig
 /Source/bin/Win32/Debug/TEST_IMAGE.PNG
+/Source/bin/Win32/Release/TEST_IMAGE.PNG

@@ -89,8 +89,8 @@ type
 
   //////////////////////////////////////////////////////////////
   /// Item Highlight
-  ///   IItemHighlitObject is IItemHighlighter's parent
-  IItemHighlitObject = interface(IThItem)
+  ///   IItemHighlightObject is IItemHighlighter's parent
+  IItemHighlightObject = interface(IThItem)
   ['{A62D8499-2F18-47B2-8363-BE8B74CA51BB}']
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
   end;

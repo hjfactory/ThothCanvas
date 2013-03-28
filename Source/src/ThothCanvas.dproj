@@ -5,7 +5,7 @@
         <FrameworkType>FMX</FrameworkType>
         <MainSource>ThothCanvas.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>7</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -166,6 +166,7 @@
         <DCCReference Include="Components\ThAlertAnimation.pas"/>
         <DCCReference Include="Cores\ThImageItem.pas"/>
         <DCCReference Include="Commands\ThCanvasCommand.pas"/>
+        <DCCReference Include="Cores\ThTextItem.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

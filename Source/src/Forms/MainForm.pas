@@ -28,6 +28,7 @@ type
     btnHome: TCornerButton;
     btnImage: TButton;
     Button1: TButton;
+    btnText: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnRectangleClick(Sender: TObject);

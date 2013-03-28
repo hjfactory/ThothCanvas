@@ -193,7 +193,7 @@ begin
   for I := 0 to ItemCount - 1 do
   begin
     CurrItem := Items[I];
-    if AContainer = CurrItem then
+    if not Assigned(CurrItem) or (AContainer = CurrItem) then
       Continue;
 
     if AContainer.IsContain(CurrItem) then
@@ -229,6 +229,9 @@ begin
   for I := 0 to ItemCount - 1 do
   begin
     CurrItem := Items[I];
+    if not (CurrItem is TThItem) then
+      Continue;
+
     if not IsContain(CurrItem) then
       // 여기서 Parent를 바꾸면 Items / ItemCount가 줄어듬
 //      CurrItem.Parent := AParent;
@@ -382,7 +385,7 @@ begin
   for I := ItemCount - 1 downto 0 do
   begin
     CurrItem := Items[I];
-    if CurrItem = AChild then
+    if not Assigned(CurrItem) or (CurrItem = AChild) then
       Continue;
 
     if CurrItem.IsContain(AChild) then
@@ -432,13 +435,24 @@ begin
 end;
 
 function TThItem.GetItem(Index: Integer): TThItem;
+var
+  Obj: TFmxObject;
 begin
-  Result := TThItem(FChildren[Index + FSpotCount]);
+  Result := nil;
+  Obj := FChildren[Index + FSpotCount];
+  if (FChildren.Count > Index + FSpotCount) and (Obj is TThItem)  then
+    Result := TThItem(FChildren[Index + FSpotCount]);
 end;
 
 function TThItem.GetItemCount: Integer;
+var
+  Obj: TFmxObject;
 begin
-  Result := ChildrenCount - FSpotCount;
+//  Result := ChildrenCount - FSpotCount;
+  Result := 0;
+  for Obj in Children do
+    if Obj is TThItem then
+      Inc(Result);
 end;
 
 function TThItem.GetItemRect: TRectF;

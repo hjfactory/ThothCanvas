@@ -13,7 +13,7 @@ uses
 type
   TThItemShadowHighlighter = class(TInterfacedObject, IItemHighlighter)
   private
-    FParent: IItemHighlitObject;
+    FParent: IItemHighlightObject;
 
     FHighlight: Boolean;
     FHighlightColor: TAlphaColor;
@@ -24,7 +24,7 @@ type
   protected
     function GetHighlightRect: TRectF;
   public
-    constructor Create(AParent: IItemHighlitObject);
+    constructor Create(AParent: IItemHighlightObject);
 
     procedure DrawHighlight;
 
@@ -35,7 +35,7 @@ type
   // Not used
   TThItemRectBorderHighlighter = class(TInterfacedObject, IItemHighlighter)
   private
-    FParent: IItemHighlitObject;
+    FParent: IItemHighlightObject;
 
     FHighlight: Boolean;
     FHighlightColor: TAlphaColor;
@@ -46,7 +46,7 @@ type
   protected
     function GetHighlightRect: TRectF;
   public
-    constructor Create(AParent: IItemHighlitObject);
+    constructor Create(AParent: IItemHighlightObject);
 
     procedure DrawHighlight;
 
@@ -61,7 +61,7 @@ uses
 
 { TThItemShadowHighligher }
 
-constructor TThItemShadowHighlighter.Create(AParent: IItemHighlitObject);
+constructor TThItemShadowHighlighter.Create(AParent: IItemHighlightObject);
 begin
   FParent := AParent;
 
@@ -106,7 +106,7 @@ end;
 
 { TThItemBorderHighlighter }
 
-constructor TThItemRectBorderHighlighter.Create(AParent: IItemHighlitObject);
+constructor TThItemRectBorderHighlighter.Create(AParent: IItemHighlightObject);
 begin
   FParent := AParent;
 

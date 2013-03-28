@@ -15,7 +15,7 @@ uses
   FMX.Types, ThTypes, ThItem;
 
 type
-  TThShapeItem = class(TThItem, IItemHighlitObject, IItemSelectionObject)
+  TThShapeItem = class(TThItem, IItemHighlightObject, IItemSelectionObject)
   private
     procedure SetBgColor(const Value: TAlphaColor);
   strict protected

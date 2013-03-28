@@ -7,7 +7,7 @@ uses
   FMX.Types, FMX.Objects, ThTypes, ThItem;
 
 type
-  TThImageItem = class(TThItem, IBitmapObject, IItemHighlitObject, IItemSelectionObject)
+  TThImageItem = class(TThItem, IBitmapObject, IItemHighlightObject, IItemSelectionObject)
   private
     FItemData: TThFileItemData;
     FBitmap: TBitmap;
@@ -21,8 +21,11 @@ type
 
     procedure Paint; override;
 
+    // IItemHighlightObject
     procedure PaintItem(ARect: TRectF; AFillColor: TAlphaColor);
     function PtInItem(Pt: TPointF): Boolean; override;
+
+    // IItemSelectionObject
     function GetMinimumSize: TSizeF; virtual;
 
     procedure DoBitmapChanged(Sender: TObject); virtual;

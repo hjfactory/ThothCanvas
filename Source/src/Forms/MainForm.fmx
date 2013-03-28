@@ -150,7 +150,7 @@ object frmMainDraft: TfrmMainDraft
     OnClick = btnHomeClick
   end
   object btnImage: TButton
-    Tag = 2000
+    Tag = 3000
     DisableFocusEffect = False
     Height = 22.000000000000000000
     Position.X = 287.000000000000000000
@@ -167,5 +167,15 @@ object frmMainDraft: TfrmMainDraft
     Text = 'TEST'
     Width = 80.000000000000000000
     OnClick = Button1Click
+  end
+  object btnText: TButton
+    Tag = 2000
+    DisableFocusEffect = False
+    Height = 22.000000000000000000
+    Position.X = 352.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'Text'
+    Width = 49.000000000000000000
+    OnClick = btnRectangleClick
   end
 end
