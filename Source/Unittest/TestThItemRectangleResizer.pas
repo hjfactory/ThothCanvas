@@ -82,7 +82,7 @@ begin
 
   TestLib.RunMouseClick(180, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check(Round(FCanvas.SelectedItem.Width) = 1500, Format('Width : %f', [FCanvas.SelectedItem.Width]));
+  Check(Round(FCanvas.SelectedItem.Width) = 150, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThItemRectangleResizer.TestResizeRectangleTLtoBROver;
@@ -99,7 +99,7 @@ begin
   TestLib.RunMouseClick(180, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -118,7 +118,7 @@ begin
   TestLib.RunMouseClick(180, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 900),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 90),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -137,7 +137,7 @@ begin
   TestLib.RunMouseClick(100, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 900) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 90) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -156,7 +156,7 @@ begin
   TestLib.RunMouseClick(100, 200);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 900) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 90) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -176,7 +176,7 @@ begin
   TestLib.RunMouseClick(200, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 900),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 90),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -196,7 +196,7 @@ begin
   TestLib.RunMouseClick(120, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 900),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 90),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -231,7 +231,7 @@ begin
 
   // 2> 크기확인
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check(Round(FCanvas.SelectedItem.Width) = 1100, Format('Width : %f', [FCanvas.SelectedItem.Width]));
+  Check(Round(FCanvas.SelectedItem.Width) = 110, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
 // S - 100 크기를 20으로 줄였을때 30이 되어야 한다.
@@ -247,7 +247,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check(FCanvas.SelectedItem.Width = 300, Format('W: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 30, Format('W: %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThItemRectangleResizer.TestResizeMinimum2;
@@ -262,8 +262,8 @@ begin
 
 //  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
   Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
-  Check(FCanvas.SelectedItem.Width = 300, Format('Width: %f', [FCanvas.SelectedItem.Width]));
-  Check(FCanvas.SelectedItem.Height = 300, Format('Height: %f', [FCanvas.SelectedItem.Height]));
+  Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
 end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeSpotOverlap;
@@ -278,8 +278,8 @@ begin
 
 //  Debug(Format('W: %f, H: %F',[FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height]));
   Check(Assigned(FCanvas.SelectedItem), 'Not Assigned');
-  Check(FCanvas.SelectedItem.Width = 300, Format('Width: %f', [FCanvas.SelectedItem.Width]));
-  Check(FCanvas.SelectedItem.Height = 300, Format('Height: %f', [FCanvas.SelectedItem.Height]));
+  Check(FCanvas.SelectedItem.Width = 30, Format('Width: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Height = 30, Format('Height: %f', [FCanvas.SelectedItem.Height]));
 end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMove;
@@ -304,7 +304,7 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
-  Check(FCanvas.SelectedItem.Position.X = 2450, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = 245, Format('X: %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThItemRectangleResizer.BugTestResizeAnotherSpotMoveCenter;
@@ -354,8 +354,8 @@ begin
   TestLib.RunMousePath(MousePath.Path);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned.');
-  Check(Round(FCanvas.SelectedItem.Height) = 1000, Format('H : %f', [FCanvas.SelectedItem.Height]));
-  Check(Round(FCanvas.SelectedItem.Position.Y) = -1000, Format('Y : %f', [FCanvas.SelectedItem.Position.Y]));
+  Check(Round(FCanvas.SelectedItem.Height) = 100, Format('H : %f', [FCanvas.SelectedItem.Height]));
+  Check(Round(FCanvas.SelectedItem.Position.Y) = -100, Format('Y : %f', [FCanvas.SelectedItem.Position.Y]));
 end;
 
 initialization

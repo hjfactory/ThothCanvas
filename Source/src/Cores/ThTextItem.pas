@@ -90,7 +90,7 @@ begin
     FTextService := PlatformTextService.GetTextServiceClass.Create(Self, False);
 
   FFont := TFont.Create;
-  FFont.Size := 300;
+  FFont.Size := 200;
   FFontColor := TAlphaColorRec.Black;
   FWordWrap := False;
   FTextAlign := TTextAlign.taLeading;

@@ -92,18 +92,18 @@ begin
   D3 := DrawRectangle(160, 190, 190, 220, 'D3');
 
   P := D1.AbsolutePoint;
-  CheckEquals(P.X, -500,  'D1.X');
-  CheckEquals(P.Y, -300,  'D1.Y');
+  CheckEquals(P.X, -50,  'D1.X');
+  CheckEquals(P.Y, -30,  'D1.Y');
 
   P := D2.AbsolutePoint;
 //  Check(D2.Parent = D1, Format('D2.Parent = %s(%s)', [D2.Parent.Name, D2.Parent.ClassName]));
-  CheckEquals(P.X, -300,    'D2.X');
-  CheckEquals(P.Y, -100,  'D2.Y');
+  CheckEquals(P.X, -30,    'D2.X');
+  CheckEquals(P.Y, -10,  'D2.Y');
 
   P := D3.AbsolutePoint;
 //  Check(D3.Parent = D2, Format('D3.Parent = %s(%s)', [D3.Parent.Name, D3.Parent.ClassName]));
-  CheckEquals(P.X, 100,  'D3.X');
-  CheckEquals(P.Y, 400,  'D3.Y');
+  CheckEquals(P.X, 10,  'D3.X');
+  CheckEquals(P.Y, 40,  'D3.Y');
 end;
 
 procedure TestTThItemGroupping.TestDrawToParent;
@@ -129,7 +129,7 @@ begin
   P1 := DrawRectangle(10, 10, 150, 150, 'P1');
 
   Check(C1.Parent = P1, 'parent');
-  CheckEquals(C1.Position.X, 300);
+  CheckEquals(C1.Position.X, 30);
 end;
 
 procedure TestTThItemGroupping.TestP1MoveOuterC1;
@@ -170,7 +170,7 @@ begin
   P1 := DrawRectangle(0, 0, 100, 100); // P1
   C1 := DrawRectangle(130, 130, 170, 170);   // C1
 
-  CheckEquals(C1.Position.X, -200);
+  CheckEquals(C1.Position.X, -20);
 
   MousePath.New
   .Add(30, 30)
@@ -181,7 +181,7 @@ begin
   Check(FCanvas.ItemCount = 1, Format('ItemCount = %d', [FCanvas.ItemCount]));
   Check(C1.Parent = P1, Format('C1.Parent : %s', [C1.Parent.ClassName]));
 
-  CheckEquals(C1.Position.X, -200 - P1.Position.X, 0.00001);
+  CheckEquals(C1.Position.X, -20 - P1.Position.X, 0.00001);
 end;
 
 procedure TestTThItemGroupping.TestGroupingAbsPos2;
@@ -200,7 +200,7 @@ begin
   Check(FCanvas.ItemCount = 1, Format('ItemCount = %d', [FCanvas.ItemCount]));
   Check(C1.Parent = P1, Format('C1.Parent : %s', [C1.Parent.ClassName]));
 
-  CheckEquals(Round(C1.Position.X), Round(-200 - P1.Position.X), 0.00001);
+  CheckEquals(Round(C1.Position.X), Round(-20 - P1.Position.X), 0.00001);
 end;
 
 procedure TestTThItemGroupping.TestCotainRangeTopLeft;
@@ -293,14 +293,14 @@ begin
   C1 := FCanvas.SelectedItem;
 
   CheckNotNull(C1);
-  CheckEquals(C1.Position.X, 500);
+  CheckEquals(C1.Position.X, 50);
 
   TestLib.RunMousePath(MousePath.New
   .Add(110, 110)
   .Add(100, 100)
   .Add(120, 120).Path);
 
-  CheckEquals(C1.Position.X, 600);
+  CheckEquals(C1.Position.X, 60);
 end;
 
 procedure TestTThItemGroupping.TestGroupingFromResize;
@@ -426,7 +426,7 @@ begin
   C1 := DrawRectangle(20, 20, 80, 80);
 
   Check(C1.Parent = P1, 'Parent is P1');
-  CheckEquals(C1.Position.X, 100);
+  CheckEquals(C1.Position.X, 10);
 
   TestLib.RunMousePath(MousePath.New
   .Add(30, 30)
@@ -434,7 +434,7 @@ begin
   .Add(170, 30).Path);
 
   Check(C1.Parent = P2, 'Parent is P2');
-  CheckEquals(C1.Position.X, 100);
+  CheckEquals(C1.Position.X, 10);
 end;
 
 procedure TestTThItemGroupping.TestImageGrouping;

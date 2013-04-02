@@ -44,9 +44,15 @@ const
 
   CanvasZoomOutRate: Single      = 0.9;
   CanvasZoomInRate: Single       = 1.1;
-  CanvasZoomScaleDefault: Single = 0.1;
-  CanvasZoomScaleMax: Single     = 15;
-  CanvasZoomScaleMin: Single     = 0.001;
+  CanvasZoomScaleDefault: Single = 1;
+  CanvasZoomScaleMax: Single     = 20;
+  CanvasZoomScaleMin: Single     = 0.05;
+//
+//  CanvasZoomOutRate: Single      = 0.9;
+//  CanvasZoomInRate: Single       = 1.1;
+//  CanvasZoomScaleDefault: Single = 0.1;
+//  CanvasZoomScaleMax: Single     = 15;
+//  CanvasZoomScaleMin: Single     = 0.001;
 
 implementation
 

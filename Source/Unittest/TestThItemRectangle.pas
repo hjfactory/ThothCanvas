@@ -115,8 +115,8 @@ begin
   Check(Assigned(Item), 'Check SelectedItem');
   Check(Item.ClassType = TThRectangle, 'Check Class type');
 
-  Check(Item.Position.X = -1000, Format('X = %f', [Item.Position.X]));
-  Check(Item.Width = 1500,     Format('Width = %f', [Item.Width]));
+  Check(Item.Position.X = -100, Format('X = %f', [Item.Position.X]));
+  Check(Item.Width = 150,     Format('Width = %f', [Item.Width]));
 end;
 
 // S1.100,50 으로 Canvas 이동 후 0,0 > 100, 100 Rectangle 그리면
@@ -147,8 +147,8 @@ begin
   Item := FCanvas.SelectedItem;
 
   Check(Assigned(Item), 'not assigned');
-  Check(Item.Position.X = -2400, Format('Postion.X : %f', [Item.Position.X]));
-  Check(Item.Position.Y = -1900, Format('Postion.Y : %f', [Item.Position.Y]));
+  Check(Item.Position.X = -240, Format('Postion.X : %f', [Item.Position.X]));
+  Check(Item.Position.Y = -190, Format('Postion.Y : %f', [Item.Position.Y]));
 end;
 
 procedure TestTThRectangle.TestRectangleSelect;
@@ -245,21 +245,21 @@ begin
   TestLib.RunMouseClick(150, 50);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned BRToTL');
-  Check(FCanvas.SelectedItem.Position.X = -400, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -40, Format('BottomRight > TopLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // TRToBL
   DrawRectangle(100, 110, 10, 200);
   TestLib.RunMouseClick(50, 150);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned TRToBL');
-  Check(FCanvas.SelectedItem.Position.X = -1400, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -140, Format('TopRight > BottomLeft - X : %f', [FCanvas.SelectedItem.Position.X]));
 
   // BLToTR
   DrawRectangle(110, 200, 200, 110);
   TestLib.RunMouseClick(150, 150);
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned BLToTR');
-  Check(FCanvas.SelectedItem.Position.X = -400, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
+  Check(FCanvas.SelectedItem.Position.X = -40, Format('BottomLeft > TopRight - X : %f', [FCanvas.SelectedItem.Position.X]));
 end;
 
 procedure TestTThRectangle.TestDrawRectangleMinSize;

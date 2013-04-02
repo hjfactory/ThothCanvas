@@ -178,7 +178,7 @@ begin
   C1 := DrawRectangle(130, 130, 290, 290, 'C1');
 
   Check(C1.Parent <> P1, 'Not contain');
-  CheckEquals(C1.Position.X, -200, Format('C1.Position.X : %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, -20, Format('C1.Position.X : %f', [C1.Position.X]));
 
   TestLib.RunMouseClick(200, 200);
   TestLib.RunMousePath(MousePath.New
@@ -192,7 +192,7 @@ begin
   Application.ProcessMessages;
 
   Check(C1.Parent <> P1, 'Undo> Not contain');
-  CheckEquals(C1.Position.X, -200, Format('Undo> C1.Position.X : %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, -20, Format('Undo> C1.Position.X : %f', [C1.Position.X]));
 
   FThothController.Redo;
   Application.ProcessMessages;
@@ -208,7 +208,7 @@ begin
   C1 := DrawRectangle(130, 130, 240, 240, 'C1');
 
   Check(C1.Parent = P1, 'Contain');
-  CheckEquals(C1.Position.X, 200, Format('C1.Position.X : %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 20, Format('C1.Position.X : %f', [C1.Position.X]));
 
   TestLib.RunMouseClick(120, 120);
   TestLib.RunMousePath(MousePath.New
@@ -221,7 +221,7 @@ begin
   FThothController.Undo;
 
   Check(C1.Parent = P1, 'Undo> Contain');
-  CheckEquals(C1.Position.X, 200, Format('Undo> C1.Position.X : %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 20, Format('Undo> C1.Position.X : %f', [C1.Position.X]));
 
   FThothController.Redo;
 
@@ -266,7 +266,7 @@ begin
   P1 := DrawRectangle(10, 10, 140, 140, 'P1');
   C1 := DrawRectangle(50, 50, 120, 120, 'C1');
   Check(C1.Parent = P1, Format('[0] C1.Parent = %s', [C1.Name]));
-  CheckEquals(C1.Position.X, 400);
+  CheckEquals(C1.Position.X, 40);
 
 //  TestLib.RunMouseClick(65, 65);
   TestLib.RunMousePath(MousePath.New
@@ -279,7 +279,7 @@ begin
   FThothController.Undo;
 
   Check(C1.Parent = P1, Format('[2] C1.Parent = %s', [C1.Name]));
-  CheckEquals(C1.Position.X, 400);
+  CheckEquals(C1.Position.X, 40);
 end;
 
 procedure TestTThItemGrouppingHistory.TestParentCmdHistory;
@@ -380,7 +380,7 @@ begin
   .Add(170, 170).Path);
 
   Check(C1.Parent = P1, '[0] C1.Parent = P1');
-  CheckEquals(C1.Position.X, 500, 4, Format('[0] %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 50, 4, Format('[0] %f', [C1.Position.X]));
 
   FThothController.Undo;  // C1 Move
   Application.ProcessMessages;
@@ -395,7 +395,7 @@ begin
   Application.ProcessMessages;
 
   Check(C1.Parent = P1, '[1] C1.Parent = P1');
-  CheckEquals(C1.Position.X, 500, 4, Format('[1] %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 50, 4, Format('[1] %f', [C1.Position.X]));
 end;
 
 procedure TestTThItemGrouppingHistory.TestResizeParentAndParent;
@@ -410,74 +410,74 @@ begin
 
   C1 := DrawRectangle(100, 100, 130, 130, 'C1');
   Check(C1.Parent = P4, '[0] P4');
-  CheckEquals(C1.Position.X, 600);
+  CheckEquals(C1.Position.X, 60);
 
   TestLib.RunMousePath(MousePath.New
   .Add(130, 130).Add(100, 100)
   .Add(170, 170).Path);
   Check(C1.Parent = P3, '[0] P3');
-  CheckEquals(C1.Position.X, 700);
+  CheckEquals(C1.Position.X, 70);
 
   TestLib.RunMousePath(MousePath.New
   .Add(170, 170).Add(100, 100)
   .Add(200, 200).Path);
   Check(C1.Parent = P2, '[0] P2');
-  CheckEquals(C1.Position.X, 800);
+  CheckEquals(C1.Position.X, 80);
 
   TestLib.RunMousePath(MousePath.New
   .Add(200, 200).Add(100, 100)
   .Add(230, 230).Path);
   Check(C1.Parent = P1, '[0] P1');
-  CheckEquals(C1.Position.X, 900);
+  CheckEquals(C1.Position.X, 90);
 
   TestLib.RunMousePath(MousePath.New
   .Add(230, 230).Add(100, 100)
   .Add(260, 260).Path);
   Check(C1.Parent <> P1, '[0] P1');
-  CheckEquals(C1.Position.X, -500);
+  CheckEquals(C1.Position.X, -50);
 
 // Undo Action
 
   FThothController.Undo;
   Application.ProcessMessages;
   Check(C1.Parent = P1, '[1] P1');
-  CheckEquals(C1.Position.X, 900);
+  CheckEquals(C1.Position.X, 90);
 
   FThothController.Undo;
   Application.ProcessMessages;
   Check(C1.Parent = P2, '[1] P2');
-  CheckEquals(C1.Position.X, 800);
+  CheckEquals(C1.Position.X, 80);
 
   FThothController.Undo;
   Application.ProcessMessages;
   Check(C1.Parent = P3, '[1] P3');
-  CheckEquals(C1.Position.X, 700);
+  CheckEquals(C1.Position.X, 70);
 
   FThothController.Undo;
   Application.ProcessMessages;
   Check(C1.Parent = P4, '[1] P4');
-  CheckEquals(C1.Position.X, 600);
+  CheckEquals(C1.Position.X, 60);
 
 // RedoAction
   FThothController.Redo;
   Application.ProcessMessages;
   Check(C1.Parent = P3, '[2] P3');
-  CheckEquals(C1.Position.X, 700);
+  CheckEquals(C1.Position.X, 70);
 
   FThothController.Redo;
   Application.ProcessMessages;
   Check(C1.Parent = P2, '[2] P2');
-  CheckEquals(C1.Position.X, 800);
+  CheckEquals(C1.Position.X, 80);
 
   FThothController.Redo;
   Application.ProcessMessages;
   Check(C1.Parent = P1, '[2] P1');
-  CheckEquals(C1.Position.X, 900);
+  CheckEquals(C1.Position.X, 90);
 
   FThothController.Redo;
   Application.ProcessMessages;
   Check(C1.Parent <> P1, '[2] P1');
-  CheckEquals(C1.Position.X, -500);
+  CheckEquals(C1.Position.X, -50);
 end;
 
 procedure TestTThItemGrouppingHistory.TestResizeAndMoveUndo2;
@@ -506,7 +506,7 @@ begin
   FThothController.Undo;
   Application.ProcessMessages;
   Check(C1.Parent = P2, '[3] C1.Parent = P2');
-  CheckEquals(C1.Position.X, 100);
+  CheckEquals(C1.Position.X, 10);
 end;
 
 procedure TestTThItemGrouppingHistory.TestDeleteParentUndoHideChild;

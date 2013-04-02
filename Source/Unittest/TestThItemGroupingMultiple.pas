@@ -62,8 +62,8 @@ begin
 
   Check(P1.ItemCount = 1);
   Check(C1.Parent = P2, C1.Parent.Name);
-  CheckEquals(P2.Position.X, 100, 3, Format('P2.X : %f', [P2.Position.X]));
-  CheckEquals(C1.Position.X, 200, 3, Format('C1.X : %f', [C1.Position.X]));
+  CheckEquals(P2.Position.X, 10, 3, Format('P2.X : %f', [P2.Position.X]));
+  CheckEquals(C1.Position.X, 20, 3, Format('C1.X : %f', [C1.Position.X]));
 end;
 
 procedure TestTThItemGrouppingMultiple.TestGroupingSameParent;
@@ -98,7 +98,7 @@ begin
 
   Check(P2.Parent = P1, Format('P2 parent is %s(not P1)', [P2.Parent.Name]));
   Check(C1.Parent = P2, Format('C1 parent is %s(not P2)', [C1.Parent.Name]));
-  CheckEquals(C1.Position.X, 400, Format('C1.Position.X = %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 40, Format('C1.Position.X = %f', [C1.Position.X]));
 end;
 
 procedure TestTThItemGrouppingMultiple.TestSameParentMoving;
@@ -136,8 +136,8 @@ begin
   C1 := DrawCircle(90, 90, 130, 130, 'C1');
   Check(C1.Parent = P2, 'C1.Parent = P2');
 
-  CheckEquals(P2.AbsolutePoint.X, -900);
-  CheckEquals(C1.Position.X, 300);
+  CheckEquals(P2.AbsolutePoint.X, -90);
+  CheckEquals(C1.Position.X, 30);
 
   TestLib.RunMouseClick(110, 110);
   TestLib.RunMousePath(MousePath.New
@@ -147,7 +147,7 @@ begin
 
   Check(C1.Parent <> P1, 'C1.Parent <> P1');
   Check(C1.Parent <> P2, 'C1.Parent <> P2');
-  CheckEquals(C1.Position.X, 800, 4, Format('C1.Position.X = %f', [C1.Position.X]));
+  CheckEquals(C1.Position.X, 80, 4, Format('C1.Position.X = %f', [C1.Position.X]));
   // 800 = -900 + (300 + 1400)
   // X = P2.AbsX + (C1.X + Move.X)
 end;
@@ -253,12 +253,12 @@ begin
   .Add(130, 130)
   .Add(165, 165).Path);
 
-  CheckEquals(P1.Position.X, -400, 4, 'P1');
-  CheckEquals(P2.AbsolutePoint.X, -200, 4, 'P2');
+  CheckEquals(P1.Position.X, -40, 4, 'P1');
+  CheckEquals(P2.AbsolutePoint.X, -20, 4, 'P2');
   CheckEquals(C1.AbsolutePoint.X, 0, 4, 'C1');
 
-  CheckEquals(P2.Position.X, 200, 4, 'P2');
-  CheckEquals(C1.Position.X, 200, 4, 'C1');
+  CheckEquals(P2.Position.X, 20, 4, 'P2');
+  CheckEquals(C1.Position.X, 20, 4, 'C1');
 end;
 
 procedure TestTThItemGrouppingMultiple.TestMoveContainChildOfParent;

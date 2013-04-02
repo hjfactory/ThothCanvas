@@ -218,7 +218,7 @@ begin
 
   TestLib.RunMouseClick(15, 10);
   Check(Assigned(FCanvas.SelectedItem));
-  Check(FCanvas.SelectedItem.Width = 300, Format('W: %f', [FCanvas.SelectedItem.Width]));
+  Check(FCanvas.SelectedItem.Width = 30, Format('W: %f', [FCanvas.SelectedItem.Width]));
 
   TestLib.RunMouseClick(150, 150);
   TestLib.RunMouseClick(ItemMinimumSize-1, 10);
@@ -356,7 +356,7 @@ begin
 
   TestLib.RunMouseClick(180, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
-  Check(Round(FCanvas.SelectedItem.Width) = 1500, Format('Width : %f', [FCanvas.SelectedItem.Width]));
+  Check(Round(FCanvas.SelectedItem.Width) = 150, Format('Width : %f', [FCanvas.SelectedItem.Width]));
 end;
 
 procedure TestTThLine.TestResizeLineBRtoBottom;
@@ -373,7 +373,7 @@ begin
 
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (FCanvas.SelectedItem.Width = 1) and (FCanvas.SelectedItem.Height = 1000),
+    (FCanvas.SelectedItem.Width = 1) and (FCanvas.SelectedItem.Height = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -392,7 +392,7 @@ begin
   TestLib.RunMouseClick(200, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -411,7 +411,7 @@ begin
   TestLib.RunMouseClick(180, 180);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
@@ -430,7 +430,7 @@ begin
   TestLib.RunMouseClick(200, 100);
   Check(Assigned(FCanvas.SelectedItem), 'Not assigned');
   Check(
-    (Round(FCanvas.SelectedItem.Width) = 1000) and (Round(FCanvas.SelectedItem.Height) = 1000),
+    (Round(FCanvas.SelectedItem.Width) = 100) and (Round(FCanvas.SelectedItem.Height) = 100),
     Format('W: %f, H: %f', [FCanvas.SelectedItem.Width, FCanvas.SelectedItem.Height])
   );
 end;
