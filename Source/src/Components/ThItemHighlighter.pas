@@ -7,8 +7,8 @@ unit ThItemHighlighter;
 interface
 
 uses
-  System.Types, System.SysUtils, FMX.Types, System.UITypes,
-  ThTypes;
+  System.Types, System.SysUtils, FMX.Types, System.UITypes, FMX.Controls,
+  FMX.Graphics, ThTypes;
 
 type
   TThItemShadowHighlighter = class(TInterfacedObject, IItemHighlighter)

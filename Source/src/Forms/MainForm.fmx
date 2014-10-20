@@ -6,176 +6,177 @@ object frmMainDraft: TfrmMainDraft
   ClientWidth = 1013
   FormFactor.Width = 1600
   FormFactor.Height = 1200
-  FormFactor.Devices = [dkDesktop]
+  FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
   object btnRectangle: TButton
     Tag = 1100
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 75.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Rectangle'
-    Width = 60.000000000000000000
     OnClick = btnRectangleClick
   end
   object Panel1: TPanel
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Height = 593.000000000000000000
     Position.X = 8.000000000000000000
     Position.Y = 40.000000000000000000
-    Width = 1000.000000000000000000
+    Size.Width = 1000.000000000000000000
+    Size.Height = 593.000000000000000000
+    Size.PlatformDefault = False
   end
   object btnLine: TButton
     Tag = 1200
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 141.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Line'
-    Width = 60.000000000000000000
     OnClick = btnRectangleClick
   end
   object btnCircle: TButton
     Tag = 1300
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 207.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Circle'
-    Width = 60.000000000000000000
     OnClick = btnRectangleClick
   end
   object btnSelect: TButton
     Tag = -1
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 7.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Select'
-    Width = 60.000000000000000000
     OnClick = btnRectangleClick
   end
   object btnRedo: TCornerButton
     Anchors = [akTop, akRight]
-    Corners = [crTopRight, crBottomRight]
-    DisableFocusEffect = False
+    Corners = [TopRight, BottomRight]
     Enabled = False
-    Height = 22.000000000000000000
     Position.X = 963.000000000000000000
     Position.Y = 10.000000000000000000
-    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 41.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Redo'
-    Width = 41.000000000000000000
     XRadius = 3.000000000000000000
     YRadius = 3.000000000000000000
     OnClick = btnRedoClick
   end
   object btnUndo: TCornerButton
     Anchors = [akTop, akRight]
-    Corners = [crTopLeft, crBottomLeft]
-    DisableFocusEffect = False
+    Corners = [TopLeft, BottomLeft]
     Enabled = False
-    Height = 22.000000000000000000
     Position.X = 923.000000000000000000
     Position.Y = 10.000000000000000000
-    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 41.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Undo'
-    Width = 41.000000000000000000
     XRadius = 3.000000000000000000
     YRadius = 3.000000000000000000
     OnClick = btnUndoClick
   end
   object btnDeleteSelection: TButton
     Anchors = [akTop, akRight]
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 811.000000000000000000
     Position.Y = 10.000000000000000000
+    Size.Width = 104.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Delete selections'
-    Width = 104.000000000000000000
     OnClick = btnDeleteSelectionClick
   end
   object btnZoomOut: TCornerButton
     Anchors = [akTop, akRight]
-    Corners = [crTopLeft, crBottomLeft]
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
+    Corners = [TopLeft, BottomLeft]
     Position.X = 707.000000000000000000
     Position.Y = 10.000000000000000000
-    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = '-'
-    Width = 33.000000000000000000
     XRadius = 3.000000000000000000
     YRadius = 3.000000000000000000
     OnClick = btnZoomOutClick
   end
   object btnZoomIn: TCornerButton
     Anchors = [akTop, akRight]
-    Corners = [crTopRight, crBottomRight]
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
+    Corners = [TopRight, BottomRight]
     Position.X = 771.000000000000000000
     Position.Y = 10.000000000000000000
-    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = '+'
-    Width = 33.000000000000000000
     XRadius = 3.000000000000000000
     YRadius = 3.000000000000000000
     OnClick = btnZoomInClick
   end
   object edtZoom: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akTop, akRight]
-    DisableFocusEffect = False
-    KeyboardType = vktDefault
-    Password = False
     Text = '1'
     Position.X = 584.000000000000000000
     Position.Y = 10.000000000000000000
-    Width = 120.000000000000000000
-    Height = 22.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
   end
   object btnHome: TCornerButton
     Anchors = [akTop, akRight]
     Corners = []
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 739.000000000000000000
     Position.Y = 10.000000000000000000
-    Sides = [sdTop, sdLeft, sdBottom, sdRight]
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'H'
-    Width = 33.000000000000000000
     XRadius = 3.000000000000000000
     YRadius = 3.000000000000000000
     OnClick = btnHomeClick
   end
   object btnImage: TButton
     Tag = 3000
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 287.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Image'
-    Width = 60.000000000000000000
     OnClick = btnImageClick
   end
   object Button1: TButton
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 464.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 80.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'TEST'
-    Width = 80.000000000000000000
     OnClick = Button1Click
   end
   object btnText: TButton
     Tag = 2000
-    DisableFocusEffect = False
-    Height = 22.000000000000000000
     Position.X = 352.000000000000000000
     Position.Y = 8.000000000000000000
+    Size.Width = 49.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
     Text = 'Text'
-    Width = 49.000000000000000000
     OnClick = btnRectangleClick
   end
 end

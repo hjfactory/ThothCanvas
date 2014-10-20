@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types,
-  FMX.Types, FMX.Ani;
+  FMX.Types, FMX.Controls, FMX.Graphics, FMX.Ani;
 
 type
   TZoomAni = class(TControl)
@@ -47,16 +47,16 @@ begin
 
   FZoomAni := TFloatAnimation.Create(Self);
   FZoomAni.Parent := Self;
-  FZoomAni.AnimationType := TAnimationType.atOut;
-  FZoomAni.Interpolation := TInterpolationType.itQuadratic;
+  FZoomAni.AnimationType := TAnimationType.Out;
+  FZoomAni.Interpolation := TInterpolationType.Quadratic;
   FZoomAni.PropertyName := 'Diffuse';
   FZoomAni.StartFromCurrent := False;
   FZoomAni.Delay := 0;
   FZoomAni.Duration := 0.5;
   FZoomAni.OnFinish := FinishAni;
 
-  FWidth := 100;
-  FHeight := 100;
+  Width := 100;
+  Height := 100;
 
   Visible := False;
 end;
@@ -133,7 +133,7 @@ begin
   State := Canvas.SaveState;
   try
     Canvas.StrokeThickness := 3;
-    Canvas.StrokeDash := TStrokeDash.sdDot;
+    Canvas.StrokeDash := TStrokeDash.Dot;
     Canvas.Stroke.Color := claDarkGray;
     Canvas.DrawEllipse(R, 1);
 

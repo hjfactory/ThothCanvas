@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types, System.UITypes, System.UIConsts, System.SysUtils,
-  FMX.Types, ThTypes, System.Generics.Collections;
+  FMX.Controls, FMX.Types, ThTypes, System.Generics.Collections;
 
 type
   TThItem = class;
@@ -33,8 +33,8 @@ type
     function FindParent(AItem: TThItem): TFMXObject;
     procedure ContainChildren(AContainer: TThItem);
 
-    procedure DoAddObject(AObject: TFmxObject);
-    procedure DoRemoveObject(AObject: TFmxObject);
+    procedure DoAddObject(const AObject: TFmxObject);
+    procedure DoRemoveObject(const AObject: TFmxObject);
   end;
 
   TThItem = class(TControl, IThItem, IThItemContainer)
@@ -72,8 +72,8 @@ type
     FMouseDownPos,
     FDownItemPos: TPointF;
 
-    procedure DoAddObject(AObject: TFmxObject); override;
-    procedure DoRemoveObject(AObject: TFmxObject); override;
+    procedure DoAddObject(const AObject: TFmxObject); override;
+    procedure DoRemoveObject(const AObject: TFmxObject); override;
     procedure DoResizing(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
 
     function CreateHighlighter: IItemHighlighter; virtual;
@@ -81,7 +81,7 @@ type
 
     procedure SpotTracking(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean); virtual;
 
-    function GetUpdateRect: TRectF; override;
+    function DoGetUpdateRect: TRectF; override;
     function GetItemRect: TRectF; virtual;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single); override;
@@ -331,7 +331,7 @@ begin
   Repaint;
 end;
 
-procedure TThItem.DoAddObject(AObject: TFmxObject);
+procedure TThItem.DoAddObject(const AObject: TFmxObject);
 //  AObject.Parent = nil юс
 var
   Item: TThItem;
@@ -351,7 +351,7 @@ begin
   inherited;
 end;
 
-procedure TThItem.DoRemoveObject(AObject: TFmxObject);
+procedure TThItem.DoRemoveObject(const AObject: TFmxObject);
 var
   Item: TThItem;
 begin
@@ -439,9 +439,9 @@ var
   Obj: TFmxObject;
 begin
   Result := nil;
-  Obj := FChildren[Index + FSpotCount];
-  if (FChildren.Count > Index + FSpotCount) and (Obj is TThItem)  then
-    Result := TThItem(FChildren[Index + FSpotCount]);
+  Obj := Children[Index + FSpotCount];
+  if (Children.Count > Index + FSpotCount) and (Obj is TThItem)  then
+    Result := TThItem(Children[Index + FSpotCount]);
 end;
 
 function TThItem.GetItemCount: Integer;
@@ -460,9 +460,9 @@ begin
   Result := LocalRect;
 end;
 
-function TThItem.GetUpdateRect: TRectF;
+function TThItem.DoGetUpdateRect: TRectF;
 begin
-  Result := inherited GetUpdateRect;
+  Result := inherited DoGetUpdateRect;
   InflateRect(Result, ItemResizeSpotRadius, ItemResizeSpotRadius);
   InflateRect(Result, 1, 1);
 end;
@@ -543,7 +543,7 @@ var
 begin
   inherited;
 
-  if FPressed then
+  if Pressed then
   begin
     if FSelected and Assigned(FOnTracking) then
     begin

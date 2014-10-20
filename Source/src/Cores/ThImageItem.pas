@@ -4,7 +4,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils, System.UIConsts,
-  FMX.Types, FMX.Objects, ThTypes, ThItem;
+  FMX.Types, FMX.Objects, FMX.Graphics, ThTypes, ThItem;
 
 type
   TThImageItem = class(TThItem, IBitmapObject, IItemHighlightObject, IItemSelectionObject)

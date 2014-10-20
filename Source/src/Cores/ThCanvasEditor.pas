@@ -377,7 +377,7 @@ end;
 
 procedure TThCanvasEditor.Test;
 begin
-  FContents.RotationAngle := FContents.RotationAngle + 45;
+//  FContents.RotationAngle := FContents.RotationAngle + 45;
 end;
 
 end.

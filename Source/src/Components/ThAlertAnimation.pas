@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.Types,
-  FMX.Types, FMX.Ani, FMX.Objects;
+  FMX.Types, FMX.Controls, FMX.Ani, FMX.Objects;
 
 type
   TAlertAnimation = class(TControl)

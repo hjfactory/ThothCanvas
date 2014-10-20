@@ -10,7 +10,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, ThCanvasEditor,
   FMX.Objects, FMX.ExtCtrls, ThothController, ThCanvasController, ThTypes,
-  FMX.Edit;
+  FMX.Edit, FMX.Controls.Presentation, FMX.StdCtrls;
 
 type
   TfrmMainDraft = class(TForm, IThObserver)

@@ -3,7 +3,7 @@ unit ThItemCommand;
 interface
 
 uses
-  FMX.Types, System.Types, System.SysUtils,
+  FMX.Types, System.Types, System.SysUtils, FMX.Controls,
   ThTypes, ThClasses, ThItem, System.Generics.Collections;
 
 type

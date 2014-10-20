@@ -4,10 +4,10 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils, System.UIConsts,
-  FMX.Types, FMX.Objects, ThTypes, ThItem;
+  FMX.Types, FMX.Objects, FMX.Graphics, FMX.Text, FMX.Platform, ThTypes, ThItem;
 
 type
-  TThTextItem = class(TThItem, ITextServiceControl, IItemHighlightObject, IItemSelectionObject)
+  TThTextItem = class(TThItem, IFMXTextService, IItemHighlightObject, IItemSelectionObject)
   private
     FTextService: TTextService;
 

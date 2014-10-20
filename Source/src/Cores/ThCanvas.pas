@@ -3,8 +3,8 @@ unit ThCanvas;
 interface
 
 uses
-  System.Classes, System.SysUtils,
-  System.Types, System.UITypes, System.UIConsts, FMX.Types, FMX.Ani,
+  System.Classes, System.SysUtils, System.Types, System.UITypes, System.UIConsts,
+  FMX.Types, FMX.Controls, FMX.Ani,
   ThTypes, ThItem, ThZoomAnimation, ThAlertAnimation;
 
 type
@@ -22,10 +22,10 @@ type
   protected
     procedure Paint; override;
     function GetClipRect: TRectF; override;
-    function GetUpdateRect: TRectF; override;
+    function DoGetUpdateRect: TRectF; override;
 
-    procedure DoAddObject(AObject: TFmxObject); override;
-    procedure DoRemoveObject(AObject: TFmxObject); override;
+    procedure DoAddObject(const AObject: TFmxObject); override;
+    procedure DoRemoveObject(const AObject: TFmxObject); override;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -74,7 +74,7 @@ type
     procedure Show; override;
 
     procedure Paint; override;
-    procedure DoAddObject(AObject: TFmxObject); override;
+    procedure DoAddObject(const AObject: TFmxObject); override;
 
     procedure DoZoom(AScale: Single; ATargetPos: TPointF);
     procedure DoZoomHome;
@@ -165,7 +165,7 @@ begin
   FZoomScale := 1;
 end;
 
-procedure TThContents.DoAddObject(AObject: TFmxObject);
+procedure TThContents.DoAddObject(const AObject: TFmxObject);
 var
   Item: TThItem;
 begin
@@ -184,7 +184,7 @@ begin
   FRecalcUpdateRect := True;
 end;
 
-procedure TThContents.DoRemoveObject(AObject: TFmxObject);
+procedure TThContents.DoRemoveObject(const AObject: TFmxObject);
 var
   Item: TThItem;
 begin
@@ -234,13 +234,13 @@ end;
 function TThContents.GetItem(Index: Integer): TThItem;
 begin
   Result := nil;
-  if (FChildren.Count > Index) and not (FChildren[Index].ClassType = TThItem) then
-    Result := TThItem(FChildren[Index]);
+  if (Children.Count > Index) and not (Children[Index].ClassType = TThItem) then
+    Result := TThItem(Children[Index]);
 end;
 
 function TThContents.GetItemCount: Integer;
 begin
-  Result := FChildren.Count;
+  Result := Children.Count;
 end;
 
 function TThContents.GetScaledPoint: TPointF;
@@ -249,7 +249,7 @@ begin
   Result.Y := Position.Y / ZoomScale;
 end;
 
-function TThContents.GetUpdateRect: TRectF;
+function TThContents.DoGetUpdateRect: TRectF;
 begin
   if not Assigned(Parent) then
     Exit;
@@ -300,8 +300,8 @@ constructor TThCanvas.Create(AOwner: TComponent);
   begin
     Result := TFloatAnimation.Create(Self);
     Result.Parent := Self;
-    Result.AnimationType := TAnimationType.atOut;
-    Result.Interpolation := TInterpolationType.itQuadratic;
+    Result.AnimationType := TAnimationType.Out;
+    Result.Interpolation := TInterpolationType.Quadratic;
     Result.PropertyName := APropertyName;
     Result.StartFromCurrent := True;
     Result.Delay := 0;
@@ -352,7 +352,7 @@ begin
   inherited;
 end;
 
-procedure TThCanvas.DoAddObject(AObject: TFmxObject);
+procedure TThCanvas.DoAddObject(const AObject: TFmxObject);
 begin
   if Assigned(FContents) and (AObject <> FContents)
       and (not (AObject is TAnimation)) and (not (AObject is TZoomAni)) and (not (AObject is TAlertAnimation)) then
@@ -423,7 +423,7 @@ procedure TThCanvas.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FPressed and FUseMouseTracking then
+  if Pressed and FUseMouseTracking then
   begin
     FMouseDownPos := PointF(X / ZoomScale, Y / ZoomScale);
     FMouseCurrPos := PointF(X, Y);
@@ -437,7 +437,7 @@ end;
 
 procedure TThCanvas.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
-  if FPressed and FUseMouseTracking then
+  if Pressed and FUseMouseTracking then
   begin
     FLastDelta := PointF(X - FMouseCurrPos.X, Y - FMouseCurrPos.Y);
     FMouseCurrPos := PointF(X, Y);

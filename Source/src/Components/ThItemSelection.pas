@@ -3,8 +3,8 @@ unit ThItemSelection;
 interface
 
 uses
-  System.Classes, System.Types, FMX.Types, System.UITypes,
-  System.Generics.Collections, ThConsts, ThTypes;
+  System.Classes, System.Types, FMX.Types, System.UITypes, FMX.Controls,
+  System.Generics.Collections, System.Math.Vectors, FMX.Graphics, ThConsts, ThTypes;
 
 type
   TSpotTrackingEvent = procedure(SpotCorner: TSpotCorner; X, Y: Single; SwapHorz, SwapVert: Boolean) of object;
@@ -44,7 +44,7 @@ type
   TThItemCircleResizeSpot = class(TItemResizeSpot)
   protected
     procedure Paint; override;
-    function GetUpdateRect: TRectF; override;
+    function DoGetUpdateRect: TRectF; override;
   public
     constructor Create(AOwner: TComponent; ADirection: TSpotCorner); override;
   end;
@@ -171,7 +171,7 @@ begin
 
   inherited;
 
-  if FPressed then
+  if Pressed then
   begin
     FMouseDownPos := PointF(X, Y);                  // Spot내의 마우스 위치
     FDownItemRect := TControl(Parent).BoundsRect;   // Item의 범위
@@ -187,7 +187,7 @@ begin
     Exit;
   inherited;
 
-  if FPressed then
+  if Pressed then
   begin
     Gap := PointF(X, Y).Subtract(FMouseDownPos);  // Down and Move Gap
     Position.Point := Position.Point.Add(Gap);
@@ -610,9 +610,9 @@ begin
   Height := ItemResizeSpotRadius * 2;
 end;
 
-function TThItemCircleResizeSpot.GetUpdateRect: TRectF;
+function TThItemCircleResizeSpot.DoGetUpdateRect: TRectF;
 begin
-  Result := inherited GetUpdateRect;
+  Result := inherited DoGetUpdateRect;
   InflateRect(Result,
     ItemResizeSpotRadius + Canvas.StrokeThickness,
     ItemResizeSpotRadius + Canvas.StrokeThickness);

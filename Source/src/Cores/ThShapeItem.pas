@@ -12,7 +12,7 @@ interface
 
 uses
   System.Types, System.Classes, System.UITypes, System.SysUtils, System.UIConsts,
-  FMX.Types, ThTypes, ThItem;
+  FMX.Types, FMX.Graphics, ThTypes, ThItem;
 
 type
   TThShapeItem = class(TThItem, IItemHighlightObject, IItemSelectionObject)
@@ -89,8 +89,8 @@ constructor TThShapeItem.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FWidth := MinimumSize.Width;
-  FHeight := MinimumSize.Height;
+  Width := MinimumSize.Width;
+  Height := MinimumSize.Height;
 
   FOpacity := ItemDefaultOpacity;
   FBgColor := ItemShapeDefaultColor;
