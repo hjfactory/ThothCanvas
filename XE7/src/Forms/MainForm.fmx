@@ -1,0 +1,182 @@
+object frmMainDraft: TfrmMainDraft
+  Left = 0
+  Top = 0
+  Caption = 'Thoth Canvas'
+  ClientHeight = 641
+  ClientWidth = 1013
+  FormFactor.Width = 1600
+  FormFactor.Height = 1200
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
+  object btnRectangle: TButton
+    Tag = 1100
+    Position.X = 75.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Rectangle'
+    OnClick = btnRectangleClick
+  end
+  object Panel1: TPanel
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.X = 8.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 1000.000000000000000000
+    Size.Height = 593.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object btnLine: TButton
+    Tag = 1200
+    Position.X = 141.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Line'
+    OnClick = btnRectangleClick
+  end
+  object btnCircle: TButton
+    Tag = 1300
+    Position.X = 207.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Circle'
+    OnClick = btnRectangleClick
+  end
+  object btnSelect: TButton
+    Tag = -1
+    Position.X = 7.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Select'
+    OnClick = btnRectangleClick
+  end
+  object btnRedo: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [TopRight, BottomRight]
+    Enabled = False
+    Position.X = 963.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 41.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Redo'
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnRedoClick
+  end
+  object btnUndo: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [TopLeft, BottomLeft]
+    Enabled = False
+    Position.X = 923.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 41.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Undo'
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnUndoClick
+  end
+  object btnDeleteSelection: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 811.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 104.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Delete selections'
+    OnClick = btnDeleteSelectionClick
+  end
+  object btnZoomOut: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [TopLeft, BottomLeft]
+    Position.X = 707.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = '-'
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnZoomOutClick
+  end
+  object btnZoomIn: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = [TopRight, BottomRight]
+    Position.X = 771.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = '+'
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnZoomInClick
+  end
+  object edtZoom: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akTop, akRight]
+    Text = '1'
+    Position.X = 584.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object btnHome: TCornerButton
+    Anchors = [akTop, akRight]
+    Corners = []
+    Position.X = 739.000000000000000000
+    Position.Y = 10.000000000000000000
+    Sides = [Top, Left, Bottom, Right]
+    Size.Width = 33.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'H'
+    XRadius = 3.000000000000000000
+    YRadius = 3.000000000000000000
+    OnClick = btnHomeClick
+  end
+  object btnImage: TButton
+    Tag = 3000
+    Position.X = 287.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 60.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Image'
+    OnClick = btnImageClick
+  end
+  object Button1: TButton
+    Position.X = 464.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 80.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'TEST'
+    OnClick = Button1Click
+  end
+  object btnText: TButton
+    Tag = 2000
+    Position.X = 352.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 49.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Text'
+    OnClick = btnRectangleClick
+  end
+end

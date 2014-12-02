@@ -14,8 +14,11 @@ win32/*
 *.vlb
 *.pas.cbk
 dunit.ini
-Source/bin/OSX32/*
 *.deployproj
 *.tvsconfig
-/Source/bin/Win32/Debug/TEST_IMAGE.PNG
-/Source/bin/Win32/Release/TEST_IMAGE.PNG
+OSX32/*
+iOSDevice/*
+Android/*
+XE7/dcu/*
+XE7/bin/Win32/Debug/TEST_IMAGE.PNG
+XE7/bin/Win32/Release/TEST_IMAGE.PNG
