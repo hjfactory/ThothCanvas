@@ -11,7 +11,7 @@ uses
   GR32_Layers,
   GR32_Polygons,
   GR32_Clipper,
-  GR32_VectorUtils;
+  GR32_VectorUtils, Vcl.Samples.Spin;
 
 type
   TThPath = TList<TFloatPoint>;
@@ -41,6 +41,16 @@ type
     Button4: TButton;
     Label3: TLabel;
     Label4: TLabel;
+    Button2: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    Memo1: TMemo;
+    SpinEdit1: TSpinEdit;
+    SpinEdit2: TSpinEdit;
+    Button8: TButton;
+    SpinEdit3: TSpinEdit;
+    CheckBox1: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -52,6 +62,13 @@ type
       Y: Integer; Layer: TCustomLayer);
     procedure Image32MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
+    procedure Button2Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure SpinEdit1KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure Button8Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
   private
     { Private declarations }
 
@@ -67,13 +84,15 @@ type
     FDrawDatas: TList<TDrawData>;
 //    FPolyPoly: TArrayOfArrayOfFloatPoint;
 
-
+    FBgLayer,
     FLiveLayer: TBitmapLayer;
+
     FDrawLayer: TPositionedLayer;
     FClipper: TClipper;
 //    FRenderer: TPolygonRenderer32VPR;
 
     FPLPaintCount: Integer;
+    FDP: TFloatPoint;
 
     procedure ClearPath;
     procedure AddPoint(X, Y: Single);
@@ -84,6 +103,7 @@ type
     procedure ClearDrawDatas;
 
     procedure PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
+    procedure PaintDrawHandler2(Sender: TObject; Buffer: TBitmap32);
   public
     { Public declarations }
   end;
@@ -98,13 +118,19 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FMouseDowned := False;
-  FPath := TList<TFloatPoint>.Create;
+  FPath := TThPath.Create;
 
   FThickness := 12;
   FPenColor := clRed32;
 
-  Image32.Bitmap.SetSize(640, 480);
-  Image32.Bitmap.Clear(clWhite32);
+  Image32.Bitmap.SetSize(Image32.Width, Image32.Height);
+//  Image32.Bitmap.Clear(clGreen32);
+
+  FBgLayer := TBitmapLayer.Create(Image32.Layers);
+  FBgLayer.Location := FloatRect(0, 0, Image32.Bitmap.Width, Image32.Bitmap.Height);
+  FBgLayer.Bitmap.SetSize(Image32.Bitmap.Width, Image32.Bitmap.Height);
+  FBgLayer.Bitmap.Clear(clWhite32);
+
 
   FDrawDatas := TList<TDrawData>.Create;
 
@@ -117,6 +143,44 @@ begin
   FClipper := TClipper.Create;
 
   FPLPaintCount := 0;
+
+  SpinEdit1.Value := 0;
+  SpinEdit2.Value := 75;
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+var
+  C, P: Integer;
+  Stream: TMemoryStream;
+  Path: TArray<TFloatPoint>;
+  FP: TFloatPoint;
+begin
+  Button1Click(nil);
+
+  // 670 / 745 이상하게 표시
+  C := SpinEdit2.Value;
+  P := SpinEdit1.Value;
+
+  Stream := TMemoryStream.Create;
+  Stream.LoadFromFile('D:\Works\ThothCanvas\VCL\Pilot\PositionedLayer\test.dmp');
+
+  if (C = 0) or (C > Stream.Size div SizeOf(TFloatPoint)) then
+  begin
+    P := 0;
+    C := Stream.Size div SizeOf(TFloatPoint);
+  end;
+  Caption := Format('%d / %d', [P, C]);
+
+  SetLength(Path, C-P);
+  Stream.Position := SizeOf(TFloatPoint) * P;
+  Stream.Read(PByte(Path)[0], SizeOf(TFloatPoint) * (C-P));// 828
+  Stream.Free;
+
+  FPath.Clear;
+  FPath.AddRange(Path);
+
+  AddPathToDrawLayer;
+  FDrawLayer.Update;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -126,6 +190,11 @@ begin
   FPath.Free;
 
   FClipper.Free;
+end;
+
+procedure TForm1.CheckBox1Click(Sender: TObject);
+begin
+  Button3Click(nil);
 end;
 
 procedure TForm1.ClearDrawDatas;
@@ -154,8 +223,10 @@ begin
   FLiveLayer :=  TBitmapLayer.Create(Image32.Layers);
   FLiveLayer.Location := FloatRect(0, 0, Image32.Bitmap.Width, Image32.Bitmap.Height);
   FLiveLayer.Bitmap.SetSize(Image32.Bitmap.Width, Image32.Bitmap.Height);
-  FLiveLayer.Bitmap.DrawMode := dmTransparent;
+//  FLiveLayer.Bitmap.DrawMode := dmTransparent;
+  FLiveLayer.Bitmap.DrawMode := dmBlend;
   FLiveLayer.MouseEvents := True;
+//  FLiveLayer.LayerOptions
 end;
 
 procedure TForm1.AddPathToDrawLayer;
@@ -189,6 +260,9 @@ end;
 procedure TForm1.Image32MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
+  if not Assigned(Layer) then
+    Exit;
+
   FMouseDowned := True;
   ClearPath;
   AddPoint(X, Y);
@@ -208,12 +282,15 @@ end;
 procedure TForm1.Image32MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
-  FMouseDowned := False;
-  FLiveLayer.Free;
-  FLiveLayer := nil;
+  if FMouseDowned then
+  begin
+    FMouseDowned := False;
+    FLiveLayer.Free;
+    FLiveLayer := nil;
 
-  AddPathToDrawLayer;
-  FDrawLayer.Update;
+    AddPathToDrawLayer;
+    FDrawLayer.Update;
+  end;
 //  FLiveLayer.Bitmap.Clear;
 //  FLiveLayer.Bitmap.DrawMode := dmTransparent;
 //  FLiveLayer.Bitmap.CombineMode := cmMerge;
@@ -223,6 +300,45 @@ procedure TForm1.Button1Click(Sender: TObject);
 begin
   ClearDrawDatas;
   FDrawLayer.Update;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  Stream: TMemoryStream;
+begin
+  Stream := TMemoryStream.Create;
+  Stream.Write(PByte(FPath.ToArray)[0], SizeOf(TFloatPoint) * FPath.Count);
+  Stream.SaveToFile('D:\Works\ThothCanvas\VCL\Pilot\PositionedLayer\test.dmp');
+  Stream.Free;
+
+//  FPath.
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);
+var
+  I: Integer;
+  P: TFloatPoint;
+begin
+  Memo1.Lines.Clear;
+
+  I := 0;
+  for P in FPath do
+  begin
+    Memo1.Lines.Add(Format('%d > %fx%f', [I, P.X, P.Y]));
+    Inc(I);
+  end;
+end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+var
+  n: Integer;
+begin
+  n := SpinEdit3.Value;
+  if n < FPath.Count then
+  begin
+    FDP := FPath[n];
+    FDrawLayer.Update;
+  end;
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -241,13 +357,55 @@ end;
 
 procedure TForm1.PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
 var
+  I: Integer;
   Data: TDrawData;
+  Poly: TArrayOfFloatPoint;
 begin
-  for Data in FDrawDatas do
+  if CheckBox1.Checked then
   begin
-    PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color);
+    for Data in FDrawDatas do
+    begin
+      PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color);
+    end;
+  end
+  else
+  begin
+    for Data in FDrawDatas do
+    begin
+      PolygonFS(Buffer, Data.PolyPoly[0], clRed32);
+      PolygonFS(Buffer, Data.PolyPoly[1], clOrange32);
+      PolygonFS(Buffer, Data.PolyPoly[2], clYellow32);
+      PolygonFS(Buffer, Data.PolyPoly[3], clGreen32);
+      PolygonFS(Buffer, Data.PolyPoly[4], clBlue32);
+      PolygonFS(Buffer, Data.PolyPoly[5], clNavy32);
+      PolygonFS(Buffer, Data.PolyPoly[6], clPurple32);
+
+      Memo1.Lines.Clear;
+      for I := 0 to Length(Data.PolyPoly) - 1 do
+        Memo1.Lines.Add(Format('%d - %d', [I, Length(Data.PolyPoly[I])]));
+    end;
   end;
+
+  PolygonFS(Buffer, Circle(FDP, FThickness / 2), clBlack32);
 //  PolyPolygonFS(Buffer, PolyPoly, FPenColor);
+end;
+
+procedure TForm1.PaintDrawHandler2(Sender: TObject; Buffer: TBitmap32);
+var
+  Poly: TArrayOfFloatPoint;
+begin
+//  Poly := BuildPolyline([FloatPoint(110, 10), FloatPoint(200, 200)], 10, jsRound, esRound);
+  Poly := BuildPolyline([FloatPoint(239, 30), FloatPoint(247, 36)], 12, jsRound, esRound);
+  PolygonFS(Buffer, Poly, clYellow32);
+end;
+
+procedure TForm1.SpinEdit1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = 13 then
+  begin
+    Button5Click(nil);
+  end;
 end;
 
 { TDrawData }
@@ -259,6 +417,7 @@ var
   LP, CP: TFloatPoint;
   Clipper: TClipper;
   Poly: TArrayOfFloatPoint;
+  PolyPoly: TArrayOfArrayOfFloatPoint;
 begin
   FPath := TThPath.Create;
   FPath.AddRange(APath);
@@ -274,10 +433,14 @@ begin
     CP := FPath[I];
     Poly := BuildPolyline([LP, CP], FThickness, jsRound, esRound);
     LP := CP;
-    Clipper.AddPath(Poly, ptClip);
+    if I = 1 then
+      Clipper.AddPath(Poly, ptSubject)
+    else
+      Clipper.AddPath(Poly, ptClip);
   end;
   Clipper.Execute(ctUnion, frNonZero, FPolyPoly);
   Clipper.Free;
+
 end;
 
 destructor TDrawData.Destroy;
