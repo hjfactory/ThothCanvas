@@ -342,9 +342,6 @@ begin
   begin
     Result[I].X := Round(APoly[I].X * DecScale);
     Result[I].Y := Round(APoly[I].Y * DecScale);
-
-    if Round(APoly[I].X) <> APoly[I].X then
-      OutputDebugString(PChar(Format('%d : %d = %f', [I, Round(APoly[I].X), APoly[I].X])));
   end;
 end;
 
@@ -395,7 +392,7 @@ begin
     begin
       Point := FPath[I];
       Poly := BuildPolyline([LastPoint, Point], FThickness, jsRound, esRound);
-      PolyPath := AAFloatPoint2AAPoint(Poly);
+      PolyPath := AAFloatPoint2AAPoint(Poly, 1);
       LastPoint := Point;
       if I = 1 then
         AddPath(PolyPath, ptSubject, True)
@@ -404,7 +401,7 @@ begin
     end;
 //    Execute(ctUnion, PolyPolyPaths, pftEvenOdd);
     Execute(ctUnion, PolyPolyPaths, pftNonZero);
-    FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths);
+    FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths, 1);
   finally
     Free;
   end;
