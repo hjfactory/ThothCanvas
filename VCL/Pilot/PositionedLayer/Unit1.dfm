@@ -176,6 +176,8 @@ object Form1: TForm1
     Width = 25
     Height = 17
     Caption = 'CheckBox1'
+    Checked = True
+    State = cbChecked
     TabOrder = 13
     OnClick = CheckBox1Click
   end

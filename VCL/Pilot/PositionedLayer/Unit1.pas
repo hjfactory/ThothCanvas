@@ -10,7 +10,7 @@ uses
   GR32_Image,
   GR32_Layers,
   GR32_Polygons,
-  GR32_Clipper,
+//  GR32_Clipper,
   GR32_VectorUtils, Vcl.Samples.Spin;
 
 type
@@ -88,7 +88,7 @@ type
     FLiveLayer: TBitmapLayer;
 
     FDrawLayer: TPositionedLayer;
-    FClipper: TClipper;
+//    FClipper: TClipper;
 //    FRenderer: TPolygonRenderer32VPR;
 
     FPLPaintCount: Integer;
@@ -115,6 +115,10 @@ implementation
 
 {$R *.dfm}
 
+uses Unit2,
+  System.Math,
+  clipper;
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FMouseDowned := False;
@@ -140,12 +144,12 @@ begin
   FDrawLayer.MouseEvents := True;
   FDrawLayer.OnPaint := PaintDrawHandler;
 
-  FClipper := TClipper.Create;
+//  FClipper := TClipper.Create;
 
   FPLPaintCount := 0;
 
-  SpinEdit1.Value := 0;
-  SpinEdit2.Value := 75;
+  SpinEdit1.Value := 1;
+  SpinEdit2.Value := 98;
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
@@ -166,7 +170,7 @@ begin
 
   if (C = 0) or (C > Stream.Size div SizeOf(TFloatPoint)) then
   begin
-    P := 0;
+//    P := 0;
     C := Stream.Size div SizeOf(TFloatPoint);
   end;
   Caption := Format('%d / %d', [P, C]);
@@ -189,7 +193,7 @@ begin
   FDrawDatas.Free;
   FPath.Free;
 
-  FClipper.Free;
+//  FClipper.Free;
 end;
 
 procedure TForm1.CheckBox1Click(Sender: TObject);
@@ -212,7 +216,7 @@ end;
 procedure TForm1.ClearPath;
 begin
   FPath.Clear;
-  FClipper.Clear;
+//  FClipper.Clear;
 //  FPolyPoly := nil;
 
   CreateLiveLayer;
@@ -352,10 +356,16 @@ end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
-  Button4.Caption := Image32.Layers.Count.ToString;
+//  Button4.Caption := Image32.Layers.Count.ToString;
+  form2.Show;
 end;
 
 procedure TForm1.PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
+const
+  COLORS: array[0..13] of TColor32 = (
+    clRed32, clOrange32, clYellow32, clGreen32, clBlue32, clNavy32, clPurple32,
+    clBrown32, clLime32, clOlive32, clDarkMagenta32, clCoral32, clDarkCyan32, clDeepPink32
+  );
 var
   I: Integer;
   Data: TDrawData;
@@ -365,24 +375,19 @@ begin
   begin
     for Data in FDrawDatas do
     begin
-      PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color);
+      PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color, pfWinding);
     end;
   end
   else
   begin
     for Data in FDrawDatas do
     begin
-      PolygonFS(Buffer, Data.PolyPoly[0], clRed32);
-      PolygonFS(Buffer, Data.PolyPoly[1], clOrange32);
-      PolygonFS(Buffer, Data.PolyPoly[2], clYellow32);
-      PolygonFS(Buffer, Data.PolyPoly[3], clGreen32);
-      PolygonFS(Buffer, Data.PolyPoly[4], clBlue32);
-      PolygonFS(Buffer, Data.PolyPoly[5], clNavy32);
-      PolygonFS(Buffer, Data.PolyPoly[6], clPurple32);
-
       Memo1.Lines.Clear;
       for I := 0 to Length(Data.PolyPoly) - 1 do
+      begin
+        PolygonFS(Buffer, Data.PolyPoly[I], COLORS[I mod Length(COLORS)]);
         Memo1.Lines.Add(Format('%d - %d', [I, Length(Data.PolyPoly[I])]));
+      end;
     end;
   end;
 
@@ -409,6 +414,60 @@ begin
 end;
 
 { TDrawData }
+//------------------------------------------------------------------------------
+
+function AAFloatPoint2AAPoint(const a: TArrayOfArrayOfFloatPoint;
+  decimals: integer = 0): TPaths; overload;
+var
+  i,j,decScale: integer;
+begin
+  decScale := round(power(10,decimals));
+  setlength(result, length(a));
+  for i := 0 to high(a) do
+  begin
+    setlength(result[i], length(a[i]));
+    for j := 0 to high(a[i]) do
+    begin
+      result[i][j].X := round(a[i][j].X *decScale);
+      result[i][j].Y := round(a[i][j].Y *decScale);
+    end;
+  end;
+end;
+
+function AAFloatPoint2AAPoint(const a: TArrayOfFloatPoint;
+  decimals: integer = 0): TPath; overload;
+var
+  i,j,decScale: integer;
+begin
+  decScale := round(power(10,decimals));
+  setlength(result, length(a));
+  for i := 0 to high(a) do
+  begin
+    result[i].X := round(a[i].X *decScale);
+    result[i].Y := round(a[i].Y *decScale);
+  end;
+end;
+
+//------------------------------------------------------------------------------
+
+function AAPoint2AAFloatPoint(const a: TPaths;
+  decimals: integer = 0): TArrayOfArrayOfFloatPoint;
+var
+  i,j,decScale: integer;
+begin
+  decScale := round(power(10,decimals));
+  setlength(result, length(a));
+  for i := 0 to high(a) do
+  begin
+    setlength(result[i], length(a[i]));
+    for j := 0 to high(a[i]) do
+    begin
+      result[i][j].X := a[i][j].X /decScale;
+      result[i][j].Y := a[i][j].Y /decScale;
+    end;
+  end;
+end;
+//------------------------------------------------------------------------------
 
 constructor TDrawData.Create(APath: TThPath; AThickness: Integer;
   AColor: TColor32);
@@ -417,14 +476,17 @@ var
   LP, CP: TFloatPoint;
   Clipper: TClipper;
   Poly: TArrayOfFloatPoint;
-  PolyPoly: TArrayOfArrayOfFloatPoint;
+  PolyPath: TPath;
+  PolyPolyPaths: TPaths;
 begin
   FPath := TThPath.Create;
   FPath.AddRange(APath);
-//  FPath.  := APath;
   FThickness := AThickness;
   FColor := AColor;
 
+
+  // GR32 Clipper는 일부 선이 겹치는 경우 오류 발생
+    // Clipper libarary(Libraries\clipper.pas)로 대체
   Clipper := TClipper.Create;
 
   LP := FPath[0];
@@ -432,13 +494,15 @@ begin
   begin
     CP := FPath[I];
     Poly := BuildPolyline([LP, CP], FThickness, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly);
     LP := CP;
     if I = 1 then
-      Clipper.AddPath(Poly, ptSubject)
+      Clipper.AddPath(PolyPath, ptSubject, True)
     else
-      Clipper.AddPath(Poly, ptClip);
+      Clipper.AddPath(PolyPath, ptClip, True);
   end;
-  Clipper.Execute(ctUnion, frNonZero, FPolyPoly);
+  Clipper.Execute(ctUnion, PolyPolyPaths, pftNonZero);
+  FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths);
   Clipper.Free;
 
 end;
