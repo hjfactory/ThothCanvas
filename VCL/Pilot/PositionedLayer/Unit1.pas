@@ -33,28 +33,30 @@ type
   end;
 
   TForm1 = class(TForm)
-    Image32: TImage32;
-    Button1: TButton;
-    Label1: TLabel;
+    btnClear: TButton;
     Button3: TButton;
-    Label2: TLabel;
     Button4: TButton;
-    Label3: TLabel;
     Memo1: TMemo;
-    procedure Button1Click(Sender: TObject);
+    Label1: TLabel;
+    Button2: TButton;
+    Label2: TLabel;
+    Label3: TLabel;
+    ImgView: TImgView32;
+    Button1: TButton;
+    Button5: TButton;
+    procedure btnClearClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Image32MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
-    procedure Image32MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer; Layer: TCustomLayer);
-    procedure Image32MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
-    procedure Button2Click(Sender: TObject);
-    procedure Button7Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure ImgViewResize(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure ImgViewMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
   private
     { Private declarations }
 
@@ -67,7 +69,7 @@ type
     FMouseDowned: Boolean;
 
     // Draw layer
-    FDrawDatas: TList<TDrawData>;
+    FDrawDatas: TObjectList<TDrawData>;
 //    FPolyPoly: TArrayOfArrayOfFloatPoint;
 
     FBgLayer,
@@ -81,13 +83,19 @@ type
 
     procedure ClearPath;
     procedure AddPoint(X, Y: Single);
-
     procedure AddPathToDrawLayer;
 
-    function CreateLiveLayer: TBitmapLayer;
-    procedure ClearDrawDatas;
+    procedure CreateLiveLayer;
+    procedure RecreateLiveLayer;
 
     procedure PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
+
+    procedure LiveLayerMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure LiveLayerMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure LiveLayerMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   public
     { Public declarations }
   end;
@@ -101,7 +109,7 @@ implementation
 
 uses Unit2,
   System.Math,
-  clipper;
+  clipper, ThGrahicsUtils;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -111,31 +119,54 @@ begin
   FThickness := 4;
   FPenColor := clRed32;
 
-  Image32.Bitmap.SetSize(Image32.Width, Image32.Height);
-//  Image32.Bitmap.Clear(clGreen32);
+  ImgView.Bitmap.SetSize(ImgView.Width, ImgView.Height);
+  ImgView.Bitmap.Clear(clGreen32);
+//  Image32.scalem
 
-  FBgLayer := TBitmapLayer.Create(Image32.Layers);
-  FBgLayer.Location := FloatRect(0, 0, Image32.Bitmap.Width, Image32.Bitmap.Height);
-  FBgLayer.Bitmap.SetSize(Image32.Bitmap.Width, Image32.Bitmap.Height);
-  FBgLayer.Bitmap.Clear(clWhite32);
+  FBgLayer := TBitmapLayer.Create(ImgView.Layers);
+  FBgLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FBgLayer.Bitmap.SetSize(ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FBgLayer.Bitmap.Clear(clGreen32);
+  FBgLayer.Scaled := True;
 
 
-  FDrawDatas := TList<TDrawData>.Create;
+  FDrawDatas := TObjectList<TDrawData>.Create;
 
-  FDrawLayer := TPositionedLayer.Create(Image32.Layers);
-  FDrawLayer.Location := FloatRect(0, 0, Image32.Bitmap.Width, Image32.Bitmap.Height);
+  FDrawLayer := TPositionedLayer.Create(ImgView.Layers);
+  FDrawLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
 //  FDrawLayer.Bitmap.DrawMode := dmTransparent;
   FDrawLayer.MouseEvents := True;
   FDrawLayer.OnPaint := PaintDrawHandler;
+  FDrawLayer.Scaled := True;
+
+
+  CreateLiveLayer;
+
 
 //  FClipper := TClipper.Create;
 
   FPLPaintCount := 0;
 end;
 
+procedure TForm1.CreateLiveLayer;
+begin
+  FLiveLayer :=  TBitmapLayer.Create(ImgView.Layers);
+//  FLiveLayer.
+  FLiveLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FLiveLayer.Bitmap.SetSize(ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FLiveLayer.Bitmap.DrawMode := dmBlend;
+  FLiveLayer.MouseEvents := True;
+  FLiveLayer.Scaled := True;
+//  FLiveLayer.Bitmap.Clear(clYellow32);
+
+  FLiveLayer.OnMouseDown := LiveLayerMouseDown;
+  FLiveLayer.OnMouseMove := LiveLayerMouseMove;
+  FLiveLayer.OnMouseUp := LiveLayerMouseUp;
+end;
+
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
-  ClearDrawDatas;
+  FDrawDatas.Clear;
   FDrawDatas.Free;
   FPath.Free;
 
@@ -147,36 +178,9 @@ begin
   Button3Click(nil);
 end;
 
-procedure TForm1.ClearDrawDatas;
-var
-  Item: TDrawData;
-begin
-  for Item in FDrawDatas do
-  begin
-//    Item.Path.Free;
-    Item.Free;
-  end;
-  FDrawDatas.Clear;
-end;
-
 procedure TForm1.ClearPath;
 begin
   FPath.Clear;
-//  FClipper.Clear;
-//  FPolyPoly := nil;
-
-  CreateLiveLayer;
-end;
-
-function TForm1.CreateLiveLayer: TBitmapLayer;
-begin
-  FLiveLayer :=  TBitmapLayer.Create(Image32.Layers);
-  FLiveLayer.Location := FloatRect(0, 0, Image32.Bitmap.Width, Image32.Bitmap.Height);
-  FLiveLayer.Bitmap.SetSize(Image32.Bitmap.Width, Image32.Bitmap.Height);
-//  FLiveLayer.Bitmap.DrawMode := dmTransparent;
-  FLiveLayer.Bitmap.DrawMode := dmBlend;
-  FLiveLayer.MouseEvents := True;
-//  FLiveLayer.LayerOptions
 end;
 
 procedure TForm1.AddPathToDrawLayer;
@@ -185,6 +189,7 @@ var
 begin
   Data := TDrawData.Create(FPath, FThickness, clRed32);
   FDrawDatas.Add(Data);
+  FDrawLayer.Update;
 end;
 
 procedure TForm1.AddPoint(X, Y: Single);
@@ -193,6 +198,9 @@ var
   Poly: TArrayOfFloatPoint;
 begin
   P := FloatPoint(X, Y);
+  P := P - FLiveLayer.GetAdjustedLocation.TopLeft;
+
+  Label3.Caption := Format('%fx%f', [X, Y]);
 
   if FPath.Count = 0 then
     Poly := Circle(P, FThickness / 2)
@@ -204,93 +212,116 @@ begin
   FLastPoint := P;
   FPath.Add(P);
 
-  Label3.Caption := FPath.Count.ToString;
+  Label1.Caption := FPath.Count.ToString;
 end;
 
-procedure TForm1.Image32MouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
+procedure TForm1.ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  s: Single;
 begin
-  if not Assigned(Layer) then
-    Exit;
+  s := ImgView.Scale * 1.1;
+  if s > 20 then s := 20;
+  ImgView.Scale := s;
+end;
 
+procedure TForm1.ImgViewMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  s: Single;
+begin
+  s := ImgView.Scale / 1.1;
+  if s < 0.2 then s := 0.2;
+  ImgView.Scale := s;
+end;
+
+procedure TForm1.ImgViewResize(Sender: TObject);
+begin
+  FDrawLayer.Update;
+end;
+
+procedure TForm1.LiveLayerMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
   FMouseDowned := True;
   ClearPath;
   AddPoint(X, Y);
-  Layer.Update;
+  FLiveLayer.Update;
 end;
 
-procedure TForm1.Image32MouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer; Layer: TCustomLayer);
+procedure TForm1.LiveLayerMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
 begin
   if FMouseDowned then
   begin
     AddPoint(X, Y);
-    Layer.Update;
+    FLiveLayer.Update;
   end;
 end;
 
-procedure TForm1.Image32MouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
+procedure TForm1.LiveLayerMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
-    FLiveLayer.Free;
-    FLiveLayer := nil;
+
+    RecreateLiveLayer;
 
     AddPathToDrawLayer;
-    FDrawLayer.Update;
   end;
-//  FLiveLayer.Bitmap.Clear;
-//  FLiveLayer.Bitmap.DrawMode := dmTransparent;
-//  FLiveLayer.Bitmap.CombineMode := cmMerge;
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.btnClearClick(Sender: TObject);
 begin
-  ClearDrawDatas;
+  FDrawDatas.Clear;
   FDrawLayer.Update;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
-var
-  Stream: TMemoryStream;
 begin
-  Stream := TMemoryStream.Create;
-  Stream.Write(PByte(FPath.ToArray)[0], SizeOf(TFloatPoint) * FPath.Count);
-  Stream.SaveToFile('D:\Works\ThothCanvas\VCL\Pilot\PositionedLayer\test.dmp');
-  Stream.Free;
+  ImgView.Scale := ImgView.Scale + 0.2;
 
-//  FPath.
-end;
-
-procedure TForm1.Button7Click(Sender: TObject);
-var
-  I: Integer;
-  P: TFloatPoint;
-begin
-  Memo1.Lines.Clear;
-
-  I := 0;
-  for P in FPath do
-  begin
-    Memo1.Lines.Add(Format('%d > %fx%f', [I, P.X, P.Y]));
-    Inc(I);
-  end;
+  Label2.Caption := ImgView.Scale.ToString;
+  Label3.Caption := Format('%f x %f', [FDrawLayer.Location.Right, FDrawLayer.Location.Bottom]);
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
-var
-  L: TPositionedLayer;
 begin
-  L := TPositionedLayer(Image32.Layers[0]);
-
-  L.Update;
+  FDrawLayer.Update;
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
+var
+  I: Integer;
 begin
-  Button4.Caption := Image32.Layers.Count.ToString;
+  Button4.Caption := ImgView.Layers.Count.ToString;
+
+  for I := 0 to ImgView.Layers.Count - 1 do
+  begin
+    Memo1.Lines.Add(ImgView.Layers[I].ClassName);
+    Memo1.Lines.Add(Format('%fx%f %fx%f', [
+      TPositionedLayer(ImgView.Layers[I]).Location.Left,
+      TPositionedLayer(ImgView.Layers[I]).Location.Top,
+      TPositionedLayer(ImgView.Layers[I]).Location.RIght,
+      TPositionedLayer(ImgView.Layers[I]).Location.Bottom
+    ]));
+
+    Memo1.Lines.Add(Format('%fx%f %fx%f', [
+      TPositionedLayer(ImgView.Layers[I]).GetAdjustedLocation.Left,
+      TPositionedLayer(ImgView.Layers[I]).GetAdjustedLocation.Top,
+      TPositionedLayer(ImgView.Layers[I]).GetAdjustedLocation.RIght,
+      TPositionedLayer(ImgView.Layers[I]).GetAdjustedLocation.Bottom
+    ]));
+  end;
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+  ImgView.Scale := ImgView.Scale - 0.2;
+
+  Label2.Caption := ImgView.Scale.ToString;
+  Label3.Caption := Format('%f x %f', [FDrawLayer.Location.Right, FDrawLayer.Location.Bottom]);
 end;
 
 procedure TForm1.PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
@@ -300,14 +331,32 @@ const
     clBrown32, clLime32, clOlive32, clDarkMagenta32, clCoral32, clDarkCyan32, clDeepPink32
   );
 var
-  I: Integer;
+  OffsetX, OffsetY: Single;
   Data: TDrawData;
-  Poly: TArrayOfFloatPoint;
+  PolyPoly: TArrayOfArrayOfFloatPoint;
 begin
+  OffsetX := FDrawLayer.GetAdjustedLocation.Left;
+  OffsetY := FDrawLayer.GetAdjustedLocation.Top;
   for Data in FDrawDatas do
   begin
-    PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color, pfWinding);
+    PolyPoly := Data.PolyPoly;
+    PolyPoly := ScalePolyPolygon(PolyPoly, ImgView.Scale, ImgView.Scale);
+    PolyPoly := TranslatePolyPolygon(PolyPoly, OffsetX, OffsetY);
+
+    Buffer.ClipRect := FDrawLayer.GetAdjustedLocation.Rect;
+
+    PolyPolygonFS(Buffer, PolyPoly, Data.Color, pfWinding);
   end;
+end;
+
+procedure TForm1.RecreateLiveLayer;
+begin
+  if Assigned(FLiveLayer) then
+  begin
+    FLiveLayer.Free;
+    FLiveLayer := nil;
+  end;
+  CreateLiveLayer;
 end;
 
 { TDrawData }
@@ -387,21 +436,24 @@ begin
   try
     StrictlySimple := True;
 
+//    LastPoint := FPath[0] + Form1.FDrawLayer.GetAdjustedLocation.TopLeft;
     LastPoint := FPath[0];
     for I := 1 to FPath.Count - 1 do
     begin
       Point := FPath[I];
+//      Point := Point + Form1.FDrawLayer.GetAdjustedLocation.TopLeft;
+
       Poly := BuildPolyline([LastPoint, Point], FThickness, jsRound, esRound);
-      PolyPath := AAFloatPoint2AAPoint(Poly, 1);
+      PolyPath := AAFloatPoint2AAPoint(Poly, 1); // TFloatPoint to TIntPoint
       LastPoint := Point;
       if I = 1 then
         AddPath(PolyPath, ptSubject, True)
       else
         AddPath(PolyPath, ptClip, True);
     end;
-//    Execute(ctUnion, PolyPolyPaths, pftEvenOdd);
     Execute(ctUnion, PolyPolyPaths, pftNonZero);
-    FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths, 1);
+
+    FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths, 1);  // TIntPoint to TFloatPoint
   finally
     Free;
   end;

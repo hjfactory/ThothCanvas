@@ -103,6 +103,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\..\Libraries\clipper.pas"/>
+        <DCCReference Include="..\..\Utils\ThGrahicsUtils.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
