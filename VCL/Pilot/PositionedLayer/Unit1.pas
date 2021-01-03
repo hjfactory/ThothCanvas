@@ -40,17 +40,7 @@ type
     Label2: TLabel;
     Button4: TButton;
     Label3: TLabel;
-    Label4: TLabel;
-    Button2: TButton;
-    Button5: TButton;
-    Button6: TButton;
-    Button7: TButton;
     Memo1: TMemo;
-    SpinEdit1: TSpinEdit;
-    SpinEdit2: TSpinEdit;
-    Button8: TButton;
-    SpinEdit3: TSpinEdit;
-    CheckBox1: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -63,11 +53,7 @@ type
     procedure Image32MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
     procedure Button2Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
-    procedure SpinEdit1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure Button8Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
   private
     { Private declarations }
@@ -92,7 +78,6 @@ type
 //    FRenderer: TPolygonRenderer32VPR;
 
     FPLPaintCount: Integer;
-    FDP: TFloatPoint;
 
     procedure ClearPath;
     procedure AddPoint(X, Y: Single);
@@ -103,7 +88,6 @@ type
     procedure ClearDrawDatas;
 
     procedure PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
-    procedure PaintDrawHandler2(Sender: TObject; Buffer: TBitmap32);
   public
     { Public declarations }
   end;
@@ -124,7 +108,7 @@ begin
   FMouseDowned := False;
   FPath := TThPath.Create;
 
-  FThickness := 12;
+  FThickness := 4;
   FPenColor := clRed32;
 
   Image32.Bitmap.SetSize(Image32.Width, Image32.Height);
@@ -147,44 +131,6 @@ begin
 //  FClipper := TClipper.Create;
 
   FPLPaintCount := 0;
-
-  SpinEdit1.Value := 1;
-  SpinEdit2.Value := 98;
-end;
-
-procedure TForm1.Button5Click(Sender: TObject);
-var
-  C, P: Integer;
-  Stream: TMemoryStream;
-  Path: TArray<TFloatPoint>;
-  FP: TFloatPoint;
-begin
-  Button1Click(nil);
-
-  // 670 / 745 이상하게 표시
-  C := SpinEdit2.Value;
-  P := SpinEdit1.Value;
-
-  Stream := TMemoryStream.Create;
-  Stream.LoadFromFile('D:\Works\ThothCanvas\VCL\Pilot\PositionedLayer\test.dmp');
-
-  if (C = 0) or (C > Stream.Size div SizeOf(TFloatPoint)) then
-  begin
-//    P := 0;
-    C := Stream.Size div SizeOf(TFloatPoint);
-  end;
-  Caption := Format('%d / %d', [P, C]);
-
-  SetLength(Path, C-P);
-  Stream.Position := SizeOf(TFloatPoint) * P;
-  Stream.Read(PByte(Path)[0], SizeOf(TFloatPoint) * (C-P));// 828
-  Stream.Free;
-
-  FPath.Clear;
-  FPath.AddRange(Path);
-
-  AddPathToDrawLayer;
-  FDrawLayer.Update;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -333,18 +279,6 @@ begin
   end;
 end;
 
-procedure TForm1.Button8Click(Sender: TObject);
-var
-  n: Integer;
-begin
-  n := SpinEdit3.Value;
-  if n < FPath.Count then
-  begin
-    FDP := FPath[n];
-    FDrawLayer.Update;
-  end;
-end;
-
 procedure TForm1.Button3Click(Sender: TObject);
 var
   L: TPositionedLayer;
@@ -356,8 +290,7 @@ end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
-//  Button4.Caption := Image32.Layers.Count.ToString;
-  form2.Show;
+  Button4.Caption := Image32.Layers.Count.ToString;
 end;
 
 procedure TForm1.PaintDrawHandler(Sender: TObject; Buffer: TBitmap32);
@@ -371,99 +304,66 @@ var
   Data: TDrawData;
   Poly: TArrayOfFloatPoint;
 begin
-  if CheckBox1.Checked then
+  for Data in FDrawDatas do
   begin
-    for Data in FDrawDatas do
-    begin
-      PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color, pfWinding);
-    end;
-  end
-  else
-  begin
-    for Data in FDrawDatas do
-    begin
-      Memo1.Lines.Clear;
-      for I := 0 to Length(Data.PolyPoly) - 1 do
-      begin
-        PolygonFS(Buffer, Data.PolyPoly[I], COLORS[I mod Length(COLORS)]);
-        Memo1.Lines.Add(Format('%d - %d', [I, Length(Data.PolyPoly[I])]));
-      end;
-    end;
-  end;
-
-  PolygonFS(Buffer, Circle(FDP, FThickness / 2), clBlack32);
-//  PolyPolygonFS(Buffer, PolyPoly, FPenColor);
-end;
-
-procedure TForm1.PaintDrawHandler2(Sender: TObject; Buffer: TBitmap32);
-var
-  Poly: TArrayOfFloatPoint;
-begin
-//  Poly := BuildPolyline([FloatPoint(110, 10), FloatPoint(200, 200)], 10, jsRound, esRound);
-  Poly := BuildPolyline([FloatPoint(239, 30), FloatPoint(247, 36)], 12, jsRound, esRound);
-  PolygonFS(Buffer, Poly, clYellow32);
-end;
-
-procedure TForm1.SpinEdit1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if Key = 13 then
-  begin
-    Button5Click(nil);
+    PolyPolygonFS(Buffer, Data.PolyPoly, Data.Color, pfWinding);
   end;
 end;
 
 { TDrawData }
 //------------------------------------------------------------------------------
 
-function AAFloatPoint2AAPoint(const a: TArrayOfArrayOfFloatPoint;
-  decimals: integer = 0): TPaths; overload;
+function AAFloatPoint2AAPoint(const APolyPoly: TArrayOfArrayOfFloatPoint;
+  Decimals: Integer = 0): TPaths; overload;
 var
-  i,j,decScale: integer;
+  I, J, DecScale: integer;
 begin
-  decScale := round(power(10,decimals));
-  setlength(result, length(a));
-  for i := 0 to high(a) do
+  DecScale := Round(Power(10, Decimals));
+  Setlength(Result, Length(APolyPoly));
+  for I := 0 to high(APolyPoly) do
   begin
-    setlength(result[i], length(a[i]));
-    for j := 0 to high(a[i]) do
+    Setlength(Result[I], Length(APolyPoly[I]));
+    for J := 0 to High(APolyPoly[I]) do
     begin
-      result[i][j].X := round(a[i][j].X *decScale);
-      result[i][j].Y := round(a[i][j].Y *decScale);
+      Result[I][J].X := Round(APolyPoly[I][J].X * DecScale);
+      Result[I][J].Y := Round(APolyPoly[I][J].Y * DecScale);
     end;
   end;
 end;
 
-function AAFloatPoint2AAPoint(const a: TArrayOfFloatPoint;
-  decimals: integer = 0): TPath; overload;
+function AAFloatPoint2AAPoint(const APoly: TArrayOfFloatPoint;
+  Decimals: Integer = 0): TPath; overload;
 var
-  i,j,decScale: integer;
+  I, DecScale: Integer;
 begin
-  decScale := round(power(10,decimals));
-  setlength(result, length(a));
-  for i := 0 to high(a) do
+  DecScale := Round(Power(10, Decimals));
+  Setlength(Result, Length(APoly));
+  for I := 0 to High(APoly) do
   begin
-    result[i].X := round(a[i].X *decScale);
-    result[i].Y := round(a[i].Y *decScale);
+    Result[I].X := Round(APoly[I].X * DecScale);
+    Result[I].Y := Round(APoly[I].Y * DecScale);
+
+    if Round(APoly[I].X) <> APoly[I].X then
+      OutputDebugString(PChar(Format('%d : %d = %f', [I, Round(APoly[I].X), APoly[I].X])));
   end;
 end;
 
 //------------------------------------------------------------------------------
 
-function AAPoint2AAFloatPoint(const a: TPaths;
-  decimals: integer = 0): TArrayOfArrayOfFloatPoint;
+function AAPoint2AAFloatPoint(const APaths: TPaths;
+  Decimals: Integer = 0): TArrayOfArrayOfFloatPoint;
 var
-  i,j,decScale: integer;
+  I, J, DecScale: Integer;
 begin
-  decScale := round(power(10,decimals));
-  setlength(result, length(a));
-  for i := 0 to high(a) do
+  DecScale := Round(Power(10, Decimals));
+  Setlength(Result, Length(APaths));
+  for I := 0 to High(APaths) do
   begin
-    setlength(result[i], length(a[i]));
-    for j := 0 to high(a[i]) do
+    Setlength(Result[i], Length(APaths[i]));
+    for J := 0 to High(APaths[I]) do
     begin
-      result[i][j].X := a[i][j].X /decScale;
-      result[i][j].Y := a[i][j].Y /decScale;
+      Result[I][J].X := APaths[I][J].X / DecScale;
+      Result[I][J].Y := APaths[I][J].Y / DecScale;
     end;
   end;
 end;
@@ -473,8 +373,7 @@ constructor TDrawData.Create(APath: TThPath; AThickness: Integer;
   AColor: TColor32);
 var
   I: Integer;
-  LP, CP: TFloatPoint;
-  Clipper: TClipper;
+  LastPoint, Point: TFloatPoint;
   Poly: TArrayOfFloatPoint;
   PolyPath: TPath;
   PolyPolyPaths: TPaths;
@@ -487,24 +386,28 @@ begin
 
   // GR32 Clipper는 일부 선이 겹치는 경우 오류 발생
     // Clipper libarary(Libraries\clipper.pas)로 대체
-  Clipper := TClipper.Create;
+  with TClipper.Create do
+  try
+    StrictlySimple := True;
 
-  LP := FPath[0];
-  for I := 1 to FPath.Count - 1 do
-  begin
-    CP := FPath[I];
-    Poly := BuildPolyline([LP, CP], FThickness, jsRound, esRound);
-    PolyPath := AAFloatPoint2AAPoint(Poly);
-    LP := CP;
-    if I = 1 then
-      Clipper.AddPath(PolyPath, ptSubject, True)
-    else
-      Clipper.AddPath(PolyPath, ptClip, True);
+    LastPoint := FPath[0];
+    for I := 1 to FPath.Count - 1 do
+    begin
+      Point := FPath[I];
+      Poly := BuildPolyline([LastPoint, Point], FThickness, jsRound, esRound);
+      PolyPath := AAFloatPoint2AAPoint(Poly);
+      LastPoint := Point;
+      if I = 1 then
+        AddPath(PolyPath, ptSubject, True)
+      else
+        AddPath(PolyPath, ptClip, True);
+    end;
+//    Execute(ctUnion, PolyPolyPaths, pftEvenOdd);
+    Execute(ctUnion, PolyPolyPaths, pftNonZero);
+    FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths);
+  finally
+    Free;
   end;
-  Clipper.Execute(ctUnion, PolyPolyPaths, pftNonZero);
-  FPolyPoly := AAPoint2AAFloatPoint(PolyPolyPaths);
-  Clipper.Free;
-
 end;
 
 destructor TDrawData.Destroy;
