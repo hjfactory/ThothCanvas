@@ -1,0 +1,19 @@
+object frmUnitTest: TfrmUnitTest
+  Left = 0
+  Top = 0
+  Caption = 'Unit Test Form'
+  ClientHeight = 480
+  ClientWidth = 640
+  FormFactor.Width = 1600
+  FormFactor.Height = 1200
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  DesignerMasterStyle = 0
+  object Panel1: TPanel
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 480.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+  end
+end
