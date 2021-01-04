@@ -119,21 +119,22 @@ begin
   FThickness := 4;
   FPenColor := clRed32;
 
-  ImgView.Bitmap.SetSize(ImgView.Width, ImgView.Height);
-  ImgView.Bitmap.Clear(clGreen32);
+  ImgView.Bitmap.SetSize(800, 600);
+  ImgView.Color := clSilver;
+//  ImgView.Bitmap.Clear(clGreen32);
 //  Image32.scalem
 
   FBgLayer := TBitmapLayer.Create(ImgView.Layers);
-  FBgLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
-  FBgLayer.Bitmap.SetSize(ImgView.Bitmap.Width, ImgView.Bitmap.Height);
-  FBgLayer.Bitmap.Clear(clGreen32);
+  FBgLayer.Location := FloatRect(0, 0, 800, 600);
+  FBgLayer.Bitmap.SetSize(800, 600);
+  FBgLayer.Bitmap.Clear(clWhite32);
   FBgLayer.Scaled := True;
 
 
   FDrawDatas := TObjectList<TDrawData>.Create;
 
   FDrawLayer := TPositionedLayer.Create(ImgView.Layers);
-  FDrawLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FDrawLayer.Location := FloatRect(0, 0, 800, 600);
 //  FDrawLayer.Bitmap.DrawMode := dmTransparent;
   FDrawLayer.MouseEvents := True;
   FDrawLayer.OnPaint := PaintDrawHandler;
@@ -152,8 +153,8 @@ procedure TForm1.CreateLiveLayer;
 begin
   FLiveLayer :=  TBitmapLayer.Create(ImgView.Layers);
 //  FLiveLayer.
-  FLiveLayer.Location := FloatRect(0, 0, ImgView.Bitmap.Width, ImgView.Bitmap.Height);
-  FLiveLayer.Bitmap.SetSize(ImgView.Bitmap.Width, ImgView.Bitmap.Height);
+  FLiveLayer.Location := FloatRect(0, 0, 800, 600);
+  FLiveLayer.Bitmap.SetSize(800, 600);
   FLiveLayer.Bitmap.DrawMode := dmBlend;
   FLiveLayer.MouseEvents := True;
   FLiveLayer.Scaled := True;
