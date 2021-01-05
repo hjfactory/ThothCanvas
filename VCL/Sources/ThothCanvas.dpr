@@ -4,7 +4,10 @@ uses
   Vcl.Forms,
   MainForm in 'MainForm.pas' {frmMain},
   ThCanvas in 'Cores\ThCanvas.pas',
-  ThTypes in 'Types\ThTypes.pas';
+  ThTypes in 'Types\ThTypes.pas',
+  ThCanvasLayers in 'Cores\ThCanvasLayers.pas',
+  clipper in '..\Libraries\clipper.pas',
+  ThGrahicsUtils in 'Utils\ThGrahicsUtils.pas';
 
 {$R *.res}
 

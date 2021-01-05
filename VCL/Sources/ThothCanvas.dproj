@@ -104,6 +104,9 @@
         </DCCReference>
         <DCCReference Include="Cores\ThCanvas.pas"/>
         <DCCReference Include="Types\ThTypes.pas"/>
+        <DCCReference Include="Cores\ThCanvasLayers.pas"/>
+        <DCCReference Include="..\Libraries\clipper.pas"/>
+        <DCCReference Include="Utils\ThGrahicsUtils.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

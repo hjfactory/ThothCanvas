@@ -8,7 +8,9 @@ uses
 
   GR32,
   GR32_Image,
-  GR32_Layers;
+  GR32_Layers,
+
+  ThCanvasLayers;
 
 type
   TScaleChangeEvent = procedure(Sender: TObject; Scale: Single) of object;
@@ -18,20 +20,21 @@ type
     FImgView: TImgView32;
 
     FBackgroundLayer: TBitmapLayer;
-    FFreeDrawLayer,
-    FShapeDrawLayer: TPositionedLayer;
-    FLIveLayer: TBitmapLayer;
+    FFreeDrawLayer: TFreeDrawLayer;
+//    FShapeDrawLayer: TPositionedLayer;
 
     FOnScaleChange: TScaleChangeEvent;
 
     procedure DoScaleChage(Scale: Single);
 
+    procedure SetScale(const Value: Single);
+    function GetScale: Single;
+
+    // Event
     procedure ImgViewWheelUp(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
     procedure ImgViewWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
-    procedure SetScale(const Value: Single);
-    function GetScale: Single;
   protected
     procedure CreateWnd; override;
   public
@@ -79,12 +82,8 @@ begin
   FBackgroundLayer.Scaled := True;
 
 
-  FFreeDrawLayer := TPositionedLayer.Create(FImgView.Layers);
+  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
-//  FFreeDrawLayer.Bitmap.DrawMode := dmTransparent;
-  FFreeDrawLayer.MouseEvents := True;
-  FFreeDrawLayer.Scaled := True;
-
 end;
 
 procedure TThCustomCanvas.CreateWnd;
