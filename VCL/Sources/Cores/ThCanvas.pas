@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Graphics,
 
   GR32,
-  GR32_Image;
+  GR32_Image,
+  GR32_Layers;
 
 type
   TScaleChangeEvent = procedure(Sender: TObject; Scale: Single) of object;
@@ -15,6 +16,12 @@ type
   TThCustomCanvas = class(TCustomControl)
   private
     FImgView: TImgView32;
+
+    FBackgroundLayer: TBitmapLayer;
+    FFreeDrawLayer,
+    FShapeDrawLayer: TPositionedLayer;
+    FLIveLayer: TBitmapLayer;
+
     FOnScaleChange: TScaleChangeEvent;
 
     procedure DoScaleChage(Scale: Single);
@@ -64,6 +71,20 @@ begin
   FImgView.Bitmap.SetSize(AWidth, AHeight);
   FImgView.Bitmap.Clear(clWhite32);
   FImgView.Bitmap.FrameRectTS(FImgView.Bitmap.BoundsRect, clGray32);
+
+  FBackgroundLayer := TBitmapLayer.Create(FImgView.Layers);
+  FBackgroundLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FBackgroundLayer.Bitmap.SetSize(FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FBackgroundLayer.Bitmap.Clear(clWhite32);
+  FBackgroundLayer.Scaled := True;
+
+
+  FFreeDrawLayer := TPositionedLayer.Create(FImgView.Layers);
+  FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+//  FFreeDrawLayer.Bitmap.DrawMode := dmTransparent;
+  FFreeDrawLayer.MouseEvents := True;
+  FFreeDrawLayer.Scaled := True;
+
 end;
 
 procedure TThCustomCanvas.CreateWnd;
