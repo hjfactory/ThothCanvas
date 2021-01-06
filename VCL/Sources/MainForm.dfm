@@ -13,6 +13,9 @@ object frmMain: TfrmMain
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  DesignSize = (
+    1062
+    757)
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
@@ -28,6 +31,16 @@ object frmMain: TfrmMain
     Top = 64
     Width = 881
     Height = 577
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 1
+  end
+  object Button2: TButton
+    Left = 784
+    Top = 24
+    Width = 129
+    Height = 25
+    Caption = 'Show debug form'
+    TabOrder = 2
+    OnClick = Button2Click
   end
 end

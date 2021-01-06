@@ -48,6 +48,8 @@ type
   end;
 
   TThCanvas = class(TThCustomCanvas)
+  public
+    property OnScaleChange;
   end;
 
 implementation
@@ -69,23 +71,6 @@ begin
   FImgView.OnMouseWheelDown := ImgViewWheelDown;
 end;
 
-procedure TThCustomCanvas.CreatePage(AWidth, AHeight: Integer);
-begin
-  FImgView.Bitmap.SetSize(AWidth, AHeight);
-  FImgView.Bitmap.Clear(clWhite32);
-  FImgView.Bitmap.FrameRectTS(FImgView.Bitmap.BoundsRect, clGray32);
-
-  FBackgroundLayer := TBitmapLayer.Create(FImgView.Layers);
-  FBackgroundLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
-  FBackgroundLayer.Bitmap.SetSize(FImgView.Bitmap.Width, FImgView.Bitmap.Height);
-  FBackgroundLayer.Bitmap.Clear(clWhite32);
-  FBackgroundLayer.Scaled := True;
-
-
-  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
-  FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
-end;
-
 procedure TThCustomCanvas.CreateWnd;
 begin
   inherited;
@@ -98,6 +83,22 @@ begin
   FImgView.Free;
 
   inherited;
+end;
+
+procedure TThCustomCanvas.CreatePage(AWidth, AHeight: Integer);
+begin
+  FImgView.Bitmap.SetSize(AWidth, AHeight);
+  FImgView.Bitmap.Clear(clWhite32);
+  FImgView.Bitmap.FrameRectTS(FImgView.Bitmap.BoundsRect, clGray32);
+
+  FBackgroundLayer := TBitmapLayer.Create(FImgView.Layers);
+  FBackgroundLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FBackgroundLayer.Bitmap.SetSize(FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FBackgroundLayer.Bitmap.Clear(clWhite32);
+  FBackgroundLayer.Scaled := True;
+
+  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
+  FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
 end;
 
 procedure TThCustomCanvas.DoScaleChage(Scale: Single);

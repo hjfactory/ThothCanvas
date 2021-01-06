@@ -107,6 +107,10 @@
         <DCCReference Include="Cores\ThCanvasLayers.pas"/>
         <DCCReference Include="..\Libraries\clipper.pas"/>
         <DCCReference Include="Utils\ThGrahicsUtils.pas"/>
+        <DCCReference Include="Forms\DebugForm.pas">
+            <Form>frmDebug</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

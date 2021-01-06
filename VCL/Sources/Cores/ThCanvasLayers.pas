@@ -22,6 +22,10 @@ type
 
     FThickness: Integer;
     FPenColor: TColor32;
+
+    procedure SetThickness(const Value: Integer);
+
+    procedure AddPoint(const X, Y: Integer);
   protected
     procedure Paint(Buffer: TBitmap32); override;
 
@@ -31,15 +35,35 @@ type
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
+
+    property Thickness: Integer read FThickness write SetThickness;
   end;
 
 implementation
 
 { TFreeDrawLayer }
 
-uses ThGrahicsUtils;
+uses
+  DebugForm,
+  ThGrahicsUtils;
 
 { TFreeDrawLayer }
+
+function AdjustedPoint(const P: TFloatPoint; Shift: TFloatPoint; Scale: TFloatPoint): TFloatPoint;
+begin
+
+end;
+
+procedure TFreeDrawLayer.AddPoint(const X, Y: Integer);
+var
+  P: TFloatPoint; // Adjusted point
+begin
+  P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
+
+  DebugMousePos(P.X, P.Y);
+
+  FPath.Add(P);
+end;
 
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
@@ -73,7 +97,8 @@ begin
     FMouseDowned := True;
 
     FPath.Clear;
-    FPath.Add(X, Y);
+
+    AddPoint(X, Y);
     Update;
   end;
 end;
@@ -84,7 +109,7 @@ begin
 
   if FMouseDowned then
   begin
-    FPath.Add(X, Y);
+    AddPoint(X, Y);
     Update;
   end;
 end;
@@ -104,29 +129,38 @@ procedure TFreeDrawLayer.Paint(Buffer: TBitmap32);
 var
   I: Integer;
   LastPoint, Point: TFloatPoint;
+  OffsetX, OffsetY: Single;
+
+  Thickness: Single;
+  ScaleX, ScaleY: TFloat;
+
   Poly: TArrayOfFloatPoint;
   PolyPath: TPath;
   PolyPolyPaths: TPaths;
 begin
   if FPath.Count = 0 then
     Exit;
+
+  Buffer.ClipRect := GetAdjustedLocation.Rect;
+
+  LayerCollection.GetViewportScale(ScaleX, ScaleY);
+  Thickness := FThickness * ScaleX;
+
   if FPath.Count = 1 then
   begin
-    Poly := Circle(FPath[0], 12 / 2);
+    Poly := Circle(FPath[0], Thickness / 2);
     PolygonFS(Buffer, Poly, FPenColor, pfWinding);
   end
   else
   begin
     with TClipper.Create do
     try
-//      StrictlySimple := True;
-
-      LastPoint := FPath[0];
+      LastPoint := LayerCollection.LocalToViewport(FPath[0], True);
       for I := 1 to FPath.Count - 1 do
       begin
-        Point := FPath[I];
-        Poly := BuildPolyline([LastPoint, Point], FThickness, jsRound, esRound);
-        PolyPath := AAFloatPoint2AAPoint(Poly, 1); // TFloatPoint to TIntPoint
+        Point := LayerCollection.LocalToViewport(FPath[I], True);
+        Poly := BuildPolyline([LastPoint, Point], Thickness, jsRound, esRound);
+        PolyPath := AAFloatPoint2AAPoint(Poly, 3); // TFloatPoint to TIntPoint
         LastPoint := Point;
         if I = 1 then
           AddPath(PolyPath, ptSubject, True)
@@ -135,11 +169,17 @@ begin
       end;
       Execute(ctUnion, PolyPolyPaths, pftNonZero);
 
-      PolyPolygonFS(Buffer, AAPoint2AAFloatPoint(PolyPolyPaths, 1), FPenColor);
+      PolyPolygonFS(Buffer, AAPoint2AAFloatPoint(PolyPolyPaths, 3), FPenColor);
     finally
       Free;
     end;
   end;
+end;
+
+procedure TFreeDrawLayer.SetThickness(const Value: Integer);
+begin
+  FThickness := Value;
+  Update;
 end;
 
 end.
