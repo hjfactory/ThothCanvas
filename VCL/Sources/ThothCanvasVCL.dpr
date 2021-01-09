@@ -1,4 +1,4 @@
-program ThothCanvas;
+program ThothCanvasVCL;
 
 uses
   Vcl.Forms,
@@ -8,7 +8,8 @@ uses
   ThCanvasLayers in 'Cores\ThCanvasLayers.pas',
   clipper in '..\Libraries\clipper.pas',
   ThGrahicsUtils in 'Utils\ThGrahicsUtils.pas',
-  DebugForm in 'Forms\DebugForm.pas' {frmDebug};
+  DebugForm in 'Forms\DebugForm.pas' {frmDebug},
+  ThItem in 'Cores\ThItem.pas';
 
 {$R *.res}
 

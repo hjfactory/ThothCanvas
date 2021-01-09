@@ -23,3 +23,5 @@ XE7/dcu/*
 XE7/bin/Win32/Debug/TEST_IMAGE.PNG
 XE7/bin/Win32/Release/TEST_IMAGE.PNG
 FMX/bin/
+VCL/Sources/Cores/__recovery/
+VCL/Pilot/PathToPolygon/__recovery/

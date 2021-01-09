@@ -3,7 +3,7 @@ unit ThCanvasLayers;
 interface
 
 uses
-  System.Classes, System.Math,
+  System.Classes, System.Math, System.Generics.Collections,
   Vcl.Controls,
 
   GR32,
@@ -12,20 +12,43 @@ uses
   GR32_VectorUtils,
   clipper,
 
-  ThTypes;
+  ThTypes,
+  ThItem;
 
 type
+  TThFreeDrawItem = class(TThItem)
+  private
+    FPath: TArray<TFloatPoint>;
+    FPolyPoly: TThPolyPoly;
+    FThickness: Single;
+    FColor: TColor32;
+  public
+    property Path: TThPath read FPath;
+
+    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32);
+  end;
+
   TFreeDrawLayer = class(TPositionedLayer)
   private
-    FPath: TThPath;
-    FMouseDowned: Boolean;
-
     FThickness: Integer;
     FPenColor: TColor32;
+
+    // Draw Points
+    FMouseDowned: Boolean;
+    FPath: TList<TFloatPoint>;
+    FPolyPolyPath: TPaths;
+    FPolyPoly: TArrayOfArrayOfFloatPoint;
+
+    // Draw Paths
+    FDrawItems: TObjectList<TThFreeDrawItem>;
 
     procedure SetThickness(const Value: Integer);
 
     procedure AddPoint(const X, Y: Integer);
+    procedure CreateDrawItem;
+
+    procedure PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
   protected
     procedure Paint(Buffer: TBitmap32); override;
 
@@ -49,35 +72,72 @@ uses
 
 { TFreeDrawLayer }
 
-function AdjustedPoint(const P: TFloatPoint; Shift: TFloatPoint; Scale: TFloatPoint): TFloatPoint;
-begin
-
-end;
-
 procedure TFreeDrawLayer.AddPoint(const X, Y: Integer);
 var
-  P: TFloatPoint; // Adjusted point
+  CurrP, LastP: TFloatPoint; // Adjusted point
+  Poly: TThPoly;
+  PolyPath: TPath;
 begin
-  P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
+  // Viewport to Local
+  CurrP := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
+  DebugMousePos(CurrP.X, CurrP.Y);
 
-  DebugMousePos(P.X, P.Y);
+  // Add to Path
+  FPath.Add(CurrP);
 
-  FPath.Add(P);
+  if FPath.Count = 1 then
+  begin
+    Poly := Circle(CurrP, FThickness / 2);
+    FPolyPoly := PolyPolygon(Poly);
+    FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly);
+  end
+  else
+  begin
+    LastP := FPath.Items[FPath.Count-2];
+    Poly := BuildPolyline([LastP, CurrP], Thickness, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+
+    with TClipper.Create do
+    try
+      AddPaths(FPolyPolyPath, ptSubject, True);
+      AddPath(PolyPath, ptClip, True);
+
+      Execute(ctUnion, FPolyPolyPath, pftNonZero);
+    finally
+      Free;
+    end;
+
+    FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
+  end;
 end;
 
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FPath := TThPath.Create;
+  FPath := TList<TFloatPoint>.Create;
+  FDrawItems := TObjectList<TThFreeDrawItem>.Create;
 
-  FThickness := 2;
-  FPenColor := clRed32;
+  FThickness := 10;
+  FPenColor := clBlue32;
 
   FMouseDowned := False;
 
   MouseEvents := True;
   Scaled := True;
+end;
+
+procedure TFreeDrawLayer.CreateDrawItem;
+var
+  Item: TThFreeDrawItem;
+begin
+  Item := TThFreeDrawItem.Create(FPath.ToArray, FPolyPoly, FThickness, FPenColor);
+
+  FDrawItems.Add(Item);
+
+  FPath.Clear;
+  FPolyPoly := nil;
+  FPolyPolyPath := nil;
 end;
 
 destructor TFreeDrawLayer.Destroy;
@@ -97,7 +157,6 @@ begin
     FMouseDowned := True;
 
     FPath.Clear;
-
     AddPoint(X, Y);
     Update;
   end;
@@ -122,64 +181,74 @@ begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
+    CreateDrawItem;
+    Update;
   end;
 end;
 
 procedure TFreeDrawLayer.Paint(Buffer: TBitmap32);
 var
-  I: Integer;
-  LastPoint, Point: TFloatPoint;
-  OffsetX, OffsetY: Single;
-
-  Thickness: Single;
+  Scale, Offset: TFloatPoint;
   ScaleX, ScaleY: TFloat;
-
-  Poly: TArrayOfFloatPoint;
-  PolyPath: TPath;
-  PolyPolyPaths: TPaths;
+  OffsetX, OffsetY: TFloat;
 begin
-  if FPath.Count = 0 then
-    Exit;
-
   Buffer.ClipRect := GetAdjustedLocation.Rect;
 
-  LayerCollection.GetViewportScale(ScaleX, ScaleY);
-  Thickness := FThickness * ScaleX;
+  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
+  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
 
-  if FPath.Count = 1 then
-  begin
-    Poly := Circle(FPath[0], Thickness / 2);
-    PolygonFS(Buffer, Poly, FPenColor, pfWinding);
-  end
-  else
-  begin
-    with TClipper.Create do
-    try
-      LastPoint := LayerCollection.LocalToViewport(FPath[0], True);
-      for I := 1 to FPath.Count - 1 do
-      begin
-        Point := LayerCollection.LocalToViewport(FPath[I], True);
-        Poly := BuildPolyline([LastPoint, Point], Thickness, jsRound, esRound);
-        PolyPath := AAFloatPoint2AAPoint(Poly, 3); // TFloatPoint to TIntPoint
-        LastPoint := Point;
-        if I = 1 then
-          AddPath(PolyPath, ptSubject, True)
-        else
-          AddPath(PolyPath, ptClip, True);
-      end;
-      Execute(ctUnion, PolyPolyPaths, pftNonZero);
+  if FDrawItems.Count > 0 then
+    PaintDrawItems(Buffer, Scale, Offset);
+  if FPath.Count > 0 then
+    PaintDrawPoint(Buffer, Scale, Offset);
+end;
 
-      PolyPolygonFS(Buffer, AAPoint2AAFloatPoint(PolyPolyPaths, 3), FPenColor);
-    finally
-      Free;
-    end;
+procedure TFreeDrawLayer.PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
+var
+  Item: TThFreeDrawItem;
+  PolyPoly: TThPolyPoly;
+begin
+  for Item in FDrawItems do
+  begin
+//    PolyPoly := Item.FPolyPoly;
+//    ScalePolyPolygonInplace(PolyPoly, AScale.X, AScale.Y);
+//    TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+    PolyPoly := ScalePolyPolygon(Item.FPolyPoly, AScale.X, AScale.Y);
+//    PolyPoly := TranslatePolyPolygon(PolyPoly, AOffset.X, AOffset.Y);
+    TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+
+    PolyPolygonFS(Buffer, PolyPoly, Item.FColor);
   end;
+end;
+
+procedure TFreeDrawLayer.PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
+var
+  PolyPoly: TThPolyPoly;
+begin
+//  PolyPoly := FPolyPoly;
+//  ScalePolyPolygonInplace(PolyPoly, AScale.X, AScale.Y);
+
+  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
+  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+//  PolyPoly := TranslatePolyPolygon(PolyPoly, AOffset.X, AOffset.Y);
+
+  PolyPolygonFS(Buffer, PolyPoly, clRed32);
 end;
 
 procedure TFreeDrawLayer.SetThickness(const Value: Integer);
 begin
   FThickness := Value;
   Update;
+end;
+
+{ TThFreeDrawItem }
+
+constructor TThFreeDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32);
+begin
+  FPath := APath;
+  FPolyPoly := APolyPoly;
+  FThickness := AThickness;
+  FColor := AColor;
 end;
 
 end.

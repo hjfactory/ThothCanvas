@@ -10,19 +10,22 @@ const
   TH_SCALE_MAX = 4;
 type
   TThDrawMode = (dmFree, dmShape);
-  TThPath = TList<TFloatPoint>;
+  TThPath = TArray<TFloatPoint>;
 
-  TThPathHelper = class helper for TThPath
-    function Add(X, Y: Single): Integer; overload;
-  end;
+  TThPoly = TArrayOfFloatPoint;
+  TThPolyPoly = TArrayOfArrayOfFloatPoint;
+//
+//  TThPathHelper = class helper for TThPath
+//    function Add(X, Y: Single): Integer; overload;
+//  end;
 
 implementation
 
-{ TThPathHelper }
-
-function TThPathHelper.Add(X, Y: Single): Integer;
-begin
-  Result := Add(FloatPoint(X, Y));
-end;
+//{ TThPathHelper }
+//
+//function TThPathHelper.Add(X, Y: Single): Integer;
+//begin
+//  Result := Add(FloatPoint(X, Y));
+//end;
 
 end.
