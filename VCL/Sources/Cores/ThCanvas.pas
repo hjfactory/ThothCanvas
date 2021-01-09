@@ -10,6 +10,7 @@ uses
   GR32_Image,
   GR32_Layers,
 
+  ThTypes,
   ThCanvasLayers;
 
 type
@@ -24,6 +25,9 @@ type
 //    FShapeDrawLayer: TPositionedLayer;
 
     FOnScaleChange: TScaleChangeEvent;
+    FPenColor: TColor;
+    FPenSize: Integer;
+    FPenOpacity: TThPercent;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -35,6 +39,9 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure ImgViewWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
+    procedure SetPenColor(const Value: TColor);
+    procedure SetPenSize(const Value: Integer);
+    procedure SetPenOpacity(const Value: TThPercent);
   protected
     procedure CreateWnd; override;
   public
@@ -42,6 +49,10 @@ type
     destructor Destroy; override;
 
     procedure CreatePage(AWidth, AHeight: Integer);
+
+    property PenColor: TColor read FPenColor write SetPenColor;
+    property PenSize: Integer read FPenSize write SetPenSize;
+    property PenOpacity: TThPercent read FPenOpacity write SetPenOpacity;
 
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
@@ -55,8 +66,6 @@ type
 implementation
 
 { TThCanvas }
-
-uses ThTypes;
 
 constructor TThCustomCanvas.Create(AOwner: TComponent);
 begin
@@ -110,6 +119,26 @@ end;
 function TThCustomCanvas.GetScale: Single;
 begin
   Result := FImgView.Scale;
+end;
+
+procedure TThCustomCanvas.SetPenColor(const Value: TColor);
+begin
+  FPenColor := Value;
+
+  FFreeDrawLayer.PenColor := Color32(FPenColor);
+end;
+
+procedure TThCustomCanvas.SetPenOpacity(const Value: TThPercent);
+begin
+  FPenOpacity := Value;
+
+  FFreeDrawLayer.PenAlpha := Round(FPenOpacity / 100 * 255);;
+end;
+
+procedure TThCustomCanvas.SetPenSize(const Value: Integer);
+begin
+  FPenSize := Value;
+  FFreeDrawLayer.Thickness := FPenSize;
 end;
 
 procedure TThCustomCanvas.SetScale(const Value: Single);

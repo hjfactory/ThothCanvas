@@ -18,6 +18,12 @@ object frmMain: TfrmMain
     757)
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 338
+    Top = 28
+    Width = 3
+    Height = 13
+  end
   object Button1: TButton
     Left = 32
     Top = 24
@@ -42,5 +48,39 @@ object frmMain: TfrmMain
     Caption = 'Show debug form'
     TabOrder = 2
     OnClick = Button2Click
+  end
+  object ColorBox1: TColorBox
+    Left = 136
+    Top = 24
+    Width = 145
+    Height = 22
+    TabOrder = 3
+    OnChange = ColorBox1Change
+  end
+  object TrackBar1: TTrackBar
+    Left = 287
+    Top = 24
+    Width = 49
+    Height = 20
+    LineSize = 2
+    Max = 30
+    Min = 2
+    Position = 10
+    TabOrder = 4
+    ThumbLength = 10
+    TickMarks = tmTopLeft
+    OnChange = TrackBar1Change
+  end
+  object SpinEdit1: TSpinEdit
+    Left = 347
+    Top = 24
+    Width = 54
+    Height = 22
+    Increment = 5
+    MaxValue = 100
+    MinValue = 0
+    TabOrder = 5
+    Value = 100
+    OnChange = SpinEdit1Change
   end
 end

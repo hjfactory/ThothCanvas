@@ -22,16 +22,18 @@ type
     FPolyPoly: TThPolyPoly;
     FThickness: Single;
     FColor: TColor32;
+    FAlpha: Byte;
   public
     property Path: TThPath read FPath;
 
-    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32);
+    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
   end;
 
   TFreeDrawLayer = class(TPositionedLayer)
   private
     FThickness: Integer;
     FPenColor: TColor32;
+    FPenAlpha: Byte;
 
     // Draw Points
     FMouseDowned: Boolean;
@@ -60,6 +62,8 @@ type
     destructor Destroy; override;
 
     property Thickness: Integer read FThickness write SetThickness;
+    property PenColor: TColor32 read FPenColor write FPenColor;
+    property PenAlpha: Byte read FPenAlpha write FPenAlpha;
   end;
 
 implementation
@@ -120,6 +124,7 @@ begin
 
   FThickness := 10;
   FPenColor := clBlue32;
+  FPenAlpha := 255;
 
   FMouseDowned := False;
 
@@ -131,7 +136,7 @@ procedure TFreeDrawLayer.CreateDrawItem;
 var
   Item: TThFreeDrawItem;
 begin
-  Item := TThFreeDrawItem.Create(FPath.ToArray, FPolyPoly, FThickness, FPenColor);
+  Item := TThFreeDrawItem.Create(FPath.ToArray, FPolyPoly, FThickness, FPenColor, FPenAlpha);
 
   FDrawItems.Add(Item);
 
@@ -205,34 +210,36 @@ end;
 
 procedure TFreeDrawLayer.PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
 var
+  Color: TColor32;
   Item: TThFreeDrawItem;
   PolyPoly: TThPolyPoly;
 begin
+  Buffer.BeginUpdate;
   for Item in FDrawItems do
   begin
-//    PolyPoly := Item.FPolyPoly;
-//    ScalePolyPolygonInplace(PolyPoly, AScale.X, AScale.Y);
-//    TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+    Color := Item.FColor;
+    ModifyAlpha(Color, Item.FAlpha);
+
     PolyPoly := ScalePolyPolygon(Item.FPolyPoly, AScale.X, AScale.Y);
-//    PolyPoly := TranslatePolyPolygon(PolyPoly, AOffset.X, AOffset.Y);
     TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-    PolyPolygonFS(Buffer, PolyPoly, Item.FColor);
+    PolyPolygonFS(Buffer, PolyPoly, Color);
   end;
+  Buffer.EndUpdate;
 end;
 
 procedure TFreeDrawLayer.PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
 var
+  Color: TColor32;
   PolyPoly: TThPolyPoly;
 begin
-//  PolyPoly := FPolyPoly;
-//  ScalePolyPolygonInplace(PolyPoly, AScale.X, AScale.Y);
+  Color := FPenColor;
+  ModifyALpha(Color, FPenAlpha);
 
   PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
-//  PolyPoly := TranslatePolyPolygon(PolyPoly, AOffset.X, AOffset.Y);
 
-  PolyPolygonFS(Buffer, PolyPoly, clRed32);
+  PolyPolygonFS(Buffer, PolyPoly, Color);
 end;
 
 procedure TFreeDrawLayer.SetThickness(const Value: Integer);
@@ -243,12 +250,13 @@ end;
 
 { TThFreeDrawItem }
 
-constructor TThFreeDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32);
+constructor TThFreeDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
 begin
   FPath := APath;
   FPolyPoly := APolyPoly;
   FThickness := AThickness;
   FColor := AColor;
+  FAlpha := AAlpha;
 end;
 
 end.

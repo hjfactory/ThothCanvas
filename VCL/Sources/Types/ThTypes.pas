@@ -11,6 +11,7 @@ const
 type
   TThDrawMode = (dmFree, dmShape);
   TThPath = TArray<TFloatPoint>;
+  TThPercent = 0..100;
 
   TThPoly = TArrayOfFloatPoint;
   TThPolyPoly = TArrayOfArrayOfFloatPoint;
