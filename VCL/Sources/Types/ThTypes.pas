@@ -9,7 +9,10 @@ const
   TH_SCALE_MIN = 0.2;
   TH_SCALE_MAX = 4;
 type
-  TThDrawMode = (dmFree, dmShape);
+  IThCanvas = interface
+  end;
+
+  TThCanvasMode = (cmSelection, cmFreeDraw);
   TThPath = TArray<TFloatPoint>;
   TThPercent = 0..100;
 

@@ -19,18 +19,19 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 338
-    Top = 28
+    Left = 570
+    Top = 26
     Width = 3
     Height = 13
   end
   object Button1: TButton
-    Left = 32
-    Top = 24
+    Left = 264
+    Top = 22
     Width = 75
     Height = 25
     Caption = 'Button1'
     TabOrder = 0
+    OnClick = Button1Click
   end
   object pnlMain: TPanel
     Left = 32
@@ -38,6 +39,9 @@ object frmMain: TfrmMain
     Width = 881
     Height = 577
     Anchors = [akLeft, akTop, akRight, akBottom]
+    BevelOuter = bvNone
+    BorderWidth = 2
+    BorderStyle = bsSingle
     TabOrder = 1
   end
   object Button2: TButton
@@ -50,16 +54,16 @@ object frmMain: TfrmMain
     OnClick = Button2Click
   end
   object ColorBox1: TColorBox
-    Left = 136
-    Top = 24
+    Left = 368
+    Top = 22
     Width = 145
     Height = 22
     TabOrder = 3
     OnChange = ColorBox1Change
   end
   object TrackBar1: TTrackBar
-    Left = 287
-    Top = 24
+    Left = 519
+    Top = 22
     Width = 49
     Height = 20
     LineSize = 2
@@ -72,8 +76,8 @@ object frmMain: TfrmMain
     OnChange = TrackBar1Change
   end
   object SpinEdit1: TSpinEdit
-    Left = 347
-    Top = 24
+    Left = 579
+    Top = 22
     Width = 54
     Height = 22
     Increment = 5
@@ -82,5 +86,25 @@ object frmMain: TfrmMain
     TabOrder = 5
     Value = 100
     OnChange = SpinEdit1Change
+  end
+  object Button3: TButton
+    Left = 703
+    Top = 22
+    Width = 75
+    Height = 25
+    Caption = 'Button3'
+    TabOrder = 6
+    OnClick = Button3Click
+  end
+  object ToggleSwitch1: TToggleSwitch
+    Left = 32
+    Top = 29
+    Width = 102
+    Height = 20
+    State = tssOn
+    StateCaptions.CaptionOn = 'Freedraw'
+    StateCaptions.CaptionOff = 'Selection'
+    TabOrder = 7
+    OnClick = ToggleSwitch1Click
   end
 end

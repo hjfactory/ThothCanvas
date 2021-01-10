@@ -29,19 +29,24 @@ type
     constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
   end;
 
-  TFreeDrawLayer = class(TPositionedLayer)
+  TThCanvasLayer = class(TPositionedLayer)
+  end;
+
+  TFreeDrawLayer = class(TThCanvasLayer)
   private
     FThickness: Integer;
     FPenColor: TColor32;
     FPenAlpha: Byte;
 
-    // Draw Points
+    FCanvasMode: TThCanvasMode;
+
+    // Draw Points objects
     FMouseDowned: Boolean;
     FPath: TList<TFloatPoint>;
     FPolyPolyPath: TPaths;
     FPolyPoly: TArrayOfArrayOfFloatPoint;
 
-    // Draw Paths
+    // Draw Paths objects
     FDrawItems: TObjectList<TThFreeDrawItem>;
 
     procedure SetThickness(const Value: Integer);
@@ -60,6 +65,8 @@ type
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
+
+    procedure SetCanvasMode(AMode: TThCanvasMode);
 
     property Thickness: Integer read FThickness write SetThickness;
     property PenColor: TColor32 read FPenColor write FPenColor;
@@ -157,9 +164,14 @@ procedure TFreeDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
+  if FCanvasMode <> cmFreeDraw then
+    Exit;
+
   if Button = mbLeft then
   begin
     FMouseDowned := True;
+
+    Cursor := crCross;
 
     FPath.Clear;
     AddPoint(X, Y);
@@ -170,6 +182,9 @@ end;
 procedure TFreeDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
+
+  if FCanvasMode <> cmFreeDraw then
+    Exit;
 
   if FMouseDowned then
   begin
@@ -182,6 +197,9 @@ procedure TFreeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
   inherited;
+
+  if FCanvasMode <> cmFreeDraw then
+    Exit;
 
   if FMouseDowned then
   begin
@@ -240,6 +258,11 @@ begin
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
   PolyPolygonFS(Buffer, PolyPoly, Color);
+end;
+
+procedure TFreeDrawLayer.SetCanvasMode(AMode: TThCanvasMode);
+begin
+  FCanvasMode := AMode;
 end;
 
 procedure TFreeDrawLayer.SetThickness(const Value: Integer);
