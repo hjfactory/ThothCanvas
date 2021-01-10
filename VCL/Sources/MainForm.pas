@@ -18,6 +18,7 @@ type
     SpinEdit1: TSpinEdit;
     Button3: TButton;
     ToggleSwitch1: TToggleSwitch;
+    Button4: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure Button3Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure ToggleSwitch1Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -47,7 +49,7 @@ uses
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  FCanvas.Move(-100, -100);
+  FCanvas.PenDrawMode := fdmPen;
 end;
 
 procedure TfrmMain.Button2Click(Sender: TObject);
@@ -57,7 +59,12 @@ end;
 
 procedure TfrmMain.Button3Click(Sender: TObject);
 begin
-  FCanvas.Test;
+  FCanvas.Clear;
+end;
+
+procedure TfrmMain.Button4Click(Sender: TObject);
+begin
+  FCanvas.PenDrawMode := fdmEraser;
 end;
 
 procedure TfrmMain.ColorBox1Change(Sender: TObject);

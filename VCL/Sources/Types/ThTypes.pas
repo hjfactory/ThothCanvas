@@ -13,6 +13,7 @@ type
   end;
 
   TThCanvasMode = (cmSelection, cmFreeDraw);
+  TThFreeDrawMode = (fdmPen, fdmEraser);
   TThPath = TArray<TFloatPoint>;
   TThPercent = 0..100;
 

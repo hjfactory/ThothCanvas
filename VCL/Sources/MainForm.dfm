@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 0
   Caption = 'ThCanvas'
   ClientHeight = 757
-  ClientWidth = 1062
+  ClientWidth = 953
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    1062
+    953
     757)
   PixelsPerInch = 96
   TextHeight = 13
@@ -25,11 +25,11 @@ object frmMain: TfrmMain
     Height = 13
   end
   object Button1: TButton
-    Left = 264
-    Top = 22
-    Width = 75
+    Left = 216
+    Top = 20
+    Width = 33
     Height = 25
-    Caption = 'Button1'
+    Caption = 'Pen'
     TabOrder = 0
     OnClick = Button1Click
   end
@@ -88,11 +88,11 @@ object frmMain: TfrmMain
     OnChange = SpinEdit1Change
   end
   object Button3: TButton
-    Left = 703
-    Top = 22
-    Width = 75
+    Left = 303
+    Top = 20
+    Width = 42
     Height = 25
-    Caption = 'Button3'
+    Caption = 'Clear'
     TabOrder = 6
     OnClick = Button3Click
   end
@@ -106,5 +106,14 @@ object frmMain: TfrmMain
     StateCaptions.CaptionOff = 'Selection'
     TabOrder = 7
     OnClick = ToggleSwitch1Click
+  end
+  object Button4: TButton
+    Left = 255
+    Top = 20
+    Width = 42
+    Height = 25
+    Caption = 'Eraser'
+    TabOrder = 8
+    OnClick = Button4Click
   end
 end

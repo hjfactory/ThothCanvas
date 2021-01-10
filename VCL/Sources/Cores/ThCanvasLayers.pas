@@ -23,10 +23,15 @@ type
     FThickness: Single;
     FColor: TColor32;
     FAlpha: Byte;
+    FBounds: TFloatRect;
+    FIsToDelete: Boolean;
   public
     property Path: TThPath read FPath;
+    property Bounds: TFloatRect read FBounds;
+    property Alpha: Byte read FAlpha write FAlpha;
 
     constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
+    destructor Destroy; override;
   end;
 
   TThCanvasLayer = class(TPositionedLayer)
@@ -39,6 +44,7 @@ type
     FPenAlpha: Byte;
 
     FCanvasMode: TThCanvasMode;
+    FDrawMode: TThFreeDrawMode;
 
     // Draw Points objects
     FMouseDowned: Boolean;
@@ -51,8 +57,10 @@ type
 
     procedure SetThickness(const Value: Integer);
 
-    procedure AddPoint(const X, Y: Integer);
+    procedure AddPenPoint(const X, Y: Integer);
+    procedure AddEraserPoint(const X, Y: Integer);
     procedure CreateDrawItem;
+    procedure DeleteDrawItems;
 
     procedure PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
@@ -71,6 +79,9 @@ type
     property Thickness: Integer read FThickness write SetThickness;
     property PenColor: TColor32 read FPenColor write FPenColor;
     property PenAlpha: Byte read FPenAlpha write FPenAlpha;
+    property DrawMode: TThFreeDrawMode read FDrawMode write FDrawMode;
+
+    procedure Clear;
   end;
 
 implementation
@@ -83,7 +94,41 @@ uses
 
 { TFreeDrawLayer }
 
-procedure TFreeDrawLayer.AddPoint(const X, Y: Integer);
+procedure TFreeDrawLayer.AddEraserPoint(const X, Y: Integer);
+var
+  P: TFloatPoint;
+  Item: TThFreeDrawItem;
+  Poly: TThPoly;
+  PolyRect, DestRect: TFloatRect;
+  EraserPath: TPath;
+  ItemPaths, DestPaths: TPaths;
+begin
+  P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
+  Poly := Circle(P, FThickness / 2);
+  PolyRect := PolygonBounds(Poly);
+  for Item in FDrawItems do
+  begin
+    IntersectRect(DestRect, PolyRect, Item.Bounds);
+    if IsRectEmpty(DestRect) then
+      Continue;
+
+    EraserPath := AAFloatPoint2AAPoint(Poly);
+    ItemPaths := AAFloatPoint2AAPoint(Item.FPolyPoly);
+    with TClipper.Create do
+    begin
+      StrictlySimple := True;
+      AddPaths(ItemPaths, ptSubject, True);
+      AddPath(EraserPath, ptClip, True);
+
+      Execute(ctIntersection, DestPaths, pftNonZero);
+    end;
+
+    if Length(DestPaths) > 0 then
+      Item.FIsToDelete := True;
+  end;
+end;
+
+procedure TFreeDrawLayer.AddPenPoint(const X, Y: Integer);
 var
   CurrP, LastP: TFloatPoint; // Adjusted point
   Poly: TThPoly;
@@ -100,7 +145,7 @@ begin
   begin
     Poly := Circle(CurrP, FThickness / 2);
     FPolyPoly := PolyPolygon(Poly);
-    FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly);
+    FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
   end
   else
   begin
@@ -122,12 +167,20 @@ begin
   end;
 end;
 
+procedure TFreeDrawLayer.Clear;
+begin
+  FDrawItems.Clear;
+  Update;
+end;
+
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
   FPath := TList<TFloatPoint>.Create;
-  FDrawItems := TObjectList<TThFreeDrawItem>.Create;
+  FDrawItems := TObjectList<TThFreeDrawItem>.Create(True);
+
+  FDrawMode := fdmPen;
 
   FThickness := 10;
   FPenColor := clBlue32;
@@ -152,6 +205,19 @@ begin
   FPolyPolyPath := nil;
 end;
 
+procedure TFreeDrawLayer.DeleteDrawItems;
+var
+  I: Integer;
+  Item: TThFreeDrawItem;
+begin
+  for I := FDrawItems.Count - 1 downto 0 do
+  begin
+    Item := FDrawItems[I];
+    if Item.FIsToDelete then
+      FDrawItems.Delete(I);
+  end;
+end;
+
 destructor TFreeDrawLayer.Destroy;
 begin
   FPath.Free;
@@ -171,10 +237,17 @@ begin
   begin
     FMouseDowned := True;
 
-    Cursor := crCross;
-
     FPath.Clear;
-    AddPoint(X, Y);
+    if FDrawMode = fdmPen then
+    begin
+      Cursor := crCross;
+      AddPenPoint(X, Y);
+    end
+    else if FDrawMode = fdmEraser then
+    begin
+      AddEraserPoint(X, Y);
+    end;
+
     Update;
   end;
 end;
@@ -188,7 +261,10 @@ begin
 
   if FMouseDowned then
   begin
-    AddPoint(X, Y);
+    if FDrawMode = fdmPen then
+      AddPenPoint(X, Y)
+    else if FDrawMode = fdmEraser then
+      AddEraserPoint(X, Y);
     Update;
   end;
 end;
@@ -203,8 +279,12 @@ begin
 
   if FMouseDowned then
   begin
+    Cursor := crDefault;
     FMouseDowned := False;
-    CreateDrawItem;
+    if FDrawMode = fdmPen then
+      CreateDrawItem
+    else if FDrawMode = fdmEraser then
+      DeleteDrawItems;
     Update;
   end;
 end;
@@ -229,6 +309,7 @@ end;
 procedure TFreeDrawLayer.PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
 var
   Color: TColor32;
+  Alpha: Byte;
   Item: TThFreeDrawItem;
   PolyPoly: TThPolyPoly;
 begin
@@ -236,7 +317,11 @@ begin
   for Item in FDrawItems do
   begin
     Color := Item.FColor;
-    ModifyAlpha(Color, Item.FAlpha);
+    Alpha := Item.FAlpha;
+    if Item.FIsToDelete then
+      Alpha := Round(ALpha * 0.2);
+    
+    ModifyAlpha(Color, Alpha);
 
     PolyPoly := ScalePolyPolygon(Item.FPolyPoly, AScale.X, AScale.Y);
     TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
@@ -280,6 +365,14 @@ begin
   FThickness := AThickness;
   FColor := AColor;
   FAlpha := AAlpha;
+
+  FBounds := PolypolygonBounds(FPolyPoly);
+end;
+
+destructor TThFreeDrawItem.Destroy;
+begin
+
+  inherited;
 end;
 
 end.
