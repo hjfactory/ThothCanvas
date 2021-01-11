@@ -14,6 +14,7 @@ type
 
   TThCanvasMode = (cmSelection, cmFreeDraw);
   TThFreeDrawMode = (fdmPen, fdmEraser);
+  TThShapeMode = (smNone, smRectangle);
   TThPath = TArray<TFloatPoint>;
   TThPercent = 0..100;
 

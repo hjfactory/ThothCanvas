@@ -3,6 +3,7 @@ unit DebugForm;
 interface
 
 uses
+  System.Types,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
 
@@ -16,7 +17,7 @@ type
     { Public declarations }
   end;
 
-procedure DebugMousePos(const X, Y: Single);
+procedure DebugMousePos(AText: string; APoint: TPointF);
 
 var
   frmDebug: TfrmDebug;
@@ -25,10 +26,13 @@ implementation
 
 {$R *.dfm}
 
-procedure DebugMousePos(const X, Y: Single);
+procedure DebugMousePos(AText: string; APoint: TPointF);
 begin
   if Assigned(frmDebug) then
-    frmDebug.edtMousePos.Text := Format('%f x %f', [X, Y]);
+  begin
+    frmDebug.edtMousePos.EditLabel.Caption := AText;
+    frmDebug.edtMousePos.Text := Format('%f x %f', [APoint.X, APoint.Y]);
+  end;
 end;
 
 procedure TfrmDebug.FormClose(Sender: TObject; var Action: TCloseAction);

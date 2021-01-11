@@ -19,6 +19,8 @@ type
     Button3: TButton;
     ToggleSwitch1: TToggleSwitch;
     Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -29,6 +31,8 @@ type
     procedure Button1Click(Sender: TObject);
     procedure ToggleSwitch1Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -65,6 +69,16 @@ end;
 procedure TfrmMain.Button4Click(Sender: TObject);
 begin
   FCanvas.PenDrawMode := fdmEraser;
+end;
+
+procedure TfrmMain.Button5Click(Sender: TObject);
+begin
+  FCanvas.ShapeMode := smRectangle;
+end;
+
+procedure TfrmMain.Button6Click(Sender: TObject);
+begin
+  FCanvas.ShapeMode := smNone;
 end;
 
 procedure TfrmMain.ColorBox1Change(Sender: TObject);

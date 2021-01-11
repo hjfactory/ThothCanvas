@@ -3,7 +3,7 @@ unit ThCanvasLayers;
 interface
 
 uses
-  System.Classes, System.Math, System.Generics.Collections,
+  System.Classes, System.Types, System.Math, System.Generics.Collections,
   Vcl.Controls,
 
   GR32,
@@ -37,6 +37,30 @@ type
   TThCanvasLayer = class(TPositionedLayer)
   end;
 
+  TShapeDrawLayer = class(TThCanvasLayer)
+  private
+    FMouseDowned: Boolean;
+
+    FCanvasMode: TThCanvasMode;
+    FShapeMode: TThShapeMode;
+
+    FDownPos, FCurrPos: TPoint;
+  protected
+    procedure Paint(Buffer: TBitmap32); override;
+
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+  public
+    constructor Create(ALayerCollection: TLayerCollection); override;
+    destructor Destroy; override;
+
+    procedure SetCanvasMode(AMode: TThCanvasMode);
+    property ShapeMode: TThShapeMode read FShapeMode write FShapeMode;
+
+    procedure Clear;
+  end;
+
   TFreeDrawLayer = class(TThCanvasLayer)
   private
     FThickness: Integer;
@@ -65,6 +89,8 @@ type
     procedure PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
   protected
+    function  DoHitTest(X, Y: Integer): Boolean; override;
+
     procedure Paint(Buffer: TBitmap32); override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -79,6 +105,7 @@ type
     property Thickness: Integer read FThickness write SetThickness;
     property PenColor: TColor32 read FPenColor write FPenColor;
     property PenAlpha: Byte read FPenAlpha write FPenAlpha;
+
     property DrawMode: TThFreeDrawMode read FDrawMode write FDrawMode;
 
     procedure Clear;
@@ -136,7 +163,7 @@ var
 begin
   // Viewport to Local
   CurrP := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
-  DebugMousePos(CurrP.X, CurrP.Y);
+  DebugMousePos('FreeDraw', PointF(X, Y));
 
   // Add to Path
   FPath.Add(CurrP);
@@ -225,6 +252,11 @@ begin
   inherited;
 end;
 
+function TFreeDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+begin
+  Result := (FCanvasMode = cmFreeDraw);
+end;
+
 procedure TFreeDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
@@ -292,8 +324,6 @@ end;
 procedure TFreeDrawLayer.Paint(Buffer: TBitmap32);
 var
   Scale, Offset: TFloatPoint;
-  ScaleX, ScaleY: TFloat;
-  OffsetX, OffsetY: TFloat;
 begin
   Buffer.ClipRect := GetAdjustedLocation.Rect;
 
@@ -373,6 +403,100 @@ destructor TThFreeDrawItem.Destroy;
 begin
 
   inherited;
+end;
+
+{ TThShapeDrawLayer }
+
+constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
+begin
+  inherited;
+
+  MouseEvents := True;
+  Scaled := True;
+end;
+
+destructor TShapeDrawLayer.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TShapeDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+  if FCanvasMode <> cmSelection then
+    Exit;
+
+  if Button = mbLeft then
+  begin
+    FMouseDowned := True;
+
+    FDownPos := GR32.Point(X, Y);
+  end;
+end;
+
+procedure TShapeDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
+var
+  CurrP, LastP: TFloatPoint; // Adjusted point
+begin
+  if FCanvasMode <> cmSelection then
+    Exit;
+
+  if FMouseDowned then
+  begin
+    // Viewport to Local
+    CurrP := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
+    DebugMousePos('ShapeDraw', PointF(X, Y));
+
+    FCurrPos := GR32.Point(X, Y);
+    Update;
+  end;
+
+end;
+
+procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  inherited;
+
+  if FCanvasMode <> cmSelection then
+    Exit;
+
+  if FMouseDowned then
+  begin
+    FMouseDowned := False;
+  end;
+end;
+
+procedure TShapeDrawLayer.Paint(Buffer: TBitmap32);
+var
+  Scale, Offset: TFloatPoint;
+  Poly: TThPoly;
+begin
+  Buffer.ClipRect := GetAdjustedLocation.Rect;
+
+  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
+  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
+
+  Poly := Rectangle(FloatRect(FloatPoint(FDownPos), FloatPoint(FCurrPos)));
+  PolygonFS(Buffer, Poly, clBlue32);
+
+//  if FDrawItems.Count > 0 then
+//    PaintDrawItems(Buffer, Scale, Offset);
+//  if FPath.Count > 0 then
+//    PaintDrawPoint(Buffer, Scale, Offset);
+end;
+
+procedure TShapeDrawLayer.SetCanvasMode(AMode: TThCanvasMode);
+begin
+  FCanvasMode := AMode;
+end;
+
+procedure TShapeDrawLayer.Clear;
+begin
+
 end;
 
 end.

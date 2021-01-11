@@ -35,9 +35,9 @@ object frmMain: TfrmMain
   end
   object pnlMain: TPanel
     Left = 32
-    Top = 64
+    Top = 88
     Width = 881
-    Height = 577
+    Height = 553
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     BorderWidth = 2
@@ -115,5 +115,23 @@ object frmMain: TfrmMain
     Caption = 'Eraser'
     TabOrder = 8
     OnClick = Button4Click
+  end
+  object Button5: TButton
+    Left = 255
+    Top = 51
+    Width = 33
+    Height = 25
+    Caption = 'Rect'
+    TabOrder = 9
+    OnClick = Button5Click
+  end
+  object Button6: TButton
+    Left = 216
+    Top = 51
+    Width = 33
+    Height = 25
+    Caption = 'None'
+    TabOrder = 10
+    OnClick = Button6Click
   end
 end

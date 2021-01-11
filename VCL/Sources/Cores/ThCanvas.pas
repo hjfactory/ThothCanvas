@@ -3,7 +3,7 @@ unit ThCanvas;
 interface
 
 uses
-  System.Classes,
+  System.Classes, System.Types,
   Vcl.Controls, Vcl.Graphics,
 
   GR32,
@@ -25,13 +25,14 @@ type
 
     FBackgroundLayer: TBitmapLayer;
     FFreeDrawLayer: TFreeDrawLayer;
-//    FShapeDrawLayer: TPositionedLayer;
+    FShapeDrawLayer: TShapeDrawLayer;
 
     FOnScaleChange: TScaleChangeEvent;
     FPenColor: TColor;
     FPenSize: Integer;
     FPenOpacity: TThPercent;
     FCanvasMode: TThCanvasMode;
+    FShapeMode: TThShapeMode;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -61,6 +62,7 @@ type
     procedure SetCanvasMode(const Value: TThCanvasMode);
     function GetPenDrawMode: TThFreeDrawMode;
     procedure SetPenDrawMode(const Value: TThFreeDrawMode);
+    procedure SetShapeMode(const Value: TThShapeMode);
   protected
     procedure CreateWnd; override;
   public
@@ -73,6 +75,8 @@ type
     property PenSize: Integer read FPenSize write SetPenSize;
     property PenOpacity: TThPercent read FPenOpacity write SetPenOpacity;
     property PenDrawMode: TThFreeDrawMode read GetPenDrawMode write SetPenDrawMode;
+
+    property ShapeMode: TThShapeMode read FShapeMode write SetShapeMode;
 
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
@@ -106,6 +110,8 @@ begin
   FImgView := TImgView32.Create(nil);
   FImgView.Parent := Self;
   FImgView.Align := alClient;
+
+//  FImgView.Cursor := crNone;
 
   FImgView.Color := clSilver;
   FImgView.Centered := False;
@@ -148,6 +154,9 @@ begin
   FBackgroundLayer.Bitmap.SetSize(FImgView.Bitmap.Width, FImgView.Bitmap.Height);
   FBackgroundLayer.Bitmap.Clear(clWhite32);
   FBackgroundLayer.Scaled := True;
+
+  FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
+  FShapeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
 
   FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
@@ -220,6 +229,13 @@ begin
   DoScaleChage(LScale);
 end;
 
+procedure TThCustomCanvas.SetShapeMode(const Value: TThShapeMode);
+begin
+  FShapeMode := Value;
+
+  FShapeDrawLayer.ShapeMode := Value;
+end;
+
 procedure TThCustomCanvas.Test;
 begin
   FImgView.Bitmap.SaveToFile('D:\test.jpg');
@@ -234,38 +250,38 @@ end;
 procedure TThCustomCanvas.ImgViewMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
-  if FCanvasMode = cmSelection then
-  begin
-    FMouseDowned := True;
-
-    FMouseDownPoint := Point(X, Y);
-
-    Cursor := crDrag;
-  end;
+//  if FCanvasMode = cmSelection then
+//  begin
+//    FMouseDowned := True;
+//
+//    FMouseDownPoint := GR32.Point(X, Y);
+//
+//    Cursor := crDrag;
+//  end;
 end;
 
 procedure TThCustomCanvas.ImgViewMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer; Layer: TCustomLayer);
 begin
-  if FCanvasMode = cmSelection then
-  begin
-//    FMouseDownPoint
-    if FMouseDowned then
-    begin
-      Move(FMouseDownPoint.X - X, FMouseDownPoint.Y - Y);
-      FMouseDownPoint := Point(X, Y);
-    end;
-  end;
+//  if FCanvasMode = cmSelection then
+//  begin
+////    FMouseDownPoint
+//    if FMouseDowned then
+//    begin
+//      Move(FMouseDownPoint.X - X, FMouseDownPoint.Y - Y);
+//      FMouseDownPoint := GR32.Point(X, Y);
+//    end;
+//  end;
 end;
 
 procedure TThCustomCanvas.ImgViewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
-  if FCanvasMode = cmSelection then
-  begin
-    FMouseDowned := False;
-    Cursor := crDefault;
-  end;
+//  if FCanvasMode = cmSelection then
+//  begin
+//    FMouseDowned := False;
+//    Cursor := crDefault;
+//  end;
 end;
 
 procedure TThCustomCanvas.ImgViewMouseWheel(Sender: TObject; Shift: TShiftState;
