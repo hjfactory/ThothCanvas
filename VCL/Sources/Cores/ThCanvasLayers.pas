@@ -16,24 +16,6 @@ uses
   ThItem;
 
 type
-  TThFreeDrawItem = class(TThItem)
-  private
-    FPath: TArray<TFloatPoint>;
-    FPolyPoly: TThPolyPoly;
-    FThickness: Single;
-    FColor: TColor32;
-    FAlpha: Byte;
-    FBounds: TFloatRect;
-    FIsToDelete: Boolean;
-  public
-    property Path: TThPath read FPath;
-    property Bounds: TFloatRect read FBounds;
-    property Alpha: Byte read FAlpha write FAlpha;
-
-    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
-    destructor Destroy; override;
-  end;
-
   TThCanvasLayer = class(TPositionedLayer)
   end;
 
@@ -44,7 +26,13 @@ type
     FCanvasMode: TThCanvasMode;
     FShapeMode: TThShapeMode;
 
-    FDownPos, FCurrPos: TPoint;
+    FDrawItems: TObjectList<TThRectangleItem>;
+
+    FDownPos, FCurrPos: TFloatPoint;
+    procedure CreateDrawItem;
+
+    procedure PaintDrawItem(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
   protected
     procedure Paint(Buffer: TBitmap32); override;
 
@@ -140,7 +128,7 @@ begin
       Continue;
 
     EraserPath := AAFloatPoint2AAPoint(Poly);
-    ItemPaths := AAFloatPoint2AAPoint(Item.FPolyPoly);
+    ItemPaths := AAFloatPoint2AAPoint(Item.PolyPoly);
     with TClipper.Create do
     begin
       StrictlySimple := True;
@@ -151,7 +139,7 @@ begin
     end;
 
     if Length(DestPaths) > 0 then
-      Item.FIsToDelete := True;
+      Item.IsToDelete := True;
   end;
 end;
 
@@ -240,7 +228,7 @@ begin
   for I := FDrawItems.Count - 1 downto 0 do
   begin
     Item := FDrawItems[I];
-    if Item.FIsToDelete then
+    if Item.IsToDelete then
       FDrawItems.Delete(I);
   end;
 end;
@@ -248,6 +236,8 @@ end;
 destructor TFreeDrawLayer.Destroy;
 begin
   FPath.Free;
+  FDrawItems.Clear;
+  FDrawItems.Free;
 
   inherited;
 end;
@@ -346,14 +336,14 @@ begin
   Buffer.BeginUpdate;
   for Item in FDrawItems do
   begin
-    Color := Item.FColor;
-    Alpha := Item.FAlpha;
-    if Item.FIsToDelete then
+    Color := Item.Color;
+    Alpha := Item.Alpha;
+    if Item.IsToDelete then
       Alpha := Round(ALpha * 0.2);
-    
+
     ModifyAlpha(Color, Alpha);
 
-    PolyPoly := ScalePolyPolygon(Item.FPolyPoly, AScale.X, AScale.Y);
+    PolyPoly := ScalePolyPolygon(Item.PolyPoly, AScale.X, AScale.Y);
     TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
     PolyPolygonFS(Buffer, PolyPoly, Color);
@@ -386,25 +376,6 @@ begin
   Update;
 end;
 
-{ TThFreeDrawItem }
-
-constructor TThFreeDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
-begin
-  FPath := APath;
-  FPolyPoly := APolyPoly;
-  FThickness := AThickness;
-  FColor := AColor;
-  FAlpha := AAlpha;
-
-  FBounds := PolypolygonBounds(FPolyPoly);
-end;
-
-destructor TThFreeDrawItem.Destroy;
-begin
-
-  inherited;
-end;
-
 { TThShapeDrawLayer }
 
 constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
@@ -413,10 +384,24 @@ begin
 
   MouseEvents := True;
   Scaled := True;
+
+  FDrawItems := TObjectList<TThRectangleItem>.Create(True);
+end;
+
+procedure TShapeDrawLayer.CreateDrawItem;
+var
+  Poly: TThPoly;
+  Item: TThRectangleItem;
+begin
+  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
+  Item := TThRectangleItem.Create(FloatRect(FDownPos, FCurrPos), Poly, 6, clGreen32, 200);
+  FDrawItems.Add(Item);
 end;
 
 destructor TShapeDrawLayer.Destroy;
 begin
+  FDrawItems.Clear;
+  FDrawItems.Free;
 
   inherited;
 end;
@@ -433,7 +418,7 @@ begin
   begin
     FMouseDowned := True;
 
-    FDownPos := GR32.Point(X, Y);
+    FDownPos := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
   end;
 end;
 
@@ -450,7 +435,7 @@ begin
     CurrP := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
     DebugMousePos('ShapeDraw', PointF(X, Y));
 
-    FCurrPos := GR32.Point(X, Y);
+    FCurrPos := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
     Update;
   end;
 
@@ -467,6 +452,7 @@ begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
+    CreateDrawItem;
   end;
 end;
 
@@ -480,13 +466,49 @@ begin
   LayerCollection.GetViewportScale(Scale.X, Scale.Y);
   LayerCollection.GetViewportShift(Offset.X, Offset.Y);
 
-  Poly := Rectangle(FloatRect(FloatPoint(FDownPos), FloatPoint(FCurrPos)));
+  PaintDrawItems(Buffer, Scale, Offset);
+  if FMouseDowned then
+    PaintDrawItem(Buffer, Scale, Offset);
+end;
+
+procedure TShapeDrawLayer.PaintDrawItem(Buffer: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+var
+  Poly: TThPoly;
+begin
+  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
+  ScalePolygonInplace(Poly, AScale.X, AScale.Y);
+  TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
+
   PolygonFS(Buffer, Poly, clBlue32);
 
-//  if FDrawItems.Count > 0 then
-//    PaintDrawItems(Buffer, Scale, Offset);
-//  if FPath.Count > 0 then
-//    PaintDrawPoint(Buffer, Scale, Offset);
+  PolylineFS(Buffer, Poly, clGray32, True, 6);
+end;
+
+procedure TShapeDrawLayer.PaintDrawItems(Buffer: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+var
+  Color: TColor32;
+  Alpha: Byte;
+  Item: TThRectangleItem;
+  Poly: TThPoly;
+begin
+  Buffer.BeginUpdate;
+  for Item in FDrawItems do
+  begin
+    Color := Item.Color;
+    Alpha := Item.Alpha;
+    ModifyAlpha(Color, Alpha);
+
+    Poly := ScalePolygon(Item.Poly, AScale.X, AScale.Y);
+    TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
+
+    PolygonFS(Buffer, Poly, Item.Color);
+
+    PolylineFS(Buffer, Poly, clGray32, True, 6);
+  end;
+  Buffer.EndUpdate;
+
 end;
 
 procedure TShapeDrawLayer.SetCanvasMode(AMode: TThCanvasMode);

@@ -53,6 +53,7 @@ uses
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
+  ToggleSwitch1.State := tssOff;
   FCanvas.PenDrawMode := fdmPen;
 end;
 
@@ -63,21 +64,25 @@ end;
 
 procedure TfrmMain.Button3Click(Sender: TObject);
 begin
+  ToggleSwitch1.State := tssOff;
   FCanvas.Clear;
 end;
 
 procedure TfrmMain.Button4Click(Sender: TObject);
 begin
+  ToggleSwitch1.State := tssOff;
   FCanvas.PenDrawMode := fdmEraser;
 end;
 
 procedure TfrmMain.Button5Click(Sender: TObject);
 begin
+  ToggleSwitch1.State := tssOff;
   FCanvas.ShapeMode := smRectangle;
 end;
 
 procedure TfrmMain.Button6Click(Sender: TObject);
 begin
+  ToggleSwitch1.State := tssOff;
   FCanvas.ShapeMode := smNone;
 end;
 
