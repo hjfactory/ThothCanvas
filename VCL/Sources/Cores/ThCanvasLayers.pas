@@ -16,10 +16,23 @@ uses
   ThItem;
 
 type
-  TThCanvasLayer = class(TPositionedLayer)
+  TThCustomDrawLayer = class(TPositionedLayer)
+  private
+    FHitTest: Boolean;
+  protected
+    FDrawItems: TObjectList<TThDrawItem>;
+
+    procedure Paint(Buffer: TBitmap32); override;
+  public
+    function  DoHitTest(X, Y: Integer): Boolean; override;
+
+    constructor Create(ALayerCollection: TLayerCollection); override;
+    destructor Destroy; override;
+
+    property HitTest: Boolean read FHitTest write FHitTest;
   end;
 
-  TShapeDrawLayer = class(TThCanvasLayer)
+  TShapeDrawLayer = class(TThCustomDrawLayer)
   private
     FMouseDowned: Boolean;
 
@@ -49,7 +62,7 @@ type
     procedure Clear;
   end;
 
-  TFreeDrawLayer = class(TThCanvasLayer)
+  TFreeDrawLayer = class(TThCustomDrawLayer)
   private
     FThickness: Integer;
     FPenColor: TColor32;
@@ -65,7 +78,7 @@ type
     FPolyPoly: TArrayOfArrayOfFloatPoint;
 
     // Draw Paths objects
-    FDrawItems: TObjectList<TThFreeDrawItem>;
+//    FDrawItems: TObjectList<TThFreeDrawItem>;
 
     procedure SetThickness(const Value: Integer);
 
@@ -75,7 +88,6 @@ type
     procedure DeleteDrawItems;
 
     procedure PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
-    procedure PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
   protected
     function  DoHitTest(X, Y: Integer): Boolean; override;
 
@@ -107,12 +119,56 @@ uses
   DebugForm,
   ThGrahicsUtils;
 
+
+{ TThCanvasLayer }
+
+constructor TThCustomDrawLayer.Create(ALayerCollection: TLayerCollection);
+begin
+  inherited;
+
+  FDrawItems := TObjectList<TThDrawItem>.Create(True);
+end;
+
+destructor TThCustomDrawLayer.Destroy;
+begin
+  FDrawItems.Clear;
+  FDrawItems.Free;
+
+  inherited;
+end;
+
+function TThCustomDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+begin
+  if not FHitTest then
+    Exit(False);
+
+  Result := inherited;
+end;
+
+procedure TThCustomDrawLayer.Paint(Buffer: TBitmap32);
+var
+  Item: TThDrawItem;
+  Scale, Offset: TFloatPoint;
+begin
+  inherited;
+
+  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
+  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
+
+  Buffer.BeginUpdate;
+  for Item in FDrawItems do
+  begin
+    Item.Draw(Buffer, Scale, Offset);
+  end;
+  Buffer.EndUpdate;
+end;
+
 { TFreeDrawLayer }
 
 procedure TFreeDrawLayer.AddEraserPoint(const X, Y: Integer);
 var
   P: TFloatPoint;
-  Item: TThFreeDrawItem;
+  Item: TThDrawItem;
   Poly: TThPoly;
   PolyRect, DestRect: TFloatRect;
   EraserPath: TPath;
@@ -138,8 +194,8 @@ begin
       Execute(ctIntersection, DestPaths, pftNonZero);
     end;
 
-    if Length(DestPaths) > 0 then
-      Item.IsToDelete := True;
+//    if Length(DestPaths) > 0 then
+//      Item.IsToDelete := True;
   end;
 end;
 
@@ -193,7 +249,7 @@ begin
   inherited;
 
   FPath := TList<TFloatPoint>.Create;
-  FDrawItems := TObjectList<TThFreeDrawItem>.Create(True);
+//  FDrawItems := TObjectList<TThFreeDrawItem>.Create(True);
 
   FDrawMode := fdmPen;
 
@@ -227,17 +283,17 @@ var
 begin
   for I := FDrawItems.Count - 1 downto 0 do
   begin
-    Item := FDrawItems[I];
-    if Item.IsToDelete then
-      FDrawItems.Delete(I);
+//    Item := FDrawItems[I];
+//    if Item.IsToDelete then
+//      FDrawItems.Delete(I);
   end;
 end;
 
 destructor TFreeDrawLayer.Destroy;
 begin
   FPath.Free;
-  FDrawItems.Clear;
-  FDrawItems.Free;
+//  FDrawItems.Clear;
+//  FDrawItems.Free;
 
   inherited;
 end;
@@ -315,40 +371,15 @@ procedure TFreeDrawLayer.Paint(Buffer: TBitmap32);
 var
   Scale, Offset: TFloatPoint;
 begin
+  inherited;
+
   Buffer.ClipRect := GetAdjustedLocation.Rect;
 
   LayerCollection.GetViewportScale(Scale.X, Scale.Y);
   LayerCollection.GetViewportShift(Offset.X, Offset.Y);
 
-  if FDrawItems.Count > 0 then
-    PaintDrawItems(Buffer, Scale, Offset);
   if FPath.Count > 0 then
     PaintDrawPoint(Buffer, Scale, Offset);
-end;
-
-procedure TFreeDrawLayer.PaintDrawItems(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
-var
-  Color: TColor32;
-  Alpha: Byte;
-  Item: TThFreeDrawItem;
-  PolyPoly: TThPolyPoly;
-begin
-  Buffer.BeginUpdate;
-  for Item in FDrawItems do
-  begin
-    Color := Item.Color;
-    Alpha := Item.Alpha;
-    if Item.IsToDelete then
-      Alpha := Round(ALpha * 0.2);
-
-    ModifyAlpha(Color, Alpha);
-
-    PolyPoly := ScalePolyPolygon(Item.PolyPoly, AScale.X, AScale.Y);
-    TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
-
-    PolyPolygonFS(Buffer, PolyPoly, Color);
-  end;
-  Buffer.EndUpdate;
 end;
 
 procedure TFreeDrawLayer.PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);

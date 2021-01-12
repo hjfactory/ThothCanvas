@@ -3,7 +3,7 @@ unit ThItem;
 interface
 
 uses
-  GR32, GR32_VectorUtils,
+  GR32, GR32_Polygons, GR32_VectorUtils,
   ThTypes;
 
 
@@ -11,7 +11,17 @@ type
   TThItem = class
   end;
 
-  TThFreeDrawItem = class(TThItem)
+  TThDrawItem = class(TThItem)
+  private
+    FBounds: TFloatRect;
+    FPolyPoly: TThPolyPoly;
+  public
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
+    property Bounds: TFloatRect read FBounds;
+    property PolyPoly: TThPolyPoly read FPolyPoly;
+  end;
+
+  TThFreeDrawItem = class(TThDrawItem)
   private
     FPath: TArray<TFloatPoint>;
     FPolyPoly: TThPolyPoly;
@@ -21,6 +31,8 @@ type
     FBounds: TFloatRect;
     FIsToDelete: Boolean;
   public
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+
     property Path: TThPath read FPath;
     property Color: TColor32 read FColor;
     property Bounds: TFloatRect read FBounds;
@@ -32,7 +44,12 @@ type
     destructor Destroy; override;
   end;
 
-  TThRectangleItem = class(TThItem)
+  TThShapeDrawItem = class(TThDrawItem)
+  public
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
+  end;
+
+  TThRectangleItem = class(TThShapeDrawItem)
   private
     FRect: TFloatRect;
     FPoly: TThPoly;
@@ -40,6 +57,8 @@ type
     FColor: TColor32;
     FAlpha: Byte;
   public
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+
     property Poly: TThPoly read FPoly;
     property Color: TColor32 read FColor;
     property Alpha: Byte read FAlpha write FAlpha;
@@ -49,6 +68,8 @@ type
 
 
 implementation
+
+{ TThDrawItem }
 
 { TThRectangleItem }
 
@@ -61,6 +82,13 @@ begin
   FAlpha := AAlpha;
 end;
 
+
+procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+begin
+  inherited;
+
+end;
 
 { TThFreeDrawItem }
 
@@ -79,6 +107,25 @@ destructor TThFreeDrawItem.Destroy;
 begin
 
   inherited;
+end;
+
+procedure TThFreeDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+var
+  LColor: TColor32;
+  LAlpha: Byte;
+  PolyPoly: TThPolyPoly;
+begin
+  LColor := FColor;
+  LAlpha := FAlpha;
+  if FIsToDelete then
+    LAlpha := Round(LAlpha * 0.2);
+
+  ModifyAlpha(LColor, LAlpha);
+
+  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
+  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+
+  PolyPolygonFS(Bitmap, PolyPoly, Color);
 end;
 
 end.
