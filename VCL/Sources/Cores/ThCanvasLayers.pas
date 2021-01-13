@@ -13,23 +13,29 @@ uses
   clipper,
 
   ThTypes,
-  ThItem;
+  ThItem,
+  ThDrawObject;
 
 type
   TThCustomDrawLayer = class(TPositionedLayer)
   private
     FHitTest: Boolean;
+    function GetOffset: TFloatPoint;
+    function GetScale: TFloatPoint;
   protected
     FDrawItems: TObjectList<TThDrawItem>;
 
     procedure Paint(Buffer: TBitmap32); override;
   public
     function  DoHitTest(X, Y: Integer): Boolean; override;
+    procedure Clear;
 
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
 
     property HitTest: Boolean read FHitTest write FHitTest;
+    property Scale: TFloatPoint read GetScale;
+    property Offset: TFloatPoint read GetOffset;
   end;
 
   TShapeDrawLayer = class(TThCustomDrawLayer)
@@ -62,7 +68,7 @@ type
     procedure Clear;
   end;
 
-  TFreeDrawLayer = class(TThCustomDrawLayer)
+  TBrushDrawLayer = class(TThCustomDrawLayer)
   private
     FThickness: Integer;
     FPenColor: TColor32;
@@ -71,14 +77,13 @@ type
     FCanvasMode: TThCanvasMode;
     FDrawMode: TThFreeDrawMode;
 
+    FDrawObject: TThDrawObject;
+
     // Draw Points objects
     FMouseDowned: Boolean;
     FPath: TList<TFloatPoint>;
     FPolyPolyPath: TPaths;
     FPolyPoly: TArrayOfArrayOfFloatPoint;
-
-    // Draw Paths objects
-//    FDrawItems: TObjectList<TThFreeDrawItem>;
 
     procedure SetThickness(const Value: Integer);
 
@@ -108,7 +113,6 @@ type
 
     property DrawMode: TThFreeDrawMode read FDrawMode write FDrawMode;
 
-    procedure Clear;
   end;
 
 implementation
@@ -121,6 +125,12 @@ uses
 
 
 { TThCanvasLayer }
+
+procedure TThCustomDrawLayer.Clear;
+begin
+  FDrawItems.Clear;
+  Update;
+end;
 
 constructor TThCustomDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
@@ -145,27 +155,57 @@ begin
   Result := inherited;
 end;
 
+function TThCustomDrawLayer.GetOffset: TFloatPoint;
+begin
+  LayerCollection.GetViewportShift(Result.X, Result.Y);
+end;
+
+function TThCustomDrawLayer.GetScale: TFloatPoint;
+begin
+
+  LayerCollection.GetViewportScale(Result.X, Result.Y);
+end;
+
 procedure TThCustomDrawLayer.Paint(Buffer: TBitmap32);
 var
   Item: TThDrawItem;
-  Scale, Offset: TFloatPoint;
 begin
   inherited;
 
-  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
-  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
-
   Buffer.BeginUpdate;
   for Item in FDrawItems do
-  begin
     Item.Draw(Buffer, Scale, Offset);
-  end;
   Buffer.EndUpdate;
 end;
 
 { TFreeDrawLayer }
 
-procedure TFreeDrawLayer.AddEraserPoint(const X, Y: Integer);
+constructor TBrushDrawLayer.Create(ALayerCollection: TLayerCollection);
+begin
+  inherited;
+
+  FPath := TList<TFloatPoint>.Create;
+//  FDrawItems := TObjectList<TThFreeDrawItem>.Create(True);
+
+  FDrawMode := fdmPen;
+  FThickness := 10;
+  FPenColor := clBlue32;
+  FPenAlpha := 255;
+
+  FMouseDowned := False;
+
+  MouseEvents := True;
+  Scaled := True;
+end;
+
+destructor TBrushDrawLayer.Destroy;
+begin
+  FPath.Free;
+
+  inherited;
+end;
+
+procedure TBrushDrawLayer.AddEraserPoint(const X, Y: Integer);
 var
   P: TFloatPoint;
   Item: TThDrawItem;
@@ -199,7 +239,7 @@ begin
   end;
 end;
 
-procedure TFreeDrawLayer.AddPenPoint(const X, Y: Integer);
+procedure TBrushDrawLayer.AddPenPoint(const X, Y: Integer);
 var
   CurrP, LastP: TFloatPoint; // Adjusted point
   Poly: TThPoly;
@@ -212,6 +252,7 @@ begin
   // Add to Path
   FPath.Add(CurrP);
 
+  { TODO : Paint 시 FPath로 동적 처리 검토 }
   if FPath.Count = 1 then
   begin
     Poly := Circle(CurrP, FThickness / 2);
@@ -238,32 +279,7 @@ begin
   end;
 end;
 
-procedure TFreeDrawLayer.Clear;
-begin
-  FDrawItems.Clear;
-  Update;
-end;
-
-constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
-begin
-  inherited;
-
-  FPath := TList<TFloatPoint>.Create;
-//  FDrawItems := TObjectList<TThFreeDrawItem>.Create(True);
-
-  FDrawMode := fdmPen;
-
-  FThickness := 10;
-  FPenColor := clBlue32;
-  FPenAlpha := 255;
-
-  FMouseDowned := False;
-
-  MouseEvents := True;
-  Scaled := True;
-end;
-
-procedure TFreeDrawLayer.CreateDrawItem;
+procedure TBrushDrawLayer.CreateDrawItem;
 var
   Item: TThFreeDrawItem;
 begin
@@ -276,7 +292,7 @@ begin
   FPolyPolyPath := nil;
 end;
 
-procedure TFreeDrawLayer.DeleteDrawItems;
+procedure TBrushDrawLayer.DeleteDrawItems;
 var
   I: Integer;
   Item: TThFreeDrawItem;
@@ -289,21 +305,12 @@ begin
   end;
 end;
 
-destructor TFreeDrawLayer.Destroy;
-begin
-  FPath.Free;
-//  FDrawItems.Clear;
-//  FDrawItems.Free;
-
-  inherited;
-end;
-
-function TFreeDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+function TBrushDrawLayer.DoHitTest(X, Y: Integer): Boolean;
 begin
   Result := (FCanvasMode = cmFreeDraw);
 end;
 
-procedure TFreeDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
+procedure TBrushDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
   inherited;
@@ -330,7 +337,7 @@ begin
   end;
 end;
 
-procedure TFreeDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TBrushDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
 
@@ -347,7 +354,7 @@ begin
   end;
 end;
 
-procedure TFreeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+procedure TBrushDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
   inherited;
@@ -367,22 +374,15 @@ begin
   end;
 end;
 
-procedure TFreeDrawLayer.Paint(Buffer: TBitmap32);
-var
-  Scale, Offset: TFloatPoint;
+procedure TBrushDrawLayer.Paint(Buffer: TBitmap32);
 begin
   inherited;
-
-  Buffer.ClipRect := GetAdjustedLocation.Rect;
-
-  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
-  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
 
   if FPath.Count > 0 then
     PaintDrawPoint(Buffer, Scale, Offset);
 end;
 
-procedure TFreeDrawLayer.PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TBrushDrawLayer.PaintDrawPoint(Buffer: TBitmap32; AScale, AOffset: TFloatPoint);
 var
   Color: TColor32;
   PolyPoly: TThPolyPoly;
@@ -396,12 +396,12 @@ begin
   PolyPolygonFS(Buffer, PolyPoly, Color);
 end;
 
-procedure TFreeDrawLayer.SetCanvasMode(AMode: TThCanvasMode);
+procedure TBrushDrawLayer.SetCanvasMode(AMode: TThCanvasMode);
 begin
   FCanvasMode := AMode;
 end;
 
-procedure TFreeDrawLayer.SetThickness(const Value: Integer);
+procedure TBrushDrawLayer.SetThickness(const Value: Integer);
 begin
   FThickness := Value;
   Update;
@@ -488,16 +488,10 @@ begin
 end;
 
 procedure TShapeDrawLayer.Paint(Buffer: TBitmap32);
-var
-  Scale, Offset: TFloatPoint;
-  Poly: TThPoly;
 begin
-  Buffer.ClipRect := GetAdjustedLocation.Rect;
+  inherited;
+//  Buffer.ClipRect := GetAdjustedLocation.Rect;
 
-  LayerCollection.GetViewportScale(Scale.X, Scale.Y);
-  LayerCollection.GetViewportShift(Offset.X, Offset.Y);
-
-  PaintDrawItems(Buffer, Scale, Offset);
   if FMouseDowned then
     PaintDrawItem(Buffer, Scale, Offset);
 end;

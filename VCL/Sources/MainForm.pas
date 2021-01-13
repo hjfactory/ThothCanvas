@@ -104,6 +104,8 @@ begin
   FCanvas.PenOpacity := SpinEdit1.Value;
 
   FCanvas.CanvasMode := cmFreeDraw;
+
+  Font.Size
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);

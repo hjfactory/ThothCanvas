@@ -24,24 +24,19 @@ type
   TThFreeDrawItem = class(TThDrawItem)
   private
     FPath: TArray<TFloatPoint>;
-    FPolyPoly: TThPolyPoly;
     FThickness: Single;
     FColor: TColor32;
     FAlpha: Byte;
-    FBounds: TFloatRect;
     FIsToDelete: Boolean;
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     property Path: TThPath read FPath;
     property Color: TColor32 read FColor;
-    property Bounds: TFloatRect read FBounds;
     property Alpha: Byte read FAlpha write FAlpha;
     property IsToDelete: Boolean read FIsToDelete write FIsToDelete;
-    property PolyPoly: TThPolyPoly read FPolyPoly;
 
     constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
-    destructor Destroy; override;
   end;
 
   TThShapeDrawItem = class(TThDrawItem)
@@ -69,26 +64,6 @@ type
 
 implementation
 
-{ TThDrawItem }
-
-{ TThRectangleItem }
-
-constructor TThRectangleItem.Create(ARect: TFloatRect; APoly: TThPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
-begin
-  FRect := ARect;
-  FPoly := APoly;
-  FThickness := AThickness;
-  FColor := AColor;
-  FAlpha := AAlpha;
-end;
-
-
-procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
-  AOffset: TFloatPoint);
-begin
-  inherited;
-
-end;
 
 { TThFreeDrawItem }
 
@@ -101,12 +76,6 @@ begin
   FAlpha := AAlpha;
 
   FBounds := PolypolygonBounds(FPolyPoly);
-end;
-
-destructor TThFreeDrawItem.Destroy;
-begin
-
-  inherited;
 end;
 
 procedure TThFreeDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
@@ -126,6 +95,25 @@ begin
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
   PolyPolygonFS(Bitmap, PolyPoly, Color);
+end;
+
+{ TThRectangleItem }
+
+constructor TThRectangleItem.Create(ARect: TFloatRect; APoly: TThPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
+begin
+  FRect := ARect;
+  FPoly := APoly;
+  FThickness := AThickness;
+  FColor := AColor;
+  FAlpha := AAlpha;
+end;
+
+
+procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+begin
+  inherited;
+
 end;
 
 end.

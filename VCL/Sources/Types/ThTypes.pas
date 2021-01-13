@@ -20,18 +20,13 @@ type
 
   TThPoly = TArrayOfFloatPoint;
   TThPolyPoly = TArrayOfArrayOfFloatPoint;
-//
-//  TThPathHelper = class helper for TThPath
-//    function Add(X, Y: Single): Integer; overload;
-//  end;
+
+  IThFreeDrawLayer = interface
+  ['{2CBF2F86-BE55-41A0-AD08-EA2BB9B2801E}']
+    procedure SetFreeDrawMode(const AMode: TThFreeDrawMode);
+
+  end;
 
 implementation
-
-//{ TThPathHelper }
-//
-//function TThPathHelper.Add(X, Y: Single): Integer;
-//begin
-//  Result := Add(FloatPoint(X, Y));
-//end;
 
 end.

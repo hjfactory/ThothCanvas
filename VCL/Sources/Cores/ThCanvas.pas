@@ -24,7 +24,7 @@ type
     FMouseDownPoint: TPoint;
 
     FBackgroundLayer: TBitmapLayer;
-    FFreeDrawLayer: TFreeDrawLayer;
+    FFreeDrawLayer: TBrushDrawLayer;
     FShapeDrawLayer: TShapeDrawLayer;
 
     FOnScaleChange: TScaleChangeEvent;
@@ -158,7 +158,7 @@ begin
   FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
   FShapeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
 
-  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
+  FFreeDrawLayer := TBrushDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
 //  FFreeDrawLayer.Location := FloatRect(0, 0, 300, 300);
 end;

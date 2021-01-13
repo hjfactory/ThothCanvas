@@ -9,7 +9,8 @@ uses
   clipper in '..\Libraries\clipper.pas',
   ThGrahicsUtils in 'Utils\ThGrahicsUtils.pas',
   DebugForm in 'Forms\DebugForm.pas' {frmDebug},
-  ThItem in 'Cores\ThItem.pas';
+  ThItem in 'Cores\ThItem.pas',
+  ThDrawObject in 'Cores\ThDrawObject.pas';
 
 {$R *.res}
 
