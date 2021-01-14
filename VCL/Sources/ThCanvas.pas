@@ -11,6 +11,7 @@ uses
   GR32_Layers,
 
   ThTypes,
+  ThDrawStyle,
   ThCanvasLayers;
 
 type
@@ -33,6 +34,7 @@ type
     FPenOpacity: TThPercent;
     FCanvasMode: TThCanvasMode;
     FShapeMode: TThShapeMode;
+    FPenStyle: TThPenStyle;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -55,6 +57,8 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
+
+    procedure PenStyleChange(Sender: TObject);
 
     procedure SetPenColor(const Value: TColor);
     procedure SetPenSize(const Value: Integer);
@@ -87,6 +91,8 @@ type
     procedure Clear;
 
     property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
+
+    property PenStyle: TThPenStyle read FPenStyle;
   end;
 
   TThCanvas = class(TThCustomCanvas)
@@ -125,6 +131,9 @@ begin
   FImgView.OnMouseWheelUp := ImgViewMouseWheelUp;
   FImgView.OnMouseWheel := ImgViewMouseWheel;
   FImgView.OnMouseWheelDown := ImgViewMouseWheelDown;
+
+  FPenStyle := TThPenStyle.Create;
+  FPenStyle.OnChange := PenStyleChange;
 end;
 
 procedure TThCustomCanvas.CreateWnd;
@@ -308,6 +317,11 @@ end;
 procedure TThCustomCanvas.Move(AX, AY: Integer);
 begin
   FImgView.Scroll(AX, AY);
+end;
+
+procedure TThCustomCanvas.PenStyleChange(Sender: TObject);
+begin
+  FFreeDrawLayer.DrawStyle := FPenStyle;
 end;
 
 end.

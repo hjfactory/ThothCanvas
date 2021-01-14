@@ -3,14 +3,15 @@ program ThothCanvasVCL;
 uses
   Vcl.Forms,
   MainForm in 'MainForm.pas' {frmMain},
-  ThCanvas in 'Cores\ThCanvas.pas',
+  ThCanvas in 'ThCanvas.pas',
   ThTypes in 'Types\ThTypes.pas',
-  ThCanvasLayers in 'Cores\ThCanvasLayers.pas',
+  ThCanvasLayers in 'Canvas\ThCanvasLayers.pas',
   clipper in '..\Libraries\clipper.pas',
-  ThGrahicsUtils in 'Utils\ThGrahicsUtils.pas',
+  ThGraphicsUtils in 'Utils\ThGraphicsUtils.pas',
   DebugForm in 'Forms\DebugForm.pas' {frmDebug},
-  ThItem in 'Cores\ThItem.pas',
-  ThDrawObject in 'Cores\ThDrawObject.pas';
+  ThDrawItem in 'Items\ThDrawItem.pas',
+  ThDrawObject in 'Items\ThDrawObject.pas',
+  ThDrawStyle in 'Items\ThDrawStyle.pas';
 
 {$R *.res}
 

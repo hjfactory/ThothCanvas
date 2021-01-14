@@ -13,11 +13,12 @@ uses
   clipper,
 
   ThTypes,
-  ThItem,
+  ThDrawItem,
+  ThDrawStyle,
   ThDrawObject;
 
 type
-  TThCustomDrawLayer = class(TPositionedLayer)
+  TThCustomViewLayer = class(TPositionedLayer)
   private
     FHitTest: Boolean;
     function GetOffset: TFloatPoint;
@@ -27,15 +28,24 @@ type
 
     procedure Paint(Buffer: TBitmap32); override;
   public
-    function  DoHitTest(X, Y: Integer): Boolean; override;
-    procedure Clear;
-
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
+
+    function  DoHitTest(X, Y: Integer): Boolean; override;
+    procedure Clear;
 
     property HitTest: Boolean read FHitTest write FHitTest;
     property Scale: TFloatPoint read GetScale;
     property Offset: TFloatPoint read GetOffset;
+  end;
+
+  TThCustomDrawLayer = class(TThCustomViewLayer)
+  private
+    procedure SetDrawStyle(const Value: IThDrawStyle);
+  protected
+    FDrawStyle: IThDrawStyle;
+  public
+    property DrawStyle: IThDrawStyle read FDrawStyle write SetDrawStyle;
   end;
 
   TShapeDrawLayer = class(TThCustomDrawLayer)
@@ -70,6 +80,7 @@ type
 
   TBrushDrawLayer = class(TThCustomDrawLayer)
   private
+
     FThickness: Integer;
     FPenColor: TColor32;
     FPenAlpha: Byte;
@@ -121,25 +132,19 @@ implementation
 
 uses
   DebugForm,
-  ThGrahicsUtils;
+  ThGraphicsUtils;
 
 
-{ TThCanvasLayer }
+{ TThCustomViewLayer }
 
-procedure TThCustomDrawLayer.Clear;
-begin
-  FDrawItems.Clear;
-  Update;
-end;
-
-constructor TThCustomDrawLayer.Create(ALayerCollection: TLayerCollection);
+constructor TThCustomViewLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
   FDrawItems := TObjectList<TThDrawItem>.Create(True);
 end;
 
-destructor TThCustomDrawLayer.Destroy;
+destructor TThCustomViewLayer.Destroy;
 begin
   FDrawItems.Clear;
   FDrawItems.Free;
@@ -147,7 +152,13 @@ begin
   inherited;
 end;
 
-function TThCustomDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+procedure TThCustomViewLayer.Clear;
+begin
+  FDrawItems.Clear;
+  Update;
+end;
+
+function TThCustomViewLayer.DoHitTest(X, Y: Integer): Boolean;
 begin
   if not FHitTest then
     Exit(False);
@@ -155,18 +166,17 @@ begin
   Result := inherited;
 end;
 
-function TThCustomDrawLayer.GetOffset: TFloatPoint;
+function TThCustomViewLayer.GetOffset: TFloatPoint;
 begin
   LayerCollection.GetViewportShift(Result.X, Result.Y);
 end;
 
-function TThCustomDrawLayer.GetScale: TFloatPoint;
+function TThCustomViewLayer.GetScale: TFloatPoint;
 begin
-
   LayerCollection.GetViewportScale(Result.X, Result.Y);
 end;
 
-procedure TThCustomDrawLayer.Paint(Buffer: TBitmap32);
+procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
   Item: TThDrawItem;
 begin
@@ -178,7 +188,14 @@ begin
   Buffer.EndUpdate;
 end;
 
-{ TFreeDrawLayer }
+{ TThCustomDrawLayer }
+
+procedure TThCustomDrawLayer.SetDrawStyle(const Value: IThDrawStyle);
+begin
+  FDrawStyle := Value;
+end;
+
+{ TBrushDrawLayer }
 
 constructor TBrushDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
@@ -281,9 +298,9 @@ end;
 
 procedure TBrushDrawLayer.CreateDrawItem;
 var
-  Item: TThFreeDrawItem;
+  Item: TThPenDrawItem;
 begin
-  Item := TThFreeDrawItem.Create(FPath.ToArray, FPolyPoly, FThickness, FPenColor, FPenAlpha);
+  Item := TThPenDrawItem.Create(FDrawStyle, FPath.ToArray, FPolyPoly);
 
   FDrawItems.Add(Item);
 
@@ -295,7 +312,7 @@ end;
 procedure TBrushDrawLayer.DeleteDrawItems;
 var
   I: Integer;
-  Item: TThFreeDrawItem;
+  Item: TThPenDrawItem;
 begin
   for I := FDrawItems.Count - 1 downto 0 do
   begin

@@ -1,10 +1,10 @@
-unit ThItem;
+unit ThDrawItem;
 
 interface
 
 uses
   GR32, GR32_Polygons, GR32_VectorUtils,
-  ThTypes;
+  ThTypes, ThDrawStyle;
 
 
 type
@@ -15,33 +15,32 @@ type
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
+  protected
+    FDrawStyle: IThDrawStyle;
   public
+    constructor Create(AStyle: IThDrawStyle);
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
     property Bounds: TFloatRect read FBounds;
     property PolyPoly: TThPolyPoly read FPolyPoly;
   end;
 
-  TThFreeDrawItem = class(TThDrawItem)
+  TThBrushDrawItem = class(TThDrawItem)
+  end;
+
+  TThPenDrawItem = class(TThBrushDrawItem)
   private
     FPath: TArray<TFloatPoint>;
-    FThickness: Single;
-    FColor: TColor32;
-    FAlpha: Byte;
     FIsToDelete: Boolean;
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     property Path: TThPath read FPath;
-    property Color: TColor32 read FColor;
-    property Alpha: Byte read FAlpha write FAlpha;
     property IsToDelete: Boolean read FIsToDelete write FIsToDelete;
 
-    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
+    constructor Create(AStyle: IThDrawStyle; APath: TThPath; APolyPoly: TThPolyPoly);
   end;
 
   TThShapeDrawItem = class(TThDrawItem)
-  public
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
   end;
 
   TThRectangleItem = class(TThShapeDrawItem)
@@ -67,25 +66,26 @@ implementation
 
 { TThFreeDrawItem }
 
-constructor TThFreeDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly; AThickness: Single; AColor: TColor32; AAlpha: Byte);
+constructor TThPenDrawItem.Create(AStyle: IThDrawStyle; APath: TThPath; APolyPoly: TThPolyPoly);
 begin
+  inherited Create(AStyle);
+
   FPath := APath;
   FPolyPoly := APolyPoly;
-  FThickness := AThickness;
-  FColor := AColor;
-  FAlpha := AAlpha;
 
   FBounds := PolypolygonBounds(FPolyPoly);
 end;
 
-procedure TThFreeDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TThPenDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 var
+  LStyle: TThPenStyle;
   LColor: TColor32;
   LAlpha: Byte;
   PolyPoly: TThPolyPoly;
 begin
-  LColor := FColor;
-  LAlpha := FAlpha;
+  LStyle := TThPenStyle(FDrawStyle);
+  LColor := LStyle.Color;
+  LAlpha := LStyle.Alpha;
   if FIsToDelete then
     LAlpha := Round(LAlpha * 0.2);
 
@@ -94,7 +94,7 @@ begin
   PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-  PolyPolygonFS(Bitmap, PolyPoly, Color);
+  PolyPolygonFS(Bitmap, PolyPoly, LColor);
 end;
 
 { TThRectangleItem }
@@ -114,6 +114,13 @@ procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
 begin
   inherited;
 
+end;
+
+{ TThDrawItem }
+
+constructor TThDrawItem.Create(AStyle: IThDrawStyle);
+begin
+  FDrawStyle := AStyle;
 end;
 
 end.

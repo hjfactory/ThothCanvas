@@ -1,4 +1,4 @@
-unit ThGrahicsUtils;
+unit ThGraphicsUtils;
 
 interface
 

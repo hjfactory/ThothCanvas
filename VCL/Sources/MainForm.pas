@@ -66,6 +66,8 @@ procedure TfrmMain.Button3Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
   FCanvas.Clear;
+
+  Font.Size
 end;
 
 procedure TfrmMain.Button4Click(Sender: TObject);
@@ -104,8 +106,6 @@ begin
   FCanvas.PenOpacity := SpinEdit1.Value;
 
   FCanvas.CanvasMode := cmFreeDraw;
-
-  Font.Size
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
