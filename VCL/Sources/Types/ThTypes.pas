@@ -11,17 +11,36 @@ const
   TH_SCALE_MIN = 0.2;
   TH_SCALE_MAX = 4;
 type
-  IThCanvas = interface
-  end;
-
   TThCanvasMode = (cmSelection, cmFreeDraw);
-  TThFreeDrawMode = (fdmPen, fdmEraser);
+  TThBrushDrawMode = (bdmNone, bdmPen, bdmEraser);
   TThShapeMode = (smNone, smRectangle);
   TThPath = TArray<TFloatPoint>;
   TThPercent = 0..100;
 
   TThPoly = TArrayOfFloatPoint;
   TThPolyPoly = TArrayOfArrayOfFloatPoint;
+
+  TThItem = class
+  end;
+
+  IThCanvas = interface
+  ['{5BC92595-BFFF-4D3F-A175-8A69F9C42CF9}']
+  end;
+
+  IThDrawObject = interface
+    ['{F82BC1D0-3BB7-417F-897D-44E41154F0B1}']
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+
+    procedure Move(const X, Y: TFloat); overload;
+    procedure Move(const APoint: TFloatPoint); overload;
+
+    function CreateItem: TThItem;
+    procedure Clear;
+  end;
+
+  IThDrawStyle = interface
+    ['{33DDCFFB-A309-4CAF-806C-E87A6CDB6048}']
+  end;
 
   TThInterfacedPersistent = class(TPersistent, IInterface)
   private

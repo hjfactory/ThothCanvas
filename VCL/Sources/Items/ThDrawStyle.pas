@@ -4,14 +4,12 @@ interface
 
 uses
   System.Classes,
+
   GR32,
+
   ThTypes;
 
 type
-  IThDrawStyle = interface
-    ['{33DDCFFB-A309-4CAF-806C-E87A6CDB6048}']
-  end;
-
   TThDrawStyle = class(TThInterfacedPersistent, IThDrawStyle)
   private
     FOnChange: TNotifyEvent;
@@ -31,16 +29,19 @@ type
   TThPenStyle = class(TThBrushStyle)
   private
     FColor: TColor32;
-    FAlpha: Byte;
-    procedure SetAlpha(const Value: Byte);
+    FOpacity: TThPercent;
+    procedure SetOpacity(const Value: TThPercent);
     procedure SetColor(const Value: TColor32);
+    function GetAplha: Byte;
   public
     constructor Create;
+    destructor Destroy; override;
 
     procedure Assign(Source: TPersistent); override;
 
     property Color: TColor32 read FColor write SetColor;
-    property Alpha: Byte read FAlpha write SetAlpha;
+    property Opacity: TThPercent read FOpacity write SetOpacity;
+    property Alpha: Byte read GetAplha;
   end;
 
   TThEraserStyle = class(TThBrushStyle)
@@ -74,24 +75,33 @@ begin
   begin
     FColor := TThPenStyle(Source).Color;
     FThickness := TThPenStyle(Source).Thickness;
-    FAlpha := TThPenStyle(Source).Alpha;
+    FOpacity := TThPenStyle(Source).Opacity;
   end;
-
-  inherited;
 end;
 
 constructor TThPenStyle.Create;
 begin
   FColor := clBlack32;
   FThickness := 10;
-  FAlpha := 255;
+  FOpacity := 100;
 end;
 
-procedure TThPenStyle.SetAlpha(const Value: Byte);
+destructor TThPenStyle.Destroy;
 begin
-  if FAlpha = Value then
+
+  inherited;
+end;
+
+function TThPenStyle.GetAplha: Byte;
+begin
+  Result := Round(FOpacity / 100 * 255);
+end;
+
+procedure TThPenStyle.SetOpacity(const Value: TThPercent);
+begin
+  if FOpacity = Value then
     Exit;
-  FAlpha := Value;
+  FOpacity := Value;
   DoChange;
 end;
 

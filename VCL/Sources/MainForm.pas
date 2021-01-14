@@ -54,11 +54,15 @@ uses
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
-  FCanvas.PenDrawMode := fdmPen;
+//  FCanvas.PenDrawMode := bdmPen;
 end;
 
 procedure TfrmMain.Button2Click(Sender: TObject);
+var
+  LFont: TFont;
 begin
+  LFont := Font;
+
   frmDebug.Show;
 end;
 
@@ -73,24 +77,24 @@ end;
 procedure TfrmMain.Button4Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
-  FCanvas.PenDrawMode := fdmEraser;
+//  FCanvas.PenDrawMode := bdmEraser;
 end;
 
 procedure TfrmMain.Button5Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
-  FCanvas.ShapeMode := smRectangle;
+//  FCanvas.ShapeMode := smRectangle;
 end;
 
 procedure TfrmMain.Button6Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
-  FCanvas.ShapeMode := smNone;
+//  FCanvas.ShapeMode := smNone;
 end;
 
 procedure TfrmMain.ColorBox1Change(Sender: TObject);
 begin
-  FCanvas.PenColor := ColorBox1.Selected;
+  FCanvas.PenStyle.Color := ColorBox1.Selected;
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -101,11 +105,11 @@ begin
 //  FCanvas.CreatePage(640, 480);
   FCanvas.CreatePage;
 
-  FCanvas.PenColor := ColorBox1.Selected;
-  FCanvas.PenSize := TrackBar1.Position;
-  FCanvas.PenOpacity := SpinEdit1.Value;
+  FCanvas.PenStyle.Color := ColorBox1.Selected;
+  FCanvas.PenStyle.Thickness := TrackBar1.Position;
+  FCanvas.PenStyle.Opacity := SpinEdit1.Value;
 
-  FCanvas.CanvasMode := cmFreeDraw;
+//  FCanvas.CanvasMode := cmFreeDraw;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -115,21 +119,21 @@ end;
 
 procedure TfrmMain.SpinEdit1Change(Sender: TObject);
 begin
-  FCanvas.PenOpacity := SpinEdit1.Value;
+  FCanvas.PenStyle.Opacity := SpinEdit1.Value;
 end;
 
 procedure TfrmMain.ToggleSwitch1Click(Sender: TObject);
 begin
-  if ToggleSwitch1.IsOn then
-    FCanvas.CanvasMode := cmFreeDraw
-  else
-    FCanvas.CanvasMode := cmSelection;
+//  if ToggleSwitch1.IsOn then
+//    FCanvas.CanvasMode := cmFreeDraw
+//  else
+//    FCanvas.CanvasMode := cmSelection;
 end;
 
 procedure TfrmMain.TrackBar1Change(Sender: TObject);
 begin
-  FCanvas.PenSize := TrackBar1.Position;
-  Label1.Caption := IntToStr(FCanvas.PenSize);
+  FCanvas.PenStyle.Thickness := TrackBar1.Position;
+  Label1.Caption := IntToStr(FCanvas.PenStyle.Thickness);
 end;
 
 end.

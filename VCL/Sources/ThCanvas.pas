@@ -59,14 +59,6 @@ type
       MousePos: TPoint; var Handled: Boolean);
 
     procedure PenStyleChange(Sender: TObject);
-
-    procedure SetPenColor(const Value: TColor);
-    procedure SetPenSize(const Value: Integer);
-    procedure SetPenOpacity(const Value: TThPercent);
-    procedure SetCanvasMode(const Value: TThCanvasMode);
-    function GetPenDrawMode: TThFreeDrawMode;
-    procedure SetPenDrawMode(const Value: TThFreeDrawMode);
-    procedure SetShapeMode(const Value: TThShapeMode);
   protected
     procedure CreateWnd; override;
   public
@@ -75,13 +67,6 @@ type
 
     procedure CreatePage(AWidth: Integer = 0; AHeight: Integer = 0);
 
-    property PenColor: TColor read FPenColor write SetPenColor;
-    property PenSize: Integer read FPenSize write SetPenSize;
-    property PenOpacity: TThPercent read FPenOpacity write SetPenOpacity;
-    property PenDrawMode: TThFreeDrawMode read GetPenDrawMode write SetPenDrawMode;
-
-    property ShapeMode: TThShapeMode read FShapeMode write SetShapeMode;
-
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
 
@@ -89,8 +74,6 @@ type
     procedure Test;
 
     procedure Clear;
-
-    property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
 
     property PenStyle: TThPenStyle read FPenStyle;
   end;
@@ -169,6 +152,7 @@ begin
 
   FFreeDrawLayer := TBrushDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FFreeDrawLayer.DrawStyle := FPenStyle;
 //  FFreeDrawLayer.Location := FloatRect(0, 0, 300, 300);
 end;
 
@@ -178,46 +162,9 @@ begin
     FOnScaleChange(Self, Scale);
 end;
 
-function TThCustomCanvas.GetPenDrawMode: TThFreeDrawMode;
-begin
-  Result := FFreeDrawLayer.DrawMode;
-end;
-
 function TThCustomCanvas.GetScale: Single;
 begin
   Result := FImgView.Scale;
-end;
-
-procedure TThCustomCanvas.SetCanvasMode(const Value: TThCanvasMode);
-begin
-  FCanvasMode := Value;
-
-  FFreeDrawLayer.SetCanvasMode(Value);
-end;
-
-procedure TThCustomCanvas.SetPenColor(const Value: TColor);
-begin
-  FPenColor := Value;
-
-  FFreeDrawLayer.PenColor := Color32(FPenColor);
-end;
-
-procedure TThCustomCanvas.SetPenDrawMode(const Value: TThFreeDrawMode);
-begin
-  FFreeDrawLayer.DrawMode := Value;
-end;
-
-procedure TThCustomCanvas.SetPenOpacity(const Value: TThPercent);
-begin
-  FPenOpacity := Value;
-
-  FFreeDrawLayer.PenAlpha := Round(FPenOpacity / 100 * 255);;
-end;
-
-procedure TThCustomCanvas.SetPenSize(const Value: Integer);
-begin
-  FPenSize := Value;
-  FFreeDrawLayer.Thickness := FPenSize;
 end;
 
 procedure TThCustomCanvas.SetScale(const Value: Single);
@@ -236,13 +183,6 @@ begin
 
   FImgView.Scale := LScale;
   DoScaleChage(LScale);
-end;
-
-procedure TThCustomCanvas.SetShapeMode(const Value: TThShapeMode);
-begin
-  FShapeMode := Value;
-
-  FShapeDrawLayer.ShapeMode := Value;
 end;
 
 procedure TThCustomCanvas.Test;

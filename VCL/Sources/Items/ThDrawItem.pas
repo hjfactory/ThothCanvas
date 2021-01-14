@@ -8,17 +8,16 @@ uses
 
 
 type
-  TThItem = class
-  end;
-
   TThDrawItem = class(TThItem)
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
   protected
-    FDrawStyle: IThDrawStyle;
+    FDrawStyle: TThDrawStyle;
   public
     constructor Create(AStyle: IThDrawStyle);
+    destructor Destroy; override;
+
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
     property Bounds: TFloatRect read FBounds;
     property PolyPoly: TThPolyPoly read FPolyPoly;
@@ -38,6 +37,7 @@ type
     property IsToDelete: Boolean read FIsToDelete write FIsToDelete;
 
     constructor Create(AStyle: IThDrawStyle; APath: TThPath; APolyPoly: TThPolyPoly);
+    destructor Destroy; override;
   end;
 
   TThShapeDrawItem = class(TThDrawItem)
@@ -63,17 +63,38 @@ type
 
 implementation
 
+{ TThDrawItem }
+
+constructor TThDrawItem.Create(AStyle: IThDrawStyle);
+begin
+  FDrawStyle.Assign(TThDrawStyle(AStyle));
+end;
+
+destructor TThDrawItem.Destroy;
+begin
+//  FDrawStyle.Free;
+
+  inherited;
+end;
 
 { TThFreeDrawItem }
 
 constructor TThPenDrawItem.Create(AStyle: IThDrawStyle; APath: TThPath; APolyPoly: TThPolyPoly);
 begin
+  FDrawStyle := TThPenStyle.Create;
+
   inherited Create(AStyle);
 
   FPath := APath;
   FPolyPoly := APolyPoly;
 
   FBounds := PolypolygonBounds(FPolyPoly);
+end;
+
+destructor TThPenDrawItem.Destroy;
+begin
+
+  inherited;
 end;
 
 procedure TThPenDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
@@ -114,13 +135,6 @@ procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
 begin
   inherited;
 
-end;
-
-{ TThDrawItem }
-
-constructor TThDrawItem.Create(AStyle: IThDrawStyle);
-begin
-  FDrawStyle := AStyle;
 end;
 
 end.
