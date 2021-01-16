@@ -3,11 +3,15 @@ unit ThDrawItem;
 interface
 
 uses
+  System.Generics.Collections,
   GR32, GR32_Polygons, GR32_VectorUtils,
   ThTypes;
 
 
 type
+  TThDrawItem = class;
+  TThDrawItems = TObjectList<TThDrawItem>;
+
   TThDrawItem = class(TThItem)
   private
     FBounds: TFloatRect;
@@ -30,7 +34,7 @@ type
     FColor: TColor32;
     FAlpha: Byte;
 
-    FIsToDelete: Boolean;
+    FIsDeletion: Boolean;
   public
     constructor Create(APath: TThPath; APolyPoly: TThPolyPoly;
       AThickness: Integer; AColor: TColor32; AAlpha: Byte);
@@ -38,7 +42,7 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     property Path: TThPath read FPath;
-    property IsToDelete: Boolean read FIsToDelete write FIsToDelete;
+    property IsDeletion: Boolean read FIsDeletion write FIsDeletion default False;
   end;
 
   TThShapeDrawItem = class(TThDrawItem)
@@ -87,7 +91,7 @@ var
 begin
   LColor := FColor;
   LAlpha := FAlpha;
-  if FIsToDelete then
+  if FIsDeletion then
     LAlpha := Round(LAlpha * 0.2);
 
   ModifyAlpha(LColor, LAlpha);

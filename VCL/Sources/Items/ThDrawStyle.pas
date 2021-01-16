@@ -23,6 +23,8 @@ type
     FThickness: Integer;
     procedure SetThickness(const Value: Integer);
   public
+    constructor Create; virtual;
+
     property Thickness: Integer read FThickness write SetThickness;
   end;
 
@@ -34,10 +36,10 @@ type
     procedure SetColor(const Value: TColor32);
     function GetAplha: Byte;
   public
-    constructor Create;
+    constructor Create; override;
 
-    property Color: TColor32 read FColor write SetColor;
-    property Opacity: TThPercent read FOpacity write SetOpacity;
+    property Color: TColor32 read FColor write SetColor default clBlack32;
+    property Opacity: TThPercent read FOpacity write SetOpacity default 100;
     property Alpha: Byte read GetAplha;
   end;
 
@@ -56,6 +58,11 @@ end;
 
 { TThBrushStyle }
 
+constructor TThBrushStyle.Create;
+begin
+  FThickness := 10;
+end;
+
 procedure TThBrushStyle.SetThickness(const Value: Integer);
 begin
   if FThickness = Value then
@@ -68,8 +75,9 @@ end;
 
 constructor TThPenStyle.Create;
 begin
+  inherited;
+
   FColor := clBlack32;
-  FThickness := 10;
   FOpacity := 100;
 end;
 

@@ -53,16 +53,12 @@ uses
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
-//  FCanvas.PenDrawMode := bdmPen;
+  ToggleSwitch1.State := tssOn;
+  FCanvas.FreeDrawMode := fdmPen;
 end;
 
 procedure TfrmMain.Button2Click(Sender: TObject);
-var
-  LFont: TFont;
 begin
-  LFont := Font;
-
   frmDebug.Show;
 end;
 
@@ -76,7 +72,8 @@ end;
 
 procedure TfrmMain.Button4Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
+  ToggleSwitch1.State := tssOn;
+  FCanvas.FreeDrawMode := fdmEraser;
 //  FCanvas.PenDrawMode := bdmEraser;
 end;
 

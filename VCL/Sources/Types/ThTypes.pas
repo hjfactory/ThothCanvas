@@ -13,7 +13,7 @@ const
 type
   TThCanvasMode = (cmSelection, cmFreeDraw, cmShapeDraw);
 
-  TThBrushDrawMode = (bdmNone, bdmPen, bdmEraser);
+  TThFreeDrawMode = (fdmPen, fdmEraser);
   TThShapeMode = (smNone, smRectangle);
 
   TThPath = TArray<TFloatPoint>;

@@ -30,19 +30,17 @@ type
   private
     FImgView: TImgView32;
 
-    FMouseDowned: Boolean;
-    FMouseDownPoint: TPoint;
-
     FFreeDrawLayer: TFreeDrawLayer;
     FShapeDrawLayer: TShapeDrawLayer;
     FBackgroundLayer: TThBackgroundLayer;
 
     FCanvasMode: TThCanvasMode;
-    FShapeMode: TThShapeMode;
+//    FShapeMode: TThShapeMode;
 
     FPenStyle: TThPenStyle;
 
     FOnScaleChange: TScaleChangeEvent;
+    FFreeDrawMode: TThFreeDrawMode;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -68,6 +66,7 @@ type
 
     procedure PenStyleChange(Sender: TObject);
     procedure SetCanvasMode(const Value: TThCanvasMode);
+    procedure SetFreeDrawMode(const Value: TThFreeDrawMode);
   protected
     procedure CreateWnd; override;
   public
@@ -77,6 +76,7 @@ type
     procedure CreatePage(AWidth: Integer = 0; AHeight: Integer = 0);
 
     property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
+    property FreeDrawMode: TThFreeDrawMode read FFreeDrawMode write SetFreeDrawMode;
 
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
@@ -187,6 +187,13 @@ begin
 
   FFreeDrawLayer.HitTest  := Value = TThCanvasMode.cmFreeDraw;
   FShapeDrawLayer.HitTest := Value = TThCanvasMode.cmShapeDraw;
+end;
+
+procedure TThCustomCanvas.SetFreeDrawMode(const Value: TThFreeDrawMode);
+begin
+  FFreeDrawMode := Value;
+
+  FFreeDrawLayer.DrawMode := Value;
 end;
 
 procedure TThCustomCanvas.SetScale(const Value: Single);

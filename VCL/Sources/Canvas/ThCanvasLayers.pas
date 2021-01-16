@@ -35,7 +35,7 @@ type
     function GetOffset: TFloatPoint;
     function GetScale: TFloatPoint;
   protected
-    FDrawItems: TObjectList<TThDrawItem>;
+    FDrawItems: TThDrawItems;
 
     procedure Paint(Buffer: TBitmap32); override;
   public
@@ -57,7 +57,7 @@ type
 
   protected
     FDrawStyle: IThDrawStyle;
-    FDrawObject: IThDrawObject;
+    [unsafe] FDrawObject: IThDrawObject;
 
     procedure SetDrawStyle(const Value: IThDrawStyle); virtual;
 
@@ -72,15 +72,28 @@ type
     property DrawStyle: IThDrawStyle read FDrawStyle write SetDrawStyle;
   end;
 
-  // 펜과 지우개로 그린다.
+  // 자유롭게 그리기(펜과 지우개) 위한 레이어
   TFreeDrawLayer = class(TThCustomDrawLayer)
-  protected
-    function DoHitTest(X, Y: Integer): Boolean; override;
+  private
+    FDrawMode: TThFreeDrawMode;
+    
+    FPenStyle: TThPenStyle;
+    FEraStyle: TThEraserStyle;
+
+    FPenDrawObj: TThPenDrawObject;
+    FEraDrawObj: TThEraserDrawObject;
+    
+    procedure SetDrawMode(const Value: TThFreeDrawMode);
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
+
+    function DoHitTest(X, Y: Integer): Boolean; override;
+    
+    property DrawMode: TThFreeDrawMode read FDrawMode write SetDrawMode;
   end;
 
+  // 도형을 추가해 그리는 레이어
   TShapeDrawLayer = class(TThCustomDrawLayer)
   private
     FMouseDowned: Boolean;
@@ -111,9 +124,10 @@ type
     procedure Clear;
   end;
 
+  // 배경 레이어
   TThBackgroundLayer = class(TBitmapLayer)
   public
-    function  DoHitTest(X, Y: Integer): Boolean; override;
+    function DoHitTest(X, Y: Integer): Boolean; override;
   end;
 
 implementation
@@ -249,8 +263,6 @@ begin
 end;
 
 procedure TThCustomDrawLayer.SetDrawStyle(const Value: IThDrawStyle);
-var
-  Style: TThPenStyle;
 begin
   FDrawStyle := Value;
 
@@ -263,8 +275,14 @@ constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FDrawStyle := TThPenStyle.Create;
-  FDrawObject := TThPenBrushObject.Create(FDrawStyle);
+  // Default DrawStyle
+  FPenStyle := TThPenStyle.Create;
+  FEraStyle := TThEraserStyle.Create;
+
+  FPenDrawObj := TThPenDrawObject.Create(FPenStyle);
+  FEraDrawObj := TThObjErsDrawObject.Create(FEraStyle, FDrawItems); // 객체 지우개
+
+  FDrawObject := FPenDrawObj;
 
   FMouseDowned := False;
 end;
@@ -282,6 +300,20 @@ begin
     Result := Assigned(FDrawObject);
 end;
 
+
+procedure TFreeDrawLayer.SetDrawMode(const Value: TThFreeDrawMode);
+begin
+  FDrawMode := Value;
+
+  case Value of
+    fdmPen: 
+      FDrawObject := FPenDrawObj;
+    fdmEraser: 
+      FDrawObject := FEraDrawObj;
+  end;
+  
+  Update;
+end;
 
 { TThShapeDrawLayer }
 
@@ -330,8 +362,6 @@ Exit;
 end;
 
 procedure TShapeDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
-var
-  CurrP, LastP: TFloatPoint; // Adjusted point
 begin
 Exit;
   if FCanvasMode <> cmSelection then
@@ -340,7 +370,6 @@ Exit;
   if FMouseDowned then
   begin
     // Viewport to Local
-    CurrP := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
     DebugMousePos('ShapeDraw', PointF(X, Y));
 
     FCurrPos := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
