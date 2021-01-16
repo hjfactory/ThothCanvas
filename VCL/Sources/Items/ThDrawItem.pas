@@ -1,3 +1,7 @@
+{
+  Role
+}
+
 unit ThDrawItem;
 
 interface
@@ -12,7 +16,7 @@ type
   TThDrawItem = class;
   TThDrawItems = TObjectList<TThDrawItem>;
 
-  TThDrawItem = class(TThItem)
+  TThDrawItem = class
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
@@ -118,8 +122,10 @@ end;
 procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 begin
-  inherited;
+  ScalePolygonInplace(Poly, AScale.X, AScale.Y);
+  TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
 
+  PolygonFS(Bitmap, Poly, FColor);
 end;
 
 end.

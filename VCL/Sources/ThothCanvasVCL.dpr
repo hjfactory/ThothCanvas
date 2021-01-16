@@ -11,7 +11,9 @@ uses
   DebugForm in 'Forms\DebugForm.pas' {frmDebug},
   ThDrawItem in 'Items\ThDrawItem.pas',
   ThDrawObject in 'Items\ThDrawObject.pas',
-  ThDrawStyle in 'Items\ThDrawStyle.pas';
+  ThDrawStyle in 'Items\ThDrawStyle.pas',
+  ThDrawStyleManager in 'Controller\ThDrawStyleManager.pas',
+  ThClasses in 'Types\ThClasses.pas';
 
 {$R *.res}
 

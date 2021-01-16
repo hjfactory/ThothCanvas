@@ -1,3 +1,8 @@
+{
+  Role
+    Draw shapes with the mouse movements.
+}
+
 unit ThDrawObject;
 
 interface
@@ -6,35 +11,33 @@ uses
   System.Classes,
   System.Generics.Collections,
 
-  GR32,
-  GR32_Polygons,
-  GR32_VectorUtils,
+  GR32, GR32_Polygons, GR32_VectorUtils,
   clipper,
 
-  ThTypes,
-  ThDrawStyle,
-  ThDrawItem;
+  ThTypes, ThClasses,
+  ThDrawStyle, ThDrawItem;
 
 type
   TThDrawObject = class(TInterfacedObject, IThDrawObject)
-  public
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
-
-    procedure Move(const X, Y: TFloat); overload; virtual;
-    procedure Move(const APoint: TFloatPoint); overload; virtual; abstract;
-
-    function CreateItem: TObject; virtual;
-    procedure Clear; virtual;
-  end;
-
-  /// Brush Objects
-  TThBrushDrawObject = class(TThDrawObject)
   private
     FDrawStyle: IThDrawStyle;
   public
     constructor Create(AStyle: IThDrawStyle); virtual;
-    destructor Destroy; override;
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
+
+    procedure StartMove(const APoint: TFloatPoint); virtual;
+    procedure Move(const APoint: TFloatPoint); virtual; abstract;
+    procedure DoneMove; virtual;
+
+    function CreateItem: TObject; virtual;
+
     property DrawStyle: IThDrawStyle read FDrawStyle write FDrawStyle;
+  end;
+
+  /// Brush Objects
+  TThBrushDrawObject = class(TThDrawObject)
+  public
+    destructor Destroy; override;
   end;
 
   TThPenDrawObject = class(TThBrushDrawObject)
@@ -52,8 +55,8 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     procedure Move(const APoint: TFloatPoint); override;
+    procedure DoneMove; override;
     function CreateItem: TObject; override;
-    procedure Clear; override;
   end;
 
   TThEraserDrawObject = class(TThBrushDrawObject)
@@ -63,17 +66,29 @@ type
 
     property DrawStyle: TThEraserStyle read GetDrawStyle;
   public
-    constructor Create(AStyle: IThDrawStyle; AItems: TThDrawItems);
+    constructor Create(AStyle: IThDrawStyle; AItems: TThDrawItems); overload;
   end;
 
   TThObjErsDrawObject = class(TThEraserDrawObject)
   public
     procedure Move(const APoint: TFloatPoint); override;
-    procedure Clear; override;
+    procedure DoneMove; override;
   end;
 
   /// Shape Objects
   TThShapeDrawObject = class(TThDrawObject)
+  private
+    FDownPos, FCurrPos: TFloatPoint;
+    function GetDrawStyle: TThShapeStyle;
+    property DrawStyle: TThShapeStyle read GetDrawStyle;
+  public
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+
+    procedure StartMove(const APoint: TFloatPoint); override;
+    procedure Move(const APoint: TFloatPoint); override;
+    procedure DoneMove; override;
+
+    function CreateItem: TObject; override;
   end;
 
 implementation
@@ -83,12 +98,16 @@ uses
 
 { TThDrawObject }
 
-procedure TThDrawObject.Move(const X, Y: TFloat);
+constructor TThDrawObject.Create(AStyle: IThDrawStyle);
 begin
-  Move(FloatPoint(X, Y));
+  FDrawStyle := AStyle;
 end;
 
-procedure TThDrawObject.Clear;
+procedure TThDrawObject.StartMove;
+begin
+end;
+
+procedure TThDrawObject.DoneMove;
 begin
 end;
 
@@ -99,13 +118,6 @@ end;
 
 procedure TThDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 begin
-end;
-
-{ TThBrushDrawObject }
-
-constructor TThBrushDrawObject.Create(AStyle: IThDrawStyle);
-begin
-  FDrawStyle := AStyle;
 end;
 
 { TThPenObject }
@@ -175,7 +187,7 @@ begin
   end;
 end;
 
-procedure TThPenDrawObject.Clear;
+procedure TThPenDrawObject.DoneMove;
 begin
   inherited;
 
@@ -251,7 +263,7 @@ begin
   end;
 end;
 
-procedure TThObjErsDrawObject.Clear;
+procedure TThObjErsDrawObject.DoneMove;
 var
   I: Integer;
   Item: TThDrawItem;
@@ -262,6 +274,51 @@ begin
     if TThPenDrawItem(Item).IsDeletion then
       FDrawItems.Delete(I);
   end;
+end;
+
+{ TThShapeDrawObject }
+
+procedure TThShapeDrawObject.StartMove(const APoint: TFloatPoint);
+begin
+  FDownPos := APoint;
+end;
+
+procedure TThShapeDrawObject.Move(const APoint: TFloatPoint);
+begin
+  FCurrPos := APoint;
+end;
+
+procedure TThShapeDrawObject.DoneMove;
+begin
+  inherited;
+
+end;
+
+procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+var
+  Poly: TThPoly;
+begin
+  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
+  ScalePolygonInplace(Poly, AScale.X, AScale.Y);
+  TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
+
+  PolygonFS(Bitmap, Poly, DrawStyle.Color);
+
+  PolylineFS(Bitmap, Poly, DrawStyle.BorderColor, True, DrawStyle.BorderWidth);
+end;
+
+function TThShapeDrawObject.GetDrawStyle: TThShapeStyle;
+begin
+  Result := TThShapeStyle(FDrawStyle);
+end;
+
+function TThShapeDrawObject.CreateItem: TObject;
+var
+  Poly: TThPoly;
+begin
+  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
+  Result := TThRectangleItem.Create(FloatRect(FDownPos, FCurrPos), Poly,
+      DrawStyle.BorderWidth, DrawStyle.Color, 255);
 end;
 
 end.
