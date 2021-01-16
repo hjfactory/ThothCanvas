@@ -10,7 +10,7 @@ uses
   ThTypes;
 
 type
-  TThDrawStyle = class(TThInterfacedPersistent, IThDrawStyle)
+  TThDrawStyle = class(TInterfacedObject, IThDrawStyle)
   private
     FOnChange: TNotifyEvent;
     procedure DoChange;
@@ -35,9 +35,6 @@ type
     function GetAplha: Byte;
   public
     constructor Create;
-    destructor Destroy; override;
-
-    procedure Assign(Source: TPersistent); override;
 
     property Color: TColor32 read FColor write SetColor;
     property Opacity: TThPercent read FOpacity write SetOpacity;
@@ -69,27 +66,11 @@ end;
 
 { TThPenStyle }
 
-procedure TThPenStyle.Assign(Source: TPersistent);
-begin
-  if Source is TThPenStyle then
-  begin
-    FColor := TThPenStyle(Source).Color;
-    FThickness := TThPenStyle(Source).Thickness;
-    FOpacity := TThPenStyle(Source).Opacity;
-  end;
-end;
-
 constructor TThPenStyle.Create;
 begin
   FColor := clBlack32;
   FThickness := 10;
   FOpacity := 100;
-end;
-
-destructor TThPenStyle.Destroy;
-begin
-
-  inherited;
 end;
 
 function TThPenStyle.GetAplha: Byte;

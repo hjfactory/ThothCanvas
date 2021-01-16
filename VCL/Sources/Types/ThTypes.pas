@@ -11,9 +11,11 @@ const
   TH_SCALE_MIN = 0.2;
   TH_SCALE_MAX = 4;
 type
-  TThCanvasMode = (cmSelection, cmFreeDraw);
+  TThCanvasMode = (cmSelection, cmFreeDraw, cmShapeDraw);
+
   TThBrushDrawMode = (bdmNone, bdmPen, bdmEraser);
   TThShapeMode = (smNone, smRectangle);
+
   TThPath = TArray<TFloatPoint>;
   TThPercent = 0..100;
 
@@ -24,22 +26,19 @@ type
   end;
 
   IThCanvas = interface
-  ['{5BC92595-BFFF-4D3F-A175-8A69F9C42CF9}']
   end;
 
   IThDrawObject = interface
-    ['{F82BC1D0-3BB7-417F-897D-44E41154F0B1}']
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
     procedure Move(const X, Y: TFloat); overload;
     procedure Move(const APoint: TFloatPoint); overload;
 
-    function CreateItem: TThItem;
+    function CreateItem: TObject;
     procedure Clear;
   end;
 
   IThDrawStyle = interface
-    ['{33DDCFFB-A309-4CAF-806C-E87A6CDB6048}']
   end;
 
   TThInterfacedPersistent = class(TPersistent, IInterface)
@@ -53,7 +52,17 @@ type
   public
   end;
 
+  TObjectHelper = class helper for TObject
+    function Clone: TObject;
+  end;
+
 implementation
+
+uses
+  System.JSON,
+  DBXJSONReflect
+//  REST.JsonReflect
+  ;
 
 { TThInterfacedPersistent }
 
@@ -78,6 +87,29 @@ begin
   Result := AtomicDecrement(FRefCount);
   if Result = 0 then
     Destroy;
+end;
+
+function TObjectHelper.Clone: TObject;
+var
+  MarshalObj: TJSONMarshal;
+  UnMarshalObj: TJSONUnMarshal;
+  JSONValue: TJSONValue;
+begin
+  Result:= nil;
+  MarshalObj := TJSONMarshal.Create;
+  UnMarshalObj := TJSONUnMarshal.Create;
+  try
+    JSONValue := MarshalObj.Marshal(Self);
+    try
+      if Assigned(JSONValue) then
+        Result:= UnMarshalObj.Unmarshal(JSONValue);
+    finally
+      JSONValue.Free;
+    end;
+  finally
+    MarshalObj.Free;
+    UnMarshalObj.Free;
+  end;
 end;
 
 end.

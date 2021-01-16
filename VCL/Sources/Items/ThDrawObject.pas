@@ -17,30 +17,34 @@ uses
 
 type
   TThDrawObject = class(TInterfacedObject, IThDrawObject)
+  private
+    FDrawStyle: IThDrawStyle;
   public
+    constructor Create(AStyle: IThDrawStyle); virtual;
+
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
 
     procedure Move(const X, Y: TFloat); overload; virtual;
     procedure Move(const APoint: TFloatPoint); overload; virtual; abstract;
 
-    function CreateItem: TThItem; virtual;
+    function CreateItem: TObject; virtual;
     procedure Clear; virtual;
+
+    property DrawStyle: IThDrawStyle read FDrawStyle write FDrawStyle;
   end;
 
   /// Brush Objects
-  TThBrushObject = class(TThDrawObject)
-  private
-    FBrushStyle: IThDrawStyle;
-  public
-    constructor Create(AStyle: IThDrawStyle); virtual;
-    property BrushStyle: IThDrawStyle read FBrushStyle write FBrushStyle;
+  TThBrushDrawObject = class(TThDrawObject)
   end;
 
-  TThPenObject = class(TThBrushObject)
+  TThPenBrushObject = class(TThBrushDrawObject)
   private
     FPath: TList<TFloatPoint>;
     FPolyPolyPath: TPaths;
     FPolyPoly: TArrayOfArrayOfFloatPoint;
+    function GetPenStyle: TThPenStyle;
+
+    property PenStyle: TThPenStyle read GetPenStyle;
   public
     constructor Create(AStyle: IThDrawStyle); override;
     destructor Destroy; override;
@@ -48,18 +52,16 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     procedure Move(const APoint: TFloatPoint); override;
-    function CreateItem: TThItem; override;
+    function CreateItem: TObject; override;
     procedure Clear; override;
   end;
 
-  TThEraserObject = class(TThBrushObject)
+  TThEraserObject = class(TThBrushDrawObject)
   end;
 
   /// Shape Objects
-  TThShapeObject = class(TThDrawObject)
+  TThShapeDrawObject = class(TThDrawObject)
   end;
-
-//  TTHDraw
 
 implementation
 
@@ -75,49 +77,39 @@ end;
 
 procedure TThDrawObject.Clear;
 begin
-
 end;
 
-function TThDrawObject.CreateItem: TThItem;
+constructor TThDrawObject.Create(AStyle: IThDrawStyle);
+begin
+  FDrawStyle := AStyle;
+end;
+
+function TThDrawObject.CreateItem: TObject;
 begin
   Result := nil;
 end;
 
-{ TThBrushObject }
-
-constructor TThBrushObject.Create(AStyle: IThDrawStyle);
-begin
-  FBrushStyle := AStyle;
-end;
-
 { TThPenObject }
 
-constructor TThPenObject.Create(AStyle: IThDrawStyle);
+constructor TThPenBrushObject.Create(AStyle: IThDrawStyle);
 begin
   inherited Create(AStyle);
 
   FPath := TList<TFloatPoint>.Create;
 end;
 
-function TThPenObject.CreateItem: TThItem;
-begin
-  Result := TThPenDrawItem.Create(FBrushStyle, FPath.ToArray, FPolyPoly);
-end;
-
-destructor TThPenObject.Destroy;
+destructor TThPenBrushObject.Destroy;
 begin
   FPath.Free;
 
   inherited;
 end;
 
-procedure TThPenObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TThPenBrushObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 var
-  PenStyle: TThPenStyle;
   Color: TColor32;
   PolyPoly: TThPolyPoly;
 begin
-  PenStyle := TThPenStyle(FBrushStyle);
   Color := PenStyle.Color;
   ModifyALpha(Color, PenStyle.Alpha);
 
@@ -127,7 +119,7 @@ begin
   PolyPolygonFS(Bitmap, PolyPoly, Color);
 end;
 
-procedure TThPenObject.Move(const APoint: TFloatPoint);
+procedure TThPenBrushObject.Move(const APoint: TFloatPoint);
 var
   Poly: TThPoly;
   PolyPath: TPath;
@@ -164,13 +156,24 @@ begin
   end;
 end;
 
-procedure TThPenObject.Clear;
+procedure TThPenBrushObject.Clear;
 begin
   inherited;
 
   FPath.Clear;
   FPolyPolyPath := nil;
   FPolyPoly := nil;
+end;
+
+function TThPenBrushObject.CreateItem: TObject;
+begin
+  Result := TThPenDrawItem.Create(FPath.ToArray, FPolyPoly,
+    PenStyle.Thickness, PenStyle.Color, PenStyle.Alpha);
+end;
+
+function TThPenBrushObject.GetPenStyle: TThPenStyle;
+begin
+  Result := TThPenStyle(FDrawStyle);
 end;
 
 end.

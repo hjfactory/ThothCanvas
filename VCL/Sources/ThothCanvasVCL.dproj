@@ -102,7 +102,7 @@
             <Form>frmMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ThCanvas.pas"/>
+        <DCCReference Include="Canvas\ThCanvas.pas"/>
         <DCCReference Include="Types\ThTypes.pas"/>
         <DCCReference Include="Canvas\ThCanvasLayers.pas"/>
         <DCCReference Include="..\Libraries\clipper.pas"/>

@@ -1,3 +1,9 @@
+{
+  Role
+    Drawing shapes(Collaborate with ThDrawObject)
+    Display drawn shapes(Collaborate with ThDrawItem)
+}
+
 unit ThCanvasLayers;
 
 interface
@@ -18,7 +24,12 @@ uses
   ThDrawObject;
 
 type
-  TThCustomViewLayer = class(TPositionedLayer)
+  TThCustomLayer = class(TPositionedLayer)
+
+  end;
+
+  // Display drawn shapes
+  TThCustomViewLayer = class(TThCustomLayer)
   private
     FHitTest: Boolean;
     function GetOffset: TFloatPoint;
@@ -39,6 +50,7 @@ type
     property Offset: TFloatPoint read GetOffset;
   end;
 
+  // Drawing shapes
   TThCustomDrawLayer = class(TThCustomViewLayer)
   private
     FMouseDowned: Boolean;
@@ -60,12 +72,10 @@ type
     property DrawStyle: IThDrawStyle read FDrawStyle write SetDrawStyle;
   end;
 
-  TBrushDrawLayer = class(TThCustomDrawLayer)
-  private
-//    procedure AddEraserPoint(const X, Y: Integer);
-//    procedure DeleteDrawItems;
+  // 펜과 지우개로 그린다.
+  TFreeDrawLayer = class(TThCustomDrawLayer)
   protected
-    function  DoHitTest(X, Y: Integer): Boolean; override;
+    function DoHitTest(X, Y: Integer): Boolean; override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -99,6 +109,11 @@ type
     property ShapeMode: TThShapeMode read FShapeMode write FShapeMode;
 
     procedure Clear;
+  end;
+
+  TThBackgroundLayer = class(TBitmapLayer)
+  public
+    function  DoHitTest(X, Y: Integer): Boolean; override;
   end;
 
 implementation
@@ -137,10 +152,7 @@ end;
 
 function TThCustomViewLayer.DoHitTest(X, Y: Integer): Boolean;
 begin
-  if not FHitTest then
-    Exit(False);
-
-  Result := inherited;
+  Result := FHitTest;
 end;
 
 function TThCustomViewLayer.GetOffset: TFloatPoint;
@@ -183,16 +195,14 @@ var
 begin
   inherited;
 
-//  if FCanvasMode <> cmFreeDraw then
-//    Exit;
-
   if Button = mbLeft then
   begin
     P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
 
     FMouseDowned := True;
 
-    FDrawObject.Move(P);
+    if Assigned(FDrawObject) then
+      FDrawObject.Move(P);
     Update;
   end;
 end;
@@ -206,7 +216,8 @@ begin
   if FMouseDowned then
   begin
     P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
-    FDrawObject.Move(P);
+    if Assigned(FDrawObject) then
+      FDrawObject.Move(P);
     Update;
   end;
 end;
@@ -243,97 +254,34 @@ var
 begin
   FDrawStyle := Value;
 
-  TThBrushObject(FDrawObject).BrushStyle := FDrawStyle;
+  TThBrushDrawObject(FDrawObject).DrawStyle := FDrawStyle;
 end;
 
 { TBrushDrawLayer }
 
-constructor TBrushDrawLayer.Create(ALayerCollection: TLayerCollection);
+constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
   FDrawStyle := TThPenStyle.Create;
-  FDrawObject := TThPenObject.Create(FDrawStyle);
+  FDrawObject := TThPenBrushObject.Create(FDrawStyle);
 
   FMouseDowned := False;
 end;
 
-destructor TBrushDrawLayer.Destroy;
+destructor TFreeDrawLayer.Destroy;
 begin
 
   inherited;
 end;
 
-//procedure TBrushDrawLayer.AddEraserPoint(const X, Y: Integer);
-//var
-//  P: TFloatPoint;
-//  Item: TThDrawItem;
-//  Poly: TThPoly;
-//  PolyRect, DestRect: TFloatRect;
-//  EraserPath: TPath;
-//  ItemPaths, DestPaths: TPaths;
-//begin
-//  P := LayerCollection.ViewportToLocal(FloatPoint(X, Y), True);
-//  Poly := Circle(P, FThickness / 2);
-//  PolyRect := PolygonBounds(Poly);
-//  for Item in FDrawItems do
-//  begin
-//    IntersectRect(DestRect, PolyRect, Item.Bounds);
-//    if IsRectEmpty(DestRect) then
-//      Continue;
-//
-//    EraserPath := AAFloatPoint2AAPoint(Poly);
-//    ItemPaths := AAFloatPoint2AAPoint(Item.PolyPoly);
-//    with TClipper.Create do
-//    begin
-//      StrictlySimple := True;
-//      AddPaths(ItemPaths, ptSubject, True);
-//      AddPath(EraserPath, ptClip, True);
-//
-//      Execute(ctIntersection, DestPaths, pftNonZero);
-//    end;
-
-//    if Length(DestPaths) > 0 then
-//      Item.IsToDelete := True;
-//  end;
-//end;
-
-//procedure TBrushDrawLayer.DeleteDrawItems;
-//var
-//  I: Integer;
-//  Item: TThPenDrawItem;
-//begin
-//  for I := FDrawItems.Count - 1 downto 0 do
-//  begin
-//    Item := FDrawItems[I];
-//    if Item.IsToDelete then
-//      FDrawItems.Delete(I);
-//  end;
-//end;
-
-function TBrushDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+function TFreeDrawLayer.DoHitTest(X, Y: Integer): Boolean;
 begin
-  Result := Assigned(FDrawObject);
+  Result := inherited;
+  if Result then
+    Result := Assigned(FDrawObject);
 end;
 
-//function TBrushDrawLayer.GetPenStyle: TThPenStyle;
-//begin
-//  Result := TThPenStyle(FDrawStyle);
-//end;
-//
-//procedure TBrushDrawLayer.SetDrawMode(const Value: TThBrushDrawMode);
-//begin
-//  FDrawMode := Value;
-//
-//  case FDrawMode of
-//    bdmNone:
-//      FDrawObject := nil;
-//    bdmPen:
-//      FDrawObject := TThPenObject.Create(PenStyle);
-//    bdmEraser:
-//      FDrawObject := TThEraserObject.Create(EraserStyle);
-//  end;
-//end;
 
 { TThShapeDrawLayer }
 
@@ -369,7 +317,7 @@ procedure TShapeDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
   inherited;
-
+Exit;
   if FCanvasMode <> cmSelection then
     Exit;
 
@@ -385,6 +333,7 @@ procedure TShapeDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
   CurrP, LastP: TFloatPoint; // Adjusted point
 begin
+Exit;
   if FCanvasMode <> cmSelection then
     Exit;
 
@@ -403,6 +352,7 @@ end;
 procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
   Y: Integer);
 begin
+Exit;
   inherited;
 
   if FCanvasMode <> cmSelection then
@@ -472,6 +422,13 @@ end;
 procedure TShapeDrawLayer.Clear;
 begin
 
+end;
+
+{ TThBackgroundLayer }
+
+function TThBackgroundLayer.DoHitTest(X, Y: Integer): Boolean;
+begin
+  Result := False;
 end;
 
 end.

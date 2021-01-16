@@ -1,3 +1,12 @@
+{
+  Role
+    Interaction
+    Layers management
+      Freedraw
+      Shapes
+      Viewer(Display received datas)
+}
+
 unit ThCanvas;
 
 interface
@@ -24,17 +33,16 @@ type
     FMouseDowned: Boolean;
     FMouseDownPoint: TPoint;
 
-    FBackgroundLayer: TBitmapLayer;
-    FFreeDrawLayer: TBrushDrawLayer;
+    FFreeDrawLayer: TFreeDrawLayer;
     FShapeDrawLayer: TShapeDrawLayer;
+    FBackgroundLayer: TThBackgroundLayer;
 
-    FOnScaleChange: TScaleChangeEvent;
-    FPenColor: TColor;
-    FPenSize: Integer;
-    FPenOpacity: TThPercent;
     FCanvasMode: TThCanvasMode;
     FShapeMode: TThShapeMode;
+
     FPenStyle: TThPenStyle;
+
+    FOnScaleChange: TScaleChangeEvent;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -59,6 +67,7 @@ type
       MousePos: TPoint; var Handled: Boolean);
 
     procedure PenStyleChange(Sender: TObject);
+    procedure SetCanvasMode(const Value: TThCanvasMode);
   protected
     procedure CreateWnd; override;
   public
@@ -67,11 +76,10 @@ type
 
     procedure CreatePage(AWidth: Integer = 0; AHeight: Integer = 0);
 
+    property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
+
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
-
-    procedure Move(AX, AY: Integer);
-    procedure Test;
 
     procedure Clear;
 
@@ -136,24 +144,27 @@ end;
 procedure TThCustomCanvas.CreatePage(AWidth, AHeight: Integer);
 begin
   if (AWidth = 0) or (AWidth = 0) then
-    FImgView.Bitmap.SetSize(2480, 3508)
-  else
-    FImgView.Bitmap.SetSize(AWidth, AHeight);
+  begin
+    AWidth := 2480;
+    AHeight := 3508;
+  end;
+
+//  FImgView.Bitmap.SetSize(AWidth, AHeight);
   FImgView.Bitmap.Clear(clGray32);
 
-  FBackgroundLayer := TBitmapLayer.Create(FImgView.Layers);
-  FBackgroundLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width-0, FImgView.Bitmap.Height-0);
-  FBackgroundLayer.Bitmap.SetSize(FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FBackgroundLayer := TThBackgroundLayer.Create(FImgView.Layers);
+  FBackgroundLayer.Location := FloatRect(0, 0, AWidth, AHeight);
+  FBackgroundLayer.Bitmap.SetSize(AWidth, AHeight);
   FBackgroundLayer.Bitmap.Clear(clWhite32);
   FBackgroundLayer.Scaled := True;
 
   FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
-  FShapeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
+  FShapeDrawLayer.HitTest := False;
+  FShapeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
 
-  FFreeDrawLayer := TBrushDrawLayer.Create(FImgView.Layers);
-  FFreeDrawLayer.Location := FloatRect(0, 0, FImgView.Bitmap.Width, FImgView.Bitmap.Height);
-  FFreeDrawLayer.DrawStyle := FPenStyle;
-//  FFreeDrawLayer.Location := FloatRect(0, 0, 300, 300);
+  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
+  FFreeDrawLayer.HitTest := True;
+//  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth-2000, AHeight-2000);
 end;
 
 procedure TThCustomCanvas.DoScaleChage(Scale: Single);
@@ -167,27 +178,30 @@ begin
   Result := FImgView.Scale;
 end;
 
+procedure TThCustomCanvas.SetCanvasMode(const Value: TThCanvasMode);
+begin
+  if FCanvasMode = Value then
+    Exit;
+
+  FCanvasMode := Value;
+
+  FFreeDrawLayer.HitTest  := Value = TThCanvasMode.cmFreeDraw;
+  FShapeDrawLayer.HitTest := Value = TThCanvasMode.cmShapeDraw;
+end;
+
 procedure TThCustomCanvas.SetScale(const Value: Single);
 var
   LScale: Single;
 begin
-  if Value < TH_SCALE_MIN then
-    LScale := TH_SCALE_MIN
-  else if Value > TH_SCALE_MAX then
-    LScale := TH_SCALE_MAX
-  else
-    LScale := Value
-  ;
+  if      Value < TH_SCALE_MIN then LScale := TH_SCALE_MIN
+  else if Value > TH_SCALE_MAX then LScale := TH_SCALE_MAX
+  else                              LScale := Value;
+
   if GetScale = LScale then
     Exit;
 
   FImgView.Scale := LScale;
   DoScaleChage(LScale);
-end;
-
-procedure TThCustomCanvas.Test;
-begin
-  FImgView.Bitmap.SaveToFile('D:\test.jpg');
 end;
 
 procedure TThCustomCanvas.ImgViewResize(Sender: TObjecT);
@@ -252,11 +266,6 @@ procedure TThCustomCanvas.ImgViewMouseWheelUp(Sender: TObject; Shift: TShiftStat
 begin
   if ssCtrl in Shift then
     Scale := Scale - 0.1;
-end;
-
-procedure TThCustomCanvas.Move(AX, AY: Integer);
-begin
-  FImgView.Scroll(AX, AY);
 end;
 
 procedure TThCustomCanvas.PenStyleChange(Sender: TObject);

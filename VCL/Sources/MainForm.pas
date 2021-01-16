@@ -48,7 +48,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DebugForm,
+  DebugForm, GR32,
   ThTypes;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
@@ -94,7 +94,7 @@ end;
 
 procedure TfrmMain.ColorBox1Change(Sender: TObject);
 begin
-  FCanvas.PenStyle.Color := ColorBox1.Selected;
+  FCanvas.PenStyle.Color := Color32(ColorBox1.Selected);
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -105,11 +105,11 @@ begin
 //  FCanvas.CreatePage(640, 480);
   FCanvas.CreatePage;
 
-  FCanvas.PenStyle.Color := ColorBox1.Selected;
+  FCanvas.PenStyle.Color := Color32(ColorBox1.Selected);
   FCanvas.PenStyle.Thickness := TrackBar1.Position;
   FCanvas.PenStyle.Opacity := SpinEdit1.Value;
 
-//  FCanvas.CanvasMode := cmFreeDraw;
+  Font.Size
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -124,10 +124,10 @@ end;
 
 procedure TfrmMain.ToggleSwitch1Click(Sender: TObject);
 begin
-//  if ToggleSwitch1.IsOn then
-//    FCanvas.CanvasMode := cmFreeDraw
-//  else
-//    FCanvas.CanvasMode := cmSelection;
+  if ToggleSwitch1.IsOn then
+    FCanvas.CanvasMode := cmFreeDraw
+  else
+    FCanvas.CanvasMode := cmShapeDraw;
 end;
 
 procedure TfrmMain.TrackBar1Change(Sender: TObject);

@@ -3,7 +3,7 @@ program ThothCanvasVCL;
 uses
   Vcl.Forms,
   MainForm in 'MainForm.pas' {frmMain},
-  ThCanvas in 'ThCanvas.pas',
+  ThCanvas in 'Canvas\ThCanvas.pas',
   ThTypes in 'Types\ThTypes.pas',
   ThCanvasLayers in 'Canvas\ThCanvasLayers.pas',
   clipper in '..\Libraries\clipper.pas',
