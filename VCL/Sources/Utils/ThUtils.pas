@@ -1,14 +1,17 @@
-unit ThGraphicsUtils;
+unit ThUtils;
 
 interface
 
 uses
+  ThTypes,
   GR32, clipper;
 
 type
   TFloatRectHelper = record helper for TFloatRect
     function Rect: TRect;
   end;
+
+function PtInPolyPolygon(const APoint: TFloatPoint; const APolyPoly: TThPolyPoly): Boolean;
 
 // Graphics32 <> clipper
 function AAFloatPoint2AAPoint(const APolyPoly: TArrayOfArrayOfFloatPoint;
@@ -22,7 +25,7 @@ function AAPoint2AAFloatPoint(const APaths: TPaths;
 implementation
 
 uses
-  System.Math;
+  System.Math, GR32_Geometry;
 
 { TFloatRectHelper }
 
@@ -32,6 +35,18 @@ begin
   Result.Top    := Round(Top);
   Result.Right  := Round(Right);
   Result.Bottom := Round(Bottom);
+end;
+
+function PtInPolyPolygon(const APoint: TFloatPoint; const APolyPoly: TThPolyPoly): Boolean;
+var
+  Poly: TArrayOfFloatPoint;
+begin
+  Result := False;
+  for Poly in APolyPoly do
+  begin
+    if PointInPolygon(APoint, Poly) then
+      Exit(True);
+  end;
 end;
 
 function AAFloatPoint2AAPoint(const APolyPoly: TArrayOfArrayOfFloatPoint;

@@ -12,10 +12,10 @@ const
   TH_SCALE_MAX = 4;
 
 type
-  TThCanvasMode = (cmSelection, cmFreeDraw, cmShapeDraw);
+  TThCanvasMode = (cmFreeDraw, cmShapeDraw);
 
-  TThFreeDrawMode = (fdmPen, fdmEraser);
-  TThShapeMode = (smNone, smRectangle);
+  TThFreeDrawMode   = (fdmPen, fdmEraser);
+  TThShapeDrawMode  = (sdmSelect, sdmDraw);
 
   TThPercent = 0..100;
 
@@ -31,9 +31,9 @@ type
   IThDrawObject = interface
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
-    procedure StartMove(const APoint: TFloatPoint);
-    procedure Move(const APoint: TFloatPoint);
-    procedure DoneMove;
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState);
 
     function CreateItem: TObject;
   end;

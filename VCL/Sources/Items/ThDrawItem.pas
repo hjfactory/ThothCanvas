@@ -9,21 +9,29 @@ interface
 uses
   System.Generics.Collections,
   GR32, GR32_Polygons, GR32_VectorUtils,
-  ThTypes;
+  ThTypes, ThUtils;
 
 
 type
   TThDrawItem = class;
-  TThDrawItems = TObjectList<TThDrawItem>;
+  TTHDrawItemArray = array of TThDrawItem;
+  TThDrawItems = class(TObjectList<TThDrawItem>)
+  public
+    // APoint에 포함되는 최상위 객체 반환
+    function PtInItem(APoint: TFloatPoint): TThDrawItem;
+    // APoly 영역에 포함되는 객체 목록 반환
+    function PolyInItems(APoly: TThPoly): TThDrawItemArray;
+  end;
 
   TThDrawItem = class
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
+    function GetBounds: TFloatRect;
   protected
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
-    property Bounds: TFloatRect read FBounds;
+    property Bounds: TFloatRect read GetBounds;
     property PolyPoly: TThPolyPoly read FPolyPoly;
   end;
 
@@ -50,12 +58,15 @@ type
   end;
 
   TThShapeDrawItem = class(TThDrawItem)
+  private
+    FIsSelection: Boolean;
+  public
+    property IsSelection: Boolean read FIsSelection write FIsSelection;
   end;
 
-  TThRectangleItem = class(TThShapeDrawItem)
+  TThRectDrawItem = class(TThShapeDrawItem)
   private
     FRect: TFloatRect;
-    FPoly: TThPoly;
     FThickness: Single;
     FColor: TColor32;
     FAlpha: Byte;
@@ -65,12 +76,47 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    property Poly: TThPoly read FPoly;
     property Color: TColor32 read FColor;
     property Alpha: Byte read FAlpha write FAlpha;
   end;
 
 implementation
+
+{ TThDrawItems }
+
+function TThDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
+var
+  I: Integer;
+  Item: TThDrawItem;
+begin
+  Result := nil;
+
+  for I := Count - 1 downto 0 do
+  begin
+    Item := TThDrawItem(Items[I]);
+    if not PtInRect(Item.Bounds, APoint) then
+      Continue;
+
+    if not PtInPolyPolygon(APoint, Item.PolyPoly) then
+      Continue;
+
+    Exit(Item);
+  end;
+end;
+
+function TThDrawItems.PolyInItems(APoly: TThPoly): TThDrawItemArray;
+begin
+
+end;
+
+{ TThDrawItem }
+
+function TThDrawItem.GetBounds: TFloatRect;
+begin
+  if IsRectEmpty(FBounds) then
+    FBounds := PolypolygonBounds(FPolyPoly);
+  Result := FBounds;
+end;
 
 { TThFreeDrawItem }
 
@@ -83,8 +129,6 @@ begin
   FThickness := AThickness;
   FColor := AColor;
   FAlpha := AAlpha;
-
-  FBounds := PolypolygonBounds(FPolyPoly);
 end;
 
 procedure TThPenDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
@@ -108,24 +152,29 @@ end;
 
 { TThRectangleItem }
 
-constructor TThRectangleItem.Create(ARect: TFloatRect; APoly: TThPoly;
+constructor TThRectDrawItem.Create(ARect: TFloatRect; APoly: TThPoly;
   AThickness: Single; AColor: TColor32; AAlpha: Byte);
 begin
   FRect := ARect;
-  FPoly := APoly;
+  FPolyPoly := PolyPolygon(APoly);
   FThickness := AThickness;
   FColor := AColor;
   FAlpha := AAlpha;
 end;
 
 
-procedure TThRectangleItem.Draw(Bitmap: TBitmap32; AScale,
+procedure TThRectDrawItem.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
+var
+  PolyPoly: TThPolyPoly;
 begin
-  ScalePolygonInplace(Poly, AScale.X, AScale.Y);
-  TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
+  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
+  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-  PolygonFS(Bitmap, Poly, FColor);
+  if FIsSelection then
+    PolyPolygonFS(Bitmap, PolyPoly, clGray32)
+  else
+    PolyPolygonFS(Bitmap, PolyPoly, FColor);
 end;
 
 end.

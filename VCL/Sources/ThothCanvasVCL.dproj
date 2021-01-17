@@ -106,7 +106,7 @@
         <DCCReference Include="Types\ThTypes.pas"/>
         <DCCReference Include="Canvas\ThCanvasLayers.pas"/>
         <DCCReference Include="..\Libraries\clipper.pas"/>
-        <DCCReference Include="Utils\ThGraphicsUtils.pas"/>
+        <DCCReference Include="Utils\ThUtils.pas"/>
         <DCCReference Include="Forms\DebugForm.pas">
             <Form>frmDebug</Form>
             <FormType>dfm</FormType>

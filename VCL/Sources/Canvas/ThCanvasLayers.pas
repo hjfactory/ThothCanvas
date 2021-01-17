@@ -33,7 +33,8 @@ type
     FDrawItems: TThDrawItems;
 
     procedure Paint(Buffer: TBitmap32); override;
-    function ViewportToLocal(APoint: TFloatPoint): TFloatPoint;
+    function ViewportToLocal(APoint: TFloatPoint): TFloatPoint; overload;
+    function ViewportToLocal(AX, AY: TFloat): TFloatPoint; overload;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -92,10 +93,17 @@ type
   // 도형을 추가해 그리는 레이어
   TShapeDrawLayer = class(TThCustomDrawLayer)
   private
+    FShapeDrawObj: TThShapeDrawObject;
+    FSelectObj: TThShapeSelectObject;
+    FDrawMode: TThShapeDrawMode;
+    procedure SetDrawMode(const Value: TThShapeDrawMode);
   protected
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
+
+    property DrawMode: TThShapeDrawMode read FDrawMode write SetDrawMode;
+    property Selection: TThShapeSelectObject read FSelectObj;
   end;
 
   // 배경 레이어
@@ -110,7 +118,7 @@ implementation
 
 uses
   DebugForm,
-  ThGraphicsUtils;
+  ThUtils;
 
 
 { TThCustomViewLayer }
@@ -119,7 +127,7 @@ constructor TThCustomViewLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FDrawItems := TObjectList<TThDrawItem>.Create(True);
+  FDrawItems := TThDrawItems.Create(True);
 
   Scaled := True;
 end;
@@ -165,6 +173,11 @@ begin
   Buffer.EndUpdate;
 end;
 
+function TThCustomViewLayer.ViewportToLocal(AX, AY: TFloat): TFloatPoint;
+begin
+  Result := FloatPoint(AX, AY);
+end;
+
 function TThCustomViewLayer.ViewportToLocal(APoint: TFloatPoint): TFloatPoint;
 begin
   Result := LayerCollection.ViewportToLocal(APoint, True)
@@ -183,37 +196,27 @@ end;
 
 procedure TThCustomDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
-var
-  P: TFloatPoint;
 begin
   inherited;
 
   if Button = mbLeft then
   begin
-    P := ViewportToLocal(FloatPoint(X, Y));
-
     FMouseDowned := True;
 
     if Assigned(FDrawObject) then
-    begin
-      FDrawObject.StartMove(P);
-      FDrawObject.Move(P);
-    end;
+      FDrawObject.Start(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
 
 procedure TThCustomDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
-var
-  P: TFloatPoint;
 begin
   inherited;
 
   if FMouseDowned then
   begin
-    P := ViewportToLocal(FloatPoint(X, Y));
     if Assigned(FDrawObject) then
-      FDrawObject.Move(P);
+      FDrawObject.Move(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
@@ -231,7 +234,7 @@ begin
     Item := FDrawObject.CreateItem;
     if Assigned(Item) then
        FDrawItems.Add(Item as TThDrawItem);
-    FDrawObject.DoneMove;
+    FDrawObject.Done(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
@@ -305,13 +308,26 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FDrawObject := TThShapeDrawObject.Create(TThShapeStyle.Create);
+  FSelectObj := TThShapeSelectObject.Create(FDrawItems);
+  FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
+
+  FDrawObject := FSelectObj;
 end;
 
 destructor TShapeDrawLayer.Destroy;
 begin
 
   inherited;
+end;
+
+procedure TShapeDrawLayer.SetDrawMode(const Value: TThShapeDrawMode);
+begin
+  FDrawMode := Value;
+
+  case Value of
+    sdmSelect: FDrawObject := FSelectObj;
+    sdmDraw: FDrawObject := FShapeDrawObj;
+  end;
 end;
 
 { TThBackgroundLayer }

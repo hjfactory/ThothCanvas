@@ -7,7 +7,7 @@ uses
   ThTypes in 'Types\ThTypes.pas',
   ThCanvasLayers in 'Canvas\ThCanvasLayers.pas',
   clipper in '..\Libraries\clipper.pas',
-  ThGraphicsUtils in 'Utils\ThGraphicsUtils.pas',
+  ThUtils in 'Utils\ThUtils.pas',
   DebugForm in 'Forms\DebugForm.pas' {frmDebug},
   ThDrawItem in 'Items\ThDrawItem.pas',
   ThDrawObject in 'Items\ThDrawObject.pas',

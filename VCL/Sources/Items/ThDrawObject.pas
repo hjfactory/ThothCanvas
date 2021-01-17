@@ -25,9 +25,9 @@ type
     constructor Create(AStyle: IThDrawStyle); virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
 
-    procedure StartMove(const APoint: TFloatPoint); virtual;
-    procedure Move(const APoint: TFloatPoint); virtual; abstract;
-    procedure DoneMove; virtual;
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); virtual;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); virtual; abstract;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); virtual;
 
     function CreateItem: TObject; virtual;
 
@@ -54,8 +54,9 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    procedure Move(const APoint: TFloatPoint); override;
-    procedure DoneMove; override;
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
     function CreateItem: TObject; override;
   end;
 
@@ -71,8 +72,9 @@ type
 
   TThObjErsDrawObject = class(TThEraserDrawObject)
   public
-    procedure Move(const APoint: TFloatPoint); override;
-    procedure DoneMove; override;
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
   end;
 
   /// Shape Objects
@@ -84,17 +86,37 @@ type
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    procedure StartMove(const APoint: TFloatPoint); override;
-    procedure Move(const APoint: TFloatPoint); override;
-    procedure DoneMove; override;
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     function CreateItem: TObject; override;
+  end;
+
+  // Shape Select
+  TThShapeSelectObject = class(TThDrawObject)
+  private
+    FDrawItems: TThDrawItems;
+    FSelectItems: TList<TThShapeDrawItem>;
+
+    procedure SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState);
+  public
+    constructor Create(AItems: TThDrawItems); overload;
+    destructor Destroy; override;
+
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
+
+    property Items: TList<TThShapeDrawItem> read FSelectItems;
+
+    procedure ClearSelection;
   end;
 
 implementation
 
 uses
-  ThGraphicsUtils;
+  ThUtils;
 
 { TThDrawObject }
 
@@ -103,11 +125,11 @@ begin
   FDrawStyle := AStyle;
 end;
 
-procedure TThDrawObject.StartMove;
+procedure TThDrawObject.Start;
 begin
 end;
 
-procedure TThDrawObject.DoneMove;
+procedure TThDrawObject.Done;
 begin
 end;
 
@@ -150,44 +172,44 @@ begin
   PolyPolygonFS(Bitmap, PolyPoly, Color);
 end;
 
-procedure TThPenDrawObject.Move(const APoint: TFloatPoint);
+procedure TThPenDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  Poly: TThPoly;
+  PolyPath: TPath;
+begin
+  FPath.Add(APoint);
+
+  Poly := Circle(APoint, PenStyle.Thickness / 2);
+  FPolyPoly := PolyPolygon(Poly);
+  FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
+end;
+
+procedure TThPenDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 var
   Poly: TThPoly;
   PolyPath: TPath;
   LastP: TFloatPoint; // Adjusted point
-  Thickness: Integer;
 begin
-  Thickness := 12;
-
   FPath.Add(APoint);
 
-  if FPath.Count = 1 then
-  begin
-    Poly := Circle(APoint, Thickness / 2);
-    FPolyPoly := PolyPolygon(Poly);
-    FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
-  end
-  else
-  begin
-    LastP := FPath.Items[FPath.Count-2];
-    Poly := BuildPolyline([LastP, APoint], Thickness, jsRound, esRound);
-    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+  LastP := FPath.Items[FPath.Count-2];
+  Poly := BuildPolyline([LastP, APoint], PenStyle.Thickness, jsRound, esRound);
+  PolyPath := AAFloatPoint2AAPoint(Poly, 3);
 
-    with TClipper.Create do
-    try
-      AddPaths(FPolyPolyPath, ptSubject, True);
-      AddPath(PolyPath, ptClip, True);
+  with TClipper.Create do
+  try
+    AddPaths(FPolyPolyPath, ptSubject, True);
+    AddPath(PolyPath, ptClip, True);
 
-      Execute(ctUnion, FPolyPolyPath, pftNonZero);
-    finally
-      Free;
-    end;
-
-    FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
+    Execute(ctUnion, FPolyPolyPath, pftNonZero);
+  finally
+    Free;
   end;
+
+  FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
 end;
 
-procedure TThPenDrawObject.DoneMove;
+procedure TThPenDrawObject.Done;
 begin
   inherited;
 
@@ -230,7 +252,12 @@ end;
 
 { TThObjErsDrawObject }
 
-procedure TThObjErsDrawObject.Move(const APoint: TFloatPoint);
+procedure TThObjErsDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
+begin
+  Move(APoint, AShift);
+end;
+
+procedure TThObjErsDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 var
   Item: TThDrawItem;
   Poly: TThPoly;
@@ -263,7 +290,7 @@ begin
   end;
 end;
 
-procedure TThObjErsDrawObject.DoneMove;
+procedure TThObjErsDrawObject.Done(const APoint: TFloatPoint; AShift: TShiftState);
 var
   I: Integer;
   Item: TThDrawItem;
@@ -278,17 +305,17 @@ end;
 
 { TThShapeDrawObject }
 
-procedure TThShapeDrawObject.StartMove(const APoint: TFloatPoint);
+procedure TThShapeDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   FDownPos := APoint;
 end;
 
-procedure TThShapeDrawObject.Move(const APoint: TFloatPoint);
+procedure TThShapeDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   FCurrPos := APoint;
 end;
 
-procedure TThShapeDrawObject.DoneMove;
+procedure TThShapeDrawObject.Done(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   inherited;
 
@@ -317,8 +344,82 @@ var
   Poly: TThPoly;
 begin
   Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
-  Result := TThRectangleItem.Create(FloatRect(FDownPos, FCurrPos), Poly,
+  Result := TThRectDrawItem.Create(FloatRect(FDownPos, FCurrPos), Poly,
       DrawStyle.BorderWidth, DrawStyle.Color, 255);
+end;
+
+{ TThShapeSelectObject }
+
+procedure TThShapeSelectObject.ClearSelection;
+var
+  Item: TThShapeDrawItem;
+begin
+  for Item in FSelectItems do
+    Item.IsSelection := False;
+  FSelectItems.Clear;
+end;
+
+constructor TThShapeSelectObject.Create(AItems: TThDrawItems);
+begin
+  FDrawItems := AItems;
+  FSelectItems := TList<TThShapeDrawItem>.Create;
+end;
+
+destructor TThShapeSelectObject.Destroy;
+begin
+  FSelectItems.Free;
+
+  inherited;
+end;
+
+procedure TThShapeSelectObject.SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState);
+begin
+  if Assigned(AItem) then
+  begin
+    // 선택되지 않은 경우 선택 처리(이미 선택된 경우 무시)
+    if AItem.IsSelection then
+    begin
+      if ssShift in AShift then
+      begin
+        AItem.IsSelection := False;
+        FSelectItems.Remove(AItem);
+      end;
+    end
+    else
+    begin
+      if not (ssShift in AShift)  then
+        ClearSelection;
+
+      AItem.IsSelection := True;
+      FSelectItems.Add(AItem);
+    end;
+  end
+  else
+  begin
+    if not (ssShift in AShift) then
+      ClearSelection;
+  end;
+end;
+
+procedure TThShapeSelectObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  I: Integer;
+  Item: TThDrawItem;
+begin
+  Item := FDrawItems.PtInItem(APoint);
+
+  SetSelection(Item as TThShapeDrawItem, AShift);
+end;
+
+procedure TThShapeSelectObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
+begin
+
+end;
+
+procedure TThShapeSelectObject.Done(const APoint: TFloatPoint; AShift: TShiftState);
+begin
+  inherited;
+
 end;
 
 end.
