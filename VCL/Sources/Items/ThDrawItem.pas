@@ -8,7 +8,7 @@ interface
 
 uses
   System.Generics.Collections,
-  GR32, GR32_Polygons, GR32_VectorUtils,
+  GR32, GR32_Polygons, GR32_VectorUtils, clipper,
   ThTypes, ThUtils;
 
 
@@ -21,12 +21,13 @@ type
   public
     // APoint에 포함되는 최상위 객체 반환
     function PtInItem(APoint: TFloatPoint): TThDrawItem;
-    // APoly 영역에 포함되는 객체 목록 반환
+    // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
   end;
 
   TThShapeDrawItems = class(TList<TThShapeDrawItem>)
   public
+    // 모든 항목 APoint만큼 이동
     procedure Move(APoint: TFloatPoint);
   end;
 
@@ -112,8 +113,36 @@ begin
 end;
 
 function TThDrawItems.PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
+var
+  I: Integer;
+  PolyRect, DestRect: TFloatRect;
+  PolyPath: TPath;
+  ItemPaths, DestPaths: TPaths;
 begin
+  PolyRect := PolygonBounds(APoly);
 
+  for I := 0 to Count - 1 do
+  begin
+    // Rect로 1차 교차 비교
+    IntersectRect(DestRect, PolyRect, Items[I].Bounds);
+    if IsRectEmpty(DestRect) then
+      Continue;
+
+    // Polygon 교차 비교(Clipper로 교차 영역 생성 후 비었는지 확인)
+    PolyPath := AAFloatPoint2AAPoint(APoly);
+    ItemPaths := AAFloatPoint2AAPoint(Items[I].PolyPoly);
+    with TClipper.Create do
+    begin
+      StrictlySimple := True;
+      AddPaths(ItemPaths, ptSubject, True);
+      AddPath(PolyPath, ptClip, True);
+
+      Execute(ctIntersection, DestPaths, pftNonZero);
+    end;
+
+    if Length(DestPaths) > 0 then
+      Result := Result + [Items[I]];
+  end;
 end;
 
 { TThShapeDrawItems }

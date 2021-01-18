@@ -270,30 +270,13 @@ var
   PolyRect, DestRect: TFloatRect;
   EraserPath: TPath;
   ItemPaths, DestPaths: TPaths;
+  I: Integer;
+  LDrawItems: TArray<TThDrawItem>;
 begin
   Poly := Circle(APoint, DrawStyle.Thickness / 2);
-  PolyRect := PolygonBounds(Poly);
-
-  for Item in FDrawItems do
-  begin
-    IntersectRect(DestRect, PolyRect, Item.Bounds);
-    if IsRectEmpty(DestRect) then
-      Continue;
-
-    EraserPath := AAFloatPoint2AAPoint(Poly);
-    ItemPaths := AAFloatPoint2AAPoint(Item.PolyPoly);
-    with TClipper.Create do
-    begin
-      StrictlySimple := True;
-      AddPaths(ItemPaths, ptSubject, True);
-      AddPath(EraserPath, ptClip, True);
-
-      Execute(ctIntersection, DestPaths, pftNonZero);
-    end;
-
-    if Length(DestPaths) > 0 then
-      TThPenDrawItem(Item).IsDeletion := True;
-  end;
+  LDrawItems := FDrawItems.PolyInItems(Poly);
+  for I := 0 to Length(LDrawItems) - 1 do
+    TThPenDrawItem(LDrawItems[I]).IsDeletion := True;
 end;
 
 procedure TThObjErsDrawObject.Done(const APoint: TFloatPoint; AShift: TShiftState);
