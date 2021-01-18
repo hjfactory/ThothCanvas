@@ -80,7 +80,8 @@ type
   /// Shape Objects
   TThShapeDrawObject = class(TThDrawObject)
   private
-    FDownPos, FCurrPos: TFloatPoint;
+    FDownPt, FCurrPt: TFloatPoint;
+    FLastObject: TObject;
     function GetDrawStyle: TThShapeStyle;
     property DrawStyle: TThShapeStyle read GetDrawStyle;
   public
@@ -91,15 +92,19 @@ type
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     function CreateItem: TObject; override;
+    property LastObject: TObject read FLastObject;
   end;
 
   // Shape Select
   TThShapeSelectObject = class(TThDrawObject)
   private
+    FLastPt: TFloatPoint;
     FDrawItems: TThDrawItems;
-    FSelectItems: TList<TThShapeDrawItem>;
+    FSelected: TThShapeDrawItem;
+    FSelectItems: TThShapeDrawItems;
 
-    procedure SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState);
+    function SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState): TThShapeDrawItem;
+    procedure SetSelected(const Value: TThShapeDrawItem);
   public
     constructor Create(AItems: TThDrawItems); overload;
     destructor Destroy; override;
@@ -108,7 +113,8 @@ type
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
-    property Items: TList<TThShapeDrawItem> read FSelectItems;
+    property Items: TThShapeDrawItems read FSelectItems;
+    property Selected: TThShapeDrawItem read FSelected write SetSelected;
 
     procedure ClearSelection;
   end;
@@ -307,25 +313,30 @@ end;
 
 procedure TThShapeDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-  FDownPos := APoint;
+  FLastObject := nil;
+  FDownPt := APoint;
 end;
 
 procedure TThShapeDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-  FCurrPos := APoint;
+  FCurrPt := APoint;
 end;
 
 procedure TThShapeDrawObject.Done(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   inherited;
 
+  FCurrPt := EmptyPoint;
 end;
 
 procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 var
   Poly: TThPoly;
 begin
-  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
+  if FCurrPt = EmptyPoint then
+    FCurrPt := FDownPt + FloatPoint(100, 100);
+
+  Poly := Rectangle(FloatRect(FDownPt, FCurrPt));
   ScalePolygonInplace(Poly, AScale.X, AScale.Y);
   TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
 
@@ -343,9 +354,10 @@ function TThShapeDrawObject.CreateItem: TObject;
 var
   Poly: TThPoly;
 begin
-  Poly := Rectangle(FloatRect(FDownPos, FCurrPos));
-  Result := TThRectDrawItem.Create(FloatRect(FDownPos, FCurrPos), Poly,
+  Poly := Rectangle(FloatRect(FDownPt, FCurrPt));
+  FLastObject := TThRectDrawItem.Create(FloatRect(FDownPt, FCurrPt), Poly,
       DrawStyle.BorderWidth, DrawStyle.Color, 255);
+  Result := FLastObject;
 end;
 
 { TThShapeSelectObject }
@@ -362,7 +374,7 @@ end;
 constructor TThShapeSelectObject.Create(AItems: TThDrawItems);
 begin
   FDrawItems := AItems;
-  FSelectItems := TList<TThShapeDrawItem>.Create;
+  FSelectItems := TThShapeDrawItems.Create;
 end;
 
 destructor TThShapeSelectObject.Destroy;
@@ -372,8 +384,17 @@ begin
   inherited;
 end;
 
-procedure TThShapeSelectObject.SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState);
+procedure TThShapeSelectObject.SetSelected(const Value: TThShapeDrawItem);
 begin
+  ClearSelection;
+  FSelected := Value;
+  Value.IsSelection := True;
+  FSelectItems.Add(Value);
+end;
+
+function TThShapeSelectObject.SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState): TThShapeDrawItem;
+begin
+  Result := AItem;
   if Assigned(AItem) then
   begin
     // 선택되지 않은 경우 선택 처리(이미 선택된 경우 무시)
@@ -383,6 +404,7 @@ begin
       begin
         AItem.IsSelection := False;
         FSelectItems.Remove(AItem);
+        Result := nil;
       end;
     end
     else
@@ -406,14 +428,22 @@ var
   I: Integer;
   Item: TThDrawItem;
 begin
+  FLastPt := APoint;
   Item := FDrawItems.PtInItem(APoint);
 
-  SetSelection(Item as TThShapeDrawItem, AShift);
+  FSelected := SetSelection(Item as TThShapeDrawItem, AShift);
 end;
 
 procedure TThShapeSelectObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  P: TFloatPoint;
 begin
-
+  if Assigned(FSelected) then
+  begin
+    P := APoint - FLastPt;
+    FSelectItems.Move(P);
+    FLastPt := APoint;
+  end;
 end;
 
 procedure TThShapeSelectObject.Done(const APoint: TFloatPoint; AShift: TShiftState);

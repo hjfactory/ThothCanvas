@@ -14,13 +14,20 @@ uses
 
 type
   TThDrawItem = class;
-  TTHDrawItemArray = array of TThDrawItem;
+  TThShapeDrawItem = class;
+  TThDrawItemClass = class of TThDrawItem;
+
   TThDrawItems = class(TObjectList<TThDrawItem>)
   public
     // APoint에 포함되는 최상위 객체 반환
     function PtInItem(APoint: TFloatPoint): TThDrawItem;
     // APoly 영역에 포함되는 객체 목록 반환
-    function PolyInItems(APoly: TThPoly): TThDrawItemArray;
+    function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
+  end;
+
+  TThShapeDrawItems = class(TList<TThShapeDrawItem>)
+  public
+    procedure Move(APoint: TFloatPoint);
   end;
 
   TThDrawItem = class
@@ -93,7 +100,7 @@ begin
 
   for I := Count - 1 downto 0 do
   begin
-    Item := TThDrawItem(Items[I]);
+    Item := Items[I];
     if not PtInRect(Item.Bounds, APoint) then
       Continue;
 
@@ -104,9 +111,23 @@ begin
   end;
 end;
 
-function TThDrawItems.PolyInItems(APoly: TThPoly): TThDrawItemArray;
+function TThDrawItems.PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
 begin
 
+end;
+
+{ TThShapeDrawItems }
+
+procedure TThShapeDrawItems.Move(APoint: TFloatPoint);
+var
+  I: Integer;
+  Item: TThShapeDrawItem;
+begin
+  for I := 0 to Count - 1 do
+  begin
+    Items[I].FBounds := EmptyRect;
+    TranslatePolyPolygonInplace(Items[I].FPolyPoly, APoint.X, APoint.Y);
+  end;
 end;
 
 { TThDrawItem }

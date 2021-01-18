@@ -12,6 +12,8 @@ type
   end;
 
 function PtInPolyPolygon(const APoint: TFloatPoint; const APolyPoly: TThPolyPoly): Boolean;
+function EmptyRect: TFloatRect;
+function EmptyPoint: TFloatPoint;
 
 // Graphics32 <> clipper
 function AAFloatPoint2AAPoint(const APolyPoly: TArrayOfArrayOfFloatPoint;
@@ -47,6 +49,19 @@ begin
     if PointInPolygon(APoint, Poly) then
       Exit(True);
   end;
+end;
+
+function EmptyRect: TFloatRect;
+begin
+  Result.Left := 0;
+  Result.Top := 0;
+  Result.Right := 0;
+  Result.Bottom := 0;
+end;
+
+function EmptyPoint: TFloatPoint;
+begin
+  Result := TFloatPoint.Zero;
 end;
 
 function AAFloatPoint2AAPoint(const APolyPoly: TArrayOfArrayOfFloatPoint;

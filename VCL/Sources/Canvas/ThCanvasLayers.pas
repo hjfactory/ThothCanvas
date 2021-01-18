@@ -98,6 +98,7 @@ type
     FDrawMode: TThShapeDrawMode;
     procedure SetDrawMode(const Value: TThShapeDrawMode);
   protected
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -224,16 +225,16 @@ end;
 procedure TThCustomDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
-  Item: TObject;
+  Item: TThDrawItem;
 begin
   inherited;
 
   if FMouseDowned then
   begin
     FMouseDowned := False;
-    Item := FDrawObject.CreateItem;
+    Item := FDrawObject.CreateItem as TThDrawItem;
     if Assigned(Item) then
-       FDrawItems.Add(Item as TThDrawItem);
+       FDrawItems.Add(Item);
     FDrawObject.Done(ViewportToLocal(X, Y), Shift);
     Update;
   end;
@@ -318,6 +319,20 @@ destructor TShapeDrawLayer.Destroy;
 begin
 
   inherited;
+end;
+
+procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  inherited;
+
+  if FDrawMode = sdmDraw then
+  begin
+    DrawMode := sdmSelect;
+    if Assigned(FShapeDrawObj.LastObject) then
+      FSelectObj.Selected := FShapeDrawObj.LastObject as TThShapeDrawItem;
+
+  end;
 end;
 
 procedure TShapeDrawLayer.SetDrawMode(const Value: TThShapeDrawMode);
