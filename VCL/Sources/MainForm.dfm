@@ -134,4 +134,12 @@ object frmMain: TfrmMain
     TabOrder = 10
     OnClick = Button6Click
   end
+  object Button7: TButton
+    Left = 294
+    Top = 51
+    Width = 29
+    Height = 25
+    Caption = 'Del'
+    TabOrder = 11
+  end
 end

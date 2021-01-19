@@ -71,7 +71,7 @@ type
   end;
 
   TThObjErsDrawObject = class(TThEraserDrawObject)
-  public
+  private
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
@@ -82,14 +82,16 @@ type
   private
     FDownPt, FCurrPt: TFloatPoint;
     FLastObject: TObject;
-    function GetDrawStyle: TThShapeStyle;
-    property DrawStyle: TThShapeStyle read GetDrawStyle;
-  public
+
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
+
+    function GetDrawStyle: TThShapeStyle;
+    property DrawStyle: TThShapeStyle read GetDrawStyle;
+  public
 
     function CreateItem: TObject; override;
     property LastObject: TObject read FLastObject;
@@ -103,18 +105,19 @@ type
     FSelected: TThShapeDrawItem;
     FSelectItems: TThShapeDrawItems;
 
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
+
     function SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState): TThShapeDrawItem;
     procedure SetSelected(const Value: TThShapeDrawItem);
   public
     constructor Create(AItems: TThDrawItems); overload;
     destructor Destroy; override;
 
-    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
-
     property Items: TThShapeDrawItems read FSelectItems;
     property Selected: TThShapeDrawItem read FSelected write SetSelected;
+    procedure DeleteSelectedItems;
 
     procedure ClearSelection;
   end;
@@ -358,6 +361,15 @@ constructor TThShapeSelectObject.Create(AItems: TThDrawItems);
 begin
   FDrawItems := AItems;
   FSelectItems := TThShapeDrawItems.Create;
+end;
+
+procedure TThShapeSelectObject.DeleteSelectedItems;
+var
+  Item: TThDrawItem;
+begin
+  for Item in FSelectItems do
+    FDrawItems.Remove(Item);
+  FSelectItems.Clear;
 end;
 
 destructor TThShapeSelectObject.Destroy;

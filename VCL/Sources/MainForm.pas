@@ -21,6 +21,7 @@ type
     Button4: TButton;
     Button5: TButton;
     Button6: TButton;
+    Button7: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -81,7 +82,6 @@ procedure TfrmMain.Button5Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
   FCanvas.ShapeDrawMode := sdmDraw;
-//  FCanvas.ShapeMode := smRectangle;
 end;
 
 procedure TfrmMain.Button6Click(Sender: TObject);

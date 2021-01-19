@@ -84,6 +84,7 @@ type
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
 
     procedure Clear;
+    procedure DeleteSelected;
 
     property PenStyle: TThPenStyle read FPenStyle;
   end;
@@ -134,6 +135,11 @@ begin
   inherited;
 
   FImgView.ScrollBars.Visibility := svAuto;
+end;
+
+procedure TThCustomCanvas.DeleteSelected;
+begin
+  FShapeDrawLayer.Selection.DeleteSelectedItems;
 end;
 
 destructor TThCustomCanvas.Destroy;
