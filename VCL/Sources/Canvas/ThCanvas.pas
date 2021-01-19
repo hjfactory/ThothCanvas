@@ -139,7 +139,7 @@ end;
 
 procedure TThCustomCanvas.DeleteSelected;
 begin
-  FShapeDrawLayer.Selection.DeleteSelectedItems;
+  FShapeDrawLayer.DeleteSelectedItems;
 end;
 
 destructor TThCustomCanvas.Destroy;

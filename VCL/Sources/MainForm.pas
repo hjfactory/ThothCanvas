@@ -34,6 +34,7 @@ type
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -89,6 +90,11 @@ begin
   ToggleSwitch1.State := tssOff;
   FCanvas.ShapeDrawMode := sdmSelect;
 //  FCanvas.ShapeMode := smNone;
+end;
+
+procedure TfrmMain.Button7Click(Sender: TObject);
+begin
+  FCanvas.DeleteSelected;
 end;
 
 procedure TfrmMain.ColorBox1Change(Sender: TObject);

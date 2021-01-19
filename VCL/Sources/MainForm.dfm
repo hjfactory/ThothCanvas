@@ -141,5 +141,6 @@ object frmMain: TfrmMain
     Height = 25
     Caption = 'Del'
     TabOrder = 11
+    OnClick = Button7Click
   end
 end

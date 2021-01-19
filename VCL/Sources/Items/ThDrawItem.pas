@@ -1,5 +1,6 @@
 {
   Role
+    Store drawing datas.
 }
 
 unit ThDrawItem;
@@ -9,7 +10,7 @@ interface
 uses
   System.Generics.Collections,
   GR32, GR32_Polygons, GR32_VectorUtils, clipper,
-  ThTypes, ThUtils;
+  ThTypes, ThUtils, ThClasses;
 
 
 type
@@ -31,14 +32,13 @@ type
     procedure Move(APoint: TFloatPoint);
   end;
 
-  TThDrawItem = class
+  TThDrawItem = class(TThInterfacedObject, IThDrawItem)
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
     function GetBounds: TFloatRect;
   protected
   public
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
     property Bounds: TFloatRect read GetBounds;
     property PolyPoly: TThPolyPoly read FPolyPoly;
   end;
@@ -55,13 +55,14 @@ type
     FAlpha: Byte;
 
     FIsDeletion: Boolean;
+    function GetColor: TColor32;
   public
     constructor Create(APath: TThPath; APolyPoly: TThPolyPoly;
       AThickness: Integer; AColor: TColor32; AAlpha: Byte);
-
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+    destructor Destroy; override;
 
     property Path: TThPath read FPath;
+    property Color: TColor32 read GetColor;
     property IsDeletion: Boolean read FIsDeletion write FIsDeletion default False;
   end;
 
@@ -81,8 +82,7 @@ type
   public
     constructor Create(ARect: TFloatRect; APoly: TThPoly; AThickness: Single;
       AColor: TColor32; AAlpha: Byte);
-
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+    destructor Destroy; override;
 
     property Color: TColor32 read FColor;
     property Alpha: Byte read FAlpha write FAlpha;
@@ -181,23 +181,21 @@ begin
   FAlpha := AAlpha;
 end;
 
-procedure TThPenDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-var
-  LColor: TColor32;
-  LAlpha: Byte;
-  PolyPoly: TThPolyPoly;
+destructor TThPenDrawItem.Destroy;
 begin
-  LColor := FColor;
+
+  inherited;
+end;
+
+function TThPenDrawItem.GetColor: TColor32;
+var
+  LAlpha: Byte;
+begin
+  Result := FColor;
   LAlpha := FAlpha;
   if FIsDeletion then
     LAlpha := Round(LAlpha * 0.2);
-
-  ModifyAlpha(LColor, LAlpha);
-
-  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
-  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
-
-  PolyPolygonFS(Bitmap, PolyPoly, LColor);
+  ModifyAlpha(Result, LAlpha);
 end;
 
 { TThRectangleItem }
@@ -212,19 +210,10 @@ begin
   FAlpha := AAlpha;
 end;
 
-
-procedure TThRectDrawItem.Draw(Bitmap: TBitmap32; AScale,
-  AOffset: TFloatPoint);
-var
-  PolyPoly: TThPolyPoly;
+destructor TThRectDrawItem.Destroy;
 begin
-  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
-  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-  if FIsSelection then
-    PolyPolygonFS(Bitmap, PolyPoly, clGray32)
-  else
-    PolyPolygonFS(Bitmap, PolyPoly, FColor);
+  inherited;
 end;
 
 end.

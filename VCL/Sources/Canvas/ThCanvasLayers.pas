@@ -20,7 +20,6 @@ uses
 
 type
   TThCustomLayer = class(TPositionedLayer)
-
   end;
 
   // Display drawn shapes
@@ -33,6 +32,8 @@ type
     FDrawItems: TThDrawItems;
 
     procedure Paint(Buffer: TBitmap32); override;
+
+    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; virtual; abstract;
     function ViewportToLocal(APoint: TFloatPoint): TFloatPoint; overload;
     function ViewportToLocal(AX, AY: TFloat): TFloatPoint; overload;
   public
@@ -77,10 +78,11 @@ type
     FPenStyle: IThDrawStyle;
     FEraStyle: IThDrawStyle;
 
-    FPenDrawObj: IThDrawObject;
-    FEraDrawObj: IThDrawObject;
+    FPenDrawObj: TThPenDrawObject;
+    FEraDrawObj: TThObjErsDrawObject;
     
     procedure SetDrawMode(const Value: TThFreeDrawMode);
+    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -97,6 +99,7 @@ type
     FSelectObj: TThShapeSelectObject;
     FDrawMode: TThShapeDrawMode;
     procedure SetDrawMode(const Value: TThShapeDrawMode);
+    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; override;
   protected
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
@@ -104,7 +107,8 @@ type
     destructor Destroy; override;
 
     property DrawMode: TThShapeDrawMode read FDrawMode write SetDrawMode;
-    property Selection: TThShapeSelectObject read FSelectObj;
+//    property Selection: TThShapeSelectObject read FSelectObj;
+    procedure DeleteSelectedItems;
   end;
 
   // 배경 레이어
@@ -165,12 +169,21 @@ end;
 procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
   Item: TThDrawItem;
+  LScale, LOffset: TFloatPoint;
+  DrawObject: IThDrawObject;
 begin
   inherited;
 
+  LScale := Scale;
+  LOffset := Offset;
+
   Buffer.BeginUpdate;
   for Item in FDrawItems do
-    Item.Draw(Buffer, Scale, Offset);
+  begin
+    DrawObject := GetDrawObject(Item);
+    if Assigned(DrawObject) then
+      DrawObject.DrawItem(Buffer, LScale, LOffset, Item);
+  end;
   Buffer.EndUpdate;
 end;
 
@@ -273,9 +286,9 @@ end;
 
 destructor TFreeDrawLayer.Destroy;
 begin
-  FPenDrawObj := nil;
+  FPenDrawObj.Free;
   FPenStyle := nil;
-  FEraDrawObj := nil;
+  FEraDrawObj.Free;
   FEraStyle := nil;
 
   inherited;
@@ -288,6 +301,13 @@ begin
     Result := Assigned(FDrawObject);
 end;
 
+
+function TFreeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
+begin
+  Result := nil;
+  if AItem is TThPenDrawItem then
+    Result := FPenDrawObj;
+end;
 
 procedure TFreeDrawLayer.SetDrawMode(const Value: TThFreeDrawMode);
 begin
@@ -310,15 +330,29 @@ begin
   inherited;
 
   FSelectObj := TThShapeSelectObject.Create(FDrawItems);
-  FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
+  FShapeDrawObj := TThRectDrawObject.Create(TThShapeStyle.Create);
 
   FDrawObject := FSelectObj;
 end;
 
+procedure TShapeDrawLayer.DeleteSelectedItems;
+begin
+  FSelectObj.DeleteSelectedItems;
+  Update;
+end;
+
 destructor TShapeDrawLayer.Destroy;
 begin
+  FSelectObj.Free;
+  FShapeDrawObj.Free;
 
   inherited;
+end;
+
+function TShapeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
+begin
+  if AItem is TThRectDrawItem then
+    Result := FShapeDrawObj;
 end;
 
 procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
