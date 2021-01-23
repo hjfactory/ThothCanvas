@@ -18,6 +18,9 @@ uses
   ThDrawStyle, ThDrawItem;
 
 type
+  TThDrawObject = class;
+  TThDrawObjectClass = class of TThDrawObject;
+
   TThDrawObject = class(TThInterfacedObject, IThDrawObject)
   private
     FDrawStyle: IThDrawStyle;
@@ -132,7 +135,17 @@ type
 implementation
 
 uses
-  ThUtils;
+  ThUtils, ThDrawObjectManager;
+
+procedure RegistDrawObjectManager;
+begin
+  // Freedraw
+  DOMgr.RegistDrawObj(100, 'Pen', TThPenDrawObject, TThPenDrawItem);
+  DOMgr.RegistDrawObj(110, 'Eraser', TThEraserDrawObject, nil);
+
+  // Shape
+  DOMgr.RegistDrawObj(210, 'Rect', TThRectDrawObject, TThRectDrawItem);
+end;
 
 { TThDrawObject }
 
@@ -360,7 +373,7 @@ var
 begin
   Poly := Rectangle(FloatRect(FDownPt, FCurrPt));
   FLastObject := TThRectDrawItem.Create(FloatRect(FDownPt, FCurrPt), Poly,
-      DrawStyle.BorderWidth, DrawStyle.Color, 255);
+      DrawStyle.Color, DrawStyle.BorderWidth, DrawStyle.BorderColor, 255);
   Result := FLastObject;
 end;
 
@@ -370,7 +383,7 @@ var
   Poly: TThPoly;
 begin
   if FCurrPt = EmptyPoint then
-    FCurrPt := FDownPt + FloatPoint(100, 100);
+    FCurrPt := FDownPt + FloatPoint(160, 120);
 
   Poly := Rectangle(FloatRect(FDownPt, FCurrPt));
   ScalePolygonInplace(Poly, AScale.X, AScale.Y);
@@ -395,6 +408,8 @@ begin
     PolyPolygonFS(Bitmap, PolyPoly, clGray32)
   else
     PolyPolygonFS(Bitmap, PolyPoly, Item.Color);
+
+  PolyPolylineFS(Bitmap, PolyPoly, Item.BorderColor, True, Item.BorderWidth);
 end;
 
 { TThShapeSelectObject }
@@ -497,5 +512,10 @@ begin
   inherited;
 
 end;
+
+initialization
+  RegistDrawObjectManager;
+
+finalization
 
 end.

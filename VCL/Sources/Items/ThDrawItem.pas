@@ -76,15 +76,18 @@ type
   TThRectDrawItem = class(TThShapeDrawItem)
   private
     FRect: TFloatRect;
-    FThickness: Single;
+    FBorderWidth: Integer;
     FColor: TColor32;
     FAlpha: Byte;
+    FBorderColor: TColor32;
   public
-    constructor Create(ARect: TFloatRect; APoly: TThPoly; AThickness: Single;
-      AColor: TColor32; AAlpha: Byte);
+    constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
+      ABorderWidth: Integer; ABorderColor: TColor32; AAlpha: Byte);
     destructor Destroy; override;
 
     property Color: TColor32 read FColor;
+    property BorderWidth: Integer read FBorderWidth write FBorderWidth;
+    property BorderColor: TColor32 read FBorderColor write FBorderColor;
     property Alpha: Byte read FAlpha write FAlpha;
   end;
 
@@ -200,13 +203,15 @@ end;
 
 { TThRectangleItem }
 
-constructor TThRectDrawItem.Create(ARect: TFloatRect; APoly: TThPoly;
-  AThickness: Single; AColor: TColor32; AAlpha: Byte);
+constructor TThRectDrawItem.Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
+      ABorderWidth: Integer; ABorderColor: TColor32; AAlpha: Byte);
 begin
   FRect := ARect;
   FPolyPoly := PolyPolygon(APoly);
-  FThickness := AThickness;
+
   FColor := AColor;
+  FBorderWidth := ABorderWidth;
+  FBorderColor := ABorderColor;
   FAlpha := AAlpha;
 end;
 

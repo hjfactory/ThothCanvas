@@ -57,8 +57,8 @@ type
       ABorderWidth: Integer = 4);
 
     property Color: TColor32 read FColor write FColor;
-    property BorderColor: TColor32 read FBorderColor write FBorderColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
+    property BorderColor: TColor32 read FBorderColor write FBorderColor;
   end;
 
 implementation

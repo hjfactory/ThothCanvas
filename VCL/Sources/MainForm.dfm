@@ -135,12 +135,21 @@ object frmMain: TfrmMain
     OnClick = Button6Click
   end
   object Button7: TButton
-    Left = 294
+    Left = 351
     Top = 51
     Width = 29
     Height = 25
     Caption = 'Del'
     TabOrder = 11
     OnClick = Button7Click
+  end
+  object Button8: TButton
+    Left = 295
+    Top = 51
+    Width = 50
+    Height = 25
+    Caption = 'RndRct'
+    TabOrder = 12
+    OnClick = Button5Click
   end
 end

@@ -95,6 +95,7 @@ type
   // 도형을 추가해 그리는 레이어
   TShapeDrawLayer = class(TThCustomDrawLayer)
   private
+    FDrawShapeId: Integer;
     FShapeDrawObj: TThShapeDrawObject;
     FSelectObj: TThShapeSelectObject;
     FDrawMode: TThShapeDrawMode;

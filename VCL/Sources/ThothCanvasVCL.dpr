@@ -12,12 +12,14 @@ uses
   ThDrawItem in 'Items\ThDrawItem.pas',
   ThDrawObject in 'Items\ThDrawObject.pas',
   ThDrawStyle in 'Items\ThDrawStyle.pas',
-  ThDrawStyleManager in 'Controller\ThDrawStyleManager.pas',
+  ThDrawObjectManager in 'Controller\ThDrawObjectManager.pas',
   ThClasses in 'Types\ThClasses.pas';
 
 {$R *.res}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
+
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmMain, frmMain);

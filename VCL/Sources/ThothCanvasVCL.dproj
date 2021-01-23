@@ -114,7 +114,7 @@
         <DCCReference Include="Items\ThDrawItem.pas"/>
         <DCCReference Include="Items\ThDrawObject.pas"/>
         <DCCReference Include="Items\ThDrawStyle.pas"/>
-        <DCCReference Include="Controller\ThDrawStyleManager.pas"/>
+        <DCCReference Include="Controller\ThDrawObjectManager.pas"/>
         <DCCReference Include="Types\ThClasses.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

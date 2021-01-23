@@ -64,10 +64,11 @@ type
     procedure ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
 
-    procedure PenStyleChange(Sender: TObject);
     procedure SetCanvasMode(const Value: TThCanvasMode);
     procedure SetFreeDrawMode(const Value: TThFreeDrawMode);
     procedure SetShapeDrawMode(const Value: TThShapeDrawMode);
+
+    procedure PenStyleChange(Sender: TObject);
   protected
     procedure CreateWnd; override;
   public
@@ -76,17 +77,23 @@ type
 
     procedure CreatePage(AWidth: Integer = 0; AHeight: Integer = 0);
 
+    // FreeDraw, ShapeDraw
     property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
+    // Pen, Eraser
     property FreeDrawMode: TThFreeDrawMode read FFreeDrawMode write SetFreeDrawMode;
+    // Rect, Round, ...
     property ShapeDrawMode: TThShapeDrawMode read FShapeDrawMode write SetShapeDrawMode;
+
+//    property DrawShapeId: Integer
+
+    // Link PenStyleChange
+    property PenStyle: TThPenStyle read FPenStyle;
 
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
 
     procedure Clear;
     procedure DeleteSelected;
-
-    property PenStyle: TThPenStyle read FPenStyle;
   end;
 
   TThCanvas = class(TThCustomCanvas)
