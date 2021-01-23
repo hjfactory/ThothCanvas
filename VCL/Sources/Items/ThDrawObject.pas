@@ -105,6 +105,8 @@ type
     procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem); override;
 
     function CreateItem: TObject; override;
+  public
+    constructor Create(AStyle: IThDrawStyle); override;
   end;
 
   // Shape Select
@@ -129,6 +131,8 @@ type
     property Selected: TThShapeDrawItem read FSelected write SetSelected;
     procedure DeleteSelectedItems;
 
+    procedure SetDrawItems(ADrawItems: TThDrawItems);
+
     procedure ClearSelection;
   end;
 
@@ -141,10 +145,11 @@ procedure RegistDrawObjectManager;
 begin
   // Freedraw
   DOMgr.RegistDrawObj(100, 'Pen', TThPenDrawObject, TThPenDrawItem);
-  DOMgr.RegistDrawObj(110, 'Eraser', TThEraserDrawObject, nil);
+  DOMgr.RegistDrawObj(110, 'Eraser', TThEraserDrawObject);
 
   // Shape
   DOMgr.RegistDrawObj(210, 'Rect', TThRectDrawObject, TThRectDrawItem);
+  DOMgr.RegistDrawObj(200, 'Select', TThShapeSelectObject);
 end;
 
 { TThDrawObject }
@@ -367,6 +372,15 @@ end;
 
 { TThRectDrawObject }
 
+constructor TThRectDrawObject.Create(AStyle: IThDrawStyle);
+begin
+  if not Assigned(AStyle) then
+    AStyle := TThShapeStyle.Create;
+
+  inherited;
+
+end;
+
 function TThRectDrawObject.CreateItem: TObject;
 var
   Poly: TThPoly;
@@ -443,6 +457,12 @@ begin
   FSelectItems.Free;
 
   inherited;
+end;
+
+procedure TThShapeSelectObject.SetDrawItems(ADrawItems: TThDrawItems);
+begin
+  FDrawItems := ADrawItems;
+  FSelectItems := TThShapeDrawItems.Create;
 end;
 
 procedure TThShapeSelectObject.SetSelected(const Value: TThShapeDrawItem);

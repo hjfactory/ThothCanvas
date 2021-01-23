@@ -95,12 +95,14 @@ type
   // 도형을 추가해 그리는 레이어
   TShapeDrawLayer = class(TThCustomDrawLayer)
   private
-    FDrawShapeId: Integer;
+    FDrawObjectId: Integer;
+
     FShapeDrawObj: TThShapeDrawObject;
     FSelectObj: TThShapeSelectObject;
     FDrawMode: TThShapeDrawMode;
     procedure SetDrawMode(const Value: TThShapeDrawMode);
     function GetDrawObject(AItem: TThDrawItem): IThDrawObject; override;
+    procedure SetDrawObjectId(const Value: Integer);
   protected
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
@@ -108,6 +110,7 @@ type
     destructor Destroy; override;
 
     property DrawMode: TThShapeDrawMode read FDrawMode write SetDrawMode;
+    property DrawObjectId: Integer read FDrawObjectId write SetDrawObjectId;
 //    property Selection: TThShapeSelectObject read FSelectObj;
     procedure DeleteSelectedItems;
   end;
@@ -124,7 +127,7 @@ implementation
 
 uses
   DebugForm,
-  ThUtils;
+  ThUtils, ThDrawObjectManager;
 
 
 { TThCustomViewLayer }
@@ -305,9 +308,10 @@ end;
 
 function TFreeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
 begin
-  Result := nil;
-  if AItem is TThPenDrawItem then
-    Result := FPenDrawObj;
+  Result := DOMgr.GetDrawObject(AItem);
+//  Result := nil;
+//  if AItem is TThPenDrawItem then
+//    Result := FPenDrawObj;
 end;
 
 procedure TFreeDrawLayer.SetDrawMode(const Value: TThFreeDrawMode);
@@ -330,9 +334,10 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FSelectObj := TThShapeSelectObject.Create(FDrawItems);
-  FShapeDrawObj := TThRectDrawObject.Create(TThShapeStyle.Create);
+  FSelectObj := DOMgr.GetDrawObject('Select') as TThShapeSelectObject;
+  FSelectObj.SetDrawItems(FDrawItems);
 
+  FDrawObjectId := DOMgr.AliasToId('Select');
   FDrawObject := FSelectObj;
 end;
 
@@ -352,8 +357,7 @@ end;
 
 function TShapeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
 begin
-  if AItem is TThRectDrawItem then
-    Result := FShapeDrawObj;
+  Result := DOMgr.GetDrawObject(AItem);
 end;
 
 procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
@@ -364,8 +368,8 @@ begin
   if FDrawMode = sdmDraw then
   begin
     DrawMode := sdmSelect;
-    if Assigned(FShapeDrawObj.LastObject) then
-      FSelectObj.Selected := FShapeDrawObj.LastObject as TThShapeDrawItem;
+//    if Assigned(FDrawObject.LastObject) then
+//      FSelectObj.Selected := FShapeDrawObj.LastObject as TThShapeDrawItem;
 
   end;
 end;
@@ -376,8 +380,18 @@ begin
 
   case Value of
     sdmSelect: FDrawObject := FSelectObj;
-    sdmDraw: FDrawObject := FShapeDrawObj;
+    sdmDraw: FDrawObject := DOMgr.GetDrawObject(FDrawObjectId);
   end;
+end;
+
+procedure TShapeDrawLayer.SetDrawObjectId(const Value: Integer);
+begin
+  if FDrawObjectId = Value then
+    Exit;
+
+  FDrawObjectId := Value;
+
+  FDrawObject := DOMgr.GetDrawObject(FDrawObjectId);
 end;
 
 { TThBackgroundLayer }

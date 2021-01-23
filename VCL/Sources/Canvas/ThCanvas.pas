@@ -41,6 +41,7 @@ type
     FOnScaleChange: TScaleChangeEvent;
     FFreeDrawMode: TThFreeDrawMode;
     FShapeDrawMode: TThShapeDrawMode;
+    FDrawObjId: Integer;
 
     procedure DoScaleChage(Scale: Single);
 
@@ -69,6 +70,7 @@ type
     procedure SetShapeDrawMode(const Value: TThShapeDrawMode);
 
     procedure PenStyleChange(Sender: TObject);
+    procedure SetDrawObjId(const Value: Integer);
   protected
     procedure CreateWnd; override;
   public
@@ -88,6 +90,7 @@ type
 
     // Link PenStyleChange
     property PenStyle: TThPenStyle read FPenStyle;
+    property DrawObjId: Integer read FDrawObjId write SetDrawObjId;
 
     property Scale: Single read GetScale write SetScale;
     property OnScaleChange: TScaleChangeEvent read FOnScaleChange write FOnScaleChange;
@@ -202,6 +205,13 @@ begin
 
   FFreeDrawLayer.HitTest  := Value = TThCanvasMode.cmFreeDraw;
   FShapeDrawLayer.HitTest := Value = TThCanvasMode.cmShapeDraw;
+end;
+
+procedure TThCustomCanvas.SetDrawObjId(const Value: Integer);
+begin
+  FDrawObjId := Value;
+
+  FShapeDrawLayer.DrawObjectId := Value;
 end;
 
 procedure TThCustomCanvas.SetFreeDrawMode(const Value: TThFreeDrawMode);

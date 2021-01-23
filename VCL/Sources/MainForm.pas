@@ -84,6 +84,7 @@ procedure TfrmMain.Button5Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
   FCanvas.ShapeDrawMode := sdmDraw;
+  FCanvas.DrawObjId := 210;
 end;
 
 procedure TfrmMain.Button6Click(Sender: TObject);
