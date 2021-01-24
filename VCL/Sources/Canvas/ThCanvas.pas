@@ -108,6 +108,8 @@ implementation
 
 { TThCanvas }
 
+uses ThDrawObjectManager;
+
 procedure TThCustomCanvas.Clear;
 begin
   FFreeDrawLayer.Clear;
@@ -154,6 +156,7 @@ end;
 
 destructor TThCustomCanvas.Destroy;
 begin
+  FPenStyle.Free;
   FImgView.Free;
 
   inherited;
@@ -311,7 +314,8 @@ end;
 
 procedure TThCustomCanvas.PenStyleChange(Sender: TObject);
 begin
-  FFreeDrawLayer.DrawStyle := FPenStyle;
+  DOMgr.PenDrawObj.DrawStyle := FPenStyle;
+//  FFreeDrawLayer.DrawStyle := FPenStyle;
 end;
 
 end.

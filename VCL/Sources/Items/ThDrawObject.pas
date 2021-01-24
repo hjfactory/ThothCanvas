@@ -14,7 +14,7 @@ uses
   GR32, GR32_Polygons, GR32_VectorUtils,
   clipper,
 
-  ThTypes, ThClasses,
+  ThTypes, ThClasses, ThAttributes,
   ThDrawStyle, ThDrawItem;
 
 type
@@ -44,6 +44,7 @@ type
     destructor Destroy; override;
   end;
 
+  [DrawObjAttr(100, 'Pen', TThPenStyle, TThPenDrawItem)]
   TThPenDrawObject = class(TThBrushDrawObject)
   private
     FPath: TList<TFloatPoint>;
@@ -52,6 +53,9 @@ type
     function GetPenStyle: TThPenStyle;
 
     property PenStyle: TThPenStyle read GetPenStyle;
+  public
+    constructor Create(AStyle: IThDrawStyle); override;
+    destructor Destroy; override;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem); override;
@@ -60,9 +64,6 @@ type
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
     function CreateItem: TObject; override;
-  public
-    constructor Create(AStyle: IThDrawStyle); override;
-    destructor Destroy; override;
   end;
 
   TThEraserDrawObject = class(TThBrushDrawObject)
@@ -75,8 +76,9 @@ type
     constructor Create(AStyle: IThDrawStyle; AItems: TThDrawItems); overload;
   end;
 
+  [DrawObjAttr(110, 'Eraser')]
   TThObjErsDrawObject = class(TThEraserDrawObject)
-  private
+  public
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
@@ -88,28 +90,31 @@ type
     FDownPt, FCurrPt: TFloatPoint;
     FLastObject: TObject;
 
+    function GetDrawStyle: TThShapeStyle;
+    property DrawStyle: TThShapeStyle read GetDrawStyle;
+  public
+    constructor Create(AStyle: IThDrawStyle); override;
+    destructor Destroy; override;
+
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
-    function GetDrawStyle: TThShapeStyle;
-    property DrawStyle: TThShapeStyle read GetDrawStyle;
-  public
-    destructor Destroy; override;
     property LastObject: TObject read FLastObject;
   end;
 
+  [DrawObjAttr(210, 'Rect', TThShapeStyle, TThRectDrawItem)]
   TThRectDrawObject = class(TThShapeDrawObject)
-  private
+  public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem); override;
 
     function CreateItem: TObject; override;
   public
-    constructor Create(AStyle: IThDrawStyle); override;
   end;
 
   // Shape Select
+  [DrawObjAttr(200, 'Select')]
   TThShapeSelectObject = class(TThDrawObject)
   private
     FLastPt: TFloatPoint;
@@ -117,15 +122,15 @@ type
     FSelected: TThShapeDrawItem;
     FSelectItems: TThShapeDrawItems;
 
-    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
-
     function SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState): TThShapeDrawItem;
     procedure SetSelected(const Value: TThShapeDrawItem);
   public
     constructor Create(AItems: TThDrawItems); overload;
     destructor Destroy; override;
+
+    procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     property Items: TThShapeDrawItems read FSelectItems;
     property Selected: TThShapeDrawItem read FSelected write SetSelected;
@@ -144,12 +149,12 @@ uses
 procedure RegistDrawObjectManager;
 begin
   // Freedraw
-  DOMgr.RegistDrawObj(100, 'Pen', TThPenDrawObject, TThPenDrawItem);
-  DOMgr.RegistDrawObj(110, 'Eraser', TThEraserDrawObject);
+  DOMgr.RegistDrawObj(TThPenDrawObject);
+  DOMgr.RegistDrawObj(TThObjErsDrawObject);
 
   // Shape
-  DOMgr.RegistDrawObj(210, 'Rect', TThRectDrawObject, TThRectDrawItem);
-  DOMgr.RegistDrawObj(200, 'Select', TThShapeSelectObject);
+  DOMgr.RegistDrawObj(TThRectDrawObject);
+  DOMgr.RegistDrawObj(TThShapeSelectObject);
 end;
 
 { TThDrawObject }
@@ -185,6 +190,9 @@ end;
 
 constructor TThPenDrawObject.Create(AStyle: IThDrawStyle);
 begin
+  if not Assigned(AStyle) then
+    AStyle := TThPenStyle.Create;
+
   inherited Create(AStyle);
 
   FPath := TList<TFloatPoint>.Create;
@@ -228,7 +236,6 @@ end;
 procedure TThPenDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
 var
   Poly: TThPoly;
-  PolyPath: TPath;
 begin
   FPath.Add(APoint);
 
@@ -293,6 +300,8 @@ end;
 constructor TThEraserDrawObject.Create(AStyle: IThDrawStyle;
   AItems: TThDrawItems);
 begin
+  if not Assigned(AStyle) then
+    AStyle := TThEraserStyle.Create;
   inherited Create(AStyle);
 
   FDrawItems := AItems;
@@ -312,12 +321,8 @@ end;
 
 procedure TThObjErsDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 var
-  Item: TThDrawItem;
-  Poly: TThPoly;
-  PolyRect, DestRect: TFloatRect;
-  EraserPath: TPath;
-  ItemPaths, DestPaths: TPaths;
   I: Integer;
+  Poly: TThPoly;
   LDrawItems: TArray<TThDrawItem>;
 begin
   Poly := Circle(APoint, DrawStyle.Thickness / 2);
@@ -352,6 +357,13 @@ begin
   FCurrPt := APoint;
 end;
 
+constructor TThShapeDrawObject.Create(AStyle: IThDrawStyle);
+begin
+  if not Assigned(AStyle) then
+    AStyle := TThShapeStyle.Create;
+  inherited Create(AStyle);
+end;
+
 destructor TThShapeDrawObject.Destroy;
 begin
 
@@ -371,15 +383,6 @@ begin
 end;
 
 { TThRectDrawObject }
-
-constructor TThRectDrawObject.Create(AStyle: IThDrawStyle);
-begin
-  if not Assigned(AStyle) then
-    AStyle := TThShapeStyle.Create;
-
-  inherited;
-
-end;
 
 function TThRectDrawObject.CreateItem: TObject;
 var
@@ -506,7 +509,6 @@ end;
 
 procedure TThShapeSelectObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
 var
-  I: Integer;
   Item: TThDrawItem;
 begin
   FLastPt := APoint;

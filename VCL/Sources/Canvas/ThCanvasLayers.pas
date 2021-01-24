@@ -33,7 +33,6 @@ type
 
     procedure Paint(Buffer: TBitmap32); override;
 
-    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; virtual; abstract;
     function ViewportToLocal(APoint: TFloatPoint): TFloatPoint; overload;
     function ViewportToLocal(AX, AY: TFloat): TFloatPoint; overload;
   public
@@ -57,8 +56,6 @@ type
     FDrawStyle: IThDrawStyle;
     [unsafe] FDrawObject: IThDrawObject; // 인터페이스 인스턴스 교체 시 자동해제 방지 
 
-    procedure SetDrawStyle(const Value: IThDrawStyle); virtual;
-
     procedure Paint(Buffer: TBitmap32); override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -66,23 +63,17 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
-
-    property DrawStyle: IThDrawStyle read FDrawStyle write SetDrawStyle;
   end;
 
   // 자유롭게 그리기(펜과 지우개) 위한 레이어
   TFreeDrawLayer = class(TThCustomDrawLayer)
   private
     FDrawMode: TThFreeDrawMode;
-    
-    FPenStyle: IThDrawStyle;
-    FEraStyle: IThDrawStyle;
 
     FPenDrawObj: TThPenDrawObject;
     FEraDrawObj: TThObjErsDrawObject;
     
     procedure SetDrawMode(const Value: TThFreeDrawMode);
-    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -101,7 +92,6 @@ type
     FSelectObj: TThShapeSelectObject;
     FDrawMode: TThShapeDrawMode;
     procedure SetDrawMode(const Value: TThShapeDrawMode);
-    function GetDrawObject(AItem: TThDrawItem): IThDrawObject; override;
     procedure SetDrawObjectId(const Value: Integer);
   protected
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -184,7 +174,7 @@ begin
   Buffer.BeginUpdate;
   for Item in FDrawItems do
   begin
-    DrawObject := GetDrawObject(Item);
+    DrawObject := DOMgr.GetDrawObject(Item);
     if Assigned(DrawObject) then
       DrawObject.DrawItem(Buffer, LScale, LOffset, Item);
   end;
@@ -265,23 +255,20 @@ begin
     FDrawObject.Draw(Buffer, Scale, Offset);
 end;
 
-procedure TThCustomDrawLayer.SetDrawStyle(const Value: IThDrawStyle);
-begin
-  FDrawStyle := Value;
-
-  TThBrushDrawObject(FDrawObject).DrawStyle := FDrawStyle;
-end;
-
 { TBrushDrawLayer }
 
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FPenStyle := TThPenStyle.Create;
-  FPenDrawObj := TThPenDrawObject.Create(FPenStyle);
-  FEraStyle := TThEraserStyle.Create;
-  FEraDrawObj := TThObjErsDrawObject.Create(FEraStyle, FDrawItems); // 객체 지우개
+  FPenDrawObj := DOMgr.PenDrawObj;
+  FEraDrawObj := TThObjErsDrawObject.Create(TThEraserStyle.Create, FDrawItems);
+  DOMgr.EraDrawObj := FEraDrawObj;
+
+//  FPenStyle := TThPenStyle.Create;
+//  FPenDrawObj := TThPenDrawObject.Create(FPenStyle);
+//  FEraStyle := TThEraserStyle.Create;
+//  FEraDrawObj := TThObjErsDrawObject.Create(FEraStyle, FDrawItems); // 객체 지우개
 
   FDrawObject := FPenDrawObj;
 
@@ -291,9 +278,7 @@ end;
 destructor TFreeDrawLayer.Destroy;
 begin
   FPenDrawObj.Free;
-  FPenStyle := nil;
   FEraDrawObj.Free;
-  FEraStyle := nil;
 
   inherited;
 end;
@@ -305,14 +290,6 @@ begin
     Result := Assigned(FDrawObject);
 end;
 
-
-function TFreeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
-begin
-  Result := DOMgr.GetDrawObject(AItem);
-//  Result := nil;
-//  if AItem is TThPenDrawItem then
-//    Result := FPenDrawObj;
-end;
 
 procedure TFreeDrawLayer.SetDrawMode(const Value: TThFreeDrawMode);
 begin
@@ -334,9 +311,8 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FSelectObj := DOMgr.GetDrawObject('Select') as TThShapeSelectObject;
-  FSelectObj.SetDrawItems(FDrawItems);
-
+  FSelectObj := TThShapeSelectObject.Create(FDrawItems);
+  DOMgr.SelDrawObj := FSelectObj;
   FDrawObjectId := DOMgr.AliasToId('Select');
   FDrawObject := FSelectObj;
 end;
@@ -353,11 +329,6 @@ begin
   FShapeDrawObj.Free;
 
   inherited;
-end;
-
-function TShapeDrawLayer.GetDrawObject(AItem: TThDrawItem): IThDrawObject;
-begin
-  Result := DOMgr.GetDrawObject(AItem);
 end;
 
 procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,

@@ -13,7 +13,8 @@ uses
   ThDrawObject in 'Items\ThDrawObject.pas',
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThDrawObjectManager in 'Controller\ThDrawObjectManager.pas',
-  ThClasses in 'Types\ThClasses.pas';
+  ThClasses in 'Types\ThClasses.pas',
+  ThAttributes in 'Types\ThAttributes.pas';
 
 {$R *.res}
 

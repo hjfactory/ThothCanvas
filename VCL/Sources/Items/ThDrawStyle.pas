@@ -10,6 +10,8 @@ uses
   ThTypes, ThClasses;
 
 type
+  TThDrawStyle = class;
+  TThDrawStyleClass = class of TThDrawStyle;
   TThDrawStyle = class(TInterfacedObject, IThDrawStyle)
   private
     FOnChange: TNotifyEvent;
@@ -34,7 +36,7 @@ type
     procedure SetColor(const Value: TColor32);
     function GetAplha: Byte;
   public
-    constructor Create(AThickness: Integer = 10; AColor: TColor32 = clBlack32; AOpacity: TThPercent = 100);
+    constructor Create(AThickness: Integer = 10; AColor: TColor32 = clBlack32; AOpacity: TThPercent = 100); overload;
     destructor Destroy; override;
 
     property Color: TColor32 read FColor write SetColor;

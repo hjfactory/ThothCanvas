@@ -37,7 +37,7 @@ object frmMain: TfrmMain
     Left = 32
     Top = 88
     Width = 881
-    Height = 553
+    Height = 649
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     BorderWidth = 2
