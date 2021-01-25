@@ -14,7 +14,8 @@ uses
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThDrawObjectManager in 'Controller\ThDrawObjectManager.pas',
   ThClasses in 'Types\ThClasses.pas',
-  ThAttributes in 'Types\ThAttributes.pas';
+  ThAttributes in 'Types\ThAttributes.pas',
+  ThShapeObject in 'Items\ThShapeObject.pas';
 
 {$R *.res}
 
