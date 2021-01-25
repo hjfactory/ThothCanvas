@@ -1,3 +1,7 @@
+{
+  Role
+    Specify the default style for draw objects
+}
 unit ThDrawStyle;
 
 interface
@@ -12,11 +16,13 @@ uses
 type
   TThDrawStyle = class;
   TThDrawStyleClass = class of TThDrawStyle;
+
   TThDrawStyle = class(TInterfacedObject, IThDrawStyle)
   private
     FOnChange: TNotifyEvent;
     procedure DoChange;
   public
+    constructor Create; virtual;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
@@ -36,7 +42,7 @@ type
     procedure SetColor(const Value: TColor32);
     function GetAplha: Byte;
   public
-    constructor Create(AThickness: Integer = 10; AColor: TColor32 = clBlack32; AOpacity: TThPercent = 100); overload;
+    constructor Create; override;
     destructor Destroy; override;
 
     property Color: TColor32 read FColor write SetColor;
@@ -46,7 +52,7 @@ type
 
   TThEraserStyle = class(TThBrushStyle)
   public
-    constructor Create(AThickness: Integer = 10);
+    constructor Create; override;
   end;
 
   TThShapeStyle = class(TThDrawStyle)
@@ -55,8 +61,7 @@ type
     FBorderColor: TColor32;
     FBorderWidth: Integer;
   public
-    constructor Create(AColor: TColor32 = clBlue32; ABorderColor: TColor32 = clGray32;
-      ABorderWidth: Integer = 4);
+    constructor Create; override;
 
     property Color: TColor32 read FColor write FColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
@@ -66,6 +71,10 @@ type
 implementation
 
 { TThDrawStyle }
+
+constructor TThDrawStyle.Create;
+begin
+end;
 
 procedure TThDrawStyle.DoChange;
 begin
@@ -85,12 +94,11 @@ end;
 
 { TThPenStyle }
 
-constructor TThPenStyle.Create(AThickness: Integer; AColor: TColor32;
-  AOpacity: TThPercent);
+constructor TThPenStyle.Create;
 begin
-  FThickness := AThickness;
-  FColor := AColor;
-  FOpacity := AOpacity;
+  FThickness := 10;
+  FColor := clBlack32;
+  FOpacity := 100;
 end;
 
 destructor TThPenStyle.Destroy;
@@ -122,19 +130,18 @@ end;
 
 { TThEraserStyle }
 
-constructor TThEraserStyle.Create(AThickness: Integer);
+constructor TThEraserStyle.Create;
 begin
-  FThickness := AThickness;
+  FThickness := 10;
 end;
 
 { TThShapeStyle }
 
-constructor TThShapeStyle.Create(AColor, ABorderColor: TColor32;
-  ABorderWidth: Integer);
+constructor TThShapeStyle.Create;
 begin
-  FColor := AColor;
-  FBorderColor := ABorderColor;
-  FBorderWidth := ABorderWidth;
+  FColor := clBlue32;
+  FBorderColor := clGray32;
+  FBorderWidth := 4;
 end;
 
 end.

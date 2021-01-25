@@ -69,26 +69,30 @@ type
   TThShapeDrawItem = class(TThDrawItem)
   private
     FIsSelection: Boolean;
-  public
-    property IsSelection: Boolean read FIsSelection write FIsSelection;
-  end;
 
-  TThRectDrawItem = class(TThShapeDrawItem)
-  private
-    FRect: TFloatRect;
     FBorderWidth: Integer;
     FColor: TColor32;
     FAlpha: Byte;
     FBorderColor: TColor32;
   public
-    constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
-      ABorderWidth: Integer; ABorderColor: TColor32; AAlpha: Byte);
-    destructor Destroy; override;
+    property IsSelection: Boolean read FIsSelection write FIsSelection;
 
     property Color: TColor32 read FColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
     property Alpha: Byte read FAlpha write FAlpha;
+  end;
+
+  TThRectDrawItem = class(TThShapeDrawItem)
+  private
+    FRect: TFloatRect;
+  public
+    constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
+      ABorderWidth: Integer; ABorderColor: TColor32; AAlpha: Byte);
+    destructor Destroy; override;
+  end;
+
+  TThRoundRectDrawItem = class(TThRectDrawItem)
   end;
 
 implementation

@@ -36,6 +36,7 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -69,8 +70,6 @@ procedure TfrmMain.Button3Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOff;
   FCanvas.Clear;
-
-  Font.Size
 end;
 
 procedure TfrmMain.Button4Click(Sender: TObject);
@@ -99,6 +98,13 @@ begin
   FCanvas.DeleteSelected;
 end;
 
+procedure TfrmMain.Button8Click(Sender: TObject);
+begin
+  ToggleSwitch1.State := tssOff;
+  FCanvas.ShapeDrawMode := sdmDraw;
+  FCanvas.DrawObjId := 220;
+end;
+
 procedure TfrmMain.ColorBox1Change(Sender: TObject);
 begin
   FCanvas.PenStyle.Color := Color32(ColorBox1.Selected);
@@ -115,8 +121,6 @@ begin
   FCanvas.PenStyle.Color := Color32(ColorBox1.Selected);
   FCanvas.PenStyle.Thickness := TrackBar1.Position;
   FCanvas.PenStyle.Opacity := SpinEdit1.Value;
-
-  Font.Size
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);

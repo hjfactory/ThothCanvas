@@ -150,6 +150,6 @@ object frmMain: TfrmMain
     Height = 25
     Caption = 'RndRct'
     TabOrder = 12
-    OnClick = Button5Click
+    OnClick = Button8Click
   end
 end

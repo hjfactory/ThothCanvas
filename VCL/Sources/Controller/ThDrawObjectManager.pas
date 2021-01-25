@@ -138,9 +138,9 @@ end;
 function TDrawObjectManager.GetDrawObject(AItem: TDOMgrItem): TThDrawObject;
 begin
   if not Assigned(AItem.DrawObject) and Assigned(AItem.DrawObjCls) then
-//    if Assigned(AItem.DrawStyleCls) then
-//      AItem.DrawObject := AItem.DrawObjCls.Create(AItem.DrawStyleCls.Create)
-//    else
+    if Assigned(AItem.DrawStyleCls) then
+      AItem.DrawObject := AItem.DrawObjCls.Create(AItem.DrawStyleCls.Create)
+    else
       AItem.DrawObject := AItem.DrawObjCls.Create(nil);
 
   Result := AItem.DrawObject;

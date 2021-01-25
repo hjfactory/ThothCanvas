@@ -69,7 +69,6 @@ type
     procedure SetFreeDrawMode(const Value: TThFreeDrawMode);
     procedure SetShapeDrawMode(const Value: TThShapeDrawMode);
 
-    procedure PenStyleChange(Sender: TObject);
     procedure SetDrawObjId(const Value: Integer);
   protected
     procedure CreateWnd; override;
@@ -138,8 +137,7 @@ begin
   FImgView.OnMouseWheel := ImgViewMouseWheel;
   FImgView.OnMouseWheelDown := ImgViewMouseWheelDown;
 
-  FPenStyle := TThPenStyle.Create;
-  FPenStyle.OnChange := PenStyleChange;
+  FPenStyle := DOMgr.PenDrawObj.DrawStyle as TThPenStyle;
 end;
 
 procedure TThCustomCanvas.CreateWnd;
@@ -156,7 +154,6 @@ end;
 
 destructor TThCustomCanvas.Destroy;
 begin
-  FPenStyle.Free;
   FImgView.Free;
 
   inherited;
@@ -310,12 +307,6 @@ procedure TThCustomCanvas.ImgViewMouseWheelUp(Sender: TObject; Shift: TShiftStat
 begin
   if ssCtrl in Shift then
     Scale := Scale - 0.1;
-end;
-
-procedure TThCustomCanvas.PenStyleChange(Sender: TObject);
-begin
-  DOMgr.PenDrawObj.DrawStyle := FPenStyle;
-//  FFreeDrawLayer.DrawStyle := FPenStyle;
 end;
 
 end.
