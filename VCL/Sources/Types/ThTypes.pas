@@ -28,21 +28,23 @@ type
   IThCanvas = interface
   end;
 
+  IThDrawStyle = interface
+  end;
+
   IThDrawItem = interface
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure AddPoint(APoint: TFloatPoint);
   end;
 
   IThDrawObject = interface
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-    procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem);
+//    procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem);
 
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState);
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState);
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState);
 
-    function CreateItem: TObject;
-  end;
-
-  IThDrawStyle = interface
+    function GetDrawItem: IThDrawItem;
   end;
 
 

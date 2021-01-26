@@ -38,10 +38,10 @@ type
     function GetDrawObject(AItem: TDOMgrItem): TThDrawObject; overload;
     function GetEraDrawObj: TThObjErsDrawObject;
     function GetPenDrawObj: TThPenDrawObject;
-    function GetSelDrawObj: TThShapeSelectObject;
+    function GetSelDrawObj: TThSelectObject;
     procedure SetEraDrawObj(const Value: TThObjErsDrawObject);
     procedure SetPenDrawObj(const Value: TThPenDrawObject);
-    procedure SetSelDrawObj(const Value: TThShapeSelectObject);
+    procedure SetSelDrawObj(const Value: TThSelectObject);
   public
     procedure Initialize; override;
     procedure Finalize; override;
@@ -58,7 +58,7 @@ type
     // Specific objects are pre-declared
     property PenDrawObj: TThPenDrawObject read GetPenDrawObj write SetPenDrawObj;
     property EraDrawObj: TThObjErsDrawObject read GetEraDrawObj write SetEraDrawObj;
-    property SelDrawObj: TThShapeSelectObject read GetSelDrawObj write SetSelDrawObj;
+    property SelDrawObj: TThSelectObject read GetSelDrawObj write SetSelDrawObj;
   end;
 
 function DOMgr: TDrawObjectManager;
@@ -115,7 +115,7 @@ begin
     FPenItem := Item //Item.DrawObject as TThPenDrawObject
   else if Item.DrawObjCls = TThObjErsDrawObject then
     FEraItem := Item //Item.DrawObject as TThObjErsDrawObject
-  else if Item.DrawObjCls = TThShapeSelectObject then
+  else if Item.DrawObjCls = TThSelectObject then
     FSelITem := Item //Item.DrawObject as TThShapeSelectObject
   ;
 end;
@@ -130,7 +130,7 @@ begin
   FPenItem.DrawObject := Value;
 end;
 
-procedure TDrawObjectManager.SetSelDrawObj(const Value: TThShapeSelectObject);
+procedure TDrawObjectManager.SetSelDrawObj(const Value: TThSelectObject);
 begin
   FSelItem.DrawObject := Value;
 end;
@@ -169,9 +169,9 @@ begin
   Result := GetDrawObject(FPenItem.DrawObjId) as TThPenDrawObject;
 end;
 
-function TDrawObjectManager.GetSelDrawObj: TThShapeSelectObject;
+function TDrawObjectManager.GetSelDrawObj: TThSelectObject;
 begin
-  Result := GetDrawObject(FSelItem.DrawObjId) as TThShapeSelectObject;
+  Result := GetDrawObject(FSelItem.DrawObjId) as TThSelectObject;
 end;
 
 function TDrawObjectManager.GetDrawObject(AAlias: string): TThDrawObject;

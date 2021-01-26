@@ -15,9 +15,8 @@ type
   TThRectDrawObject = class(TThShapeDrawObject)
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
-    procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem); override;
 
-    function CreateItem: TObject; override;
+    function GetDrawItem: IThDrawItem; override;
   public
   end;
 
@@ -25,9 +24,8 @@ type
   TThRoundRectDrawObject = class(TThShapeDrawObject)
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
-    procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem); override;
 
-    function CreateItem: TObject; override;
+    function GetDrawItem: IThDrawItem; override;
   public
   end;
 
@@ -46,14 +44,14 @@ end;
 
 { TThRectDrawObject }
 
-function TThRectDrawObject.CreateItem: TObject;
+function TThRectDrawObject.GetDrawItem: IThDrawItem;
 var
   Poly: TThPoly;
 begin
   Poly := Rectangle(FloatRect(FDownPt, FCurrPt));
   FLastObject := TThRectDrawItem.Create(FloatRect(FDownPt, FCurrPt), Poly,
       DrawStyle.Color, DrawStyle.BorderWidth, DrawStyle.BorderColor, 255);
-  Result := FLastObject;
+  Result := FLastObject as IThDrawItem;
 end;
 
 procedure TThRectDrawObject.Draw(Bitmap: TBitmap32; AScale,
@@ -73,27 +71,9 @@ begin
   PolylineFS(Bitmap, Poly, DrawStyle.BorderColor, True, DrawStyle.BorderWidth);
 end;
 
-procedure TThRectDrawObject.DrawItem(Bitmap: TBitmap32; AScale,
-  AOffset: TFloatPoint; AItem: IThDrawItem);
-var
-  Item: TThRectDrawItem;
-  PolyPoly: TThPolyPoly;
-begin
-  Item := TThRectDrawItem(AItem);
-  PolyPoly := ScalePolyPolygon(Item.PolyPoly, AScale.X, AScale.Y);
-  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
-
-  if Item.IsSelection then
-    PolyPolygonFS(Bitmap, PolyPoly, clGray32)
-  else
-    PolyPolygonFS(Bitmap, PolyPoly, Item.Color);
-
-  PolyPolylineFS(Bitmap, PolyPoly, Item.BorderColor, True, Item.BorderWidth);
-end;
-
 { TThRoundRectDrawObject }
 
-function TThRoundRectDrawObject.CreateItem: TObject;
+function TThRoundRectDrawObject.GetDrawItem: IThDrawItem;
 var
   R: TFloatRect;
   Poly: TThPoly;
@@ -123,24 +103,6 @@ begin
   PolygonFS(Bitmap, Poly, DrawStyle.Color);
 
   PolylineFS(Bitmap, Poly, DrawStyle.BorderColor, True, DrawStyle.BorderWidth);
-end;
-
-procedure TThRoundRectDrawObject.DrawItem(Bitmap: TBitmap32; AScale,
-  AOffset: TFloatPoint; AItem: IThDrawItem);
-var
-  Item: TThRectDrawItem;
-  PolyPoly: TThPolyPoly;
-begin
-  Item := TThRectDrawItem(AItem);
-  PolyPoly := ScalePolyPolygon(Item.PolyPoly, AScale.X, AScale.Y);
-  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
-
-  if Item.IsSelection then
-    PolyPolygonFS(Bitmap, PolyPoly, clGray32)
-  else
-    PolyPolygonFS(Bitmap, PolyPoly, Item.Color);
-
-  PolyPolylineFS(Bitmap, PolyPoly, Item.BorderColor, True, Item.BorderWidth);
 end;
 
 initialization

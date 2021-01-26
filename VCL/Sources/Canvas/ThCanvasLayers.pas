@@ -89,7 +89,7 @@ type
     FDrawObjectId: Integer;
 
     FShapeDrawObj: TThShapeDrawObject;
-    FSelectObj: TThShapeSelectObject;
+    FSelectObj: TThSelectObject;
     FDrawMode: TThShapeDrawMode;
     procedure SetDrawMode(const Value: TThShapeDrawMode);
     procedure SetDrawObjectId(const Value: Integer);
@@ -173,11 +173,7 @@ begin
 
   Buffer.BeginUpdate;
   for Item in FDrawItems do
-  begin
-    DrawObject := DOMgr.GetDrawObject(Item);
-    if Assigned(DrawObject) then
-      DrawObject.DrawItem(Buffer, LScale, LOffset, Item);
-  end;
+    IThDrawItem(Item).Draw(Buffer, LScale, LOffset);
   Buffer.EndUpdate;
 end;
 
@@ -239,7 +235,7 @@ begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
-    Item := FDrawObject.CreateItem as TThDrawItem;
+    Item := FDrawObject.GetDrawItem as TThDrawItem;
     if Assigned(Item) then
        FDrawItems.Add(Item);
     FDrawObject.Done(ViewportToLocal(X, Y), Shift);
@@ -311,7 +307,7 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FSelectObj := TThShapeSelectObject.Create(FDrawItems);
+  FSelectObj := TThSelectObject.Create(FDrawItems);
   DOMgr.SelDrawObj := FSelectObj;
   FDrawObjectId := DOMgr.AliasToId('Select');
   FDrawObject := FSelectObj;
