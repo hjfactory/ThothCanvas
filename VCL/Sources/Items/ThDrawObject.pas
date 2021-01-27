@@ -24,10 +24,9 @@ type
   TThDrawObject = class(TThInterfacedObject, IThDrawObject)
   private
     FDrawStyle: IThDrawStyle;
-  protected
-    FDrawItem: IThDrawItem;
   public
     constructor Create(AStyle: IThDrawStyle); virtual;
+
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
 
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); virtual;
@@ -48,21 +47,14 @@ type
   [DrawObjAttr(100, 'Pen', TThPenStyle, TThPenDrawItem)]
   TThPenDrawObject = class(TThBrushDrawObject)
   private
-    FPath: TList<TFloatPoint>;
-    FPolyPolyPath: TPaths;
-    FPolyPoly: TArrayOfArrayOfFloatPoint;
-    function GetPenStyle: TThPenStyle;
-
-    property PenStyle: TThPenStyle read GetPenStyle;
-  public
-    constructor Create(AStyle: IThDrawStyle); override;
-    destructor Destroy; override;
-
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+    FDrawItem: TThPenDrawItem;
 
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
+
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+
     function GetDrawItem: IThDrawItem; override;
   end;
 
@@ -86,9 +78,11 @@ type
 
   /// Shape Objects
   TThShapeDrawObject = class(TThDrawObject)
+  private
+    FShapeId: Integer;
+    FDrawItem: TThShapeDrawItem;
   protected
     FDownPt, FCurrPt: TFloatPoint;
-    FLastObject: TThDrawItem;
 
     function GetDrawStyle: TThShapeStyle;
     property DrawStyle: TThShapeStyle read GetDrawStyle;
@@ -100,7 +94,11 @@ type
     procedure Move(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure Done(const APoint: TFloatPoint; AShift: TShiftState); override;
 
-    property LastObject: TThDrawItem read FLastObject;
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+
+    function GetDrawItem: IThDrawItem; override;
+
+    property ShapeId: Integer read FShapeId write FShapeId;
   end;
 
   // Shape Select
@@ -134,17 +132,7 @@ type
 implementation
 
 uses
-  ThUtils, ThDrawObjectManager;
-
-procedure RegistDrawObjectManager;
-begin
-  // Freedraw
-  DOMgr.RegistDrawObj(TThPenDrawObject);
-  DOMgr.RegistDrawObj(TThObjErsDrawObject);
-
-  // Shape
-  DOMgr.RegistDrawObj(TThSelectObject);
-end;
+  ThUtils;
 
 { TThDrawObject }
 
@@ -172,58 +160,26 @@ end;
 
 { TThPenObject }
 
-constructor TThPenDrawObject.Create(AStyle: IThDrawStyle);
-begin
-  if not Assigned(AStyle) then
-    AStyle := TThPenStyle.Create;
-
-  inherited Create(AStyle);
-
-  FPath := TList<TFloatPoint>.Create;
-end;
-
-destructor TThPenDrawObject.Destroy;
-begin
-  FPath.Free;
-
-  inherited;
-end;
-
 procedure TThPenDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-var
-  Color: TColor32;
-  PolyPoly: TThPolyPoly;
 begin
   if Assigned(FDrawItem) then
     FDrawItem.Draw(Bitmap, AScale, AOffset);
 end;
 
 procedure TThPenDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  Poly: TThPoly;
 begin
-  FPath.Add(APoint);
-
   FDrawItem := TThPenDrawItem.Create(FDrawStyle);
+  FDrawItem.Start(APoint);
 end;
 
 procedure TThPenDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  Poly: TThPoly;
-  PolyPath: TPath;
-  LastP: TFloatPoint; // Adjusted point
 begin
-  FPath.Add(APoint);
-  FDrawItem.AddPoint(APoint);
+  FDrawItem.Move(APoint);
 end;
 
 procedure TThPenDrawObject.Done;
 begin
   inherited;
-
-  FPath.Clear;
-  FPolyPolyPath := nil;
-  FPolyPoly := nil;
 
   FDrawItem := nil;
 end;
@@ -231,11 +187,7 @@ end;
 function TThPenDrawObject.GetDrawItem: IThDrawItem;
 begin
   Result := FDrawItem;
-end;
-
-function TThPenDrawObject.GetPenStyle: TThPenStyle;
-begin
-  Result := TThPenStyle(FDrawStyle);
+  FDrawItem := nil;
 end;
 
 destructor TThBrushDrawObject.Destroy;
@@ -297,13 +249,17 @@ end;
 
 procedure TThShapeDrawObject.Start(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-  FLastObject := nil;
+//  FDrawItem := TThShapeDrawItem.Create(FDrawStyle);
+  { TODO : ShapeId로 DrawItem 객체를 생성하는 로직 필요(Factory?) }
+  FDrawItem := TThRectDrawItem.Create(FDrawStyle);
+  FDrawItem.Start(APoint);
   FDownPt := APoint;
 end;
 
 procedure TThShapeDrawObject.Move(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   FCurrPt := APoint;
+  FDrawItem.Move(APoint);
 end;
 
 constructor TThShapeDrawObject.Create(AStyle: IThDrawStyle);
@@ -315,7 +271,6 @@ end;
 
 destructor TThShapeDrawObject.Destroy;
 begin
-
   inherited;
 end;
 
@@ -324,6 +279,19 @@ begin
   inherited;
 
   FCurrPt := EmptyPoint;
+end;
+
+procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+begin
+  if Assigned(FDrawItem) then
+    FDrawItem.Draw(Bitmap, AScale, AOffset);
+end;
+
+function TThShapeDrawObject.GetDrawItem: IThDrawItem;
+begin
+  Result := FDrawItem;
+  FDrawItem := nil;
 end;
 
 function TThShapeDrawObject.GetDrawStyle: TThShapeStyle;
@@ -436,9 +404,5 @@ begin
   inherited;
 
 end;
-
-initialization
-  RegistDrawObjectManager;
-finalization
 
 end.

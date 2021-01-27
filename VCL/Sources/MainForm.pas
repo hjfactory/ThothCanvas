@@ -11,7 +11,6 @@ type
   TfrmMain = class(TForm)
     Button1: TButton;
     pnlMain: TPanel;
-    Button2: TButton;
     ColorBox1: TColorBox;
     TrackBar1: TTrackBar;
     Label1: TLabel;
@@ -25,7 +24,6 @@ type
     Button8: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure ColorBox1Change(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure SpinEdit1Change(Sender: TObject);
@@ -52,18 +50,13 @@ implementation
 {$R *.dfm}
 
 uses
-  DebugForm, GR32,
+  GR32,
   ThTypes;
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
   ToggleSwitch1.State := tssOn;
   FCanvas.FreeDrawMode := fdmPen;
-end;
-
-procedure TfrmMain.Button2Click(Sender: TObject);
-begin
-  frmDebug.Show;
 end;
 
 procedure TfrmMain.Button3Click(Sender: TObject);

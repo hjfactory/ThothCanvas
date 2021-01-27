@@ -107,17 +107,11 @@
         <DCCReference Include="Canvas\ThCanvasLayers.pas"/>
         <DCCReference Include="..\Libraries\clipper.pas"/>
         <DCCReference Include="Utils\ThUtils.pas"/>
-        <DCCReference Include="Forms\DebugForm.pas">
-            <Form>frmDebug</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="Items\ThDrawItem.pas"/>
         <DCCReference Include="Items\ThDrawObject.pas"/>
         <DCCReference Include="Items\ThDrawStyle.pas"/>
-        <DCCReference Include="Controller\ThDrawObjectManager.pas"/>
         <DCCReference Include="Types\ThClasses.pas"/>
         <DCCReference Include="Types\ThAttributes.pas"/>
-        <DCCReference Include="Items\ThShapeObject.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

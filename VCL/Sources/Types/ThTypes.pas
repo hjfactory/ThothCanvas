@@ -32,8 +32,8 @@ type
   end;
 
   IThDrawItem = interface
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-    procedure AddPoint(APoint: TFloatPoint);
+//    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+//    procedure AddPoint(APoint: TFloatPoint);
   end;
 
   IThDrawObject = interface

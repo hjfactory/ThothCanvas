@@ -107,8 +107,6 @@ implementation
 
 { TThCanvas }
 
-uses ThDrawObjectManager;
-
 procedure TThCustomCanvas.Clear;
 begin
   FFreeDrawLayer.Clear;
@@ -136,8 +134,6 @@ begin
   FImgView.OnMouseWheelUp := ImgViewMouseWheelUp;
   FImgView.OnMouseWheel := ImgViewMouseWheel;
   FImgView.OnMouseWheelDown := ImgViewMouseWheelDown;
-
-  FPenStyle := DOMgr.PenDrawObj.DrawStyle as TThPenStyle;
 end;
 
 procedure TThCustomCanvas.CreateWnd;
@@ -182,6 +178,8 @@ begin
 
   FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.HitTest := True;
+
+  FPenStyle := FFreeDrawLayer.PenDrawObj.DrawStyle as TThPenStyle;
 //  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth-2000, AHeight-2000);
 end;
 

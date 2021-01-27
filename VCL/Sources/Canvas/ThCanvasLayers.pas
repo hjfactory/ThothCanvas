@@ -81,6 +81,7 @@ type
     function DoHitTest(X, Y: Integer): Boolean; override;
     
     property DrawMode: TThFreeDrawMode read FDrawMode write SetDrawMode;
+    property PenDrawObj: TThPenDrawObject read FPenDrawObj;
   end;
 
   // 도형을 추가해 그리는 레이어
@@ -88,9 +89,10 @@ type
   private
     FDrawObjectId: Integer;
 
-    FShapeDrawObj: TThShapeDrawObject;
     FSelectObj: TThSelectObject;
+    FShapeDrawObj: TThShapeDrawObject;
     FDrawMode: TThShapeDrawMode;
+
     procedure SetDrawMode(const Value: TThShapeDrawMode);
     procedure SetDrawObjectId(const Value: Integer);
   protected
@@ -116,9 +118,7 @@ implementation
 { TFreeDrawLayer }
 
 uses
-  DebugForm,
-  ThUtils, ThDrawObjectManager;
-
+  ThUtils;
 
 { TThCustomViewLayer }
 
@@ -164,7 +164,6 @@ procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
   Item: TThDrawItem;
   LScale, LOffset: TFloatPoint;
-  DrawObject: IThDrawObject;
 begin
   inherited;
 
@@ -173,7 +172,7 @@ begin
 
   Buffer.BeginUpdate;
   for Item in FDrawItems do
-    IThDrawItem(Item).Draw(Buffer, LScale, LOffset);
+    Item.Draw(Buffer, LScale, LOffset);
   Buffer.EndUpdate;
 end;
 
@@ -257,9 +256,8 @@ constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FPenDrawObj := DOMgr.PenDrawObj;
+  FPenDrawObj := TThPenDrawObject.Create(TThPenStyle.Create);
   FEraDrawObj := TThObjErsDrawObject.Create(TThEraserStyle.Create, FDrawItems);
-  DOMgr.EraDrawObj := FEraDrawObj;
 
 //  FPenStyle := TThPenStyle.Create;
 //  FPenDrawObj := TThPenDrawObject.Create(FPenStyle);
@@ -308,8 +306,9 @@ begin
   inherited;
 
   FSelectObj := TThSelectObject.Create(FDrawItems);
-  DOMgr.SelDrawObj := FSelectObj;
-  FDrawObjectId := DOMgr.AliasToId('Select');
+  FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
+
+  FDrawObjectId := 200;
   FDrawObject := FSelectObj;
 end;
 
@@ -335,9 +334,6 @@ begin
   if FDrawMode = sdmDraw then
   begin
     DrawMode := sdmSelect;
-//    if Assigned(FDrawObject.LastObject) then
-//      FSelectObj.Selected := FShapeDrawObj.LastObject as TThShapeDrawItem;
-
   end;
 end;
 
@@ -346,8 +342,8 @@ begin
   FDrawMode := Value;
 
   case Value of
-    sdmSelect: FDrawObject := FSelectObj;
-    sdmDraw: FDrawObject := DOMgr.GetDrawObject(FDrawObjectId);
+    sdmSelect:  FDrawObject := FSelectObj;
+    sdmDraw:    FDrawObject := FShapeDrawObj;
   end;
 end;
 
@@ -358,7 +354,7 @@ begin
 
   FDrawObjectId := Value;
 
-  FDrawObject := DOMgr.GetDrawObject(FDrawObjectId);
+  FShapeDrawObj.ShapeId := FDrawObjectId;
 end;
 
 { TThBackgroundLayer }

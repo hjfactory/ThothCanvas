@@ -44,21 +44,12 @@ object frmMain: TfrmMain
     BorderStyle = bsSingle
     TabOrder = 1
   end
-  object Button2: TButton
-    Left = 784
-    Top = 24
-    Width = 129
-    Height = 25
-    Caption = 'Show debug form'
-    TabOrder = 2
-    OnClick = Button2Click
-  end
   object ColorBox1: TColorBox
     Left = 368
     Top = 22
     Width = 145
     Height = 22
-    TabOrder = 3
+    TabOrder = 2
     OnChange = ColorBox1Change
   end
   object TrackBar1: TTrackBar
@@ -70,7 +61,7 @@ object frmMain: TfrmMain
     Max = 30
     Min = 2
     Position = 10
-    TabOrder = 4
+    TabOrder = 3
     ThumbLength = 10
     TickMarks = tmTopLeft
     OnChange = TrackBar1Change
@@ -83,7 +74,7 @@ object frmMain: TfrmMain
     Increment = 5
     MaxValue = 100
     MinValue = 0
-    TabOrder = 5
+    TabOrder = 4
     Value = 100
     OnChange = SpinEdit1Change
   end
@@ -93,7 +84,7 @@ object frmMain: TfrmMain
     Width = 42
     Height = 25
     Caption = 'Clear'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = Button3Click
   end
   object ToggleSwitch1: TToggleSwitch
@@ -104,7 +95,7 @@ object frmMain: TfrmMain
     State = tssOn
     StateCaptions.CaptionOn = 'Freedraw'
     StateCaptions.CaptionOff = 'Selection'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = ToggleSwitch1Click
   end
   object Button4: TButton
@@ -113,7 +104,7 @@ object frmMain: TfrmMain
     Width = 42
     Height = 25
     Caption = 'Eraser'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = Button4Click
   end
   object Button5: TButton
@@ -122,7 +113,7 @@ object frmMain: TfrmMain
     Width = 33
     Height = 25
     Caption = 'Rect'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = Button5Click
   end
   object Button6: TButton
@@ -131,7 +122,7 @@ object frmMain: TfrmMain
     Width = 33
     Height = 25
     Caption = 'None'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = Button6Click
   end
   object Button7: TButton
@@ -140,7 +131,7 @@ object frmMain: TfrmMain
     Width = 29
     Height = 25
     Caption = 'Del'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = Button7Click
   end
   object Button8: TButton
@@ -149,7 +140,7 @@ object frmMain: TfrmMain
     Width = 50
     Height = 25
     Caption = 'RndRct'
-    TabOrder = 12
+    TabOrder = 11
     OnClick = Button8Click
   end
 end
