@@ -65,7 +65,7 @@ type
 
     property DrawStyle: TThEraserStyle read GetDrawStyle;
   public
-    constructor Create(AStyle: IThDrawStyle; AItems: TThDrawItems); overload;
+    constructor Create(AStyle: IThDrawStyle; AItems: TThDrawItems); reintroduce;
   end;
 
   [DrawObjAttr(110, 'Eraser')]
@@ -113,7 +113,7 @@ type
     function SetSelection(AItem: TThShapeDrawItem; AShift: TShiftState): TThShapeDrawItem;
     procedure SetSelected(const Value: TThShapeDrawItem);
   public
-    constructor Create(AItems: TThDrawItems); overload;
+    constructor Create(AItems: TThDrawItems); reintroduce;
     destructor Destroy; override;
 
     procedure Start(const APoint: TFloatPoint; AShift: TShiftState); override;
@@ -132,7 +132,7 @@ type
 implementation
 
 uses
-  ThUtils;
+  ThUtils, System.Math;
 
 { TThDrawObject }
 
