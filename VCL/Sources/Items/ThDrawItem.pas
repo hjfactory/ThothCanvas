@@ -10,12 +10,12 @@ interface
 uses
   System.Generics.Collections,
   GR32, GR32_Polygons, GR32_VectorUtils, clipper,
-  ThTypes, ThUtils, ThClasses, ThDrawStyle;
 
+  ThTypes, ThUtils, ThClasses, ThDrawStyle;
 
 type
   TThDrawItem = class;
-  TThShapeDrawItem = class;
+  TThShapeItem = class;
   TThDrawItemClass = class of TThDrawItem;
 
   TThDrawItems = class(TObjectList<TThDrawItem>)
@@ -26,7 +26,7 @@ type
     function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
   end;
 
-  TThShapeDrawItems = class(TList<TThShapeDrawItem>)
+  TThShapeDrawItems = class(TList<TThShapeItem>)
   public
     // 모든 항목 APoint만큼 이동
     procedure Move(APoint: TFloatPoint);
@@ -36,10 +36,8 @@ type
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
+
     function GetBounds: TFloatRect;
-  protected
-//    procedure AddPoint(APoint: TFloatPoint); virtual; abstract;
-//    procedure SetStyle(AStyle: IThDrawStyle); virtual; abstract;
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
 
@@ -52,7 +50,6 @@ type
 
   TThPenDrawItem = class(TThBrushDrawItem)
   private
-//    FPath: TArray<TFloatPoint>;
     FPath: TList<TFloatPoint>;
     FPolyPolyPath: TPaths;
 
@@ -73,20 +70,19 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-//    property Path: TThPath read FPath;
     property Color: TColor32 read GetColor;
     property IsDeletion: Boolean read FIsDeletion write FIsDeletion default False;
   end;
 
-  TThShapeDrawItem = class(TThDrawItem)
+  TThShapeItem = class(TThDrawItem)
   private
-    FIsSelection: Boolean;
-
-    FRect: TFloatRect;
+    FSelected: Boolean;
 
     FBorderWidth: Integer;
     FColor: TColor32;
     FBorderColor: TColor32;
+  protected
+    FRect: TFloatRect;
   public
     constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); overload;
@@ -95,23 +91,14 @@ type
     procedure Start(APoint: TFloatPoint); virtual;
     procedure Move(APoint: TFloatPoint); virtual;
 
+    function MakePoly: TThPolyPoly; virtual; abstract;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    property IsSelection: Boolean read FIsSelection write FIsSelection;
+    property Selected: Boolean read FSelected write FSelected;
 
     property Color: TColor32 read FColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
-  end;
-
-  TThRectDrawItem = class(TThShapeDrawItem)
-  public
-    procedure Move(APoint: TFloatPoint); override;
-  end;
-
-  TThRoundRectDrawItem = class(TThRectDrawItem)
-  public
-    procedure Move(APoint: TFloatPoint); override;
   end;
 
 implementation
@@ -283,7 +270,7 @@ end;
 
 { TThShapeDrawItem }
 
-constructor TThShapeDrawItem.Create(ARect: TFloatRect; APoly: TThPoly;
+constructor TThShapeItem.Create(ARect: TFloatRect; APoly: TThPoly;
   AColor: TColor32; ABorderWidth: Integer; ABorderColor: TColor32);
 begin
   FRect := ARect;
@@ -294,7 +281,7 @@ begin
   FBorderColor := ABorderColor;
 end;
 
-constructor TThShapeDrawItem.Create(AStyle: IThDrawStyle);
+constructor TThShapeItem.Create(AStyle: IThDrawStyle);
 var
   Style: TThShapeStyle;
 begin
@@ -302,7 +289,7 @@ begin
   Create(EmptyRect, nil, Style.Color, Style.BorderWidth, Style.BorderColor);
 end;
 
-procedure TThShapeDrawItem.Draw(Bitmap: TBitmap32; AScale,
+procedure TThShapeItem.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
   PolyPoly: TThPolyPoly;
@@ -310,7 +297,7 @@ begin
   PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-  if FIsSelection then
+  if FSelected then
     PolyPolygonFS(Bitmap, PolyPoly, clGray32)
   else
     PolyPolygonFS(Bitmap, PolyPoly, FColor);
@@ -318,40 +305,16 @@ begin
   PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
 end;
 
-procedure TThShapeDrawItem.Start(APoint: TFloatPoint);
+procedure TThShapeItem.Start(APoint: TFloatPoint);
 begin
   FRect.TopLeft := APoint;
 end;
 
-procedure TThShapeDrawItem.Move(APoint: TFloatPoint);
+procedure TThShapeItem.Move(APoint: TFloatPoint);
 begin
   FRect.BottomRight := APoint;
-end;
 
-{ TThRectDrawItem }
-
-procedure TThRectDrawItem.Move(APoint: TFloatPoint);
-var
-  Poly: TThPoly;
-begin
-  inherited;
-
-  Poly := Rectangle(FRect);
-  FPolyPoly := PolyPolygon(Poly);
-end;
-
-{ TThRoundRectDrawItem }
-
-{ TThRoundRectDrawItem }
-
-procedure TThRoundRectDrawItem.Move(APoint: TFloatPoint);
-var
-  Poly: TThPoly;
-begin
-  inherited;
-
-  Poly := RoundRect(FRect, Abs(FRect.Bottom - FRect.Top) / 2);
-  FPolyPoly := PolyPolygon(Poly);
+  FPolyPoly := MakePoly;
 end;
 
 end.

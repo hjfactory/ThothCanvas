@@ -12,7 +12,7 @@ uses
   ThDrawObject in 'Items\ThDrawObject.pas',
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThClasses in 'Types\ThClasses.pas',
-  ThAttributes in 'Types\ThAttributes.pas';
+  ThShapeItem in 'Items\ThShapeItem.pas';
 
 {$R *.res}
 

@@ -32,21 +32,18 @@ type
   end;
 
   IThDrawItem = interface
-//    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-//    procedure AddPoint(APoint: TFloatPoint);
   end;
 
   IThDrawObject = interface
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-//    procedure DrawItem(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; AItem: IThDrawItem);
+    procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 
-    procedure Start(const APoint: TFloatPoint; AShift: TShiftState);
-    procedure Move(const APoint: TFloatPoint; AShift: TShiftState);
-    procedure Done(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
     function GetDrawItem: IThDrawItem;
+    property DrawItem: IThDrawItem read GetDrawItem;
   end;
-
 
 implementation
 

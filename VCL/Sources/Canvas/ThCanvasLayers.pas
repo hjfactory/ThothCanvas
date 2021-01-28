@@ -87,14 +87,14 @@ type
   // 도형을 추가해 그리는 레이어
   TShapeDrawLayer = class(TThCustomDrawLayer)
   private
-    FDrawObjectId: Integer;
+    FShapeId: string;
 
     FSelectObj: TThSelectObject;
     FShapeDrawObj: TThShapeDrawObject;
     FDrawMode: TThShapeDrawMode;
 
     procedure SetDrawMode(const Value: TThShapeDrawMode);
-    procedure SetDrawObjectId(const Value: Integer);
+    procedure SetShapetId(const Value: string);
   protected
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
@@ -102,7 +102,7 @@ type
     destructor Destroy; override;
 
     property DrawMode: TThShapeDrawMode read FDrawMode write SetDrawMode;
-    property DrawObjectId: Integer read FDrawObjectId write SetDrawObjectId;
+    property ShapeId: string read FShapeId write SetShapetId;
 //    property Selection: TThShapeSelectObject read FSelectObj;
     procedure DeleteSelectedItems;
   end;
@@ -207,7 +207,7 @@ begin
     FMouseDowned := True;
 
     if Assigned(FDrawObject) then
-      FDrawObject.Start(ViewportToLocal(X, Y), Shift);
+      FDrawObject.MouseDown(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
@@ -219,7 +219,7 @@ begin
   if FMouseDowned then
   begin
     if Assigned(FDrawObject) then
-      FDrawObject.Move(ViewportToLocal(X, Y), Shift);
+      FDrawObject.MouseMove(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
@@ -234,10 +234,10 @@ begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
-    Item := FDrawObject.GetDrawItem as TThDrawItem;
+    Item := FDrawObject.DrawItem as TThDrawItem;
     if Assigned(Item) then
        FDrawItems.Add(Item);
-    FDrawObject.Done(ViewportToLocal(X, Y), Shift);
+    FDrawObject.MouseUp(ViewportToLocal(X, Y), Shift);
     Update;
   end;
 end;
@@ -308,7 +308,7 @@ begin
   FSelectObj := TThSelectObject.Create(FDrawItems);
   FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
 
-  FDrawObjectId := 200;
+  ShapeId := 'Rect';
   FDrawObject := FSelectObj;
 end;
 
@@ -347,14 +347,14 @@ begin
   end;
 end;
 
-procedure TShapeDrawLayer.SetDrawObjectId(const Value: Integer);
+procedure TShapeDrawLayer.SetShapetId(const Value: string);
 begin
-  if FDrawObjectId = Value then
+  if FShapeId = Value then
     Exit;
 
-  FDrawObjectId := Value;
+  FShapeId := Value;
 
-  FShapeDrawObj.ShapeId := FDrawObjectId;
+  FShapeDrawObj.ShapeId := FShapeId;
 end;
 
 { TThBackgroundLayer }
