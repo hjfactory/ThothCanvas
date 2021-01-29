@@ -15,22 +15,6 @@ uses
 
 type
   TThDrawItem = class;
-  TThShapeItem = class;
-  TThDrawItemClass = class of TThDrawItem;
-
-  TThDrawItems = class(TObjectList<TThDrawItem>)
-  public
-    // APoint에 포함되는 최상위 객체 반환
-    function PtInItem(APoint: TFloatPoint): TThDrawItem;
-    // APoly 영역에 포함되는 객체 배열 반환
-    function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
-  end;
-
-  TThShapeDrawItems = class(TList<TThShapeItem>)
-  public
-    // 모든 항목 APoint만큼 이동
-    procedure Move(APoint: TFloatPoint);
-  end;
 
   TThDrawItem = class(TThInterfacedObject, IThDrawItem)
   private
@@ -101,7 +85,24 @@ type
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
   end;
 
+  TThDrawItems = class(TObjectList<TThDrawItem>)
+  public
+    // APoint에 포함되는 최상위 객체 반환
+    function PtInItem(APoint: TFloatPoint): TThDrawItem;
+    // APoly 영역에 포함되는 객체 배열 반환
+    function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
+  end;
+
+  TThShapeDrawItems = class(TList<TThShapeItem>)
+  public
+    // 모든 항목 APoint만큼 이동
+    procedure Move(APoint: TFloatPoint);
+  end;
+
 implementation
+
+uses
+  System.Math;
 
 { TThDrawItems }
 
@@ -199,7 +200,6 @@ var
   Poly: TThPoly;
   PolyPath: TPath;
   LastP: TFloatPoint; // Adjusted point
-  Clipper: TClipper;
 begin
   FPath.Add(APoint);
 

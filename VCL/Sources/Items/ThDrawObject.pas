@@ -47,7 +47,7 @@ type
   TThPenDrawObject = class(TThBrushDrawObject)
   private
     FDrawItem: TThPenDrawItem;
-
+  public
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
