@@ -43,7 +43,6 @@ object frmMain: TfrmMain
     BorderWidth = 2
     BorderStyle = bsSingle
     TabOrder = 1
-    ExplicitWidth = 881
   end
   object ColorBox1: TColorBox
     Left = 368
@@ -143,5 +142,17 @@ object frmMain: TfrmMain
     Caption = 'RndRct'
     TabOrder = 11
     OnClick = Button8Click
+  end
+  object SpinEdit2: TSpinEdit
+    Left = 648
+    Top = 22
+    Width = 121
+    Height = 22
+    Increment = 10
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 12
+    Value = 100
+    OnChange = SpinEdit2Change
   end
 end

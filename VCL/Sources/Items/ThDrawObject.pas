@@ -290,14 +290,9 @@ end;
 
 procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
-var
-  PolyPoly: TThPolyPoly;
 begin
   if Assigned(FDrawItem) then
-  begin
-    PolyPoly := FDrawItem.MakePolyPoly(FRect);
-    FDrawItem.DrawPoly(Bitmap, AScale, AOffset, PolyPoly);
-  end;
+    FDrawItem.DrawRect(Bitmap, AScale, AOffset, FRect);
 end;
 
 function TThShapeDrawObject.GetDrawItem: IThDrawItem;
@@ -306,7 +301,6 @@ begin
   if not Assigned(FDrawItem) then
     Exit;
 
-  FDrawItem.Rect := FRect;
   Result := FDrawItem;
   FDrawItem := nil;
 end;

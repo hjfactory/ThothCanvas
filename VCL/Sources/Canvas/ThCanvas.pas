@@ -173,10 +173,14 @@ begin
 
   FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
   FShapeDrawLayer.HitTest := False;
+  FShapeDrawLayer.Scaled := True;
   FShapeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
 
   FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
+  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
+  FFreeDrawLayer.Scaled := True;
   FFreeDrawLayer.HitTest := True;
+//  FFreeDrawLayer.OnGetViewportScale := nil;
 
   FPenStyle := FFreeDrawLayer.PenDrawObj.DrawStyle as TThPenStyle;
 //  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth-2000, AHeight-2000);
@@ -239,6 +243,9 @@ begin
     Exit;
 
   FImgView.Scale := LScale;
+  FImgView.Invalidate;
+
+//  FShapeDrawLayer.Scale := FloatPoint(LScale, LScale);
   DoScaleChage(LScale);
 end;
 

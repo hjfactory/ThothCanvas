@@ -22,6 +22,7 @@ type
     Button6: TButton;
     Button7: TButton;
     Button8: TButton;
+    SpinEdit2: TSpinEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ColorBox1Change(Sender: TObject);
@@ -35,6 +36,7 @@ type
     procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+    procedure SpinEdit2Change(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -124,6 +126,11 @@ end;
 procedure TfrmMain.SpinEdit1Change(Sender: TObject);
 begin
   FCanvas.PenStyle.Opacity := SpinEdit1.Value;
+end;
+
+procedure TfrmMain.SpinEdit2Change(Sender: TObject);
+begin
+//  FCanvas.Scale := (SpinEdit2.Value / 100);
 end;
 
 procedure TfrmMain.ToggleSwitch1Click(Sender: TObject);

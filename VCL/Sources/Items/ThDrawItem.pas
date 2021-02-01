@@ -76,8 +76,10 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawPoly(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; APolyPoly: TThPolyPoly); virtual;
+    procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
 
-    property Rect: TFloatRect read FRect write FRect;
+    procedure Move(APoint: TFloatPoint);
+
     property Selected: Boolean read FSelected write FSelected;
 
     property Color: TColor32 read FColor;
@@ -170,8 +172,9 @@ var
 begin
   for I := 0 to Count - 1 do
   begin
-    Items[I].FBounds := EmptyRect;
-    TranslatePolyPolygonInplace(Items[I].FPolyPoly, APoint.X, APoint.Y);
+    Items[I].Move(APoint);
+//    Items[I].FBounds := EmptyRect;
+//    TranslatePolyPolygonInplace(Items[I].FPolyPoly, APoint.X, APoint.Y);
   end;
 end;
 
@@ -292,6 +295,7 @@ end;
 procedure TThShapeItem.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
+  LRect: TFloatRect;
   PolyPoly: TThPolyPoly;
 begin
   PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
@@ -306,11 +310,13 @@ begin
 
   if FSelected then
   begin
-//    PolygonFS(
-//      Bitmap,
-//      Circle(FRect.TopLeft, 3),
-//      clWhite32
-//    );
+    LRect := ScaleRect(FRect, AScale);
+    LRect := OffsetRect(LRect, AOffset);
+    PolygonFS(
+      Bitmap,
+      Circle(LRect.TopLeft, 3),
+      clWhite32
+    );
 
   end;
 end;
@@ -320,6 +326,23 @@ begin
   FPolyPoly := APolyPoly;
 
   Draw(Bitmap, AScale, AOffset);
+end;
+
+procedure TThShapeItem.DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+  ARect: TFloatRect);
+var
+  PolyPoly: TThPolyPoly;
+begin
+  FRect := ARect;
+  PolyPoly := MakePolyPoly(ARect);
+  DrawPoly(Bitmap, AScale, AOffset, PolyPoly);
+end;
+
+procedure TThShapeItem.Move(APoint: TFloatPoint);
+begin
+  FRect := OffsetRect(FRect, APoint);
+  TranslatePolyPolygonInplace(FPolyPoly, APoint.X, APoint.Y);
+//  FRect.TopLeft
 end;
 
 end.

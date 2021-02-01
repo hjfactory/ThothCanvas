@@ -23,6 +23,8 @@ function AAFloatPoint2AAPoint(const APoly: TArrayOfFloatPoint;
 function AAPoint2AAFloatPoint(const APaths: TPaths;
   Decimals: Integer = 0): TArrayOfArrayOfFloatPoint;
 
+function ScaleRect(AFR: TFloatRect; AScale: TFloatPoint): TFloatRect;
+function OffsetRect(AFR: TFloatRect; AOffset: TFloatPoint): TFloatRect;
 
 implementation
 
@@ -114,6 +116,22 @@ begin
       Result[I][J].Y := APaths[I][J].Y / DecScale;
     end;
   end;
+end;
+
+function ScaleRect(AFR: TFloatRect; AScale: TFloatPoint): TFloatRect;
+begin
+  Result.Left   := AFR.Left * AScale.X;
+  Result.Top    := AFR.Top * AScale.Y;
+  Result.Right  := AFR.Right * AScale.X;
+  Result.Bottom := AFR.Bottom * AScale.Y;
+end;
+
+function OffsetRect(AFR: TFloatRect; AOffset: TFloatPoint): TFloatRect;
+begin
+  Result.Left   := AFR.Left + AOffset.X;
+  Result.Top    := AFR.Top + AOffset.Y;
+  Result.Right  := AFR.Right + AOffset.X;
+  Result.Bottom := AFR.Bottom + AOffset.Y;
 end;
 
 end.
