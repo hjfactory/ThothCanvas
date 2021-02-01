@@ -39,6 +39,7 @@ type
     FPenStyle: TThPenStyle;
 
     FOnScaleChange: TScaleChangeEvent;
+
     FFreeDrawMode: TThFreeDrawMode;
     FShapeDrawMode: TThShapeDrawMode;
 
@@ -73,6 +74,7 @@ type
     procedure SetShapeId(const Value: string);
   protected
     procedure CreateWnd; override;
+    procedure Loaded; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -85,8 +87,6 @@ type
     property FreeDrawMode: TThFreeDrawMode read FFreeDrawMode write SetFreeDrawMode;
     // Rect, Round, ...
     property ShapeDrawMode: TThShapeDrawMode read FShapeDrawMode write SetShapeDrawMode;
-
-//    property DrawShapeId: Integer
 
     // Link PenStyleChange
     property PenStyle: TThPenStyle read FPenStyle;
@@ -140,8 +140,6 @@ end;
 procedure TThCustomCanvas.CreateWnd;
 begin
   inherited;
-
-  FImgView.ScrollBars.Visibility := svAuto;
 end;
 
 procedure TThCustomCanvas.DeleteSelected;
@@ -246,45 +244,33 @@ end;
 
 procedure TThCustomCanvas.ImgViewResize(Sender: TObjecT);
 begin
-//  FImgView.Bitmap.SetSize(Width, Height);
-//  FImgView.Bitmap.Clear(clWhite32);
+
+end;
+
+procedure TThCustomCanvas.Loaded;
+begin
+  inherited;
+
+  if HandleAllocated then
+    FImgView.ScrollBars.Visibility := svAuto;
 end;
 
 procedure TThCustomCanvas.ImgViewMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
-//  if FCanvasMode = cmSelection then
-//  begin
-//    FMouseDowned := True;
-//
-//    FMouseDownPoint := GR32.Point(X, Y);
-//
-//    Cursor := crDrag;
-//  end;
+
 end;
 
 procedure TThCustomCanvas.ImgViewMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer; Layer: TCustomLayer);
 begin
-//  if FCanvasMode = cmSelection then
-//  begin
-////    FMouseDownPoint
-//    if FMouseDowned then
-//    begin
-//      Move(FMouseDownPoint.X - X, FMouseDownPoint.Y - Y);
-//      FMouseDownPoint := GR32.Point(X, Y);
-//    end;
-//  end;
+
 end;
 
 procedure TThCustomCanvas.ImgViewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer; Layer: TCustomLayer);
 begin
-//  if FCanvasMode = cmSelection then
-//  begin
-//    FMouseDowned := False;
-//    Cursor := crDefault;
-//  end;
+
 end;
 
 procedure TThCustomCanvas.ImgViewMouseWheel(Sender: TObject; Shift: TShiftState;

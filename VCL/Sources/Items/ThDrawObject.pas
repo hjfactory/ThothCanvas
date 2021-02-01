@@ -84,10 +84,7 @@ type
     FShapeId: string;
     FDrawItem: TThShapeItem;
   protected
-    FDownPt, FCurrPt: TFloatPoint;
-
-    function GetDrawStyle: TThShapeStyle;
-    property DrawStyle: TThShapeStyle read GetDrawStyle;
+    FRect: TFloatRect;
   public
     constructor Create(AStyle: IThDrawStyle); override;
     destructor Destroy; override;
@@ -259,24 +256,6 @@ end;
 
 { TThShapeDrawObject }
 
-procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-begin
-  FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
-
-  if not Assigned(FDrawItem) then
-    Exit;
-  FDrawItem.Start(APoint);
-  FDownPt := APoint;
-end;
-
-procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
-begin
-  if not Assigned(FDrawItem) then
-    Exit;
-  FCurrPt := APoint;
-  FDrawItem.Move(APoint);
-end;
-
 constructor TThShapeDrawObject.Create(AStyle: IThDrawStyle);
 begin
   if not Assigned(AStyle) then
@@ -289,29 +268,47 @@ begin
   inherited;
 end;
 
+procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+begin
+  FRect.TopLeft := APoint;
+end;
+
+procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+begin
+  if not Assigned(FDrawItem) then
+    FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
+
+  FRect.BottomRight := APoint;
+end;
+
 procedure TThShapeDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   inherited;
 
-  FCurrPt := EmptyPoint;
+  FRect := EmptyRect;
 end;
 
 procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
+var
+  PolyPoly: TThPolyPoly;
 begin
   if Assigned(FDrawItem) then
-    FDrawItem.Draw(Bitmap, AScale, AOffset);
+  begin
+    PolyPoly := FDrawItem.MakePolyPoly(FRect);
+    FDrawItem.DrawPoly(Bitmap, AScale, AOffset, PolyPoly);
+  end;
 end;
 
 function TThShapeDrawObject.GetDrawItem: IThDrawItem;
 begin
+  Result := nil;
+  if not Assigned(FDrawItem) then
+    Exit;
+
+  FDrawItem.Rect := FRect;
   Result := FDrawItem;
   FDrawItem := nil;
-end;
-
-function TThShapeDrawObject.GetDrawStyle: TThShapeStyle;
-begin
-  Result := TThShapeStyle(FDrawStyle);
 end;
 
 { TThShapeSelectObject }

@@ -16,7 +16,7 @@ uses
   clipper,
 
   ThTypes, ThClasses,
-  ThDrawItem, ThDrawStyle, ThDrawObject;
+  ThDrawItem, ThDrawObject, ThDrawStyle;
 
 type
   TThCustomLayer = class(TPositionedLayer)
@@ -53,7 +53,6 @@ type
     FMouseDowned: Boolean;
 
   protected
-    FDrawStyle: IThDrawStyle;
     [unsafe] FDrawObject: IThDrawObject; // 인터페이스 인스턴스 교체 시 자동해제 방지 
 
     procedure Paint(Buffer: TBitmap32); override;

@@ -34,6 +34,10 @@ type
   IThDrawItem = interface
   end;
 
+  IThShapeItem = interface(IThDrawItem)
+    function MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
+  end;
+
   IThDrawObject = interface
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);

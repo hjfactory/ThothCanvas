@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 0
   Caption = 'ThCanvas'
   ClientHeight = 757
-  ClientWidth = 953
+  ClientWidth = 1076
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    953
+    1076
     757)
   PixelsPerInch = 96
   TextHeight = 13
@@ -36,13 +36,14 @@ object frmMain: TfrmMain
   object pnlMain: TPanel
     Left = 32
     Top = 88
-    Width = 881
+    Width = 1004
     Height = 649
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     BorderWidth = 2
     BorderStyle = bsSingle
     TabOrder = 1
+    ExplicitWidth = 881
   end
   object ColorBox1: TColorBox
     Left = 368

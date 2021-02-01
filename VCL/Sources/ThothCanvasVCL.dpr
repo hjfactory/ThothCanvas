@@ -12,7 +12,8 @@ uses
   ThDrawObject in 'Items\ThDrawObject.pas',
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThClasses in 'Types\ThClasses.pas',
-  ThShapeItem in 'Items\ThShapeItem.pas';
+  ThShapeItem in 'Items\ThShapeItem.pas',
+  ThSelection in 'Items\ThSelection.pas';
 
 {$R *.res}
 
