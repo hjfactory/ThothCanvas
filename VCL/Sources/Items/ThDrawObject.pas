@@ -388,6 +388,7 @@ var
   Item: TThDrawItem;
 begin
   FLastPt := APoint;
+
   Item := FDrawItems.PtInItem(APoint);
 
   FSelected := SetSelection(Item as TThShapeItem, AShift);

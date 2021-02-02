@@ -53,7 +53,7 @@ type
     FMouseDowned: Boolean;
 
   protected
-    [unsafe] FDrawObject: IThDrawObject; // 인터페이스 인스턴스 교체 시 자동해제 방지 
+    [unsafe] FDrawObject: IThDrawObject; // 인터페이스 인스턴스 교체 시 자동해제 방지
 
     procedure Paint(Buffer: TBitmap32); override;
 
@@ -177,7 +177,7 @@ end;
 
 function TThCustomViewLayer.ViewportToLocal(AX, AY: TFloat): TFloatPoint;
 begin
-  Result := FloatPoint(AX, AY);
+  Result := ViewportToLocal(FloatPoint(AX, AY));
 end;
 
 function TThCustomViewLayer.ViewportToLocal(APoint: TFloatPoint): TFloatPoint;

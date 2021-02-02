@@ -118,6 +118,7 @@ begin
   inherited Create(AOwner);
 
   FImgView := TImgView32.Create(nil);
+  FImgView.Name := 'ThImgView';
   FImgView.Parent := Self;
   FImgView.Align := alClient;
 
@@ -162,7 +163,7 @@ begin
     AHeight := 3508;
   end;
 
-//  FImgView.Bitmap.SetSize(AWidth, AHeight);
+  FImgView.Bitmap.SetSize(AWidth, AHeight);
   FImgView.Bitmap.Clear(clGray32);
 
   FBackgroundLayer := TThBackgroundLayer.Create(FImgView.Layers);
@@ -172,9 +173,10 @@ begin
   FBackgroundLayer.Scaled := True;
 
   FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
+  FShapeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
   FShapeDrawLayer.HitTest := False;
   FShapeDrawLayer.Scaled := True;
-  FShapeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
+  FShapeDrawLayer.MouseEvents := True;
 
   FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
   FFreeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
@@ -290,14 +292,14 @@ end;
 procedure TThCustomCanvas.ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
   MousePos: TPoint; var Handled: Boolean);
 begin
-  if ssCtrl in Shift then
+//  if ssCtrl in Shift then
     Scale := Scale + 0.1;
 end;
 
 procedure TThCustomCanvas.ImgViewMouseWheelUp(Sender: TObject; Shift: TShiftState;
   MousePos: TPoint; var Handled: Boolean);
 begin
-  if ssCtrl in Shift then
+//  if ssCtrl in Shift then
     Scale := Scale - 0.1;
 end;
 
