@@ -38,6 +38,11 @@ type
     function MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
   end;
 
+  IThItemSelection = interface
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure Realign;
+  end;
+
   IThDrawObject = interface
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);

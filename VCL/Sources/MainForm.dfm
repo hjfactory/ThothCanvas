@@ -34,8 +34,8 @@ object frmMain: TfrmMain
     OnClick = Button1Click
   end
   object pnlMain: TPanel
-    Left = 32
-    Top = 88
+    Left = 48
+    Top = 82
     Width = 1004
     Height = 649
     Anchors = [akLeft, akTop, akRight, akBottom]

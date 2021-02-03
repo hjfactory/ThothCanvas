@@ -60,15 +60,21 @@ type
   TThShapeItem = class(TThDrawItem)
   private
     FSelected: Boolean;
+    FSelection: IThItemSelection;
 
+    FRect: TFloatRect;
     FBorderWidth: Integer;
     FColor: TColor32;
+
     FBorderColor: TColor32;
+    procedure SetSelected(const Value: Boolean);
+    procedure SetRect(const Value: TFloatRect);
   protected
-    FRect: TFloatRect;
 
     function MakePolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
     procedure DrawPoly(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; APolyPoly: TThPolyPoly); virtual;
+
+    procedure DrawSelections(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
   public
     constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); overload;
@@ -77,11 +83,10 @@ type
     procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    procedure DrawSelections(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-
     procedure Move(APoint: TFloatPoint);
 
-    property Selected: Boolean read FSelected write FSelected;
+    property Selected: Boolean read FSelected write SetSelected;
+    property Rect: TFloatRect read FRect write SetRect;
 
     property Color: TColor32 read FColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
@@ -105,7 +110,7 @@ type
 implementation
 
 uses
-  System.Math;
+  System.Math, ThSelection;
 
 { TThDrawItems }
 
@@ -306,8 +311,8 @@ begin
 
   PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
 
-  if FSelected then
-    DrawSelections(Bitmap, AScale, AOffset);
+  if FSelected and Assigned(FSelection) then
+    FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
 procedure TThShapeItem.DrawPoly(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; APolyPoly: TThPolyPoly);
@@ -333,6 +338,7 @@ var
   I: Integer;
   Pts: array[0..7] of TFloatPoint;
   FrSize: Single;
+  Poly: TThPoly;
 begin
   LRect := ScaleRect(FRect, AScale);
   LRect := OffsetRect(LRect, AOffset);
@@ -350,11 +356,9 @@ begin
 
   for I := Low(Pts) to High(Pts) do
   begin
-    PolygonFS(
-      Bitmap,
-      Circle(Pts[I], FrSize),
-      clRed32
-    );
+    Poly := Circle(Pts[I], FrSize);
+    PolygonFS(Bitmap, Poly, clWhite32);
+    PolylineFS(Bitmap, Poly, clBlack32, True, 1);
   end;
 end;
 
@@ -362,6 +366,26 @@ procedure TThShapeItem.Move(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
   TranslatePolyPolygonInplace(FPolyPoly, APoint.X, APoint.Y);
+
+  if Assigned(FSelection) then
+    FSelection.Realign;
+end;
+
+procedure TThShapeItem.SetRect(const Value: TFloatRect);
+begin
+  FRect := Value;
+end;
+
+procedure TThShapeItem.SetSelected(const Value: Boolean);
+begin
+  if Value = FSelected then
+    Exit;
+  FSelected := Value;
+
+  if Value then
+    FSelection := TThShapeSelection.Create(Self)
+  else
+    FSelection := nil; // Free(ARC)
 end;
 
 end.
