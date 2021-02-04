@@ -12,8 +12,6 @@ const
   TH_SCALE_MAX = 4;
 
 type
-  TThCanvasMode = (cmFreeDraw, cmShapeDraw);
-
   TThDrawMode       = (dmSelect, dmDraw, dmPen, dmEraser);
 
   TThPercent = 0..100;
@@ -44,6 +42,7 @@ type
 
   IThDrawObject = interface
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 

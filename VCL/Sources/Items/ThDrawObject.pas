@@ -27,7 +27,8 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); virtual;
-    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); virtual; abstract;
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); virtual; abstract;
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); virtual;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); virtual;
 
     function GetDrawItem: IThDrawItem; virtual;
@@ -48,7 +49,7 @@ type
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -75,7 +76,7 @@ type
   TThObjErsDrawObject = class(TThBaseEraserDrawObject)
   public
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
   end;
 
@@ -91,7 +92,7 @@ type
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -104,22 +105,23 @@ type
   // Shape Select
   TThSelectObject = class(TThCustomDrawObject)
   private
-    FLastPt: TFloatPoint;
+    FLastPoint: TFloatPoint;
     FDrawItems: TThDrawItems;
     FSelected: TThShapeItem;
-    FSelectItems: TThShapeDrawItems;
+    FSelectedItems: TThShapeDrawItems;
 
-    function SetSelection(AItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
+    function CalcSelection(ASelectingItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
     procedure SetSelected(const Value: TThShapeItem);
   public
     constructor Create(AItems: TThDrawItems); reintroduce;
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
-    property Items: TThShapeDrawItems read FSelectItems;
+    property Items: TThShapeDrawItems read FSelectedItems;
     property Selected: TThShapeItem read FSelected write SetSelected;
     procedure DeleteSelectedItems;
 
@@ -131,7 +133,8 @@ type
 implementation
 
 uses
-  ThUtils, System.Math;
+  ThUtils, System.Math,
+  Vcl.Forms, System.UITypes;
 
 { TThDrawObject }
 
@@ -141,6 +144,11 @@ begin
 end;
 
 procedure TThCustomDrawObject.MouseDown;
+begin
+end;
+
+procedure TThCustomDrawObject.MouseMove(const APoint: TFloatPoint;
+  AShift: TShiftState);
 begin
 end;
 
@@ -177,7 +185,6 @@ procedure TThPenDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftSt
 var
   Poly: TThPoly;
 begin
-
   FDrawItem := TThPenDrawItem.Create(FDrawStyle);
   FPath.Add(APoint);
 
@@ -186,7 +193,7 @@ begin
   FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
 end;
 
-procedure TThPenDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThPenDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   Poly: TThPoly;
   PolyPath: TPath;
@@ -265,10 +272,10 @@ end;
 procedure TThObjErsDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   FPos := APoint;
-  MouseMove(APoint, AShift);
+  MouseDownMove(APoint, AShift);
 end;
 
-procedure TThObjErsDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThObjErsDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   I: Integer;
   Poly: TThPoly;
@@ -313,7 +320,7 @@ begin
   FRect.TopLeft := APoint;
 end;
 
-procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThShapeDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   if not Assigned(FDrawItem) then
     FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
@@ -351,29 +358,29 @@ procedure TThSelectObject.ClearSelection;
 var
   Item: TThShapeItem;
 begin
-  for Item in FSelectItems do
+  for Item in FSelectedItems do
     Item.Selected := False;
-  FSelectItems.Clear;
+  FSelectedItems.Clear;
 end;
 
 constructor TThSelectObject.Create(AItems: TThDrawItems);
 begin
   FDrawItems := AItems;
-  FSelectItems := TThShapeDrawItems.Create;
+  FSelectedItems := TThShapeDrawItems.Create;
 end;
 
 procedure TThSelectObject.DeleteSelectedItems;
 var
   Item: TThDrawItem;
 begin
-  for Item in FSelectItems do
+  for Item in FSelectedItems do
     FDrawItems.Remove(Item);
-  FSelectItems.Clear;
+  FSelectedItems.Clear;
 end;
 
 destructor TThSelectObject.Destroy;
 begin
-  FSelectItems.Free;
+  FSelectedItems.Free;
 
   inherited;
 end;
@@ -381,29 +388,30 @@ end;
 procedure TThSelectObject.SetDrawItems(ADrawItems: TThDrawItems);
 begin
   FDrawItems := ADrawItems;
-  FSelectItems := TThShapeDrawItems.Create;
+  FSelectedItems := TThShapeDrawItems.Create;
 end;
 
 procedure TThSelectObject.SetSelected(const Value: TThShapeItem);
 begin
   ClearSelection;
+
   FSelected := Value;
   Value.Selected := True;
-  FSelectItems.Add(Value);
+  FSelectedItems.Add(Value);
 end;
 
-function TThSelectObject.SetSelection(AItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
+function TThSelectObject.CalcSelection(ASelectingItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
 begin
-  Result := AItem;
-  if Assigned(AItem) then
+  Result := ASelectingItem;
+  if Assigned(ASelectingItem) then
   begin
     // 선택되지 않은 경우 선택 처리(이미 선택된 경우 무시)
-    if AItem.Selected then
+    if ASelectingItem.Selected then
     begin
       if ssShift in AShift then
       begin
-        AItem.Selected := False;
-        FSelectItems.Remove(AItem);
+        ASelectingItem.Selected := False;
+        FSelectedItems.Remove(ASelectingItem);
         Result := nil;
       end;
     end
@@ -412,8 +420,8 @@ begin
       if not (ssShift in AShift)  then
         ClearSelection;
 
-      AItem.Selected := True;
-      FSelectItems.Add(AItem);
+      ASelectingItem.Selected := True;
+      FSelectedItems.Add(ASelectingItem);
     end;
   end
   else
@@ -427,29 +435,41 @@ procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftSta
 var
   Item: TThDrawItem;
 begin
-  FLastPt := APoint;
+  FLastPoint := APoint;
 
   Item := FDrawItems.PtInItem(APoint);
 
-  FSelected := SetSelection(Item as TThShapeItem, AShift);
+  FSelected := CalcSelection(Item as TThShapeItem, AShift);
 end;
 
-procedure TThSelectObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThSelectObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   P: TFloatPoint;
 begin
   if Assigned(FSelected) then
   begin
-    P := APoint - FLastPt;
-    FSelectItems.Move(P);
-    FLastPt := APoint;
+    P := APoint - FLastPoint;
+    FSelectedItems.Move(P);
+    FLastPoint := APoint;
+    Screen.Cursor := crSizeAll;
   end;
+end;
+
+procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
+  AShift: TShiftState);
+var
+  Item: TThDrawItem;
+begin
+  inherited;
+
+  Item := FDrawItems.PtInItem(APoint);
+  if Assigned(Item) then
+    Screen.Cursor := crSizeAll;
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   inherited;
-
 end;
 
 end.

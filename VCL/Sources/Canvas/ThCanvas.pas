@@ -34,8 +34,6 @@ type
     FShapeDrawLayer: TShapeDrawLayer;
     FBackgroundLayer: TThBackgroundLayer;
 
-    FCanvasMode: TThCanvasMode;
-
     FPenStyle: TThPenStyle;
 
     FOnScaleChange: TScaleChangeEvent;
