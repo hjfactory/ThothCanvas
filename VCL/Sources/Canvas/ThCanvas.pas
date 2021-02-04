@@ -40,9 +40,7 @@ type
 
     FOnScaleChange: TScaleChangeEvent;
 
-    FFreeDrawMode: TThFreeDrawMode;
-    FShapeDrawMode: TThShapeDrawMode;
-
+    FDrawMode: TThDrawMode;
     FShapeId: string;
 
     procedure DoScaleChage(Scale: Single);
@@ -67,9 +65,7 @@ type
     procedure ImgViewMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
 
-    procedure SetCanvasMode(const Value: TThCanvasMode);
-    procedure SetFreeDrawMode(const Value: TThFreeDrawMode);
-    procedure SetShapeDrawMode(const Value: TThShapeDrawMode);
+    procedure SetDrawMode(const Value: TThDrawMode);
 
     procedure SetShapeId(const Value: string);
   protected
@@ -80,13 +76,7 @@ type
     destructor Destroy; override;
 
     procedure CreatePage(AWidth: Integer = 0; AHeight: Integer = 0);
-
-    // FreeDraw, ShapeDraw
-    property CanvasMode: TThCanvasMode read FCanvasMode write SetCanvasMode;
-    // Pen, Eraser
-    property FreeDrawMode: TThFreeDrawMode read FFreeDrawMode write SetFreeDrawMode;
-    // Rect, Round, ...
-    property ShapeDrawMode: TThShapeDrawMode read FShapeDrawMode write SetShapeDrawMode;
+    property DrawMode: TThDrawMode read FDrawMode write SetDrawMode;
 
     // Link PenStyleChange
     property PenStyle: TThPenStyle read FPenStyle;
@@ -199,17 +189,6 @@ begin
   Result := FImgView.Scale;
 end;
 
-procedure TThCustomCanvas.SetCanvasMode(const Value: TThCanvasMode);
-begin
-  if FCanvasMode = Value then
-    Exit;
-
-  FCanvasMode := Value;
-
-  FFreeDrawLayer.HitTest  := Value = TThCanvasMode.cmFreeDraw;
-  FShapeDrawLayer.HitTest := Value = TThCanvasMode.cmShapeDraw;
-end;
-
 procedure TThCustomCanvas.SetShapeId(const Value: string);
 begin
   FShapeId := Value;
@@ -217,20 +196,24 @@ begin
   FShapeDrawLayer.ShapeId := Value;
 end;
 
-procedure TThCustomCanvas.SetFreeDrawMode(const Value: TThFreeDrawMode);
+procedure TThCustomCanvas.SetDrawMode(const Value: TThDrawMode);
 begin
-  SetCanvasMode(cmFreeDraw);
-  FFreeDrawMode := Value;
+  case Value of
+    dmSelect, dmDraw:
+      begin
+        FFreeDrawLayer.HitTest  := False;
+        FShapeDrawLayer.HitTest := True;
+        FShapeDrawLayer.DrawMode := Value;
+      end;
+    dmPen, dmEraser:
+      begin
+        FFreeDrawLayer.HitTest  := True;
+        FShapeDrawLayer.HitTest := False;
+        FFreeDrawLayer.DrawMode := Value;
+      end;
+  end;
+  FDrawMode := Value;
 
-  FFreeDrawLayer.DrawMode := Value;
-end;
-
-procedure TThCustomCanvas.SetShapeDrawMode(const Value: TThShapeDrawMode);
-begin
-  SetCanvasMode(cmShapeDraw);
-  FShapeDrawMode := Value;
-
-  FShapeDrawLayer.DrawMode := Value;
 end;
 
 procedure TThCustomCanvas.SetScale(const Value: Single);

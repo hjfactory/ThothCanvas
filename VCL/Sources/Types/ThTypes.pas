@@ -14,8 +14,7 @@ const
 type
   TThCanvasMode = (cmFreeDraw, cmShapeDraw);
 
-  TThFreeDrawMode   = (fdmPen, fdmEraser);
-  TThShapeDrawMode  = (sdmSelect, sdmDraw);
+  TThDrawMode       = (dmSelect, dmDraw, dmPen, dmEraser);
 
   TThPercent = 0..100;
 

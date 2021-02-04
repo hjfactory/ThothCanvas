@@ -16,7 +16,6 @@ type
     Label1: TLabel;
     SpinEdit1: TSpinEdit;
     Button3: TButton;
-    ToggleSwitch1: TToggleSwitch;
     Button4: TButton;
     Button5: TButton;
     Button6: TButton;
@@ -30,7 +29,6 @@ type
     procedure SpinEdit1Change(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure ToggleSwitch1Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
@@ -57,34 +55,29 @@ uses
 
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOn;
-  FCanvas.FreeDrawMode := fdmPen;
+  FCanvas.DrawMode := dmPen;
 end;
 
 procedure TfrmMain.Button3Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
   FCanvas.Clear;
 end;
 
 procedure TfrmMain.Button4Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOn;
-  FCanvas.FreeDrawMode := fdmEraser;
+  FCanvas.DrawMode := dmEraser;
 //  FCanvas.PenDrawMode := bdmEraser;
 end;
 
 procedure TfrmMain.Button5Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
-  FCanvas.ShapeDrawMode := sdmDraw;
+  FCanvas.DrawMode := dmDraw;
   FCanvas.ShapeId := 'Rect';
 end;
 
 procedure TfrmMain.Button6Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
-  FCanvas.ShapeDrawMode := sdmSelect;
+  FCanvas.DrawMode := dmSelect;
 //  FCanvas.ShapeMode := smNone;
 end;
 
@@ -95,8 +88,7 @@ end;
 
 procedure TfrmMain.Button8Click(Sender: TObject);
 begin
-  ToggleSwitch1.State := tssOff;
-  FCanvas.ShapeDrawMode := sdmDraw;
+  FCanvas.DrawMode := dmDraw;
   FCanvas.ShapeId := 'RoundRect';
 end;
 
@@ -131,14 +123,6 @@ end;
 procedure TfrmMain.SpinEdit2Change(Sender: TObject);
 begin
 //  FCanvas.Scale := (SpinEdit2.Value / 100);
-end;
-
-procedure TfrmMain.ToggleSwitch1Click(Sender: TObject);
-begin
-  if ToggleSwitch1.IsOn then
-    FCanvas.CanvasMode := cmFreeDraw
-  else
-    FCanvas.CanvasMode := cmShapeDraw;
 end;
 
 procedure TfrmMain.TrackBar1Change(Sender: TObject);

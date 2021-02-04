@@ -25,7 +25,7 @@ object frmMain: TfrmMain
     Height = 13
   end
   object Button1: TButton
-    Left = 216
+    Left = 48
     Top = 20
     Width = 33
     Height = 25
@@ -35,9 +35,9 @@ object frmMain: TfrmMain
   end
   object pnlMain: TPanel
     Left = 48
-    Top = 82
+    Top = 96
     Width = 1004
-    Height = 649
+    Height = 635
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     BorderWidth = 2
@@ -45,16 +45,16 @@ object frmMain: TfrmMain
     TabOrder = 1
   end
   object ColorBox1: TColorBox
-    Left = 368
-    Top = 22
-    Width = 145
+    Left = 48
+    Top = 54
+    Width = 81
     Height = 22
     TabOrder = 2
     OnChange = ColorBox1Change
   end
   object TrackBar1: TTrackBar
-    Left = 519
-    Top = 22
+    Left = 135
+    Top = 51
     Width = 49
     Height = 20
     LineSize = 2
@@ -67,8 +67,8 @@ object frmMain: TfrmMain
     OnChange = TrackBar1Change
   end
   object SpinEdit1: TSpinEdit
-    Left = 579
-    Top = 22
+    Left = 190
+    Top = 54
     Width = 54
     Height = 22
     Increment = 5
@@ -79,7 +79,7 @@ object frmMain: TfrmMain
     OnChange = SpinEdit1Change
   end
   object Button3: TButton
-    Left = 303
+    Left = 135
     Top = 20
     Width = 42
     Height = 25
@@ -87,71 +87,60 @@ object frmMain: TfrmMain
     TabOrder = 5
     OnClick = Button3Click
   end
-  object ToggleSwitch1: TToggleSwitch
-    Left = 32
-    Top = 29
-    Width = 102
-    Height = 20
-    State = tssOn
-    StateCaptions.CaptionOn = 'Freedraw'
-    StateCaptions.CaptionOff = 'Selection'
-    TabOrder = 6
-    OnClick = ToggleSwitch1Click
-  end
   object Button4: TButton
-    Left = 255
+    Left = 87
     Top = 20
     Width = 42
     Height = 25
     Caption = 'Eraser'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = Button4Click
   end
   object Button5: TButton
-    Left = 255
-    Top = 51
+    Left = 319
+    Top = 20
     Width = 33
     Height = 25
     Caption = 'Rect'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = Button5Click
   end
   object Button6: TButton
-    Left = 216
-    Top = 51
+    Left = 280
+    Top = 20
     Width = 33
     Height = 25
     Caption = 'None'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = Button6Click
   end
   object Button7: TButton
-    Left = 351
-    Top = 51
+    Left = 414
+    Top = 20
     Width = 29
     Height = 25
     Caption = 'Del'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = Button7Click
   end
   object Button8: TButton
-    Left = 295
-    Top = 51
+    Left = 358
+    Top = 21
     Width = 50
     Height = 25
     Caption = 'RndRct'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = Button8Click
   end
   object SpinEdit2: TSpinEdit
-    Left = 648
-    Top = 22
+    Left = 488
+    Top = 54
     Width = 121
     Height = 22
     Increment = 10
     MaxValue = 0
     MinValue = 0
-    TabOrder = 12
+    TabOrder = 11
     Value = 100
     OnChange = SpinEdit2Change
   end

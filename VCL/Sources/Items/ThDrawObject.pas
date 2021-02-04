@@ -18,10 +18,7 @@ uses
   ThDrawItem, ThShapeItem;
 
 type
-  TThDrawObject = class;
-  TThDrawObjectClass = class of TThDrawObject;
-
-  TThDrawObject = class(TThInterfacedObject, IThDrawObject)
+  TThCustomDrawObject = class(TThInterfacedObject, IThDrawObject)
   private
     FDrawStyle: IThDrawStyle;
   public
@@ -38,16 +35,18 @@ type
     property DrawStyle: IThDrawStyle read FDrawStyle write FDrawStyle;
   end;
 
-  /// Brush Objects
-  TThBrushDrawObject = class(TThDrawObject)
-  public
-    destructor Destroy; override;
-  end;
-
-  TThPenDrawObject = class(TThBrushDrawObject)
+  // 자유선으로 그리기 객체(Free draw object)
+  TThPenDrawObject = class(TThCustomDrawObject)
   private
     FDrawItem: TThPenDrawItem;
+
+    FPath: TList<TFloatPoint>;
+    FPolyPolyPath: TPaths;
+    FPolyPoly: TThPolyPoly;
   public
+    constructor Create(AStyle: IThDrawStyle); override;
+    destructor Destroy; override;
+
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
@@ -57,7 +56,8 @@ type
     function GetDrawItem: IThDrawItem; override;
   end;
 
-  TThEraserDrawObject = class(TThBrushDrawObject)
+  // 지우개 베이스 클래스
+  TThBaseEraserDrawObject = class(TThCustomDrawObject)
   private
     FDrawItems: TThDrawItems;
     function GetDrawStyle: TThEraserStyle;
@@ -71,15 +71,16 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
   end;
 
-  TThObjErsDrawObject = class(TThEraserDrawObject)
+  // 지나간 객체 지우개(Passed objects eraser)
+  TThObjErsDrawObject = class(TThBaseEraserDrawObject)
   public
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
   end;
 
-  /// Shape Objects
-  TThShapeDrawObject = class(TThDrawObject)
+  /// Shape Objects base
+  TThShapeDrawObject = class(TThCustomDrawObject)
   private
     FShapeId: string;
     FDrawItem: TThShapeItem;
@@ -101,7 +102,7 @@ type
   end;
 
   // Shape Select
-  TThSelectObject = class(TThDrawObject)
+  TThSelectObject = class(TThCustomDrawObject)
   private
     FLastPt: TFloatPoint;
     FDrawItems: TThDrawItems;
@@ -134,44 +135,89 @@ uses
 
 { TThDrawObject }
 
-constructor TThDrawObject.Create(AStyle: IThDrawStyle);
+constructor TThCustomDrawObject.Create(AStyle: IThDrawStyle);
 begin
   FDrawStyle := AStyle;
 end;
 
-procedure TThDrawObject.MouseDown;
+procedure TThCustomDrawObject.MouseDown;
 begin
 end;
 
-procedure TThDrawObject.MouseUp;
+procedure TThCustomDrawObject.MouseUp;
 begin
 end;
 
-function TThDrawObject.GetDrawItem: IThDrawItem;
+function TThCustomDrawObject.GetDrawItem: IThDrawItem;
 begin
   Result := nil;
 end;
 
-procedure TThDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TThCustomDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 begin
 end;
 
 { TThPenObject }
 
-procedure TThPenDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+constructor TThPenDrawObject.Create(AStyle: IThDrawStyle);
 begin
+  inherited;
+
+  FPath := TList<TFloatPoint>.Create;
+end;
+
+destructor TThPenDrawObject.Destroy;
+begin
+  FPath.Free;
+
+  inherited;
+end;
+
+procedure TThPenDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  Poly: TThPoly;
+begin
+
   FDrawItem := TThPenDrawItem.Create(FDrawStyle);
-  FDrawItem.Start(APoint);
+  FPath.Add(APoint);
+
+  Poly := Circle(APoint, FDrawItem.Thickness / 2);
+  FPolyPoly := PolyPolygon(Poly);
+  FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
 end;
 
 procedure TThPenDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  Poly: TThPoly;
+  PolyPath: TPath;
+  LastP: TFloatPoint; // Adjusted point
 begin
-  FDrawItem.Move(APoint);
+  FPath.Add(APoint);
+
+  LastP := FPath.Items[FPath.Count-2];
+  Poly := BuildPolyline([LastP, APoint], FDrawItem.Thickness, jsRound, esRound);
+  PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+
+  with TClipper.Create do
+  try
+    AddPaths(FPolyPolyPath, ptSubject, True);
+    AddPath(PolyPath, ptClip, True);
+
+    Execute(ctUnion, FPolyPolyPath, pftNonZero);
+  finally
+    Free;
+  end;
+
+  FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
 end;
 
 procedure TThPenDrawObject.MouseUp;
 begin
   inherited;
+
+  FPath.Clear;
+  FPolyPolyPath := nil;
+  FPolyPoly := nil;
 
   FDrawItem := nil;
 end;
@@ -179,7 +225,7 @@ end;
 procedure TThPenDrawObject.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 begin
   if Assigned(FDrawItem) then
-    FDrawItem.Draw(Bitmap, AScale, AOffset);
+    FDrawItem.DrawPoly(Bitmap, AScale, AOffset, FPath.ToArray, FPolyPoly);
 end;
 
 function TThPenDrawObject.GetDrawItem: IThDrawItem;
@@ -188,15 +234,9 @@ begin
   FDrawItem := nil;
 end;
 
-destructor TThBrushDrawObject.Destroy;
-begin
-
-  inherited;
-end;
-
 { TThEraserDrawObject }
 
-constructor TThEraserDrawObject.Create(AStyle: IThDrawStyle;
+constructor TThBaseEraserDrawObject.Create(AStyle: IThDrawStyle;
   AItems: TThDrawItems);
 begin
   if not Assigned(AStyle) then
@@ -206,7 +246,7 @@ begin
   FDrawItems := AItems;
 end;
 
-procedure TThEraserDrawObject.Draw(Bitmap: TBitmap32; AScale,
+procedure TThBaseEraserDrawObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
   Poly: TThPoly;
@@ -215,7 +255,7 @@ begin
   PolylineFS(Bitmap, Poly, clBlack32, True);
 end;
 
-function TThEraserDrawObject.GetDrawStyle: TThEraserStyle;
+function TThBaseEraserDrawObject.GetDrawStyle: TThEraserStyle;
 begin
   Result := TThEraserStyle(FDrawStyle);
 end;

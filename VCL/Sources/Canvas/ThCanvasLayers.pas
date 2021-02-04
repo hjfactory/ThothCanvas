@@ -53,8 +53,10 @@ type
     FMouseDowned: Boolean;
 
   protected
+    FDrawMode: TThDrawMode;
     [unsafe] FDrawObject: IThDrawObject; // 인터페이스 인스턴스 교체 시 자동해제 방지
 
+    procedure SetDrawMode(const Value: TThDrawMode); virtual;
     procedure Paint(Buffer: TBitmap32); override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -62,24 +64,22 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
+    property DrawMode: TThDrawMode read FDrawMode write SetDrawMode;
   end;
 
   // 자유롭게 그리기(펜과 지우개) 위한 레이어
   TFreeDrawLayer = class(TThCustomDrawLayer)
   private
-    FDrawMode: TThFreeDrawMode;
-
     FPenDrawObj: TThPenDrawObject;
     FEraDrawObj: TThObjErsDrawObject;
-    
-    procedure SetDrawMode(const Value: TThFreeDrawMode);
+  protected
+    procedure SetDrawMode(const Value: TThDrawMode); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
 
     function DoHitTest(X, Y: Integer): Boolean; override;
-    
-    property DrawMode: TThFreeDrawMode read FDrawMode write SetDrawMode;
+
     property PenDrawObj: TThPenDrawObject read FPenDrawObj;
   end;
 
@@ -90,17 +90,15 @@ type
 
     FSelectObj: TThSelectObject;
     FShapeDrawObj: TThShapeDrawObject;
-    FDrawMode: TThShapeDrawMode;
 
-    procedure SetDrawMode(const Value: TThShapeDrawMode);
     procedure SetShapetId(const Value: string);
   protected
+    procedure SetDrawMode(const Value: TThDrawMode); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
 
-    property DrawMode: TThShapeDrawMode read FDrawMode write SetDrawMode;
     property ShapeId: string read FShapeId write SetShapetId;
 //    property Selection: TThShapeSelectObject read FSelectObj;
     procedure DeleteSelectedItems;
@@ -249,6 +247,11 @@ begin
     FDrawObject.Draw(Buffer, Scale, Offset);
 end;
 
+procedure TThCustomDrawLayer.SetDrawMode(const Value: TThDrawMode);
+begin
+  FDrawMode := Value;
+end;
+
 { TBrushDrawLayer }
 
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
@@ -283,18 +286,17 @@ begin
     Result := Assigned(FDrawObject);
 end;
 
-
-procedure TFreeDrawLayer.SetDrawMode(const Value: TThFreeDrawMode);
+procedure TFreeDrawLayer.SetDrawMode(const Value: TThDrawMode);
 begin
-  FDrawMode := Value;
+  inherited;
 
   case Value of
-    fdmPen: 
+    dmPen:
       FDrawObject := FPenDrawObj;
-    fdmEraser: 
+    dmEraser:
       FDrawObject := FEraDrawObj;
   end;
-  
+
   Update;
 end;
 
@@ -330,19 +332,17 @@ procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
 begin
   inherited;
 
-  if FDrawMode = sdmDraw then
-  begin
-    DrawMode := sdmSelect;
-  end;
+  if FDrawMode = dmDraw then
+    DrawMode := dmSelect;
 end;
 
-procedure TShapeDrawLayer.SetDrawMode(const Value: TThShapeDrawMode);
+procedure TShapeDrawLayer.SetDrawMode(const Value: TThDrawMode);
 begin
-  FDrawMode := Value;
+  inherited;
 
   case Value of
-    sdmSelect:  FDrawObject := FSelectObj;
-    sdmDraw:    FDrawObject := FShapeDrawObj;
+    dmSelect:  FDrawObject := FSelectObj;
+    dmDraw:    FDrawObject := FShapeDrawObj;
   end;
 end;
 

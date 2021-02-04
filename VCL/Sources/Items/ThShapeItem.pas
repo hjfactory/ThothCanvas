@@ -20,12 +20,12 @@ type
 
   TThRectDrawItem = class(TThShapeItem)
   public
-    function MakePolyPoly(ARect: TFloatRect): TThPolyPoly; override;
+    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
   TThRoundRectDrawItem = class(TThRectDrawItem)
   public
-    function MakePolyPoly(ARect: TFloatRect): TThPolyPoly; override;
+    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
 implementation
@@ -52,7 +52,7 @@ end;
 
 { TThRectDrawItem }
 
-function TThRectDrawItem.MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
+function TThRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
@@ -62,7 +62,7 @@ end;
 
 { TThRoundRectDrawItem }
 
-function TThRoundRectDrawItem.MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
+function TThRoundRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
