@@ -223,7 +223,6 @@ begin
   begin
     if Assigned(FDrawObject) then
       FDrawObject.MouseMove(ViewportToLocal(X, Y), Shift);
-    Update;
   end;
 end;
 

@@ -38,6 +38,7 @@ type
   IThItemSelection = interface
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
+    procedure MouseOver(const APoint: TFloatPoint);
   end;
 
   IThDrawObject = interface

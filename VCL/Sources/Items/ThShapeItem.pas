@@ -30,6 +30,9 @@ type
 
 implementation
 
+uses
+  System.Math;
+
 procedure RegisterDrawItems;
 begin
   TThShapeItemFactory.Instance.Regist('Rect', TThRectDrawItem);
@@ -66,7 +69,7 @@ function TThRoundRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
-  Poly := RoundRect(ARect, Abs(ARect.Bottom - ARect.Top) / 2);
+  Poly := RoundRect(ARect, Max(Abs(ARect.Bottom - ARect.Top), 1) / 2);
   Result := PolyPolygon(Poly);
 end;
 

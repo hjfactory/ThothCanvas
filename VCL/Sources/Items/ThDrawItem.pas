@@ -71,7 +71,6 @@ type
     FBorderColor: TColor32;
     procedure SetSelected(const Value: Boolean);
   protected
-
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
   public
@@ -82,7 +81,8 @@ type
     procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    procedure Move(APoint: TFloatPoint);
+    procedure MouseOver(const APoint: TFloatPoint);
+    procedure MoveItem(APoint: TFloatPoint);
 
     property Selected: Boolean read FSelected write SetSelected;
 
@@ -234,8 +234,6 @@ end;
 
 procedure TThShapeItem.DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
   ARect: TFloatRect);
-var
-  PolyPoly: TThPolyPoly;
 begin
   FRect := ARect;
   Realign;
@@ -243,7 +241,13 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-procedure TThShapeItem.Move(APoint: TFloatPoint);
+procedure TThShapeItem.MouseOver(const APoint: TFloatPoint);
+begin
+  if Assigned(FSelection) then
+    FSelection.MouseOver(APoint);
+end;
+
+procedure TThShapeItem.MoveItem(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
   Realign;
@@ -321,7 +325,7 @@ var
   I: Integer;
 begin
   for I := 0 to Count - 1 do
-    Items[I].Move(APoint);
+    Items[I].MoveItem(APoint);
 end;
 
 function TThShapeDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;

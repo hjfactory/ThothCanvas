@@ -458,13 +458,13 @@ end;
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
-  Item: TThDrawItem;
+  Item: TThShapeItem;
 begin
   inherited;
 
-  Item := FDrawItems.PtInItem(APoint);
+  Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
   if Assigned(Item) then
-    Screen.Cursor := crSizeAll;
+    Item.MouseOver(APoint);
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);

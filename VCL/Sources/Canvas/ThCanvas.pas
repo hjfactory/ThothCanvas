@@ -170,10 +170,8 @@ begin
   FFreeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
   FFreeDrawLayer.Scaled := True;
   FFreeDrawLayer.HitTest := True;
-//  FFreeDrawLayer.OnGetViewportScale := nil;
 
   FPenStyle := FFreeDrawLayer.PenDrawObj.DrawStyle as TThPenStyle;
-//  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth-2000, AHeight-2000);
 end;
 
 procedure TThCustomCanvas.DoScaleChage(Scale: Single);
