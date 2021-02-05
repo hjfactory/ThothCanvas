@@ -271,19 +271,18 @@ function TThDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
 var
   I: Integer;
   Item: TThDrawItem;
+  R: TFloatRect;
 begin
   Result := nil;
 
   for I := Count - 1 downto 0 do
   begin
     Item := Items[I];
-    if not PtInRect(Item.Bounds, APoint) then
-      Continue;
+    R := Item.Bounds;
+    InflateRect(R, 4, 4);
 
-    if not PtInPolyPolygon(APoint, Item.PolyPoly) then
-      Continue;
-
-    Exit(Item);
+    if PtInRect(R, APoint) or PtInPolyPolygon(APoint, Item.PolyPoly) then
+      Exit(Item);
   end;
 end;
 
