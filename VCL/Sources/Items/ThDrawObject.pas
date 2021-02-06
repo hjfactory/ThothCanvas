@@ -21,13 +21,14 @@ type
   TThCustomDrawObject = class(TThInterfacedObject, IThDrawObject)
   private
     FDrawStyle: IThDrawStyle;
+  protected
+    FMouseDowned: Boolean;
   public
     constructor Create(AStyle: IThDrawStyle); virtual;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); virtual;
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); virtual; abstract;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); virtual;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); virtual;
 
@@ -49,7 +50,7 @@ type
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -76,7 +77,7 @@ type
   TThObjErsDrawObject = class(TThBaseEraserDrawObject)
   public
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
   end;
 
@@ -92,7 +93,7 @@ type
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -117,7 +118,6 @@ type
     destructor Destroy; override;
 
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
@@ -145,6 +145,7 @@ end;
 
 procedure TThCustomDrawObject.MouseDown;
 begin
+  FMouseDowned := True;
 end;
 
 procedure TThCustomDrawObject.MouseMove(const APoint: TFloatPoint;
@@ -154,6 +155,7 @@ end;
 
 procedure TThCustomDrawObject.MouseUp;
 begin
+  FMouseDowned := False;
 end;
 
 function TThCustomDrawObject.GetDrawItem: IThDrawItem;
@@ -185,6 +187,8 @@ procedure TThPenDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftSt
 var
   Poly: TThPoly;
 begin
+  inherited;
+
   FDrawItem := TThPenDrawItem.Create(FDrawStyle);
   FPath.Add(APoint);
 
@@ -193,29 +197,34 @@ begin
   FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
 end;
 
-procedure TThPenDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThPenDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   Poly: TThPoly;
   PolyPath: TPath;
   LastP: TFloatPoint; // Adjusted point
 begin
-  FPath.Add(APoint);
+  inherited;
 
-  LastP := FPath.Items[FPath.Count-2];
-  Poly := BuildPolyline([LastP, APoint], FDrawItem.Thickness, jsRound, esRound);
-  PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+  if FMouseDowned then
+  begin
+    FPath.Add(APoint);
 
-  with TClipper.Create do
-  try
-    AddPaths(FPolyPolyPath, ptSubject, True);
-    AddPath(PolyPath, ptClip, True);
+    LastP := FPath.Items[FPath.Count-2];
+    Poly := BuildPolyline([LastP, APoint], FDrawItem.Thickness, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
 
-    Execute(ctUnion, FPolyPolyPath, pftNonZero);
-  finally
-    Free;
+    with TClipper.Create do
+    try
+      AddPaths(FPolyPolyPath, ptSubject, True);
+      AddPath(PolyPath, ptClip, True);
+
+      Execute(ctUnion, FPolyPolyPath, pftNonZero);
+    finally
+      Free;
+    end;
+
+    FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
   end;
-
-  FPolyPoly := AAPoint2AAFloatPoint(FPolyPolyPath, 3);
 end;
 
 procedure TThPenDrawObject.MouseUp;
@@ -271,21 +280,28 @@ end;
 
 procedure TThObjErsDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 begin
+  inherited;
+
   FPos := APoint;
-  MouseDownMove(APoint, AShift);
+  MouseMove(APoint, AShift);
 end;
 
-procedure TThObjErsDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThObjErsDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   I: Integer;
   Poly: TThPoly;
   LDrawItems: TArray<TThDrawItem>;
 begin
-  FPos := APoint;
-  Poly := Circle(APoint, DrawStyle.Thickness / 2);
-  LDrawItems := FDrawItems.PolyInItems(Poly);
-  for I := 0 to Length(LDrawItems) - 1 do
-    TThPenDrawItem(LDrawItems[I]).IsDeletion := True;
+  inherited;
+
+  if FMouseDowned then
+  begin
+    FPos := APoint;
+    Poly := Circle(APoint, DrawStyle.Thickness / 2);
+    LDrawItems := FDrawItems.PolyInItems(Poly);
+    for I := 0 to Length(LDrawItems) - 1 do
+      TThPenDrawItem(LDrawItems[I]).IsDeletion := True;
+  end;
 end;
 
 procedure TThObjErsDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
@@ -293,6 +309,8 @@ var
   I: Integer;
   Item: TThDrawItem;
 begin
+  inherited;
+
   for I := FDrawItems.Count - 1 downto 0 do
   begin
     Item := FDrawItems[I];
@@ -317,15 +335,22 @@ end;
 
 procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 begin
+  inherited;
+
   FRect.TopLeft := APoint;
 end;
 
-procedure TThShapeDrawObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-  if not Assigned(FDrawItem) then
-    FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
+  inherited;
 
-  FRect.BottomRight := APoint;
+  if FMouseDowned then
+  begin
+    if not Assigned(FDrawItem) then
+      FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
+
+    FRect.BottomRight := APoint;
+  end;
 end;
 
 procedure TThShapeDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
@@ -435,6 +460,8 @@ procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftSta
 var
   Item: TThDrawItem;
 begin
+  inherited;
+
   FLastPoint := APoint;
 
   Item := FDrawItems.PtInItem(APoint);
@@ -442,33 +469,35 @@ begin
   FSelected := CalcSelection(Item as TThShapeItem, AShift);
 end;
 
-procedure TThSelectObject.MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  P: TFloatPoint;
-begin
-  if Assigned(FSelected) then
-  begin
-    P := APoint - FLastPoint;
-    FSelectedItems.Move(P);
-    FLastPoint := APoint;
-    Screen.Cursor := crSizeAll;
-  end;
-end;
-
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
+  P: TFloatPoint;
   Item: TThShapeItem;
 begin
   inherited;
 
-  Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
-  if Assigned(Item) then
-    Item.MouseOver(APoint);
+  if FMouseDowned then
+  begin
+    if Assigned(FSelected) then
+    begin
+      P := APoint - FLastPoint;
+      FSelectedItems.MoveItem(P);
+      FLastPoint := APoint;
+      Screen.Cursor := crSizeAll;
+    end;
+  end
+  else
+  begin
+    Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
+    if Assigned(Item) then
+      Item.MouseOver(APoint);
+  end;
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
+      Screen.Cursor := crDefault;
   inherited;
 end;
 

@@ -25,6 +25,8 @@ type
   public
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
 
+    function PtInItem(APt: TFloatPoint): Boolean; virtual;
+
     property Bounds: TFloatRect read FBounds;
     property PolyPoly: TThPolyPoly read FPolyPoly;
   end;
@@ -84,6 +86,8 @@ type
     procedure MouseOver(const APoint: TFloatPoint);
     procedure MoveItem(APoint: TFloatPoint);
 
+    function PtInItem(APt: TFloatPoint): Boolean; override;
+
     property Selected: Boolean read FSelected write SetSelected;
 
     property Rect: TFloatRect read FRect;
@@ -105,7 +109,7 @@ type
     // APoint에 포함되는 최상위 객체 반환
     function PtInItem(APoint: TFloatPoint): TThDrawItem;
     // 모든 항목 APoint만큼 이동
-    procedure Move(APoint: TFloatPoint);
+    procedure MoveItem(APoint: TFloatPoint);
   end;
 
 implementation
@@ -119,6 +123,11 @@ uses
 
 procedure TThDrawItem.DoRealign;
 begin
+end;
+
+function TThDrawItem.PtInItem(APt: TFloatPoint): Boolean;
+begin
+  Result := PtInRect(FBounds, APt) and PtInPolyPolygon(APt, FPolyPoly);
 end;
 
 procedure TThDrawItem.Realign;
@@ -253,6 +262,14 @@ begin
   Realign;
 end;
 
+function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
+begin
+  if Assigned(FSelection) and FSelection.PtInSelection(APt) then
+    Exit(True);
+
+  Result := inherited PtInItem(APt);
+end;
+
 procedure TThShapeItem.SetSelected(const Value: Boolean);
 begin
   if Value = FSelected then
@@ -278,10 +295,8 @@ begin
   for I := Count - 1 downto 0 do
   begin
     Item := Items[I];
-    R := Item.Bounds;
-    InflateRect(R, 4, 4);
 
-    if PtInRect(R, APoint) or PtInPolyPolygon(APoint, Item.PolyPoly) then
+    if Item.PtInItem(APoint) then
       Exit(Item);
   end;
 end;
@@ -319,7 +334,7 @@ end;
 
 { TThShapeDrawItems }
 
-procedure TThShapeDrawItems.Move(APoint: TFloatPoint);
+procedure TThShapeDrawItems.MoveItem(APoint: TFloatPoint);
 var
   I: Integer;
 begin

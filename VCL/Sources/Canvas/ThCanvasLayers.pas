@@ -197,8 +197,6 @@ end;
 procedure TThCustomDrawLayer.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 begin
-  inherited;
-
   if Button = mbLeft then
   begin
     FMouseDowned := True;
@@ -211,18 +209,10 @@ end;
 
 procedure TThCustomDrawLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
-  inherited;
-
-  if FMouseDowned then
+  if Assigned(FDrawObject) then
   begin
-    if Assigned(FDrawObject) then
-      FDrawObject.MouseDownMove(ViewportToLocal(X, Y), Shift);
+    FDrawObject.MouseMove(ViewportToLocal(X, Y), Shift);
     Update;
-  end
-  else
-  begin
-    if Assigned(FDrawObject) then
-      FDrawObject.MouseMove(ViewportToLocal(X, Y), Shift);
   end;
 end;
 
@@ -231,8 +221,6 @@ procedure TThCustomDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState;
 var
   Item: TThDrawItem;
 begin
-  inherited;
-
   if FMouseDowned then
   begin
     FMouseDowned := False;
@@ -257,7 +245,7 @@ begin
   FDrawMode := Value;
 end;
 
-{ TBrushDrawLayer }
+{ TFreeDrawLayer }
 
 constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
@@ -265,11 +253,6 @@ begin
 
   FPenDrawObj := TThPenDrawObject.Create(TThPenStyle.Create);
   FEraDrawObj := TThObjErsDrawObject.Create(TThEraserStyle.Create, FDrawItems);
-
-//  FPenStyle := TThPenStyle.Create;
-//  FPenDrawObj := TThPenDrawObject.Create(FPenStyle);
-//  FEraStyle := TThEraserStyle.Create;
-//  FEraDrawObj := TThObjErsDrawObject.Create(FEraStyle, FDrawItems); // °´Ã¼ Áö¿ì°³
 
   FDrawObject := FPenDrawObj;
 

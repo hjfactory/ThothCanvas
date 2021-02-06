@@ -9,7 +9,9 @@ uses
   ThDrawItem;
 
 type
-  TResizeHandleDirection = (
+  THandleDirection = (
+      rhdNone,
+
       rhdTopLeft,
       rhdTop,
       rhdTopRight,
@@ -19,21 +21,31 @@ type
       rhdBottomLeft,
       rhdLeft,
 
-      rhdLineStart,
+      rhdLineStart = 9,
       rhdLineEnd
     );
 
+type
+  TThItemResizeHandle = class
+  private
+    FRect: TFloatRect;
+    FDirection: THandleDirection;
+    FPoly: TThPoly;
+  public
+    constructor Create(ADirection: THandleDirection);
+    property Direction: THandleDirection read FDirection;
+    property Poly: TThPoly read FPoly write FPoly;
+  end;
+
   TThItemSelection = class(TInterfacedObject, IThItemSelection)
-  type
-    TThItemResizeHandle = record
-      Direction: TResizeHandleDirection;
-      Poly: TThPoly;
-      Rect: TFloatRect;
-      procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-    end;
   private
     FItem: TThDrawItem;
+    FHotHandle: TThItemResizeHandle;
+    function GetHandleAtPoint(APoint: TFloatPoint): TThItemResizeHandle;
+    procedure SetHotHandle(const Value: TThItemResizeHandle);
+    property HotHandle: TThItemResizeHandle read FHotHandle write SetHotHandle;
   protected
+
     FFillColor,
     FHotColor,
     FBorderColor: TColor32;
@@ -42,13 +54,16 @@ type
 
     FHandles: TArray<TThItemResizeHandle>;
 
-    procedure InitHandles; virtual; abstract;
+    procedure CreateHandles; virtual; abstract;
+    procedure FreeHandles; virtual;
     procedure RealignHandles; virtual; abstract;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
 
-    procedure MouseOver(const APoint: TFloatPoint); virtual; abstract;
+    procedure MouseOver(const APoint: TFloatPoint); virtual;
+
+    function PtInSelection(APoint: TFloatPoint): Boolean; virtual;
   public
     constructor Create(AParent: TThDrawItem);
     destructor Destroy; override;
@@ -59,9 +74,8 @@ type
     function GetShape: TThShapeItem;
     property Shape: TThShapeItem read GetShape;
   protected
-    procedure InitHandles; override;
+    procedure CreateHandles; override;
     procedure RealignHandles; override;
-    procedure MouseOver(const APoint: TFloatPoint); override;
   end;
 
 implementation
@@ -74,11 +88,19 @@ uses
   GR32_Geometry,
   GR32_VectorUtils;
 
-{ TThItemSelection.TThItemResizeHandle }
+const
+  HANDLE_CURSOR: array [THandleDirection] of TCursor = (
+    crDefault,
+    crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // TL, T, TR, R
+    crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // BR, B, BL, L
+    crSizeNWSE, crSizeNWSE
+  );
 
-procedure TThItemSelection.TThItemResizeHandle.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+{ TThItemResizeHandle }
+
+constructor TThItemResizeHandle.Create(ADirection: THandleDirection);
 begin
-//  Self.Poly
+  FDirection := ADirection;
 end;
 
 { TThItemSelection }
@@ -94,14 +116,38 @@ begin
 
   FItem := AParent;
 
-  InitHandles;
+  CreateHandles;
   Realign;
 end;
 
 destructor TThItemSelection.Destroy;
 begin
+  FreeHandles;
 
   inherited;
+end;
+
+procedure TThItemSelection.FreeHandles;
+var
+  H: TThItemResizeHandle;
+begin
+  for H in FHandles do
+    H.Free;
+end;
+
+procedure TThItemSelection.Realign;
+begin
+  RealignHandles;
+end;
+
+procedure TThItemSelection.SetHotHandle(const Value: TThItemResizeHandle);
+begin
+  FHotHandle := Value;
+
+  if FHotHandle = nil then
+    Screen.Cursor := crDefault
+  else
+    Screen.Cursor := HANDLE_CURSOR[FHotHandle.Direction];
 end;
 
 procedure TThItemSelection.Draw(Bitmap: TBitmap32; AScale,
@@ -111,14 +157,39 @@ var
 begin
   for H in FHandles do
   begin
-    PolygonFS(Bitmap, H.Poly, FFillColor);
+    if H = FHotHandle then
+      PolygonFS(Bitmap, H.Poly, FHotColor)
+    else
+      PolygonFS(Bitmap, H.Poly, FFillColor);
     PolylineFS(Bitmap, H.Poly, FBorderColor, True, FBorderWidth);
   end;
 end;
 
-procedure TThItemSelection.Realign;
+procedure TThItemSelection.MouseOver(const APoint: TFloatPoint);
 begin
-  RealignHandles;
+//  FHotHandle := GetHandleAtPoint(APoint);
+//  if Assigned(FHotHandle) then
+//    Screen.Cursor := crSizeAll
+//  else
+//    Screen.Cursor := crDefault;
+end;
+
+function TThItemSelection.PtInSelection(APoint: TFloatPoint): Boolean;
+begin
+  HotHandle := GetHandleAtPoint(APoint);
+  Result := Assigned(HotHandle);
+end;
+
+function TThItemSelection.GetHandleAtPoint(APoint: TFloatPoint): TThItemResizeHandle;
+var
+  H: TThItemResizeHandle;
+begin
+  Result := nil;
+  for H in FHandles do
+  begin
+    if PointInPolygon(APoint, H.Poly) then
+      Exit(H);
+  end;
 end;
 
 { TThShapeSelection }
@@ -128,18 +199,18 @@ begin
   Result := TThShapeItem(FItem);
 end;
 
-procedure TThShapeSelection.InitHandles;
+procedure TThShapeSelection.CreateHandles;
 var
   I: Integer;
 begin
   SetLength(FHandles, 8);
 
-  for I := Low(FHandles) to High(FHandles) do
-    FHandles[I].Direction := TResizeHandleDirection(I);
+  for I := Ord(rhdTopLeft) to Ord(rhdLeft) do
+    FHandles[I-Ord(rhdTopLeft)] := TThItemResizeHandle.Create(THandleDirection(I));
 end;
 
 procedure TThShapeSelection.RealignHandles;
-  function HandlePt(R: TFloatRect; D: TResizeHandleDirection): TFloatPoint;
+  function HandlePoint(R: TFloatRect; D: THandleDirection): TFloatPoint;
   var
     CP: TFloatPoint;
   begin
@@ -164,28 +235,13 @@ var
 begin
   for I := Low(FHandles) to High(FHandles) do
   begin
-    P := HandlePt(Shape.Rect, FHandles[I].Direction);
-    FHandles[I].Rect := FloatRect(P, P);
-    InflateRect(FHandles[I].Rect, FRadius+1, FRadius+1);
-    FHandles[I].Poly := Rectangle(FHandles[I].Rect);
+    P := HandlePoint(Shape.Rect, FHandles[I].Direction);
+    R := FloatRect(P, P);
+    InflateRect(R, FRadius+1, FRadius+1);
+
+    FHandles[I].Poly := Rectangle(R);
 //    FHandles[I].Poly := Circle(P, FRadius);
 //    FHandles[I].Rect := FloatRect(OffsetPoint(P, -FRadius, -FRadius), OffsetPoint(P, FRadius, FRadius));
-  end;
-end;
-
-procedure TThShapeSelection.MouseOver(const APoint: TFloatPoint);
-var
-  H: TThItemResizeHandle;
-  Poly: TThPoly;
-begin
-  for H in FHandles do
-  begin
-    Poly := H.Poly;
-    if PointInPolygon(APoint, H.Poly) then
-    begin
-      Screen.Cursor := crSizeAll;
-      Exit;
-    end;
   end;
 end;
 

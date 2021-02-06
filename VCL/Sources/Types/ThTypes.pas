@@ -38,12 +38,13 @@ type
   IThItemSelection = interface
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
+
     procedure MouseOver(const APoint: TFloatPoint);
+    function PtInSelection(APoint: TFloatPoint): Boolean;
   end;
 
   IThDrawObject = interface
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-    procedure MouseDownMove(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 
