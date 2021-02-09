@@ -39,8 +39,13 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
 
-    procedure MouseOver(const APoint: TFloatPoint);
+    procedure MouseDown(const APoint: TFloatPoint);
+    procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
+    procedure MouseUp(const APoint: TFloatPoint);
+    procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
+
     function PtInSelection(APoint: TFloatPoint): Boolean;
+    function IsOverHandle: Boolean;
   end;
 
   IThDrawObject = interface
@@ -54,6 +59,41 @@ type
     property DrawItem: IThDrawItem read GetDrawItem;
   end;
 
+  TFloatRectHelper = record helper for TFloatRect
+  private
+    function GetBottomLeft: TFloatPoint;
+    function GetTopRight: TFloatPoint;
+    procedure SetBottomLeft(const Value: TFloatPoint);
+    procedure SetTopRight(const Value: TFloatPoint);
+  public
+    property TopRight: TFloatPoint read GetTopRight write SetTopRight;
+    property BottomLeft: TFloatPoint read GetBottomLeft write SetBottomLeft;
+  end;
+
 implementation
+
+{ TFloatRectHelper }
+
+function TFloatRectHelper.GetBottomLeft: TFloatPoint;
+begin
+  Result := FloatPoint(Self.Bottom, Self.Left);
+end;
+
+function TFloatRectHelper.GetTopRight: TFloatPoint;
+begin
+  Result := FloatPoint(Self.Top, Self.Right);
+end;
+
+procedure TFloatRectHelper.SetBottomLeft(const Value: TFloatPoint);
+begin
+  Self.Bottom := Value.Y;
+  Self.Left := Value.X;
+end;
+
+procedure TFloatRectHelper.SetTopRight(const Value: TFloatPoint);
+begin
+  Self.Top := Value.Y;
+  Self.Right := value.X;
+end;
 
 end.

@@ -1,6 +1,6 @@
 {
   Role
-    Draw shapes with the mouse actions.
+    Draw shapes using the mouse actions.
 }
 
 unit ThDrawObject;
@@ -59,7 +59,7 @@ type
   end;
 
   // 지우개 베이스 클래스
-  TThBaseEraserDrawObject = class(TThCustomDrawObject)
+  TThCustomEraserObject = class(TThCustomDrawObject)
   private
     FDrawItems: TThDrawItems;
     function GetDrawStyle: TThEraserStyle;
@@ -74,7 +74,7 @@ type
   end;
 
   // 지나간 객체 지우개(Passed objects eraser)
-  TThObjErsDrawObject = class(TThBaseEraserDrawObject)
+  TThObjectEraserObject = class(TThCustomEraserObject)
   public
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
@@ -103,16 +103,19 @@ type
     property ShapeId: string read FShapeId write FShapeId;
   end;
 
-  // Shape Select
+  // Shape (multi)select
+    // Move, Delete, Resize
+  TDragState = (dsNone, dsMove, dsResize);
   TThSelectObject = class(TThCustomDrawObject)
   private
+    FDragState: TDragState;
+
     FLastPoint: TFloatPoint;
     FDrawItems: TThDrawItems;
     FSelected: TThShapeItem;
-    FSelectedItems: TThShapeDrawItems;
+    FSelectedItems: TThSelectedItems;
 
-    function CalcSelection(ASelectingItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
-    procedure SetSelected(const Value: TThShapeItem);
+    procedure ProcessSelections(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
   public
     constructor Create(AItems: TThDrawItems); reintroduce;
     destructor Destroy; override;
@@ -121,11 +124,7 @@ type
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState); override;
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState); override;
 
-    property Items: TThShapeDrawItems read FSelectedItems;
-    property Selected: TThShapeItem read FSelected write SetSelected;
     procedure DeleteSelectedItems;
-
-    procedure SetDrawItems(ADrawItems: TThDrawItems);
 
     procedure ClearSelection;
   end;
@@ -252,7 +251,7 @@ end;
 
 { TThEraserDrawObject }
 
-constructor TThBaseEraserDrawObject.Create(AStyle: IThDrawStyle;
+constructor TThCustomEraserObject.Create(AStyle: IThDrawStyle;
   AItems: TThDrawItems);
 begin
   if not Assigned(AStyle) then
@@ -262,7 +261,7 @@ begin
   FDrawItems := AItems;
 end;
 
-procedure TThBaseEraserDrawObject.Draw(Bitmap: TBitmap32; AScale,
+procedure TThCustomEraserObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
   Poly: TThPoly;
@@ -271,14 +270,14 @@ begin
   PolylineFS(Bitmap, Poly, clBlack32, True);
 end;
 
-function TThBaseEraserDrawObject.GetDrawStyle: TThEraserStyle;
+function TThCustomEraserObject.GetDrawStyle: TThEraserStyle;
 begin
   Result := TThEraserStyle(FDrawStyle);
 end;
 
 { TThObjErsDrawObject }
 
-procedure TThObjErsDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThObjectEraserObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   inherited;
 
@@ -286,7 +285,7 @@ begin
   MouseMove(APoint, AShift);
 end;
 
-procedure TThObjErsDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThObjectEraserObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
 var
   I: Integer;
   Poly: TThPoly;
@@ -304,7 +303,7 @@ begin
   end;
 end;
 
-procedure TThObjErsDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
+procedure TThObjectEraserObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 var
   I: Integer;
   Item: TThDrawItem;
@@ -391,16 +390,7 @@ end;
 constructor TThSelectObject.Create(AItems: TThDrawItems);
 begin
   FDrawItems := AItems;
-  FSelectedItems := TThShapeDrawItems.Create;
-end;
-
-procedure TThSelectObject.DeleteSelectedItems;
-var
-  Item: TThDrawItem;
-begin
-  for Item in FSelectedItems do
-    FDrawItems.Remove(Item);
-  FSelectedItems.Clear;
+  FSelectedItems := TThSelectedItems.Create;
 end;
 
 destructor TThSelectObject.Destroy;
@@ -410,63 +400,78 @@ begin
   inherited;
 end;
 
-procedure TThSelectObject.SetDrawItems(ADrawItems: TThDrawItems);
+// Single(Click)
+  // Canvas         : Clear Selections
+  // Item           : Select Item
+  // Selected Item  : None
+  // Item Handle    : Start drag
+// Multiple(Shift + Click)
+  // Canvas         : None
+  // Item           : Add to selection
+  // Selected Item  : Remove from selection
+  // Item Handle    : Start drag
+procedure TThSelectObject.ProcessSelections(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
 begin
-  FDrawItems := ADrawItems;
-  FSelectedItems := TThShapeDrawItems.Create;
-end;
+  FDragState := dsNone;
 
-procedure TThSelectObject.SetSelected(const Value: TThShapeItem);
-begin
-  ClearSelection;
-
-  FSelected := Value;
-  Value.Selected := True;
-  FSelectedItems.Add(Value);
-end;
-
-function TThSelectObject.CalcSelection(ASelectingItem: TThShapeItem; AShift: TShiftState): TThShapeItem;
-begin
-  Result := ASelectingItem;
-  if Assigned(ASelectingItem) then
+  // Canvas click
+  if not Assigned(ASelectingItem) then
   begin
-    // 선택되지 않은 경우 선택 처리(이미 선택된 경우 무시)
-    if ASelectingItem.Selected then
+    if not AIsMultipleSelect then
+      ClearSelection;
+    FSelected := nil;
+  end
+  else
+  begin
+    // None selected Item click
+    if not ASelectingItem.Selected then
     begin
-      if ssShift in AShift then
-      begin
-        ASelectingItem.Selected := False;
-        FSelectedItems.Remove(ASelectingItem);
-        Result := nil;
-      end;
-    end
-    else
-    begin
-      if not (ssShift in AShift)  then
+      if not AIsMultipleSelect then
         ClearSelection;
 
       ASelectingItem.Selected := True;
       FSelectedItems.Add(ASelectingItem);
+      FSelected := ASelectingItem;
+      FDragState := dsMove;
+    end
+    else
+    begin
+      // Selected item click
+      if not ASelectingItem.Selection.IsOverHandle  then
+      begin
+        if AIsMultipleSelect then
+        begin
+          ASelectingItem.Selected := False;
+          FSelectedItems.Remove(ASelectingItem);
+          FSelected := nil;
+        end
+        else
+        begin
+          FSelected := ASelectingItem;
+          FDragState := dsMove;
+        end;
+      end
+      // Selected Item Handle click
+      else
+      begin
+        FDragState := dsResize;
+        FSelected := ASelectingItem;
+        ASelectingItem.Selection.MouseDown(FLastPoint);
+      end;
     end;
-  end
-  else
-  begin
-    if not (ssShift in AShift) then
-      ClearSelection;
   end;
 end;
 
 procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 var
-  Item: TThDrawItem;
+  SelectingItem: TThShapeItem;
 begin
   inherited;
 
   FLastPoint := APoint;
 
-  Item := FDrawItems.PtInItem(APoint);
-
-  FSelected := CalcSelection(Item as TThShapeItem, AShift);
+  SelectingItem := FDrawItems.PtInItem(APoint) as TThShapeItem;
+  ProcessSelections(SelectingItem, AShift * [ssShift, ssCtrl] <> []);
 end;
 
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
@@ -481,24 +486,40 @@ begin
   begin
     if Assigned(FSelected) then
     begin
-      P := APoint - FLastPoint;
-      FSelectedItems.MoveItem(P);
-      FLastPoint := APoint;
-      Screen.Cursor := crSizeAll;
+      if (FDragState = dsMove) then
+      begin
+        P := APoint - FLastPoint;
+        FSelectedItems.MoveItem(P);
+        FLastPoint := APoint;
+        Screen.Cursor := crSizeAll;
+      end
+      else if (FDragState = dsResize) then
+      begin
+        FSelected.Selection.MouseMove(APoint);
+      end;
     end;
   end
   else
   begin
-    Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
-    if Assigned(Item) then
-      Item.MouseOver(APoint);
+    FDrawItems.MouseOver(APoint);
   end;
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-      Screen.Cursor := crDefault;
+  FDragState := dsNone;
+  Screen.Cursor := crDefault;
+
   inherited;
+end;
+
+procedure TThSelectObject.DeleteSelectedItems;
+var
+  Item: TThDrawItem;
+begin
+  for Item in FSelectedItems do
+    FDrawItems.Remove(Item);
+  FSelectedItems.Clear;
 end;
 
 end.

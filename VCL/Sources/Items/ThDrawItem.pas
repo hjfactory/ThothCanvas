@@ -83,12 +83,13 @@ type
     procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
-    procedure MouseOver(const APoint: TFloatPoint);
     procedure MoveItem(APoint: TFloatPoint);
+    procedure ResizeItem(ARect: TFloatRect);
 
     function PtInItem(APt: TFloatPoint): Boolean; override;
 
     property Selected: Boolean read FSelected write SetSelected;
+    property Selection: IThItemSelection read FSelection;
 
     property Rect: TFloatRect read FRect;
     property Color: TColor32 read FColor;
@@ -102,12 +103,15 @@ type
     function PtInItem(APoint: TFloatPoint): TThDrawItem;
     // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
+
+    procedure MouseOver(APoint: TFLoatPoint);
   end;
 
-  TThShapeDrawItems = class(TList<TThShapeItem>)
+  TThSelectedItems = class(TList<TThShapeItem>)
   public
     // APoint에 포함되는 최상위 객체 반환
-    function PtInItem(APoint: TFloatPoint): TThDrawItem;
+//    function PtInItem(APoint: TFloatPoint): TThDrawItem;
+
     // 모든 항목 APoint만큼 이동
     procedure MoveItem(APoint: TFloatPoint);
   end;
@@ -230,10 +234,7 @@ begin
   PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
   TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
 
-  if FSelected then
-    PolyPolygonFS(Bitmap, PolyPoly, clGray32)
-  else
-    PolyPolygonFS(Bitmap, PolyPoly, FColor);
+  PolyPolygonFS(Bitmap, PolyPoly, FColor);
 
   PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
 
@@ -250,12 +251,6 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-procedure TThShapeItem.MouseOver(const APoint: TFloatPoint);
-begin
-  if Assigned(FSelection) then
-    FSelection.MouseOver(APoint);
-end;
-
 procedure TThShapeItem.MoveItem(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
@@ -268,6 +263,12 @@ begin
     Exit(True);
 
   Result := inherited PtInItem(APt);
+end;
+
+procedure TThShapeItem.ResizeItem(ARect: TFloatRect);
+begin
+  FRect := ARect;
+  Realign;
 end;
 
 procedure TThShapeItem.SetSelected(const Value: Boolean);
@@ -288,7 +289,6 @@ function TThDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
 var
   I: Integer;
   Item: TThDrawItem;
-  R: TFloatRect;
 begin
   Result := nil;
 
@@ -298,6 +298,19 @@ begin
 
     if Item.PtInItem(APoint) then
       Exit(Item);
+  end;
+end;
+
+procedure TThDrawItems.MouseOver(APoint: TFLoatPoint);
+var
+  I: Integer;
+  Item: TThShapeItem;
+begin
+  for I := Count - 1 downto 0 do
+  begin
+    Item := Items[I] as TThShapeItem;
+    if Assigned(Item.Selection) then
+      Item.Selection.MouseOver(APoint);
   end;
 end;
 
@@ -334,32 +347,32 @@ end;
 
 { TThShapeDrawItems }
 
-procedure TThShapeDrawItems.MoveItem(APoint: TFloatPoint);
+procedure TThSelectedItems.MoveItem(APoint: TFloatPoint);
 var
   I: Integer;
 begin
   for I := 0 to Count - 1 do
     Items[I].MoveItem(APoint);
 end;
-
-function TThShapeDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
-var
-  I: Integer;
-  Item: TThDrawItem;
-begin
-  Result := nil;
-
-  for I := Count - 1 downto 0 do
-  begin
-    Item := Items[I];
-    if not PtInRect(Item.Bounds, APoint) then
-      Continue;
-
-    if not PtInPolyPolygon(APoint, Item.PolyPoly) then
-      Continue;
-
-    Exit(Item);
-  end;
-end;
+//
+//function TThSelectedItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
+//var
+//  I: Integer;
+//  Item: TThDrawItem;
+//begin
+//  Result := nil;
+//
+//  for I := Count - 1 downto 0 do
+//  begin
+//    Item := Items[I];
+//    if not PtInRect(Item.Bounds, APoint) then
+//      Continue;
+//
+//    if not PtInPolyPolygon(APoint, Item.PolyPoly) then
+//      Continue;
+//
+//    Exit(Item);
+//  end;
+//end;
 
 end.

@@ -28,7 +28,6 @@ type
 type
   TThItemResizeHandle = class
   private
-    FRect: TFloatRect;
     FDirection: THandleDirection;
     FPoly: TThPoly;
   public
@@ -41,9 +40,10 @@ type
   private
     FItem: TThDrawItem;
     FHotHandle: TThItemResizeHandle;
+
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemResizeHandle;
     procedure SetHotHandle(const Value: TThItemResizeHandle);
-    property HotHandle: TThItemResizeHandle read FHotHandle write SetHotHandle;
+    function IsOverHandle: Boolean;
   protected
 
     FFillColor,
@@ -61,21 +61,35 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
 
+    procedure MouseDown(const APoint: TFloatPoint); virtual;
+    procedure MouseMove(const APoint: TFloatPoint); virtual;
+    procedure MouseUp(const APoint: TFloatPoint); virtual;
     procedure MouseOver(const APoint: TFloatPoint); virtual;
 
     function PtInSelection(APoint: TFloatPoint): Boolean; virtual;
   public
     constructor Create(AParent: TThDrawItem);
     destructor Destroy; override;
+
+    property HotHandle: TThItemResizeHandle read FHotHandle write SetHotHandle;
   end;
 
   TThShapeSelection = class(TThItemSelection)
   private
+    FLastPoint: TFloatPoint;
+
     function GetShape: TThShapeItem;
     property Shape: TThShapeItem read GetShape;
   protected
     procedure CreateHandles; override;
     procedure RealignHandles; override;
+
+    procedure MouseDown(const APoint: TFloatPoint); override;
+    procedure MouseMove(const APoint: TFloatPoint); override;
+    procedure MouseUp(const APoint: TFloatPoint); override;
+  end;
+
+  TThShapeSelections = class(TList<TThShapeSelection>)
   end;
 
 implementation
@@ -165,15 +179,6 @@ begin
   end;
 end;
 
-procedure TThItemSelection.MouseOver(const APoint: TFloatPoint);
-begin
-//  FHotHandle := GetHandleAtPoint(APoint);
-//  if Assigned(FHotHandle) then
-//    Screen.Cursor := crSizeAll
-//  else
-//    Screen.Cursor := crDefault;
-end;
-
 function TThItemSelection.PtInSelection(APoint: TFloatPoint): Boolean;
 begin
   HotHandle := GetHandleAtPoint(APoint);
@@ -192,11 +197,64 @@ begin
   end;
 end;
 
+function TThItemSelection.IsOverHandle: Boolean;
+begin
+  Result := Assigned(FHotHandle);
+end;
+
+procedure TThItemSelection.MouseDown(const APoint: TFloatPoint);
+begin
+end;
+
+procedure TThItemSelection.MouseMove(const APoint: TFloatPoint);
+begin
+end;
+
+procedure TThItemSelection.MouseUp(const APoint: TFloatPoint);
+begin
+end;
+
+procedure TThItemSelection.MouseOver(const APoint: TFloatPoint);
+begin
+  HotHandle := GetHandleAtPoint(APoint);
+end;
+
 { TThShapeSelection }
 
 function TThShapeSelection.GetShape: TThShapeItem;
 begin
   Result := TThShapeItem(FItem);
+end;
+
+procedure TThShapeSelection.MouseDown(const APoint: TFloatPoint);
+begin
+  FLastPoint := APoint;
+end;
+
+procedure TThShapeSelection.MouseMove(const APoint: TFloatPoint);
+var
+  R: TFloatrect;
+begin
+  if not Assigned(FHotHandle) then
+    Exit;
+
+  R := Shape.Rect;
+  case FHotHandle.Direction of
+    rhdTopLeft:       R.TopLeft := APoint;
+    rhdTop:           R.Top := APoint.Y;
+    rhdTopRight:      R.TopRight := APoint;
+    rhdRight:         R.Right := APoint.X;
+    rhdBottomRight:   R.BottomRight := APoint;
+    rhdBottom:        R.Bottom := APoint.Y;
+    rhdBottomLeft:    R.BottomLeft := APoint;
+    rhdLeft:          R.Left := APoint.X;
+  end;
+  Shape.ResizeItem(R);
+end;
+
+procedure TThShapeSelection.MouseUp(const APoint: TFloatPoint);
+begin
+
 end;
 
 procedure TThShapeSelection.CreateHandles;

@@ -13,7 +13,6 @@ uses
   Vcl.Controls,
 
   GR32, GR32_Layers, GR32_Polygons, GR32_VectorUtils,
-  clipper,
 
   ThTypes, ThClasses,
   ThDrawItem, ThDrawObject, ThDrawStyle;
@@ -71,7 +70,7 @@ type
   TFreeDrawLayer = class(TThCustomDrawLayer)
   private
     FPenDrawObj: TThPenDrawObject;
-    FEraDrawObj: TThObjErsDrawObject;
+    FEraDrawObj: TThObjectEraserObject;
   protected
     procedure SetDrawMode(const Value: TThDrawMode); override;
   public
@@ -252,7 +251,7 @@ begin
   inherited;
 
   FPenDrawObj := TThPenDrawObject.Create(TThPenStyle.Create);
-  FEraDrawObj := TThObjErsDrawObject.Create(TThEraserStyle.Create, FDrawItems);
+  FEraDrawObj := TThObjectEraserObject.Create(TThEraserStyle.Create, FDrawItems);
 
   FDrawObject := FPenDrawObj;
 
