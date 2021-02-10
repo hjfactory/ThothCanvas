@@ -59,68 +59,6 @@ type
     property DrawItem: IThDrawItem read GetDrawItem;
   end;
 
-  TFloatRectHelper = record helper for TFloatRect
-  private
-    function GetBottomLeft: TFloatPoint;
-    function GetTopRight: TFloatPoint;
-    procedure SetBottomLeft(const Value: TFloatPoint);
-    procedure SetTopRight(const Value: TFloatPoint);
-    function GetWidth: TFloat;
-    procedure SetWidth(const Value: TFloat);
-    function GetHeight: TFloat;
-    procedure SetHeight(const Value: TFloat);
-  public
-    property TopRight: TFloatPoint read GetTopRight write SetTopRight;
-    property BottomLeft: TFloatPoint read GetBottomLeft write SetBottomLeft;
-
-    property Width: TFloat read GetWidth write SetWidth;
-    property Height: TFloat read GetHeight write SetHeight;
-  end;
-
 implementation
-
-{ TFloatRectHelper }
-
-function TFloatRectHelper.GetBottomLeft: TFloatPoint;
-begin
-  Result := FloatPoint(Self.Bottom, Self.Left);
-end;
-
-function TFloatRectHelper.GetHeight: TFloat;
-begin
-  Result := Self.Bottom - Self.Top;
-end;
-
-function TFloatRectHelper.GetTopRight: TFloatPoint;
-begin
-  Result := FloatPoint(Self.Top, Self.Right);
-end;
-
-function TFloatRectHelper.GetWidth: TFloat;
-begin
-  Result := Self.Right - Self.Left;
-end;
-
-procedure TFloatRectHelper.SetBottomLeft(const Value: TFloatPoint);
-begin
-  Self.Bottom := Value.Y;
-  Self.Left := Value.X;
-end;
-
-procedure TFloatRectHelper.SetHeight(const Value: TFloat);
-begin
-  Self.Bottom := Self.Top + Value;
-end;
-
-procedure TFloatRectHelper.SetTopRight(const Value: TFloatPoint);
-begin
-  Self.Top := Value.Y;
-  Self.Right := value.X;
-end;
-
-procedure TFloatRectHelper.SetWidth(const Value: TFloat);
-begin
-  Self.Right := Self.Left + Value;
-end;
 
 end.
