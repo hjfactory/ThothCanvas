@@ -20,11 +20,13 @@ type
 
   TThRectDrawItem = class(TThShapeItem)
   public
+    constructor Create; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
   TThRoundRectDrawItem = class(TThRectDrawItem)
   public
+    constructor Create; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
@@ -50,10 +52,16 @@ begin
   if not Assigned(Cls) then
     Exit(nil);
 
-  Result := Cls.Create(AStyle);
+  Result := Cls.Create;
+  Result.SetStyle(AStyle);
 end;
 
 { TThRectDrawItem }
+
+constructor TThRectDrawItem.Create;
+begin
+  inherited;
+end;
 
 function TThRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
@@ -64,6 +72,14 @@ begin
 end;
 
 { TThRoundRectDrawItem }
+
+constructor TThRoundRectDrawItem.Create;
+begin
+  inherited;
+
+  FMinimunSize.X := 160;
+  FMinimunSize.Y := 80;
+end;
 
 function TThRoundRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var

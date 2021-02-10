@@ -23,6 +23,7 @@ type
     procedure Realign;
     procedure DoRealign; virtual;
   public
+    constructor Create; virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
 
     function PtInItem(APt: TFloatPoint): Boolean; virtual;
@@ -45,10 +46,12 @@ type
     FIsDeletion: Boolean;
     function GetColor: TColor32;
   public
-    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly;
-      AThickness: Integer; AColor: TColor32; AAlpha: Byte); overload;
-    constructor Create(AStyle: IThDrawStyle); overload;
+    constructor Create; override;
     destructor Destroy; override;
+
+    procedure SetStyle(APath: TThPath; APolyPoly: TThPolyPoly;
+      AThickness: Integer; AColor: TColor32; AAlpha: Byte); overload;
+    procedure SetStyle(AStyle: IThDrawStyle); overload;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawPoly(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; APath: TThPath; APolyPoly: TThPolyPoly); virtual;
@@ -73,12 +76,15 @@ type
     FBorderColor: TColor32;
     procedure SetSelected(const Value: Boolean);
   protected
+    FMinimunSize: TFloatPoint;
+
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
   public
-    constructor Create(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
+    constructor Create; override;
+    procedure SetStyle(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); overload;
-    constructor Create(AStyle: IThDrawStyle); overload;
+    procedure SetStyle(AStyle: IThDrawStyle); overload;
 
     procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -109,9 +115,6 @@ type
 
   TThSelectedItems = class(TList<TThShapeItem>)
   public
-    // APoint에 포함되는 최상위 객체 반환
-//    function PtInItem(APoint: TFloatPoint): TThDrawItem;
-
     // 모든 항목 APoint만큼 이동
     procedure MoveItem(APoint: TFloatPoint);
   end;
@@ -124,6 +127,10 @@ uses
   ThUtils, ThDrawStyle, ThSelection;
 
 { TThDrawItem }
+
+constructor TThDrawItem.Create;
+begin
+end;
 
 procedure TThDrawItem.DoRealign;
 begin
@@ -142,7 +149,11 @@ end;
 
 { TThFreeDrawItem }
 
-constructor TThPenDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly;
+constructor TThPenDrawItem.Create;
+begin
+end;
+
+procedure TThPenDrawItem.SetStyle(APath: TThPath; APolyPoly: TThPolyPoly;
   AThickness: Integer; AColor: TColor32; AAlpha: Byte);
 begin
   FPath := APath;
@@ -153,12 +164,12 @@ begin
   FAlpha := AAlpha;
 end;
 
-constructor TThPenDrawItem.Create(AStyle: IThDrawStyle);
+procedure TThPenDrawItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThPenStyle;
 begin
   Style := TThPenStyle(AStyle);
-  Create(nil, nil, Style.Thickness, Style.Color, Style.Alpha);
+  SetStyle(nil, nil, Style.Thickness, Style.Color, Style.Alpha);
 end;
 
 destructor TThPenDrawItem.Destroy;
@@ -198,7 +209,13 @@ end;
 
 { TThShapeDrawItem }
 
-constructor TThShapeItem.Create(ARect: TFloatRect; APoly: TThPoly;
+constructor TThShapeItem.Create;
+begin
+  FMinimunSize.X := 0;
+  FMinimunSize.Y := 0;
+end;
+
+procedure TThShapeItem.SetStyle(ARect: TFloatRect; APoly: TThPoly;
   AColor: TColor32; ABorderWidth: Integer; ABorderColor: TColor32);
 begin
   FRect := ARect;
@@ -209,17 +226,21 @@ begin
   FBorderColor := ABorderColor;
 end;
 
-constructor TThShapeItem.Create(AStyle: IThDrawStyle);
+procedure TThShapeItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThShapeStyle;
 begin
   Style := TThShapeStyle(AStyle);
-  Create(EmptyRect, nil, Style.Color, Style.BorderWidth, Style.BorderColor);
+  SetStyle(EmptyRect, nil, Style.Color, Style.BorderWidth, Style.BorderColor);
 end;
 
 procedure TThShapeItem.DoRealign;
 begin
   inherited;
+
+  FRect.Width   := Max(FRect.Width, FMinimunSize.X);
+  FRect.Height  := Max(FRect.Height, FMinimunSize.Y);
+
 
   FPolyPoly := RectToPolyPoly(FRect);
 
@@ -354,25 +375,5 @@ begin
   for I := 0 to Count - 1 do
     Items[I].MoveItem(APoint);
 end;
-//
-//function TThSelectedItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
-//var
-//  I: Integer;
-//  Item: TThDrawItem;
-//begin
-//  Result := nil;
-//
-//  for I := Count - 1 downto 0 do
-//  begin
-//    Item := Items[I];
-//    if not PtInRect(Item.Bounds, APoint) then
-//      Continue;
-//
-//    if not PtInPolyPolygon(APoint, Item.PolyPoly) then
-//      Continue;
-//
-//    Exit(Item);
-//  end;
-//end;
 
 end.

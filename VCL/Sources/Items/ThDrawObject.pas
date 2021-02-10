@@ -85,7 +85,7 @@ type
   TThShapeDrawObject = class(TThCustomDrawObject)
   private
     FShapeId: string;
-    FDrawItem: TThShapeItem;
+    FShapeItem: TThShapeItem;
   protected
     FRect: TFloatRect;
   public
@@ -188,7 +188,8 @@ var
 begin
   inherited;
 
-  FDrawItem := TThPenDrawItem.Create(FDrawStyle);
+  FDrawItem := TThPenDrawItem.Create;
+  FDrawItem.SetStyle(FDrawStyle);
   FPath.Add(APoint);
 
   Poly := Circle(APoint, FDrawItem.Thickness / 2);
@@ -345,8 +346,8 @@ begin
 
   if FMouseDowned then
   begin
-    if not Assigned(FDrawItem) then
-      FDrawItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
+    if not Assigned(FShapeItem) then
+      FShapeItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
 
     FRect.BottomRight := APoint;
   end;
@@ -362,18 +363,18 @@ end;
 procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 begin
-  if Assigned(FDrawItem) then
-    FDrawItem.DrawRect(Bitmap, AScale, AOffset, FRect);
+  if Assigned(FShapeItem) then
+    FShapeItem.DrawRect(Bitmap, AScale, AOffset, FRect);
 end;
 
 function TThShapeDrawObject.GetDrawItem: IThDrawItem;
 begin
   Result := nil;
-  if not Assigned(FDrawItem) then
+  if not Assigned(FShapeItem) then
     Exit;
 
-  Result := FDrawItem;
-  FDrawItem := nil;
+  Result := FShapeItem;
+  FShapeItem := nil;
 end;
 
 { TThShapeSelectObject }
@@ -478,7 +479,7 @@ procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
   P: TFloatPoint;
-  Item: TThShapeItem;
+//  Item: TThShapeItem;
 begin
   inherited;
 

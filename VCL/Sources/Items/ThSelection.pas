@@ -5,7 +5,7 @@ interface
 uses
   System.Generics.Collections,
   GR32,
-  ThTypes,
+  ThTypes, ThUtils,
   ThDrawItem;
 
 type
@@ -29,11 +29,16 @@ type
   TThItemResizeHandle = class
   private
     FDirection: THandleDirection;
-    FPoly: TThPoly;
+    FPoint: TFloatPoint;
+//    FPoly: TThPoly;
+    function GetPoly: TThPoly; overload;
   public
     constructor Create(ADirection: THandleDirection);
     property Direction: THandleDirection read FDirection;
-    property Poly: TThPoly read FPoly write FPoly;
+    property Poly: TThPoly read GetPoly;// write FPoly;
+    property Point: TFloatPoint read FPoint;
+
+    function GetPoly(APoint: TFloatPoint): TThPoly; overload;
   end;
 
   TThItemSelection = class(TInterfacedObject, IThItemSelection)
@@ -45,7 +50,6 @@ type
     procedure SetHotHandle(const Value: TThItemResizeHandle);
     function IsOverHandle: Boolean;
   protected
-
     FFillColor,
     FHotColor,
     FBorderColor: TColor32;
@@ -103,6 +107,7 @@ uses
   GR32_VectorUtils;
 
 const
+  HANDLE_RADIUS = 4;
   HANDLE_CURSOR: array [THandleDirection] of TCursor = (
     crDefault,
     crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // TL, T, TR, R
@@ -117,6 +122,16 @@ begin
   FDirection := ADirection;
 end;
 
+function TThItemResizeHandle.GetPoly: TThPoly;
+begin
+  Result := GetPoly(FPoint);
+end;
+
+function TThItemResizeHandle.GetPoly(APoint: TFloatPoint): TThPoly;
+begin
+  Result := Circle(APoint, HANDLE_RADIUS);
+end;
+
 { TThItemSelection }
 
 constructor TThItemSelection.Create(AParent: TThDrawItem);
@@ -125,7 +140,7 @@ begin
   FHotColor := clRed32;
   FBorderColor := clBlack32;
 
-  FRadius := 4;
+  FRadius := HANDLE_RADIUS;
   FBorderWidth := 1;
 
   FItem := AParent;
@@ -167,15 +182,25 @@ end;
 procedure TThItemSelection.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
+  P: TFloatPoint;
   H: TThItemResizeHandle;
+  Poly: TThPoly;
 begin
   for H in FHandles do
   begin
+    P := H.Point.Scale(AScale).Offset(AOffset);
+    Poly := H.GetPoly(P);
+//    Poly :=
+//    Poly := ScalePolygon(H.Poly, AScale.X, AScale.Y);
+//    TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
+//    Poly := TranslatePolygon(H.Poly, AOffset.X, AOffset.Y);
+
+
     if H = FHotHandle then
-      PolygonFS(Bitmap, H.Poly, FHotColor)
+      PolygonFS(Bitmap, Poly, FHotColor)
     else
-      PolygonFS(Bitmap, H.Poly, FFillColor);
-    PolylineFS(Bitmap, H.Poly, FBorderColor, True, FBorderWidth);
+      PolygonFS(Bitmap, Poly, FFillColor);
+    PolylineFS(Bitmap, Poly, FBorderColor, True, FBorderWidth);
   end;
 end;
 
@@ -254,7 +279,6 @@ end;
 
 procedure TThShapeSelection.MouseUp(const APoint: TFloatPoint);
 begin
-
 end;
 
 procedure TThShapeSelection.CreateHandles;
@@ -288,19 +312,9 @@ procedure TThShapeSelection.RealignHandles;
   end;
 var
   I: Integer;
-  R: TFloatRect;
-  P: TFloatPoint;
 begin
   for I := Low(FHandles) to High(FHandles) do
-  begin
-    P := HandlePoint(Shape.Rect, FHandles[I].Direction);
-    R := FloatRect(P, P);
-    InflateRect(R, FRadius+1, FRadius+1);
-
-    FHandles[I].Poly := Rectangle(R);
-//    FHandles[I].Poly := Circle(P, FRadius);
-//    FHandles[I].Rect := FloatRect(OffsetPoint(P, -FRadius, -FRadius), OffsetPoint(P, FRadius, FRadius));
-  end;
+    FHandles[I].FPoint := HandlePoint(Shape.Rect, FHandles[I].Direction);
 end;
 
 end.
