@@ -18,16 +18,22 @@ type
     class function GetShapeItem(AId: string; AStyle: IThDrawStyle): TThShapeItem;
   end;
 
-  TThRectDrawItem = class(TThShapeItem)
+  TThRectItem = class(TThShapeItem)
   public
-    constructor Create; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
-  TThRoundRectDrawItem = class(TThRectDrawItem)
+  TThRoundRectItem = class(TThRectItem)
   public
-    constructor Create; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
+  end;
+
+  TThLineItem = class(TThShapeItem)
+  public
+    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
+  end;
+
+  TThCurvedItem = class(TThLineItem)
   end;
 
 implementation
@@ -37,8 +43,10 @@ uses
 
 procedure RegisterDrawItems;
 begin
-  TThShapeItemFactory.Instance.Regist('Rect', TThRectDrawItem);
-  TThShapeItemFactory.Instance.Regist('RoundRect', TThRoundRectDrawItem);
+  TThShapeItemFactory.Instance.Regist('Rect', TThRectItem);
+  TThShapeItemFactory.Instance.Regist('RoundRect', TThRoundRectItem);
+
+  TThShapeItemFactory.Instance.Regist('Line', TThLineItem);
 end;
 
 { TThDrawItemFactory }
@@ -58,12 +66,7 @@ end;
 
 { TThRectDrawItem }
 
-constructor TThRectDrawItem.Create;
-begin
-  inherited;
-end;
-
-function TThRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
+function TThRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
@@ -73,19 +76,25 @@ end;
 
 { TThRoundRectDrawItem }
 
-constructor TThRoundRectDrawItem.Create;
+function TThRoundRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
+var
+  Radius: Single;
+  Poly: TThPoly;
 begin
-  inherited;
-
-  FMinimunSize.X := 160;
-  FMinimunSize.Y := 80;
+  if ARect.Width <= ARect.Height then
+    ARect.Width := ARect.Height+1;
+  Poly := RoundRect(ARect, Max(Abs(ARect.Bottom - ARect.Top), 1) / 2);
+  Result := PolyPolygon(Poly);
 end;
 
-function TThRoundRectDrawItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
+{ TThLineItem }
+
+function TThLineItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
-  Poly := RoundRect(ARect, Max(Abs(ARect.Bottom - ARect.Top), 1) / 2);
+  Poly := Line(ARect.TopLeft, ARect.BottomRight);
+
   Result := PolyPolygon(Poly);
 end;
 

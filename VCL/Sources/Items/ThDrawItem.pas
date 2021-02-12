@@ -76,12 +76,9 @@ type
     FBorderColor: TColor32;
     procedure SetSelected(const Value: Boolean);
   protected
-    FMinimunSize: TFloatPoint;
-
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
   public
-    constructor Create; override;
     procedure SetStyle(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload;
@@ -209,12 +206,6 @@ end;
 
 { TThShapeDrawItem }
 
-constructor TThShapeItem.Create;
-begin
-  FMinimunSize.X := 0;
-  FMinimunSize.Y := 0;
-end;
-
 procedure TThShapeItem.SetStyle(ARect: TFloatRect; APoly: TThPoly;
   AColor: TColor32; ABorderWidth: Integer; ABorderColor: TColor32);
 begin
@@ -238,9 +229,9 @@ procedure TThShapeItem.DoRealign;
 begin
   inherited;
 
-  FRect.Width   := Max(FRect.Width, FMinimunSize.X);
-  FRect.Height  := Max(FRect.Height, FMinimunSize.Y);
-
+  FRect.Realign;
+//  FRect.Width   := Max(FRect.Width, FMinimunSize.X);
+//  FRect.Height  := Max(FRect.Height, FMinimunSize.Y);
 
   FPolyPoly := RectToPolyPoly(FRect);
 

@@ -40,6 +40,8 @@ type
     function GetHeight: TFloat;
     procedure SetHeight(const Value: TFloat);
   public
+    procedure Realign;
+
     property TopRight: TFloatPoint read GetTopRight write SetTopRight;
     property BottomLeft: TFloatPoint read GetBottomLeft write SetBottomLeft;
 
@@ -154,7 +156,7 @@ end;
 
 function TFloatRectHelper.GetHeight: TFloat;
 begin
-  Result := Self.Bottom - Self.Top;
+  Result := Abs(Self.Bottom - Self.Top);
 end;
 
 function TFloatRectHelper.GetTopRight: TFloatPoint;
@@ -164,7 +166,26 @@ end;
 
 function TFloatRectHelper.GetWidth: TFloat;
 begin
-  Result := Self.Right - Self.Left;
+  Result := Abs(Self.Right - Self.Left);
+end;
+
+procedure TFloatRectHelper.Realign;
+var
+  X, Y: TFloat;
+begin
+  if Self.Right < Self.Left then
+  begin
+    X := Self.Left;
+    Self.Left := Self.Right;
+    Self.Right := X;
+  end;
+
+  if Self.Bottom < Self.Top then
+  begin
+    Y := Self.Top;
+    Self.Top := Self.Bottom;
+    Self.Bottom := Y;
+  end;
 end;
 
 procedure TFloatRectHelper.SetBottomLeft(const Value: TFloatPoint);

@@ -22,6 +22,7 @@ type
     Button7: TButton;
     Button8: TButton;
     SpinEdit2: TSpinEdit;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ColorBox1Change(Sender: TObject);
@@ -35,6 +36,7 @@ type
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure SpinEdit2Change(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     FCanvas: TThCanvas;
@@ -56,6 +58,12 @@ uses
 procedure TfrmMain.Button1Click(Sender: TObject);
 begin
   FCanvas.DrawMode := dmPen;
+end;
+
+procedure TfrmMain.Button2Click(Sender: TObject);
+begin
+  FCanvas.DrawMode := dmDraw;
+  FCanvas.ShapeId := 'Line';
 end;
 
 procedure TfrmMain.Button3Click(Sender: TObject);

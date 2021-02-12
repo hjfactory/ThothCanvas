@@ -144,4 +144,13 @@ object frmMain: TfrmMain
     Value = 100
     OnChange = SpinEdit2Change
   end
+  object Button2: TButton
+    Left = 319
+    Top = 51
+    Width = 33
+    Height = 25
+    Caption = 'Line'
+    TabOrder = 12
+    OnClick = Button2Click
+  end
 end

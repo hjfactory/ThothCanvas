@@ -93,6 +93,10 @@ type
     procedure MouseUp(const APoint: TFloatPoint); override;
   end;
 
+  TThLineSelection = class(TThItemSelection)
+
+  end;
+
   TThShapeSelections = class(TList<TThShapeSelection>)
   end;
 
