@@ -87,7 +87,7 @@ type
     FShapeId: string;
     FShapeItem: TThShapeItem;
   protected
-    FRect: TFloatRect;
+    FStartPoint, FCurrPoint: TFloatPoint;
   public
     constructor Create(AStyle: IThDrawStyle); override;
     destructor Destroy; override;
@@ -337,7 +337,8 @@ procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShift
 begin
   inherited;
 
-  FRect.TopLeft := APoint;
+  FStartPoint := APoint;
+//  FRect.TopLeft := APoint;
 end;
 
 procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
@@ -349,7 +350,8 @@ begin
     if not Assigned(FShapeItem) then
       FShapeItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
 
-    FRect.BottomRight := APoint;
+    FCurrPoint := APoint;
+//    FRect.BottomRight := APoint;
   end;
 end;
 
@@ -357,14 +359,16 @@ procedure TThShapeDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftSt
 begin
   inherited;
 
-  FRect := EmptyRect;
+  FStartPoint := EmptyPoint;
+  FCurrPoint := EmptyPoint;
+//  FRect := EmptyRect;
 end;
 
 procedure TThShapeDrawObject.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 begin
   if Assigned(FShapeItem) then
-    FShapeItem.DrawRect(Bitmap, AScale, AOffset, FRect);
+    FShapeItem.DrawPoints(Bitmap, AScale, AOffset, FStartPoint, FCurrPoint);
 end;
 
 function TThShapeDrawObject.GetDrawItem: IThDrawItem;

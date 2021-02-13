@@ -18,19 +18,19 @@ type
     class function GetShapeItem(AId: string; AStyle: IThDrawStyle): TThShapeItem;
   end;
 
-  TThRectItem = class(TThShapeItem)
-  public
+  TThRectItem = class(TThFillShapeItem)
+  protected
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
-  TThRoundRectItem = class(TThRectItem)
-  public
+  TThRoundRectItem = class(TThFillShapeItem)
+  protected
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
-  TThLineItem = class(TThShapeItem)
-  public
-    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
+  TThLineItem = class(TThLineShapeItem)
+  protected
+    function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; override;
   end;
 
   TThCurvedItem = class(TThLineItem)
@@ -89,11 +89,12 @@ end;
 
 { TThLineItem }
 
-function TThLineItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
+function TThLineItem.PointToPolyPoly(AFromPoint,
+  AToPoint: TFloatPoint): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
-  Poly := Line(ARect.TopLeft, ARect.BottomRight);
+  Poly := BuildPolyline([AFromPoint, AToPoint], BorderWidth, jsRound, esRound);;
 
   Result := PolyPolygon(Poly);
 end;

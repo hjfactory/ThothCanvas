@@ -46,11 +46,10 @@ type
     FIsDeletion: Boolean;
     function GetColor: TColor32;
   public
-    constructor Create; override;
+    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly); overload;
     destructor Destroy; override;
 
-    procedure SetStyle(APath: TThPath; APolyPoly: TThPolyPoly;
-      AThickness: Integer; AColor: TColor32; AAlpha: Byte); overload;
+    procedure SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte); overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload;
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
@@ -69,35 +68,72 @@ type
     FSelected: Boolean;
     FSelection: IThItemSelection;
 
-    FRect: TFloatRect;
     FBorderWidth: Integer;
-    FColor: TColor32;
 
     FBorderColor: TColor32;
     procedure SetSelected(const Value: Boolean);
   protected
     procedure DoRealign; override;
-    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
   public
-    procedure SetStyle(ARect: TFloatRect; APoly: TThPoly; AColor: TColor32;
-      ABorderWidth: Integer; ABorderColor: TColor32); overload;
-    procedure SetStyle(AStyle: IThDrawStyle); overload;
+    procedure SetStyle(AStyle: IThDrawStyle); virtual; abstract;
 
-    procedure DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint; ARect: TFloatRect); virtual;
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
-
-    procedure MoveItem(APoint: TFloatPoint);
-    procedure ResizeItem(ARect: TFloatRect);
+    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+      AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
+    procedure MoveItem(APoint: TFloatPoint); virtual; abstract;
 
     function PtInItem(APt: TFloatPoint): Boolean; override;
 
     property Selected: Boolean read FSelected write SetSelected;
     property Selection: IThItemSelection read FSelection;
 
-    property Rect: TFloatRect read FRect;
-    property Color: TColor32 read FColor;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
+  end;
+
+  TThFillShapeItem = class(TThShapeItem)
+  private
+    FRect: TFloatRect;
+    FColor: TColor32;
+  protected
+    procedure DoRealign; override;
+    function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
+  public
+    constructor Create(ARect: TFloatRect; AColor: TColor32;
+      ABorderWidth: Integer; ABorderColor: TColor32);
+
+    procedure SetStyle(AColor: TColor32;
+      ABorderWidth: Integer; ABorderColor: TColor32); overload;
+    procedure SetStyle(AStyle: IThDrawStyle); overload; override;
+
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+      AFromPoint, AToPoint: TFloatPoint); override;
+    procedure ResizeItem(ARect: TFloatRect);
+
+    procedure MoveItem(APoint: TFloatPoint); override;
+
+    property Rect: TFloatRect read FRect;
+    property Color: TColor32 read FColor;
+  end;
+
+  TThLineShapeItem = class(TThShapeItem)
+  private
+    FFromPoint, FToPoint: TFloatPoint;
+  protected
+    procedure DoRealign; override;
+    function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
+  public
+    constructor Create(AFromPoint, AToPoint: TFloatPoint; ABorderWidth: Integer;
+      ABorderColor: TColor32);
+
+    procedure SetStyle(ABorderWidth: Integer; ABorderColor: TColor32); overload;
+    procedure SetStyle(AStyle: IThDrawStyle); overload; override;
+
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
+    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+      AFromPoint, AToPoint: TFloatPoint); override;
+
+    procedure MoveItem(APoint: TFloatPoint); override;
   end;
 
   TThDrawItems = class(TObjectList<TThDrawItem>)
@@ -146,16 +182,14 @@ end;
 
 { TThFreeDrawItem }
 
-constructor TThPenDrawItem.Create;
-begin
-end;
-
-procedure TThPenDrawItem.SetStyle(APath: TThPath; APolyPoly: TThPolyPoly;
-  AThickness: Integer; AColor: TColor32; AAlpha: Byte);
+constructor TThPenDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly);
 begin
   FPath := APath;
   FPolyPoly := APolyPoly;
+end;
 
+procedure TThPenDrawItem.SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte);
+begin
   FThickness := AThickness;
   FColor := AColor;
   FAlpha := AAlpha;
@@ -166,7 +200,7 @@ var
   Style: TThPenStyle;
 begin
   Style := TThPenStyle(AStyle);
-  SetStyle(nil, nil, Style.Thickness, Style.Color, Style.Alpha);
+  SetStyle(Style.Thickness, Style.Color, Style.Alpha);
 end;
 
 destructor TThPenDrawItem.Destroy;
@@ -206,32 +240,65 @@ end;
 
 { TThShapeDrawItem }
 
-procedure TThShapeItem.SetStyle(ARect: TFloatRect; APoly: TThPoly;
-  AColor: TColor32; ABorderWidth: Integer; ABorderColor: TColor32);
+procedure TThShapeItem.DoRealign;
+begin
+  inherited;
+end;
+
+function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
+begin
+  if Assigned(FSelection) and FSelection.PtInSelection(APt) then
+    Exit(True);
+
+  Result := inherited PtInItem(APt);
+end;
+
+procedure TThShapeItem.SetSelected(const Value: Boolean);
+begin
+  if Value = FSelected then
+    Exit;
+  FSelected := Value;
+
+  if Value then
+    FSelection := TThShapeSelection.Create(Self)
+  else
+    FSelection := nil; // Free(ARC)
+end;
+
+{ TThFillShapeItem }
+
+constructor TThFillShapeItem.Create(ARect: TFloatRect; AColor: TColor32;
+  ABorderWidth: Integer; ABorderColor: TColor32);
 begin
   FRect := ARect;
-  FPolyPoly := PolyPolygon(APoly);
+  FPolyPoly := RectToPolyPoly(FRect);
 
   FColor := AColor;
   FBorderWidth := ABorderWidth;
   FBorderColor := ABorderColor;
 end;
 
-procedure TThShapeItem.SetStyle(AStyle: IThDrawStyle);
+procedure TThFillShapeItem.SetStyle(AColor: TColor32; ABorderWidth: Integer;
+  ABorderColor: TColor32);
+begin
+  FColor := AColor;
+  FBorderWidth := ABorderWidth;
+  FBorderColor := ABorderColor;
+end;
+
+procedure TThFillShapeItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThShapeStyle;
 begin
   Style := TThShapeStyle(AStyle);
-  SetStyle(EmptyRect, nil, Style.Color, Style.BorderWidth, Style.BorderColor);
+  SetStyle(Style.Color, Style.BorderWidth, Style.BorderColor);
 end;
 
-procedure TThShapeItem.DoRealign;
+procedure TThFillShapeItem.DoRealign;
 begin
   inherited;
 
   FRect.Realign;
-//  FRect.Width   := Max(FRect.Width, FMinimunSize.X);
-//  FRect.Height  := Max(FRect.Height, FMinimunSize.Y);
 
   FPolyPoly := RectToPolyPoly(FRect);
 
@@ -239,7 +306,8 @@ begin
     FSelection.Realign;
 end;
 
-procedure TThShapeItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TThFillShapeItem.Draw(Bitmap: TBitmap32; AScale,
+  AOffset: TFloatPoint);
 var
   PolyPoly: TThPolyPoly;
 begin
@@ -254,45 +322,93 @@ begin
     FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
-procedure TThShapeItem.DrawRect(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
-  ARect: TFloatRect);
+procedure TThFillShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,
+  AFromPoint, AToPoint: TFloatPoint);
 begin
-  FRect := ARect;
+  FRect.TopLeft     := AFromPoint;
+  FRect.BottomRight := AToPoint;
   Realign;
 
   Draw(Bitmap, AScale, AOffset);
 end;
 
-procedure TThShapeItem.MoveItem(APoint: TFloatPoint);
+procedure TThFillShapeItem.MoveItem(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
   Realign;
 end;
 
-function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
-begin
-  if Assigned(FSelection) and FSelection.PtInSelection(APt) then
-    Exit(True);
-
-  Result := inherited PtInItem(APt);
-end;
-
-procedure TThShapeItem.ResizeItem(ARect: TFloatRect);
+procedure TThFillShapeItem.ResizeItem(ARect: TFloatRect);
 begin
   FRect := ARect;
   Realign;
 end;
 
-procedure TThShapeItem.SetSelected(const Value: Boolean);
-begin
-  if Value = FSelected then
-    Exit;
-  FSelected := Value;
+{ TThLineShapeItem }
 
-  if Value then
-    FSelection := TThShapeSelection.Create(Self)
-  else
-    FSelection := nil; // Free(ARC)
+constructor TThLineShapeItem.Create(AFromPoint, AToPoint: TFloatPoint;
+  ABorderWidth: Integer; ABorderColor: TColor32);
+begin
+  FFromPoint := AFromPoint;
+  FToPoint := AToPoint;
+
+  FBorderWidth := ABorderWidth;
+  FBorderColor := ABorderColor;
+end;
+
+procedure TThLineShapeItem.SetStyle(ABorderWidth: Integer;
+  ABorderColor: TColor32);
+begin
+  FBorderWidth := ABorderWidth;
+  FBorderColor := ABorderColor;
+end;
+
+procedure TThLineShapeItem.SetStyle(AStyle: IThDrawStyle);
+var
+  Style: TThShapeStyle;
+begin
+  Style := TThShapeStyle(AStyle);
+  SetStyle(Style.BorderWidth, Style.BorderColor);
+end;
+
+procedure TThLineShapeItem.DoRealign;
+begin
+  inherited;
+
+  FPolyPoly := PointToPolyPoly(FFromPoint, FToPoint);
+end;
+
+procedure TThLineShapeItem.Draw(Bitmap: TBitmap32; AScale,
+  AOffset: TFloatPoint);
+var
+  PolyPoly: TThPolyPoly;
+begin
+  PolyPoly := ScalePolyPolygon(FPolyPoly, AScale.X, AScale.Y);
+  TranslatePolyPolygonInplace(PolyPoly, AOffset.X, AOffset.Y);
+
+  PolyPolygonFS(Bitmap, PolyPoly, FBorderColor);
+
+//  PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
+
+  if FSelected and Assigned(FSelection) then
+    FSelection.Draw(Bitmap, AScale, AOffset);
+end;
+
+procedure TThLineShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,
+  AFromPoint, AToPoint: TFloatPoint);
+begin
+  FFromPoint  := AFromPoint;
+  FToPoint    := AToPoint;
+  Realign;
+
+  Draw(Bitmap, AScale, AOffset);
+end;
+
+procedure TThLineShapeItem.MoveItem(APoint: TFloatPoint);
+begin
+  FFromPoint := FFromPoint.Offset(APoint);
+  FToPoint := FToPoint.Offset(APoint);
+  Realign;
 end;
 
 { TThDrawItems }

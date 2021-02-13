@@ -82,8 +82,8 @@ type
   private
     FLastPoint: TFloatPoint;
 
-    function GetShape: TThShapeItem;
-    property Shape: TThShapeItem read GetShape;
+    function GetShape: TThFillShapeItem;
+    property Shape: TThFillShapeItem read GetShape;
   protected
     procedure CreateHandles; override;
     procedure RealignHandles; override;
@@ -250,9 +250,9 @@ end;
 
 { TThShapeSelection }
 
-function TThShapeSelection.GetShape: TThShapeItem;
+function TThShapeSelection.GetShape: TThFillShapeItem;
 begin
-  Result := TThShapeItem(FItem);
+  Result := TThFillShapeItem(FItem);
 end;
 
 procedure TThShapeSelection.MouseDown(const APoint: TFloatPoint);

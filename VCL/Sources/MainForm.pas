@@ -13,7 +13,6 @@ type
     pnlMain: TPanel;
     ColorBox1: TColorBox;
     TrackBar1: TTrackBar;
-    Label1: TLabel;
     SpinEdit1: TSpinEdit;
     Button3: TButton;
     Button4: TButton;
@@ -23,6 +22,7 @@ type
     Button8: TButton;
     SpinEdit2: TSpinEdit;
     Button2: TButton;
+    Button9: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ColorBox1Change(Sender: TObject);
@@ -136,7 +136,6 @@ end;
 procedure TfrmMain.TrackBar1Change(Sender: TObject);
 begin
   FCanvas.PenStyle.Thickness := TrackBar1.Position;
-  Label1.Caption := IntToStr(FCanvas.PenStyle.Thickness);
 end;
 
 end.
