@@ -21,8 +21,8 @@ type
       rhdBottomLeft,
       rhdLeft,
 
-      rhdLineStart = 9,
-      rhdLineEnd
+      rhdLineFrom,
+      rhdLineTo
     );
 
 type
@@ -80,21 +80,26 @@ type
 
   TThShapeSelection = class(TThItemSelection)
   private
-    FLastPoint: TFloatPoint;
-
     function GetShape: TThFillShapeItem;
     property Shape: TThFillShapeItem read GetShape;
   protected
     procedure CreateHandles; override;
     procedure RealignHandles; override;
 
-    procedure MouseDown(const APoint: TFloatPoint); override;
     procedure MouseMove(const APoint: TFloatPoint); override;
-    procedure MouseUp(const APoint: TFloatPoint); override;
   end;
 
   TThLineSelection = class(TThItemSelection)
+  private
+    FLastPoint: TFloatPoint;
 
+    function GetShape: TThLineShapeItem;
+    property Shape: TThLineShapeItem read GetShape;
+  protected
+    procedure CreateHandles; override;
+    procedure RealignHandles; override;
+
+    procedure MouseMove(const APoint: TFloatPoint); override;
   end;
 
   TThShapeSelections = class(TList<TThShapeSelection>)
@@ -116,7 +121,8 @@ const
     crDefault,
     crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // TL, T, TR, R
     crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // BR, B, BL, L
-    crSizeNWSE, crSizeNWSE
+
+    crSizeNWSE, crSizeNWSE                              // From, To
   );
 
 { TThItemResizeHandle }
@@ -194,7 +200,6 @@ begin
   begin
     P := H.Point.Scale(AScale).Offset(AOffset);
     Poly := H.GetPoly(P);
-//    Poly :=
 //    Poly := ScalePolygon(H.Poly, AScale.X, AScale.Y);
 //    TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
 //    Poly := TranslatePolygon(H.Poly, AOffset.X, AOffset.Y);
@@ -250,41 +255,6 @@ end;
 
 { TThShapeSelection }
 
-function TThShapeSelection.GetShape: TThFillShapeItem;
-begin
-  Result := TThFillShapeItem(FItem);
-end;
-
-procedure TThShapeSelection.MouseDown(const APoint: TFloatPoint);
-begin
-  FLastPoint := APoint;
-end;
-
-procedure TThShapeSelection.MouseMove(const APoint: TFloatPoint);
-var
-  R: TFloatrect;
-begin
-  if not Assigned(FHotHandle) then
-    Exit;
-
-  R := Shape.Rect;
-  case FHotHandle.Direction of
-    rhdTopLeft:       R.TopLeft := APoint;
-    rhdTop:           R.Top := APoint.Y;
-    rhdTopRight:      R.TopRight := APoint;
-    rhdRight:         R.Right := APoint.X;
-    rhdBottomRight:   R.BottomRight := APoint;
-    rhdBottom:        R.Bottom := APoint.Y;
-    rhdBottomLeft:    R.BottomLeft := APoint;
-    rhdLeft:          R.Left := APoint.X;
-  end;
-  Shape.ResizeItem(R);
-end;
-
-procedure TThShapeSelection.MouseUp(const APoint: TFloatPoint);
-begin
-end;
-
 procedure TThShapeSelection.CreateHandles;
 var
   I: Integer;
@@ -319,6 +289,64 @@ var
 begin
   for I := Low(FHandles) to High(FHandles) do
     FHandles[I].FPoint := HandlePoint(Shape.Rect, FHandles[I].Direction);
+end;
+
+function TThShapeSelection.GetShape: TThFillShapeItem;
+begin
+  Result := TThFillShapeItem(FItem);
+end;
+
+procedure TThShapeSelection.MouseMove(const APoint: TFloatPoint);
+var
+  R: TFloatrect;
+begin
+  if not Assigned(FHotHandle) then
+    Exit;
+
+  R := Shape.Rect;
+  case FHotHandle.Direction of
+    rhdTopLeft:       R.TopLeft := APoint;
+    rhdTop:           R.Top := APoint.Y;
+    rhdTopRight:      R.TopRight := APoint;
+    rhdRight:         R.Right := APoint.X;
+    rhdBottomRight:   R.BottomRight := APoint;
+    rhdBottom:        R.Bottom := APoint.Y;
+    rhdBottomLeft:    R.BottomLeft := APoint;
+    rhdLeft:          R.Left := APoint.X;
+  end;
+  Shape.ResizeItem(R);
+end;
+
+{ TThLineSelection }
+
+procedure TThLineSelection.CreateHandles;
+begin
+  SetLength(FHandles, 2);
+
+  FHandles[0] := TThItemResizeHandle.Create(rhdLineFrom);
+  FHandles[1] := TThItemResizeHandle.Create(rhdLineTo);
+end;
+
+procedure TThLineSelection.RealignHandles;
+begin
+  FHandles[0].FPoint := Shape.FromPoint;
+  FHandles[1].FPoint := Shape.ToPoint;
+end;
+
+function TThLineSelection.GetShape: TThLineShapeItem;
+begin
+  Result := TThLineShapeItem(FItem);
+end;
+
+procedure TThLineSelection.MouseMove(const APoint: TFloatPoint);
+begin
+  if not Assigned(FHotHandle) then
+    Exit;
+
+  case FHotHandle.Direction of
+    rhdLineFrom:  Shape.ResizeItem(APoint, Shape.ToPoint);
+    rhdLineTo:    Shape.ResizeItem(Shape.FromPoint, APoint);
+  end;
 end;
 
 end.
