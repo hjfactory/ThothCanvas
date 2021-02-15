@@ -139,8 +139,8 @@ end;
 
 constructor TThShapeStyle.Create;
 begin
-  FColor := clBlue32;
-  FBorderColor := clSkyblue32;
+  FColor := clYellow32;
+  FBorderColor := clGray32;
   FBorderWidth := 4;
 end;
 

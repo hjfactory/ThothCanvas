@@ -39,7 +39,8 @@ type
 implementation
 
 uses
-  System.Math;
+  System.Math,
+  GR32_Geometry;
 
 procedure RegisterDrawItems;
 begin
@@ -78,7 +79,6 @@ end;
 
 function TThRoundRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
-  Radius: Single;
   Poly: TThPoly;
 begin
   if ARect.Width <= ARect.Height then
@@ -89,14 +89,36 @@ end;
 
 { TThLineItem }
 
+function GetArrowPoints(APt1, APt2: TFloatPoint; ASize: Single): TThPoly;
+var
+  UnitVec, UnitNorm: TFloatPoint;
+  TipPoint: TFloatPoint;
+begin
+  SetLength(Result, 3);
+  UnitVec := GetUnitVector(APt1, APt2);
+
+  Result[0] := APt1;
+  TipPoint := OffsetPoint(APt1, UnitVec.X * ASize, UnitVec.Y * ASize);
+  UnitNorm := GetUnitNormal(TipPoint, APt1);
+
+  Result[1] := OffsetPoint(TipPoint, UnitNorm.X * ASize/2, UnitNorm.Y * ASize/2);
+  Result[2] := OffsetPoint(TipPoint, -UnitNorm.X * ASize/2, -UnitNorm.Y * ASize/2);
+end;
+
 function TThLineItem.PointToPolyPoly(AFromPoint,
   AToPoint: TFloatPoint): TThPolyPoly;
 var
-  Poly: TThPoly;
+  Poly, ArrowPoly, LinePoly: TThPoly;
 begin
-  Poly := BuildPolyline([AFromPoint, AToPoint], BorderWidth, jsRound, esRound);;
+  ArrowPoly := GetArrowPoints(ToPoint, FromPoint, 20);
+  LinePoly := BuildPolyline([AFromPoint, AToPoint], BorderWidth, jsRound, esRound);
+  SetLength(Result, 3);
+  Result[0] := LinePoly;
+  Result[1] := BuildPolyline([ArrowPoly[0], ArrowPoly[1]], BorderWidth, jsRound, esRound);
+  Result[2] := BuildPolyline([ArrowPoly[0], ArrowPoly[2]], BorderWidth, jsRound, esRound);
 
-  Result := PolyPolygon(Poly);
+//  Result := CatPolyPolygon([LinePoly], [ArrowPoly]);
+//  Result := PolyPolygon(LinePoly);
 end;
 
 initialization

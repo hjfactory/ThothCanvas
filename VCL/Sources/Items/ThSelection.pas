@@ -91,8 +91,6 @@ type
 
   TThLineSelection = class(TThItemSelection)
   private
-    FLastPoint: TFloatPoint;
-
     function GetShape: TThLineShapeItem;
     property Shape: TThLineShapeItem read GetShape;
   protected
