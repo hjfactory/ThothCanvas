@@ -97,10 +97,10 @@ begin
   SetLength(Result, 3);
   UnitVec := GetUnitVector(APt1, APt2);
 
-  Result[0] := APt1;
   TipPoint := OffsetPoint(APt1, UnitVec.X * ASize, UnitVec.Y * ASize);
   UnitNorm := GetUnitNormal(TipPoint, APt1);
 
+  Result[0] := APt1;
   Result[1] := OffsetPoint(TipPoint, UnitNorm.X * ASize/2, UnitNorm.Y * ASize/2);
   Result[2] := OffsetPoint(TipPoint, -UnitNorm.X * ASize/2, -UnitNorm.Y * ASize/2);
 end;
@@ -108,17 +108,31 @@ end;
 function TThLineItem.PointToPolyPoly(AFromPoint,
   AToPoint: TFloatPoint): TThPolyPoly;
 var
-  Poly, ArrowPoly, LinePoly: TThPoly;
+  Poly, ArrowPts: TThPoly;
+  PolyPath: TPath;
+  PolyPolyPath: TPaths;
 begin
-  ArrowPoly := GetArrowPoints(ToPoint, FromPoint, 20);
-  LinePoly := BuildPolyline([AFromPoint, AToPoint], BorderWidth, jsRound, esRound);
-  SetLength(Result, 3);
-  Result[0] := LinePoly;
-  Result[1] := BuildPolyline([ArrowPoly[0], ArrowPoly[1]], BorderWidth, jsRound, esRound);
-  Result[2] := BuildPolyline([ArrowPoly[0], ArrowPoly[2]], BorderWidth, jsRound, esRound);
+  ArrowPts := GetArrowPoints(ToPoint, FromPoint, 20);
 
-//  Result := CatPolyPolygon([LinePoly], [ArrowPoly]);
-//  Result := PolyPolygon(LinePoly);
+  with TClipper.Create do
+  try
+    Poly := BuildPolyline([AFromPoint, AToPoint], BorderWidth, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+    AddPath(PolyPath, ptSubject, True);
+
+    Poly := BuildPolyline([ArrowPts[0], ArrowPts[1]], BorderWidth, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+    AddPath(PolyPath, ptClip, True);
+
+    Poly := BuildPolyline([ArrowPts[0], ArrowPts[2]], BorderWidth, jsRound, esRound);
+    PolyPath := AAFloatPoint2AAPoint(Poly, 3);
+    AddPath(PolyPath, ptClip, True);
+
+    Execute(ctUnion, PolyPolyPath, pftNonZero);
+  finally
+    Free;
+  end;
+  Result := AAPoint2AAFloatPoint(PolyPolyPath, 3);
 end;
 
 initialization
