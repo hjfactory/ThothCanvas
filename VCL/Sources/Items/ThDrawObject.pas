@@ -483,7 +483,7 @@ procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
   P: TFloatPoint;
-//  Item: TThShapeItem;
+  Item: TThShapeItem;
 begin
   inherited;
 
@@ -506,7 +506,19 @@ begin
   end
   else
   begin
-    FDrawItems.MouseOver(APoint);
+    Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
+    if Assigned(Item) then
+    begin
+      if Assigned(Item.Selection) then
+      begin
+        Item.Selection.MouseOver(APoint);
+        if not Item.Selection.IsOverHandle then
+          Screen.Cursor := crSizeAll;
+      end
+      else
+        Screen.Cursor := crSizeAll;
+    end;
+//    FDrawItems.MouseOver(APoint);
   end;
 end;
 

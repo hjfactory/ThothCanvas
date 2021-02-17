@@ -1,3 +1,7 @@
+{
+  Role
+    -
+}
 unit ThSelection;
 
 interface

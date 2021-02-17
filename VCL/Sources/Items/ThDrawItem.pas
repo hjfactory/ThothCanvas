@@ -150,7 +150,7 @@ type
     // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
 
-    procedure MouseOver(APoint: TFLoatPoint);
+//    procedure MouseOver(APoint: TFLoatPoint);
   end;
 
   TThSelectedItems = class(TList<TThShapeItem>)
@@ -460,18 +460,18 @@ begin
   end;
 end;
 
-procedure TThDrawItems.MouseOver(APoint: TFLoatPoint);
-var
-  I: Integer;
-  Item: TThShapeItem;
-begin
-  for I := Count - 1 downto 0 do
-  begin
-    Item := Items[I] as TThShapeItem;
-    if Assigned(Item.Selection) then
-      Item.Selection.MouseOver(APoint);
-  end;
-end;
+//procedure TThDrawItems.MouseOver(APoint: TFLoatPoint);
+//var
+//  I: Integer;
+//  Item: TThShapeItem;
+//begin
+//  for I := Count - 1 downto 0 do
+//  begin
+//    Item := Items[I] as TThShapeItem;
+//    if Assigned(Item.Selection) then
+//      Item.Selection.MouseOver(APoint);
+//  end;
+//end;
 
 function TThDrawItems.PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
 var

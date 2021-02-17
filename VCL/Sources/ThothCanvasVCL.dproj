@@ -113,6 +113,7 @@
         <DCCReference Include="Types\ThClasses.pas"/>
         <DCCReference Include="Items\ThShapeItem.pas"/>
         <DCCReference Include="Items\ThSelection.pas"/>
+        <DCCReference Include="Items\ThLinkPoint.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

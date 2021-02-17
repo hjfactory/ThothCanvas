@@ -35,6 +35,19 @@ type
     function MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
   end;
 
+  // 그리기 객체
+  IThDrawObject = interface
+    procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
+    procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
+
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+
+    function GetDrawItem: IThDrawItem;
+    property DrawItem: IThDrawItem read GetDrawItem;
+  end;
+
+  // 선택 시 크기변경 핸들 관리
   IThItemSelection = interface
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure Realign;
@@ -48,15 +61,8 @@ type
     function IsOverHandle: Boolean;
   end;
 
-  IThDrawObject = interface
-    procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-    procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
-    procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
+  IThItemLinkPoints = interface
 
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-
-    function GetDrawItem: IThDrawItem;
-    property DrawItem: IThDrawItem read GetDrawItem;
   end;
 
 implementation

@@ -13,7 +13,8 @@ uses
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThClasses in 'Types\ThClasses.pas',
   ThShapeItem in 'Items\ThShapeItem.pas',
-  ThSelection in 'Items\ThSelection.pas';
+  ThSelection in 'Items\ThSelection.pas',
+  ThLinkPoint in 'Items\ThLinkPoint.pas';
 
 {$R *.res}
 
