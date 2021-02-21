@@ -13,8 +13,9 @@ uses
   ThDrawStyle in 'Items\ThDrawStyle.pas',
   ThClasses in 'Types\ThClasses.pas',
   ThShapeItem in 'Items\ThShapeItem.pas',
-  ThSelection in 'Items\ThSelection.pas',
-  ThLinkPoint in 'Items\ThLinkPoint.pas';
+  ThItemSelection in 'Items\ThItemSelection.pas',
+  ThItemConnection in 'Items\ThItemConnection.pas',
+  ThItemHandle in 'Items\ThItemHandle.pas';
 
 {$R *.res}
 

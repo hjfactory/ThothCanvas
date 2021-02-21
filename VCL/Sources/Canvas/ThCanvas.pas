@@ -30,8 +30,8 @@ type
   private
     FImgView: TImgView32;
 
-    FFreeDrawLayer: TFreeDrawLayer;
-    FShapeDrawLayer: TShapeDrawLayer;
+    FPenLayer: TPenDrawLayer;
+    FShapeLayer: TShapeDrawLayer;
     FBackgroundLayer: TThBackgroundLayer;
 
     FPenStyle: TThPenStyle;
@@ -98,7 +98,7 @@ implementation
 
 procedure TThCustomCanvas.Clear;
 begin
-  FFreeDrawLayer.Clear;
+  FPenLayer.Clear;
 end;
 
 constructor TThCustomCanvas.Create(AOwner: TComponent);
@@ -133,7 +133,7 @@ end;
 
 procedure TThCustomCanvas.DeleteSelected;
 begin
-  FShapeDrawLayer.DeleteSelectedItems;
+  FShapeLayer.DeleteSelectedItems;
 end;
 
 destructor TThCustomCanvas.Destroy;
@@ -160,18 +160,18 @@ begin
   FBackgroundLayer.Bitmap.Clear(clWhite32);
   FBackgroundLayer.Scaled := True;
 
-  FShapeDrawLayer := TShapeDrawLayer.Create(FImgView.Layers);
-  FShapeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
-  FShapeDrawLayer.HitTest := False;
-  FShapeDrawLayer.Scaled := True;
-  FShapeDrawLayer.MouseEvents := True;
+  FShapeLayer := TShapeDrawLayer.Create(FImgView.Layers);
+  FShapeLayer.Location := FloatRect(0, 0, AWidth, AHeight);
+  FShapeLayer.HitTest := False;
+  FShapeLayer.Scaled := True;
+  FShapeLayer.MouseEvents := True;
 
-  FFreeDrawLayer := TFreeDrawLayer.Create(FImgView.Layers);
-  FFreeDrawLayer.Location := FloatRect(0, 0, AWidth, AHeight);
-  FFreeDrawLayer.Scaled := True;
-  FFreeDrawLayer.HitTest := True;
+  FPenLayer := TPenDrawLayer.Create(FImgView.Layers);
+  FPenLayer.Location := FloatRect(0, 0, AWidth, AHeight);
+  FPenLayer.Scaled := True;
+  FPenLayer.HitTest := True;
 
-  FPenStyle := FFreeDrawLayer.PenDrawObj.DrawStyle as TThPenStyle;
+  FPenStyle := FPenLayer.PenDrawObj.DrawStyle as TThPenStyle;
 end;
 
 procedure TThCustomCanvas.DoScaleChage(Scale: Single);
@@ -189,7 +189,7 @@ procedure TThCustomCanvas.SetShapeId(const Value: string);
 begin
   FShapeId := Value;
 
-  FShapeDrawLayer.ShapeId := Value;
+  FShapeLayer.ShapeId := Value;
 end;
 
 procedure TThCustomCanvas.SetDrawMode(const Value: TThDrawMode);
@@ -197,15 +197,15 @@ begin
   case Value of
     dmSelect, dmDraw:
       begin
-        FFreeDrawLayer.HitTest  := False;
-        FShapeDrawLayer.HitTest := True;
-        FShapeDrawLayer.DrawMode := Value;
+        FPenLayer.HitTest  := False;
+        FShapeLayer.HitTest := True;
+        FShapeLayer.DrawMode := Value;
       end;
     dmPen, dmEraser:
       begin
-        FFreeDrawLayer.HitTest  := True;
-        FShapeDrawLayer.HitTest := False;
-        FFreeDrawLayer.DrawMode := Value;
+        FPenLayer.HitTest  := True;
+        FShapeLayer.HitTest := False;
+        FPenLayer.DrawMode := Value;
       end;
   end;
   FDrawMode := Value;

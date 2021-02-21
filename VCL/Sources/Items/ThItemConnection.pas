@@ -2,7 +2,7 @@
   Role
     -
 }
-unit ThLinkPoint;
+unit ThItemConnection;
 
 interface
 

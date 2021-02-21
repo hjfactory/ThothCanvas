@@ -47,21 +47,25 @@ type
     property DrawItem: IThDrawItem read GetDrawItem;
   end;
 
-  // 선택 시 크기변경 핸들 관리
-  IThItemSelection = interface
-    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-    procedure Realign;
+  IThItemHandles = interface
+    procedure DrawHandles(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure RealignHandles;
 
     procedure MouseDown(const APoint: TFloatPoint);
     procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
     procedure MouseUp(const APoint: TFloatPoint);
     procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
 
-    function PtInSelection(APoint: TFloatPoint): Boolean;
+    function PtInHandles(APoint: TFloatPoint): Boolean;
     function IsOverHandle: Boolean;
   end;
 
-  IThItemLinkPoints = interface
+  // 선택 시 크기변경 핸들 관리
+  IThItemSelection = interface(IThItemHandles)
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+  end;
+
+  IThItemConnection = interface(IThItemHandles)
 
   end;
 

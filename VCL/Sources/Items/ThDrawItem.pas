@@ -164,7 +164,7 @@ implementation
 uses
   System.Math,
   GR32_Polygons, GR32_VectorUtils, GR32_Clipper,
-  ThUtils, ThDrawStyle, ThSelection;
+  ThUtils, ThDrawStyle, ThItemSelection;
 
 { TThDrawItem }
 
@@ -187,7 +187,7 @@ begin
   FBounds := PolypolygonBounds(FPolyPoly);
 end;
 
-{ TThFreeDrawItem }
+{ TThPenDrawItem }
 
 constructor TThPenDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly);
 begin
@@ -245,7 +245,7 @@ begin
   ModifyAlpha(Result, LAlpha);
 end;
 
-{ TThShapeDrawItem }
+{ TThShapeItem }
 
 procedure TThShapeItem.DoRealign;
 begin
@@ -258,7 +258,7 @@ end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
-  if Assigned(FSelection) and FSelection.PtInSelection(APt) then
+  if Assigned(FSelection) and FSelection.PtInHandles(APt) then
     Exit(True);
 
   Result := inherited PtInItem(APt);
@@ -314,7 +314,7 @@ begin
   FPolyPoly := RectToPolyPoly(FRect);
 
   if Assigned(FSelection) then
-    FSelection.Realign;
+    FSelection.RealignHandles;
 end;
 
 procedure TThFillShapeItem.Draw(Bitmap: TBitmap32; AScale,
@@ -394,7 +394,7 @@ begin
   FPolyPoly := PointToPolyPoly(FFromPoint, FToPoint);
 
   if Assigned(FSelection) then
-    FSelection.Realign;
+    FSelection.RealignHandles;
 end;
 
 procedure TThLineShapeItem.Draw(Bitmap: TBitmap32; AScale,
@@ -504,7 +504,7 @@ begin
   end;
 end;
 
-{ TThShapeDrawItems }
+{ TThSelectedItems }
 
 procedure TThSelectedItems.MoveItem(APoint: TFloatPoint);
 var

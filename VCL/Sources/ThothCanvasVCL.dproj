@@ -112,8 +112,9 @@
         <DCCReference Include="Items\ThDrawStyle.pas"/>
         <DCCReference Include="Types\ThClasses.pas"/>
         <DCCReference Include="Items\ThShapeItem.pas"/>
-        <DCCReference Include="Items\ThSelection.pas"/>
-        <DCCReference Include="Items\ThLinkPoint.pas"/>
+        <DCCReference Include="Items\ThItemSelection.pas"/>
+        <DCCReference Include="Items\ThItemConnection.pas"/>
+        <DCCReference Include="Items\ThItemHandle.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

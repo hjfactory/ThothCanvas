@@ -67,7 +67,7 @@ type
   end;
 
   // 자유롭게 그리기(펜과 지우개) 위한 레이어
-  TFreeDrawLayer = class(TThCustomDrawLayer)
+  TPenDrawLayer = class(TThCustomDrawLayer)
   private
     FPenDrawObj: TThPenDrawObject;
     FEraDrawObj: TThObjectEraserObject;
@@ -110,8 +110,6 @@ type
   end;
 
 implementation
-
-{ TFreeDrawLayer }
 
 uses
   ThUtils;
@@ -244,9 +242,9 @@ begin
   FDrawMode := Value;
 end;
 
-{ TFreeDrawLayer }
+{ TPenLayer }
 
-constructor TFreeDrawLayer.Create(ALayerCollection: TLayerCollection);
+constructor TPenDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
@@ -258,7 +256,7 @@ begin
   FMouseDowned := False;
 end;
 
-destructor TFreeDrawLayer.Destroy;
+destructor TPenDrawLayer.Destroy;
 begin
   FPenDrawObj.Free;
   FEraDrawObj.Free;
@@ -266,14 +264,14 @@ begin
   inherited;
 end;
 
-function TFreeDrawLayer.DoHitTest(X, Y: Integer): Boolean;
+function TPenDrawLayer.DoHitTest(X, Y: Integer): Boolean;
 begin
   Result := inherited;
   if Result then
     Result := Assigned(FDrawObject);
 end;
 
-procedure TFreeDrawLayer.SetDrawMode(const Value: TThDrawMode);
+procedure TPenDrawLayer.SetDrawMode(const Value: TThDrawMode);
 begin
   inherited;
 
