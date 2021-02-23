@@ -487,6 +487,8 @@ var
 begin
   inherited;
 
+  FDrawItems.MouseMove(APoint);
+
   if FMouseDowned then
   begin
     if Assigned(FSelected) then
@@ -494,7 +496,7 @@ begin
       if (FDragState = dsMove) then
       begin
         P := APoint - FLastPoint;
-        FSelectedItems.MoveItem(P);
+        FSelectedItems.MoveItems(P);
         FLastPoint := APoint;
         Screen.Cursor := crSizeAll;
       end
@@ -506,17 +508,18 @@ begin
   end
   else
   begin
-    Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
+//    Item := FDrawItems.PtInItem(APoint) as TThShapeItem;
+    Item := FDrawItems.OveredItem as TThShapeItem;
     if Assigned(Item) then
     begin
       if Assigned(Item.Selection) then
       begin
         Item.Selection.MouseOver(APoint);
-        if not Item.Selection.IsOverHandle then
-          Screen.Cursor := crSizeAll;
+//        if not Item.Selection.IsOverHandle then
+//          Screen.Cursor := crSizeAll;
       end
       else
-        Screen.Cursor := crSizeAll;
+//        Screen.Cursor := crSizeAll;
     end;
 //    FDrawItems.MouseOver(APoint);
   end;
@@ -525,7 +528,7 @@ end;
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
   FDragState := dsNone;
-  Screen.Cursor := crDefault;
+//  Screen.Cursor := crDefault;
 
   inherited;
 end;

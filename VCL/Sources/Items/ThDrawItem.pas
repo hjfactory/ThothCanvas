@@ -26,6 +26,10 @@ type
     constructor Create; virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
 
+    procedure MouseMove(APoint: TFloatPoint); virtual;
+    procedure MouseEnter(APoint: TFloatPoint); virtual;
+    procedure MouseLeave(APoint: TFloatPoint); virtual;
+
     function PtInItem(APt: TFloatPoint): Boolean; virtual;
 
     property Bounds: TFloatRect read FBounds;
@@ -83,6 +87,10 @@ type
     procedure MoveItem(APoint: TFloatPoint); virtual; abstract;
 
     function PtInItem(APt: TFloatPoint): Boolean; override;
+
+    procedure MouseMove(APoint: TFloatPoint); override;
+    procedure MouseEnter(APoint: TFloatPoint); override;
+    procedure MouseLeave(APoint: TFloatPoint); override;
 
     property Selected: Boolean read FSelected write SetSelected;
     property Selection: IThItemSelection read FSelection;
@@ -144,24 +152,31 @@ type
   end;
 
   TThDrawItems = class(TObjectList<TThDrawItem>)
+  private
+    FOveredItem: TThDrawItem;
   public
     // APoint에 포함되는 최상위 객체 반환
     function PtInItem(APoint: TFloatPoint): TThDrawItem;
     // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
 
-//    procedure MouseOver(APoint: TFLoatPoint);
+    procedure MouseMove(APoint: TFloatPoint);
+    property OveredItem: TThDrawItem read FOveredItem;
+
+//    procedure MouseOver(APoint: TFloatPoint);
   end;
 
   TThSelectedItems = class(TList<TThShapeItem>)
   public
     // 모든 항목 APoint만큼 이동
-    procedure MoveItem(APoint: TFloatPoint);
+    procedure MoveItems(APoint: TFloatPoint);
   end;
 
 implementation
 
 uses
+  Vcl.Forms,
+  System.UITypes,
   System.Math,
   GR32_Polygons, GR32_VectorUtils, GR32_Clipper,
   ThUtils, ThDrawStyle, ThItemSelection;
@@ -173,6 +188,18 @@ begin
 end;
 
 procedure TThDrawItem.DoRealign;
+begin
+end;
+
+procedure TThDrawItem.MouseMove(APoint: TFloatPoint);
+begin
+end;
+
+procedure TThDrawItem.MouseEnter(APoint: TFloatPoint);
+begin
+end;
+
+procedure TThDrawItem.MouseLeave(APoint: TFloatPoint);
 begin
 end;
 
@@ -254,6 +281,21 @@ end;
 
 function TThShapeItem.GetSelection: IThItemSelection;
 begin
+end;
+
+procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
+begin
+
+end;
+
+procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
+begin
+  Screen.Cursor := crSizeAll;
+end;
+
+procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
+begin
+  Screen.Cursor := crDefault;
 end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
@@ -473,6 +515,22 @@ end;
 //  end;
 //end;
 
+procedure TThDrawItems.MouseMove(APoint: TFloatPoint);
+var
+  Item: TThDrawItem;
+begin
+  Item := PtInItem(APoint);
+
+  if FOveredItem = Item then
+    Exit;
+
+  if Assigned(FOveredItem) then
+    FOveredItem.MouseLeave(APoint);
+  FOveredItem := Item;
+  if Assigned(Item) then
+    Item.MouseEnter(APoint)
+end;
+
 function TThDrawItems.PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
 var
   I: Integer;
@@ -506,7 +564,7 @@ end;
 
 { TThSelectedItems }
 
-procedure TThSelectedItems.MoveItem(APoint: TFloatPoint);
+procedure TThSelectedItems.MoveItems(APoint: TFloatPoint);
 var
   I: Integer;
 begin

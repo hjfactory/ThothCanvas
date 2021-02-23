@@ -62,7 +62,6 @@ type
 
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
-
     procedure SetHotHandle(const Value: TThItemHandle);
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
@@ -271,10 +270,10 @@ procedure TThCustomItemHandles.SetHotHandle(const Value: TThItemHandle);
 begin
   FHotHandle := Value;
 
-  if FHotHandle = nil then
-    Screen.Cursor := crDefault
-  else
-    Screen.Cursor := FHotHandle.Cursor;
+//  if FHotHandle = nil then
+//    Screen.Cursor := crDefault
+//  else
+//    Screen.Cursor := FHotHandle.Cursor;
 end;
 
 end.

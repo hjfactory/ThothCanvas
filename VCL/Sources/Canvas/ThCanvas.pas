@@ -171,6 +171,8 @@ begin
   FPenLayer.Scaled := True;
   FPenLayer.HitTest := True;
 
+  FImgView.Layers.MouseListener := FPenLayer;
+
   FPenStyle := FPenLayer.PenDrawObj.DrawStyle as TThPenStyle;
 end;
 
@@ -200,16 +202,19 @@ begin
         FPenLayer.HitTest  := False;
         FShapeLayer.HitTest := True;
         FShapeLayer.DrawMode := Value;
+
+        FImgView.Layers.MouseListener := FShapeLayer;
       end;
     dmPen, dmEraser:
       begin
         FPenLayer.HitTest  := True;
         FShapeLayer.HitTest := False;
         FPenLayer.DrawMode := Value;
+
+        FImgView.Layers.MouseListener := FPenLayer;
       end;
   end;
   FDrawMode := Value;
-
 end;
 
 procedure TThCustomCanvas.SetScale(const Value: Single);

@@ -41,9 +41,6 @@ type
     procedure MouseMove(const APoint: TFloatPoint); override;
   end;
 
-  TThShapeSelections = class(TList<TThShapeSelection>)
-  end;
-
 implementation
 
 uses
@@ -133,16 +130,16 @@ end;
 
 procedure TThLineSelection.CreateHandles;
 begin
-//  SetLength(FHandles, 2);
-//
-//  FHandles[0] := TThItemResizeHandle.Create(rhdLineFrom);
-//  FHandles[1] := TThItemResizeHandle.Create(rhdLineTo);
+  SetLength(FHandles, 2);
+
+  FHandles[0] := TThLineHandle.Create(shdLineFrom);
+  FHandles[1] := TThLineHandle.Create(shdLineTo);
 end;
 
 procedure TThLineSelection.RealignHandles;
 begin
-//  FHandles[0].FPoint := Shape.FromPoint;
-//  FHandles[1].FPoint := Shape.ToPoint;
+  FHandles[0].Point := Shape.FromPoint;
+  FHandles[1].Point := Shape.ToPoint;
 end;
 
 function TThLineSelection.GetShape: TThLineShapeItem;
@@ -152,13 +149,13 @@ end;
 
 procedure TThLineSelection.MouseMove(const APoint: TFloatPoint);
 begin
-//  if not Assigned(FHotHandle) then
-//    Exit;
-//
-//  case FHotHandle.Direction of
-//    rhdLineFrom:  Shape.ResizeItem(APoint, Shape.ToPoint);
-//    rhdLineTo:    Shape.ResizeItem(Shape.FromPoint, APoint);
-//  end;
+  if not Assigned(FHotHandle) then
+    Exit;
+
+  case TThLineHandle(FHotHandle).Direction of
+    shdLineFrom:  Shape.ResizeItem(APoint, Shape.ToPoint);
+    shdLineTo:    Shape.ResizeItem(Shape.FromPoint, APoint);
+  end;
 end;
 
 end.
