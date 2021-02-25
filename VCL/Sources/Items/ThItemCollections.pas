@@ -73,16 +73,15 @@ end;
 
 procedure TThItemList.MouseMove(APoint: TFloatPoint);
 var
-  Item: IThItem;
+  Item: IThSelectableItem;
 begin
-  Item := GetItemAtPoint(APoint);
+  Item := GetItemAtPoint(APoint) as IThSelectableItem;
 
   if FTargetItem <> Item then
   begin
     if Assigned(FTargetItem) then
       FTargetItem.MouseLeave(APoint);
-    if Supports(Item, IThSelectableItem) then
-      FTargetItem := Item as IThSelectableItem;
+    FTargetItem := Item;
 
     if Assigned(FTargetItem) then
       FTargetItem.MouseEnter(APoint)

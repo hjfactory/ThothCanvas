@@ -65,9 +65,9 @@ type
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
     procedure SetHotHandle(const Value: IThItemHandle);
+    function GetHotHandle: IThItemHandle;
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
-    function GetHotHandle: IThItemHandle;
   protected
     FParentItem: TThItem;
 
@@ -102,6 +102,8 @@ type
 implementation
 
 uses
+  Winapi.Windows,
+
   System.Math,
   Vcl.Forms,
   GR32_Polygons,
@@ -184,6 +186,7 @@ begin
   FHotColor := clRed32;
   FBorderColor := clBlack32;
 
+  FRadius := DEF_HANDLE_RADIUS;
   FBorderWidth := 1;
 
   FParentItem := AParent;
@@ -256,32 +259,33 @@ end;
 
 procedure TThCustomItemHandles.MouseMove(const APoint: TFloatPoint);
 begin
-//  HotHandle := GetHandleAtPoint(APoint);
 end;
 
 procedure TThCustomItemHandles.MouseUp(const APoint: TFloatPoint);
 begin
+  HotHandle := GetHandleAtPoint(APoint);
 end;
 
 function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
 begin
-  HotHandle := GetHandleAtPoint(APoint);
-  Result := Assigned(HotHandle);
+//  HotHandle := GetHandleAtPoint(APoint);
+  Result := Assigned(GetHandleAtPoint(APoint));
 end;
 
 procedure TThCustomItemHandles.SetHotHandle(const Value: IThItemHandle);
 begin
-  if Value = nil then
-    Screen.Cursor := crDefault
-  else
-    Screen.Cursor := crDefault;
-
   FHotHandle := Value;
 
   if FHotHandle = nil then
-    Screen.Cursor := crDefault
+  begin
+    Screen.Cursor := crDefault;
+    OutputDebugString(PChar('FHotHandle = nil'));
+  end
   else
+  begin
     Screen.Cursor := FHotHandle.Cursor;
+    OutputDebugString(PChar('FHotHandle assigned'));
+  end
 end;
 
 end.

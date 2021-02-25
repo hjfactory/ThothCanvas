@@ -476,18 +476,21 @@ procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
   P: TFloatPoint;
-  TargetItem: TThShapeItem;
+  TargetItem: IThSelectableItem;
 begin
   inherited;
 
   FItemList.MouseMove(APoint);
+  TargetItem := FItemList.TargetItem;
 
   if FMouseDowned then
   begin
     if Assigned(TargetItem) and TargetItem.Selected then
     begin
-//      if Assigned(TargetItem.Selection) and Assigned(TargetItem.Selection.HotHandle) then
-//        FSelected.Selection.MouseMove(APoint, FMouseDowned);
+      if Assigned(TargetItem.Selection) and Assigned(TargetItem.Selection.HotHandle) then
+      begin
+        FSelected.Selection.MouseMove(APoint);
+      end;
 
     end;
   end;

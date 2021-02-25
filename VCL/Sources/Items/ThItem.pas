@@ -82,7 +82,8 @@ type
     function GetBounds: TFloatRect; override;
 
     procedure DoRealign; override;
-    function GetSelection: IThItemSelection; virtual;
+    function CreateSelection: IThItemSelection; virtual; abstract;
+    function GetSelection: IThItemSelection;
   public
     procedure SetStyle(AStyle: IThDrawStyle); virtual; abstract;
 
@@ -110,7 +111,7 @@ type
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
-    function GetSelection: IThItemSelection; override;
+    function CreateSelection: IThItemSelection; override;
   public
     constructor Create(ARect: TFloatRect; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce;
@@ -135,7 +136,7 @@ type
     FFromPoint, FToPoint: TFloatPoint;
   protected
     procedure DoRealign; override;
-    function GetSelection: IThItemSelection; override;
+    function CreateSelection: IThItemSelection; override;
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
   public
     constructor Create(AFromPoint, AToPoint: TFloatPoint; ABorderWidth: Integer;
@@ -266,7 +267,6 @@ begin
 end;
 
 { TThShapeItem }
-
 procedure TThShapeItem.DoRealign;
 begin
   inherited;
@@ -292,6 +292,7 @@ end;
 
 function TThShapeItem.GetSelection: IThItemSelection;
 begin
+  Result := FSelection;
 end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
@@ -309,12 +310,15 @@ end;
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
   Screen.Cursor := crDefault;
+
+  if Assigned(FSelection) then
+    FSelection.HotHandle := nil;
 end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
   Result := False;
-  if PtInRect(FBounds, APt) then
+  if PtInRect(Bounds, APt) then
   begin
     if Assigned(FSelection) and FSelection.PtInHandles(APt) then
       Exit(True);
@@ -330,7 +334,7 @@ begin
   FSelected := Value;
 
   if Value then
-    FSelection := GetSelection
+    FSelection := CreateSelection
   else
     FSelection := nil; // Free(ARC)
 end;
@@ -402,7 +406,7 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThFillShapeItem.GetSelection: IThItemSelection;
+function TThFillShapeItem.CreateSelection: IThItemSelection;
 begin
   Result := TThShapeSelection.Create(Self);
 end;
@@ -482,7 +486,7 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThLineShapeItem.GetSelection: IThItemSelection;
+function TThLineShapeItem.CreateSelection: IThItemSelection;
 begin
   Result := TThLineSelection.Create(Self);
 end;

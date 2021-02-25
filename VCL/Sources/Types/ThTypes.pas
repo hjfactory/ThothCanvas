@@ -23,6 +23,8 @@ type
   TThPolyPoly = TArrayOfArrayOfFloatPoint;
 
 type
+  IThItemSelection = interface;
+
   IThCanvas = interface
   end;
 
@@ -57,6 +59,9 @@ type
     function GetSelected: Boolean;
     procedure SetSelected(const Value: Boolean);
     property Selected: Boolean read GetSelected write SetSelected;
+
+    function GetSelection: IThItemSelection;
+    property Selection: IThItemSelection read GetSelection;
   end;
 
   // ±×¸®±â °´Ã¼
@@ -80,14 +85,15 @@ type
     procedure DrawHandles(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure RealignHandles;
 
-//    procedure MouseDown(const APoint: TFloatPoint);
-//    procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
-//    procedure MouseUp(const APoint: TFloatPoint);
+    procedure MouseDown(const APoint: TFloatPoint);
+    procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
+    procedure MouseUp(const APoint: TFloatPoint);
 //    procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
 
     function PtInHandles(APoint: TFloatPoint): Boolean;
     function GetHotHandle: IThItemHandle;
-    property HotHandle: IThItemHandle read GetHotHandle;
+    procedure SetHotHandle(const Value: IThItemHandle);
+    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
 //    function IsOverHandle: Boolean;
   end;
 
