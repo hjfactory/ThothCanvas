@@ -2,7 +2,7 @@
   Role
     Specify the default style for draw objects
 }
-unit ThDrawStyle;
+unit ThItemStyle;
 
 interface
 

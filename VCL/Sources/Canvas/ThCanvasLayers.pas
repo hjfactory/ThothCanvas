@@ -1,7 +1,7 @@
 {
   Role
     Drawing shapes(Collaborate with ThDrawObject)
-    Display drawn shapes(Collaborate with ThDrawItem)
+    Display drawn shapes(Collaborate with ThItemList)
 }
 
 unit ThCanvasLayers;
@@ -15,7 +15,8 @@ uses
   GR32, GR32_Layers, GR32_Polygons, GR32_VectorUtils,
 
   ThTypes, ThClasses,
-  ThDrawItem, ThDrawObject, ThDrawStyle;
+  ThItemCollections,
+  ThDrawObject, ThItemStyle;
 
 type
   TThCustomLayer = class(TPositionedLayer)
@@ -28,7 +29,7 @@ type
     function GetOffset: TFloatPoint;
     function GetScale: TFloatPoint;
   protected
-    FDrawItems: TThDrawItems;
+    FItemList: TThItemList;
 
     procedure Paint(Buffer: TBitmap32); override;
 
@@ -120,22 +121,22 @@ constructor TThCustomViewLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FDrawItems := TThDrawItems.Create(True);
+  FItemList := TThItemList.Create;
 
   Scaled := True;
 end;
 
 destructor TThCustomViewLayer.Destroy;
 begin
-  FDrawItems.Clear;
-  FDrawItems.Free;
+  FItemList.Clear;
+  FItemList.Free;
 
   inherited;
 end;
 
 procedure TThCustomViewLayer.Clear;
 begin
-  FDrawItems.Clear;
+  FItemList.Clear;
   Update;
 end;
 
@@ -156,7 +157,7 @@ end;
 
 procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
-  Item: TThDrawItem;
+  Item: IThItem;
   LScale, LOffset: TFloatPoint;
 begin
   inherited;
@@ -165,7 +166,7 @@ begin
   LOffset := Offset;
 
   Buffer.BeginUpdate;
-  for Item in FDrawItems do
+  for Item in FItemList do
     Item.Draw(Buffer, LScale, LOffset);
   Buffer.EndUpdate;
 end;
@@ -216,14 +217,14 @@ end;
 procedure TThCustomDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
-  Item: TThDrawItem;
+  Item: IThItem;
 begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
-    Item := FDrawObject.DrawItem as TThDrawItem;
+    Item := FDrawObject.ItemInstance;
     if Assigned(Item) then
-       FDrawItems.Add(Item);
+       FItemList.Add(Item);
     FDrawObject.MouseUp(ViewportToLocal(X, Y), Shift);
     Update;
   end;
@@ -249,7 +250,7 @@ begin
   inherited;
 
   FPenDrawObj := TThPenDrawObject.Create(TThPenStyle.Create);
-  FEraDrawObj := TThObjectEraserObject.Create(TThEraserStyle.Create, FDrawItems);
+  FEraDrawObj := TThObjectEraserObject.Create(TThEraserStyle.Create, FItemList);
 
   FDrawObject := FPenDrawObj;
 
@@ -291,7 +292,7 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FSelectObj := TThSelectObject.Create(FDrawItems);
+  FSelectObj := TThSelectObject.Create(FItemList);
   FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
 
   ShapeId := 'Rect';

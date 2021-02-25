@@ -4,24 +4,26 @@ interface
 
 uses
   GR32,
-  ThTypes, ThDrawItem, ThUtils,
+  ThTypes, ThItem, ThUtils, ThClasses,
   System.UITypes,
   System.Generics.Collections;
 
 type
-  TThItemHandle = class
+  TThItemHandle = class(TThInterfacedObject, IThItemHandle)
   private
     FRadius: Single;
     function GetCursor: TCursor; virtual;
+    procedure SetPoint(const Value: TFloatPoint);
   protected
     FPoint: TFloatPoint;
     function GetPoly: TThPoly; overload;
   public
-    constructor Create;
+    constructor Create(ARadius: Single);
 
-    property Point: TFloatPoint read FPoint write FPoint;
+    property Point: TFloatPoint read FPoint write SetPoint;
     property Poly: TThPoly read GetPoly;
     property Cursor: TCursor read GetCursor;
+    property Radius: Single read FRadius;
 
     function GetPoly(APoint: TFloatPoint): TThPoly; overload; virtual;
   end;
@@ -41,7 +43,7 @@ type
     FDirection: TShapeHandleDirection;
     function GetCursor: TCursor; override;
   public
-    constructor Create(ADirection: TShapeHandleDirection); reintroduce;
+    constructor Create(ADirection: TShapeHandleDirection; ARadius: Single); reintroduce;
 
     property Direction: TShapeHandleDirection read FDirection;
   end;
@@ -55,21 +57,22 @@ type
     FDirection: TLineHandleDirection;
     function GetCursor: TCursor; override;
   public
-    constructor Create(ADirection: TLineHandleDirection); reintroduce;
+    constructor Create(ADirection: TLineHandleDirection; ARadius: Single); reintroduce;
 
     property Direction: TLineHandleDirection read FDirection;
   end;
 
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
-    procedure SetHotHandle(const Value: TThItemHandle);
+    procedure SetHotHandle(const Value: IThItemHandle);
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
+    function GetHotHandle: IThItemHandle;
   protected
-    FItem: TThDrawItem;
+    FParentItem: TThItem;
 
     FHandles: TArray<TThItemHandle>;
-    FHotHandle: TThItemHandle;
+    FHotHandle: IThItemHandle;
 
     FFillColor,
     FHotColor,
@@ -82,20 +85,18 @@ type
     procedure MouseDown(const APoint: TFloatPoint); virtual;
     procedure MouseMove(const APoint: TFloatPoint); virtual;
     procedure MouseUp(const APoint: TFloatPoint); virtual;
-    procedure MouseOver(const APoint: TFloatPoint); virtual;
-
-    function IsOverHandle: Boolean;
 
     procedure CreateHandles; virtual; abstract;
     procedure FreeHandles; virtual;
     procedure RealignHandles; virtual; abstract;
   public
-    constructor Create(AParent: TThDrawItem);
+    constructor Create(AParent: TThItem);
     destructor Destroy; override;
 
     function PtInHandles(APoint: TFloatPoint): Boolean; virtual;
 
-    property HotHandle: TThItemHandle read FHotHandle write SetHotHandle;
+    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
+    property HandleRadius: Single read FRadius;
   end;
 
 implementation
@@ -112,7 +113,7 @@ const
 
 { TThItemHandle }
 
-constructor TThItemHandle.Create;
+constructor TThItemHandle.Create(ARadius: Single);
 begin
   FRadius := DEF_HANDLE_RADIUS;
 end;
@@ -127,6 +128,11 @@ begin
   Result := Circle(APoint, FRadius);
 end;
 
+procedure TThItemHandle.SetPoint(const Value: TFloatPoint);
+begin
+  FPoint := Value;
+end;
+
 function TThItemHandle.GetPoly: TThPoly;
 begin
   Result := GetPoly(FPoint);
@@ -134,9 +140,9 @@ end;
 
 { TThShapeHandle }
 
-constructor TThShapeHandle.Create(ADirection: TShapeHandleDirection);
+constructor TThShapeHandle.Create(ADirection: TShapeHandleDirection; ARadius: Single);
 begin
-  inherited Create;
+  inherited Create(ARadius);
 
   FDirection := ADirection;
 end;
@@ -153,9 +159,9 @@ end;
 
 { TThLineHandle }
 
-constructor TThLineHandle.Create(ADirection: TLineHandleDirection);
+constructor TThLineHandle.Create(ADirection: TLineHandleDirection; ARadius: Single);
 begin
-  inherited Create;
+  inherited Create(ARadius);
 
   FDirection := ADirection;
 end;
@@ -172,7 +178,7 @@ end;
 
 { TThCustomItemHandles }
 
-constructor TThCustomItemHandles.Create(AParent: TThDrawItem);
+constructor TThCustomItemHandles.Create(AParent: TThItem);
 begin
   FFillColor := clWhite32;
   FHotColor := clRed32;
@@ -180,7 +186,7 @@ begin
 
   FBorderWidth := 1;
 
-  FItem := AParent;
+  FParentItem := AParent;
 
   CreateHandles;
   RealignHandles;
@@ -198,17 +204,19 @@ procedure TThCustomItemHandles.DrawHandles(Bitmap: TBitmap32; AScale,
 var
   P: TFloatPoint;
   H: TThItemHandle;
+  ItemHandle: TThItemHandle;
   Poly: TThPoly;
 begin
   for H in FHandles do
   begin
+//    ItemHandle := TThItemHandle(H);
     P := H.Point.Scale(AScale).Offset(AOffset);
     Poly := H.GetPoly(P);
 //    Poly := ScalePolygon(H.Poly, AScale.X, AScale.Y);
 //    TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
 //    Poly := TranslatePolygon(H.Poly, AOffset.X, AOffset.Y);
 
-    if H = FHotHandle then
+    if H = TThItemHandle(FHotHandle) then
       PolygonFS(Bitmap, Poly, FHotColor)
     else
       PolygonFS(Bitmap, Poly, FFillColor);
@@ -231,33 +239,28 @@ var
 begin
   Result := nil;
   for H in FHandles do
+  begin
     if PointInPolygon(APoint, H.Poly) then
       Exit(H);
+  end;
 end;
 
-function TThCustomItemHandles.IsOverHandle: Boolean;
+function TThCustomItemHandles.GetHotHandle: IThItemHandle;
 begin
-  Result := Assigned(FHotHandle);
+  Result := FHotHandle;
 end;
 
 procedure TThCustomItemHandles.MouseDown(const APoint: TFloatPoint);
 begin
-
 end;
 
 procedure TThCustomItemHandles.MouseMove(const APoint: TFloatPoint);
 begin
-
-end;
-
-procedure TThCustomItemHandles.MouseOver(const APoint: TFloatPoint);
-begin
-
+//  HotHandle := GetHandleAtPoint(APoint);
 end;
 
 procedure TThCustomItemHandles.MouseUp(const APoint: TFloatPoint);
 begin
-  HotHandle := GetHandleAtPoint(APoint);
 end;
 
 function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
@@ -266,14 +269,19 @@ begin
   Result := Assigned(HotHandle);
 end;
 
-procedure TThCustomItemHandles.SetHotHandle(const Value: TThItemHandle);
+procedure TThCustomItemHandles.SetHotHandle(const Value: IThItemHandle);
 begin
+  if Value = nil then
+    Screen.Cursor := crDefault
+  else
+    Screen.Cursor := crDefault;
+
   FHotHandle := Value;
 
-//  if FHotHandle = nil then
-//    Screen.Cursor := crDefault
-//  else
-//    Screen.Cursor := FHotHandle.Cursor;
+  if FHotHandle = nil then
+    Screen.Cursor := crDefault
+  else
+    Screen.Cursor := FHotHandle.Cursor;
 end;
 
 end.

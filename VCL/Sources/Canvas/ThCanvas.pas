@@ -20,7 +20,7 @@ uses
   GR32_Layers,
 
   ThTypes,
-  ThDrawStyle,
+  ThItemStyle,
   ThCanvasLayers;
 
 type

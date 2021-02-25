@@ -8,7 +8,7 @@ uses
 
   DMX.DesignPattern,
   ThTypes, ThUtils, ThClasses,
-  ThDrawItem;
+  ThItem;
 
 type
   TThShapeItemClass = class of TThShapeItem;
@@ -42,7 +42,7 @@ uses
   System.Math,
   GR32_Geometry;
 
-procedure RegisterDrawItems;
+procedure RegisterItems;
 begin
   TThShapeItemFactory.Instance.Regist('Rect', TThRectItem);
   TThShapeItemFactory.Instance.Regist('RoundRect', TThRoundRectItem);
@@ -50,7 +50,7 @@ begin
   TThShapeItemFactory.Instance.Regist('Line', TThLineItem);
 end;
 
-{ TThDrawItemFactory }
+{ TThShapeItemFactory }
 
 class function TThShapeItemFactory.GetShapeItem(AId: string; AStyle: IThDrawStyle): TThShapeItem;
 var
@@ -65,7 +65,7 @@ begin
   Result.SetStyle(AStyle);
 end;
 
-{ TThRectDrawItem }
+{ TThRectItem }
 
 function TThRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
@@ -75,7 +75,7 @@ begin
   Result := PolyPolygon(Poly);
 end;
 
-{ TThRoundRectDrawItem }
+{ TThRoundRectItem }
 
 function TThRoundRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
@@ -136,7 +136,7 @@ begin
 end;
 
 initialization
-  RegisterDrawItems;
+  RegisterItems;
 finalization
 
 end.

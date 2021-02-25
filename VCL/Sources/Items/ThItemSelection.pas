@@ -9,8 +9,8 @@ interface
 uses
   System.Generics.Collections,
   GR32,
-  ThTypes, ThUtils, ThItemHandle,
-  ThDrawItem;
+  ThTypes, ThUtils,
+  ThItem, ThItemHandle;
 
 type
   TThItemSelection = class(TThCustomItemHandles, IThItemSelection)
@@ -71,7 +71,7 @@ begin
   SetLength(FHandles, 8);
 
   for I := Ord(Low(TShapeHandleDirection)) to Ord(High(TShapeHandleDirection)) do
-    FHandles[I] := TThShapeHandle.Create(TShapeHandleDirection(I));
+    FHandles[I] := TThShapeHandle.Create(TShapeHandleDirection(I), FRadius);
 end;
 
 procedure TThShapeSelection.RealignHandles;
@@ -84,7 +84,8 @@ procedure TThShapeSelection.RealignHandles;
 
     case D of
       shdTopLeft:     Result := FloatPoint(R.Left,  R.Top);
-      shdTop:         Result := FloatPoint(CP.X,    R.Top);
+      shdTop:
+        Result := FloatPoint(CP.X,    R.Top);
       shdTopRight:    Result := FloatPoint(R.Right, R.Top);
       shdRight:       Result := FloatPoint(R.Right, CP.Y);
       shdBottomRight: Result := FloatPoint(R.Right, R.Bottom);
@@ -97,12 +98,12 @@ var
   I: Integer;
 begin
   for I := Low(FHandles) to High(FHandles) do
-    FHandles[I].Point := HandlePoint(Shape.Rect, TThShapeHandle(FHandles[I]).Direction);
+    TThItemHandle(FHandles[I]).Point := HandlePoint(Shape.Rect, TThShapeHandle(FHandles[I]).Direction);
 end;
 
 function TThShapeSelection.GetShape: TThFillShapeItem;
 begin
-  Result := TThFillShapeItem(FItem);
+  Result := TThFillShapeItem(FParentItem);
 end;
 
 procedure TThShapeSelection.MouseMove(const APoint: TFloatPoint);
@@ -132,8 +133,8 @@ procedure TThLineSelection.CreateHandles;
 begin
   SetLength(FHandles, 2);
 
-  FHandles[0] := TThLineHandle.Create(shdLineFrom);
-  FHandles[1] := TThLineHandle.Create(shdLineTo);
+  FHandles[0] := TThLineHandle.Create(shdLineFrom, FRadius);
+  FHandles[1] := TThLineHandle.Create(shdLineTo, FRadius);
 end;
 
 procedure TThLineSelection.RealignHandles;
@@ -144,7 +145,7 @@ end;
 
 function TThLineSelection.GetShape: TThLineShapeItem;
 begin
-  Result := TThLineShapeItem(FItem);
+  Result := TThLineShapeItem(FParentItem);
 end;
 
 procedure TThLineSelection.MouseMove(const APoint: TFloatPoint);

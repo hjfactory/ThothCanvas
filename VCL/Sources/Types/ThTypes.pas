@@ -4,6 +4,7 @@ interface
 
 uses
   System.Classes,
+  System.UITypes,
   System.Generics.Collections,
   GR32;
 
@@ -28,11 +29,34 @@ type
   IThDrawStyle = interface
   end;
 
-  IThDrawItem = interface
+  IThItem = interface
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+
+    function PtInItem(APt: TFloatPoint): Boolean;
+    function GetBounds: TFloatRect;
+    function GetPolyPoly: TThPolyPoly;
+
+    property Bounds: TFloatRect read GetBounds;
+    property PolyPoly: TThPolyPoly read GetPolyPoly;
   end;
 
-  IThShapeItem = interface(IThDrawItem)
-    function MakePolyPoly(ARect: TFloatRect): TThPolyPoly;
+  IThDrawItem = interface(IThItem)
+  end;
+
+  IThShapeItem = interface(IThItem)
+  end;
+
+  IThSelectableItem = interface(IThItem)
+  ['{796D1837-E123-4612-9307-53512AD52FDC}']
+    procedure MouseMove(APoint: TFloatPoint);
+    procedure MouseEnter(APoint: TFloatPoint);
+    procedure MouseLeave(APoint: TFloatPoint);
+
+    procedure MoveItem(APoint: TFloatPoint);
+
+    function GetSelected: Boolean;
+    procedure SetSelected(const Value: Boolean);
+    property Selected: Boolean read GetSelected write SetSelected;
   end;
 
   // 그리기 객체
@@ -43,21 +67,28 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
-    function GetDrawItem: IThDrawItem;
-    property DrawItem: IThDrawItem read GetDrawItem;
+    function GetItemInstance: IThItem;
+    property ItemInstance: IThItem read GetItemInstance;
+  end;
+
+  IThItemHandle = interface
+    function GetCursor: TCursor;
+    property Cursor: TCursor read GetCursor;
   end;
 
   IThItemHandles = interface
     procedure DrawHandles(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure RealignHandles;
 
-    procedure MouseDown(const APoint: TFloatPoint);
-    procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
-    procedure MouseUp(const APoint: TFloatPoint);
-    procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
+//    procedure MouseDown(const APoint: TFloatPoint);
+//    procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
+//    procedure MouseUp(const APoint: TFloatPoint);
+//    procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
 
     function PtInHandles(APoint: TFloatPoint): Boolean;
-    function IsOverHandle: Boolean;
+    function GetHotHandle: IThItemHandle;
+    property HotHandle: IThItemHandle read GetHotHandle;
+//    function IsOverHandle: Boolean;
   end;
 
   // 선택 시 크기변경 핸들 관리
@@ -66,7 +97,6 @@ type
   end;
 
   IThItemConnection = interface(IThItemHandles)
-
   end;
 
 implementation

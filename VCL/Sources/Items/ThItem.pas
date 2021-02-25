@@ -3,7 +3,7 @@
     Store drawing datas.
 }
 
-unit ThDrawItem;
+unit ThItem;
 
 interface
 
@@ -13,13 +13,14 @@ uses
   ThTypes, ThClasses;
 
 type
-  TThDrawItem = class;
-
-  TThDrawItem = class(TThInterfacedObject, IThDrawItem)
+  TThItem = class(TThInterfacedObject, IThItem)
   private
     FBounds: TFloatRect;
     FPolyPoly: TThPolyPoly;
+    function GetPolyPoly: TThPolyPoly;
   protected
+    function GetBounds: TFloatRect; virtual;
+
     procedure Realign;
     procedure DoRealign; virtual;
   public
@@ -32,14 +33,14 @@ type
 
     function PtInItem(APt: TFloatPoint): Boolean; virtual;
 
-    property Bounds: TFloatRect read FBounds;
-    property PolyPoly: TThPolyPoly read FPolyPoly;
+    property Bounds: TFloatRect read GetBounds;
+    property PolyPoly: TThPolyPoly read GetPolyPoly;
   end;
 
-  TThBrushDrawItem = class(TThDrawItem)
+  TThDrawItem = class(TThItem)
   end;
 
-  TThPenDrawItem = class(TThBrushDrawItem)
+  TThPenItem = class(TThDrawItem)
   private
     FPath: TThPath;
 
@@ -67,7 +68,7 @@ type
     property Alpha: Byte read FAlpha;
   end;
 
-  TThShapeItem = class(TThDrawItem)
+  TThShapeItem = class(TThItem, IThSelectableItem)
   private
     FSelected: Boolean;
     FSelection: IThItemSelection;
@@ -76,7 +77,10 @@ type
 
     FBorderColor: TColor32;
     procedure SetSelected(const Value: Boolean);
+    function GetSelected: Boolean;
   protected
+    function GetBounds: TFloatRect; override;
+
     procedure DoRealign; override;
     function GetSelection: IThItemSelection; virtual;
   public
@@ -92,7 +96,7 @@ type
     procedure MouseEnter(APoint: TFloatPoint); override;
     procedure MouseLeave(APoint: TFloatPoint); override;
 
-    property Selected: Boolean read FSelected write SetSelected;
+    property Selected: Boolean read GetSelected write SetSelected;
     property Selection: IThItemSelection read FSelection;
 
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
@@ -151,27 +155,6 @@ type
     property ToPoint: TFloatPoint read FToPoint;
   end;
 
-  TThDrawItems = class(TObjectList<TThDrawItem>)
-  private
-    FOveredItem: TThDrawItem;
-  public
-    // APoint에 포함되는 최상위 객체 반환
-    function PtInItem(APoint: TFloatPoint): TThDrawItem;
-    // APoly 영역에 포함되는 객체 배열 반환
-    function PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
-
-    procedure MouseMove(APoint: TFloatPoint);
-    property OveredItem: TThDrawItem read FOveredItem;
-
-//    procedure MouseOver(APoint: TFloatPoint);
-  end;
-
-  TThSelectedItems = class(TList<TThShapeItem>)
-  public
-    // 모든 항목 APoint만큼 이동
-    procedure MoveItems(APoint: TFloatPoint);
-  end;
-
 implementation
 
 uses
@@ -179,57 +162,67 @@ uses
   System.UITypes,
   System.Math,
   GR32_Polygons, GR32_VectorUtils, GR32_Clipper,
-  ThUtils, ThDrawStyle, ThItemSelection;
+  ThUtils, ThItemStyle, ThItemSelection;
 
-{ TThDrawItem }
+{ TThItem }
 
-constructor TThDrawItem.Create;
+constructor TThItem.Create;
 begin
 end;
 
-procedure TThDrawItem.DoRealign;
+procedure TThItem.DoRealign;
 begin
 end;
 
-procedure TThDrawItem.MouseMove(APoint: TFloatPoint);
+function TThItem.GetBounds: TFloatRect;
+begin
+  Result := FBounds;
+end;
+
+function TThItem.GetPolyPoly: TThPolyPoly;
+begin
+  Result := FPolyPoly
+end;
+
+procedure TThItem.MouseMove(APoint: TFloatPoint);
 begin
 end;
 
-procedure TThDrawItem.MouseEnter(APoint: TFloatPoint);
+procedure TThItem.MouseEnter(APoint: TFloatPoint);
 begin
 end;
 
-procedure TThDrawItem.MouseLeave(APoint: TFloatPoint);
+procedure TThItem.MouseLeave(APoint: TFloatPoint);
 begin
 end;
 
-function TThDrawItem.PtInItem(APt: TFloatPoint): Boolean;
+function TThItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
   Result := PtInRect(FBounds, APt) and PtInPolyPolygon(APt, FPolyPoly);
 end;
 
-procedure TThDrawItem.Realign;
+procedure TThItem.Realign;
 begin
   DoRealign;
   FBounds := PolypolygonBounds(FPolyPoly);
 end;
 
-{ TThPenDrawItem }
+{ TThPenItem }
 
-constructor TThPenDrawItem.Create(APath: TThPath; APolyPoly: TThPolyPoly);
+constructor TThPenItem.Create(APath: TThPath; APolyPoly: TThPolyPoly);
 begin
   FPath := APath;
   FPolyPoly := APolyPoly;
 end;
 
-procedure TThPenDrawItem.SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte);
+procedure TThPenItem.SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte);
 begin
   FThickness := AThickness;
   FColor := AColor;
   FAlpha := AAlpha;
 end;
 
-procedure TThPenDrawItem.SetStyle(AStyle: IThDrawStyle);
+procedure TThPenItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThPenStyle;
 begin
@@ -237,12 +230,12 @@ begin
   SetStyle(Style.Thickness, Style.Color, Style.Alpha);
 end;
 
-destructor TThPenDrawItem.Destroy;
+destructor TThPenItem.Destroy;
 begin
   inherited;
 end;
 
-procedure TThPenDrawItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+procedure TThPenItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 var
   PolyPoly: TThPolyPoly;
 begin
@@ -252,7 +245,7 @@ begin
   PolyPolygonFS(Bitmap, PolyPoly, Color);
 end;
 
-procedure TThPenDrawItem.DrawPoly(Bitmap: TBitmap32; AScale,
+procedure TThPenItem.DrawPoly(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint; APath: TThPath; APolyPoly: TThPolyPoly);
 begin
   FPolyPoly := APolyPoly;
@@ -261,7 +254,7 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThPenDrawItem.GetColor: TColor32;
+function TThPenItem.GetColor: TColor32;
 var
   LAlpha: Byte;
 begin
@@ -279,13 +272,33 @@ begin
   inherited;
 end;
 
+function TThShapeItem.GetBounds: TFloatRect;
+var
+  Radius: Single;
+  Selection: TThItemSelection;
+begin
+  Result := inherited GetBounds;
+  if Assigned(FSelection) then
+  begin
+    Radius := TThItemSelection(FSelection).HandleRadius;
+    InflateRect(Result, Radius, Radius)
+  end;
+end;
+
+function TThShapeItem.GetSelected: Boolean;
+begin
+  Result := FSelected
+end;
+
 function TThShapeItem.GetSelection: IThItemSelection;
 begin
 end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
-
+//  // Selection > HotHandle 설정
+//  if Assigned(FSelection) then
+//    FSelection.MouseMove(APoint);
 end;
 
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
@@ -300,10 +313,14 @@ end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
-  if Assigned(FSelection) and FSelection.PtInHandles(APt) then
-    Exit(True);
+  Result := False;
+  if PtInRect(FBounds, APt) then
+  begin
+    if Assigned(FSelection) and FSelection.PtInHandles(APt) then
+      Exit(True);
 
-  Result := inherited PtInItem(APt);
+    Result := PtInPolyPolygon(APt, FPolyPoly);
+  end;
 end;
 
 procedure TThShapeItem.SetSelected(const Value: Boolean);
@@ -482,94 +499,6 @@ begin
   FFromPoint := AFromPoint;
   FToPoint := AToPoint;
   Realign;
-end;
-
-{ TThDrawItems }
-
-function TThDrawItems.PtInItem(APoint: TFloatPoint): TThDrawItem;
-var
-  I: Integer;
-  Item: TThDrawItem;
-begin
-  Result := nil;
-
-  for I := Count - 1 downto 0 do
-  begin
-    Item := Items[I];
-
-    if Item.PtInItem(APoint) then
-      Exit(Item);
-  end;
-end;
-
-//procedure TThDrawItems.MouseOver(APoint: TFLoatPoint);
-//var
-//  I: Integer;
-//  Item: TThShapeItem;
-//begin
-//  for I := Count - 1 downto 0 do
-//  begin
-//    Item := Items[I] as TThShapeItem;
-//    if Assigned(Item.Selection) then
-//      Item.Selection.MouseOver(APoint);
-//  end;
-//end;
-
-procedure TThDrawItems.MouseMove(APoint: TFloatPoint);
-var
-  Item: TThDrawItem;
-begin
-  Item := PtInItem(APoint);
-
-  if FOveredItem = Item then
-    Exit;
-
-  if Assigned(FOveredItem) then
-    FOveredItem.MouseLeave(APoint);
-  FOveredItem := Item;
-  if Assigned(Item) then
-    Item.MouseEnter(APoint)
-end;
-
-function TThDrawItems.PolyInItems(APoly: TThPoly): TArray<TThDrawItem>;
-var
-  I: Integer;
-  PolyRect, DestRect: TFloatRect;
-  DestPaths: TThPolyPoly;
-begin
-  PolyRect := PolygonBounds(APoly);
-//
-  for I := 0 to Count - 1 do
-  begin
-    // Rect로 1차 교차 비교
-    IntersectRect(DestRect, PolyRect, Items[I].Bounds);
-    if IsRectEmpty(DestRect) then
-      Continue;
-
-    // Polygon 교차 비교(Clipper로 교차 영역 생성 후 비었는지 확인)
-    with TClipper.Create do
-    try
-      AddPaths(Items[I].PolyPoly, ptSubject);
-      AddPath(APoly, ptClip);
-
-      Execute(ctIntersection, frNonZero, DestPaths);
-    finally
-      Free;
-    end;
-
-    if Length(DestPaths) > 0 then
-      Result := Result + [Items[I]];
-  end;
-end;
-
-{ TThSelectedItems }
-
-procedure TThSelectedItems.MoveItems(APoint: TFloatPoint);
-var
-  I: Integer;
-begin
-  for I := 0 to Count - 1 do
-    Items[I].MoveItem(APoint);
 end;
 
 end.

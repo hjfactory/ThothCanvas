@@ -9,7 +9,7 @@ interface
 uses
   System.Generics.Collections,
   GR32,
-  ThDrawItem;
+  ThItem;
 
 type
   TThItemLinkHandle = class
@@ -34,7 +34,7 @@ type
 
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
   public
-//    constructor Create(AParent: TThDrawItem);
+//    constructor Create(AParent: TThItem);
 //    destructor Destroy; override;
 
     procedure SetShape(AShape: TThShapeItem);
