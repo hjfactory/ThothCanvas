@@ -68,7 +68,7 @@ type
     property Alpha: Byte read FAlpha;
   end;
 
-  TThShapeItem = class(TThItem, IThSelectableItem)
+  TThShapeItem = class(TThItem, IThShapeItem, IThSelectableItem)
   private
     FSelected: Boolean;
     FSelection: IThItemSelection;
@@ -297,9 +297,9 @@ end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
-//  // Selection > HotHandle 설정
-//  if Assigned(FSelection) then
-//    FSelection.MouseMove(APoint);
+  // Selection > HotHandle 설정
+  if Assigned(FSelection) then
+    FSelection.MouseMove(APoint);
 end;
 
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);

@@ -259,6 +259,7 @@ end;
 
 procedure TThCustomItemHandles.MouseMove(const APoint: TFloatPoint);
 begin
+  HotHandle := GetHandleAtPoint(APoint);
 end;
 
 procedure TThCustomItemHandles.MouseUp(const APoint: TFloatPoint);

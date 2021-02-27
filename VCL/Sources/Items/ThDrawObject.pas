@@ -85,7 +85,7 @@ type
   TThShapeDrawObject = class(TThCustomDrawObject)
   private
     FShapeId: string;
-    FShapeItem: TThShapeItem;
+    FShapeItem: IThShapeItem;
   protected
     FStartPoint, FCurrPoint: TFloatPoint;
   public
@@ -104,18 +104,18 @@ type
   end;
 
   // Shape (multi)select
-    // Move, Delete, Resize
-  TDragState = (dsNone, dsMove, dsResize);
+    // Select > Move, Delete, Resize, Link
+  TDragMode = (dmNone, dmItemMove, dmItemResize, dmMultSelect{Drag for select});
   TThSelectObject = class(TThCustomDrawObject)
   private
-    FDragState: TDragState;
+    FDragMode: TDragMode;
 
     FLastPoint: TFloatPoint;
     FItemList: TThItemList;
     FSelected: TThShapeItem;
     FSelectedItems: TThSelectedItems;
 
-    procedure ProcessSelections(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
+    procedure ProcessSelect(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
   public
     constructor Create(AItems: TThItemList); reintroduce;
     destructor Destroy; override;
@@ -201,7 +201,7 @@ procedure TThPenDrawObject.MouseMove(const APoint: TFloatPoint; AShift: TShiftSt
 var
   Poly: TThPoly;
   PolyPath: TPath;
-  LastP: TFloatPoint; // Adjusted point
+  LastPt: TFloatPoint; // Adjusted point
 begin
   inherited;
 
@@ -209,8 +209,8 @@ begin
   begin
     FPath.Add(APoint);
 
-    LastP := FPath.Items[FPath.Count-2];
-    Poly := BuildPolyline([LastP, APoint], FPenItem.Thickness, jsRound, esRound);
+    LastPt := FPath.Items[FPath.Count-2];
+    Poly := BuildPolyline([LastPt, APoint], FPenItem.Thickness, jsRound, esRound);
     PolyPath := AAFloatPoint2AAPoint(Poly, 3);
 
     with TClipper.Create do
@@ -276,7 +276,7 @@ begin
   Result := TThEraserStyle(FDrawStyle);
 end;
 
-{ TThObjErsDrawObject }
+{ TThObjectEraserObject }
 
 procedure TThObjectEraserObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 begin
@@ -394,11 +394,11 @@ begin
 end;
 
 procedure TThSelectObject.ClearSelection;
-var
-  Item: IThSelectableItem;
+//var
+//  Item: IThSelectableItem;
 begin
-  for Item in FSelectedItems do
-    Item.Selected := False;
+//  for Item in FSelectedItems do
+//    Item.Selected := False;
   FSelectedItems.Clear;
 end;
 
@@ -412,21 +412,22 @@ end;
   // Item           : Add to selection
   // Selected Item  : Remove from selection
   // Item Handle    : Start drag
-procedure TThSelectObject.ProcessSelections(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
+procedure TThSelectObject.ProcessSelect(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
 begin
-  FDragState := dsNone;
+  FDragMode := dmNone;
 
-  // Canvas click
   if not Assigned(ASelectingItem) then
+  // Canvas click
   begin
     if not AIsMultipleSelect then
       ClearSelection;
     FSelected := nil;
   end
   else
+  // Item click
   begin
-    // None selected Item click
     if not ASelectingItem.Selected then
+    // Unselected Item click
     begin
       if not AIsMultipleSelect then
         ClearSelection;
@@ -434,14 +435,17 @@ begin
       ASelectingItem.Selected := True;
       FSelectedItems.Add(ASelectingItem);
       FSelected := ASelectingItem;
-      FDragState := dsMove;
+
+      FDragMode := dmItemMove;
     end
     else
+    // Selected item click
     begin
-      // Selected item click
-      if not Assigned(ASelectingItem.Selection.HotHandle)  then
+      if not Assigned(ASelectingItem.Selection.HotHandle) then
+      // Item click
       begin
         if AIsMultipleSelect then
+        // Cancel select of Selecting item
         begin
           ASelectingItem.Selected := False;
           FSelectedItems.Remove(ASelectingItem);
@@ -450,15 +454,15 @@ begin
         else
         begin
           FSelected := ASelectingItem;
-          FDragState := dsMove;
+
+          FDragMode := dmItemMove;
         end;
       end
-      // Selected Item Handle click
       else
+      // Handle click
       begin
-        FDragState := dsResize;
+        FDragMode := dmItemResize;
         FSelected := ASelectingItem;
-//        ASelectingItem.Selection.MouseDown(FLastPoint);
       end;
     end;
   end;
@@ -469,7 +473,11 @@ begin
   inherited;
 
   FLastPoint := APoint;
-  ProcessSelections(FItemList.TargetItem as TThShapeItem, AShift * [ssShift, ssCtrl] <> []);
+
+  ProcessSelect(
+    FItemList.TargetItem as TThShapeItem,   // ASelectingItem
+    AShift * [ssShift, ssCtrl] <> []        // AIsMultipleSelect
+  );
 end;
 
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
@@ -482,6 +490,21 @@ begin
 
   FItemList.MouseMove(APoint);
   TargetItem := FItemList.TargetItem;
+
+  if FMouseDowned then
+  begin
+    if FDragMode = dmItemMove then
+    begin
+
+    end
+    else if FDragMode = dmItemResize then
+    begin
+    end;
+  end
+  else
+  begin
+
+  end;
 
   if FMouseDowned then
   begin
@@ -534,7 +557,7 @@ end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
-  FDragState := dsNone;
+  FDragMode := dmNone;
 //  Screen.Cursor := crDefault;
 
   inherited;

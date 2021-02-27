@@ -46,6 +46,8 @@ type
   end;
 
   IThShapeItem = interface(IThItem)
+    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+      AFromPoint, AToPoint: TFloatPoint);
   end;
 
   IThSelectableItem = interface(IThItem)

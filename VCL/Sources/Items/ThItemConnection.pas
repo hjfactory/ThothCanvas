@@ -12,11 +12,11 @@ uses
   ThItem;
 
 type
-  TThItemLinkHandle = class
+  TThItemAnchorPoint = class
 
   end;
 
-  TThItemLinkPoints = class
+  TThItemAnchorPoints = class
   private
     FShape: TThShapeItem;
   protected
@@ -26,7 +26,7 @@ type
     FRadius: Single;
     FBorderWidth: Single;
 
-    FHandles: TArray<TThItemLinkHandle>;
+    FHandles: TArray<TThItemAnchorPoint>;
 
     procedure CreateHandles; virtual; abstract;
     procedure FreeHandles; virtual;
@@ -44,17 +44,17 @@ implementation
 
 { TThItemLinkPoints }
 
-procedure TThItemLinkPoints.SetShape(AShape: TThShapeItem);
+procedure TThItemAnchorPoints.SetShape(AShape: TThShapeItem);
 begin
   FShape := AShape;
 end;
 
-procedure TThItemLinkPoints.FreeHandles;
+procedure TThItemAnchorPoints.FreeHandles;
 begin
 
 end;
 
-procedure TThItemLinkPoints.Draw(Bitmap: TBitmap32; AScale,
+procedure TThItemAnchorPoints.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 begin
 
