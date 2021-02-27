@@ -112,6 +112,7 @@ type
 
     FLastPoint: TFloatPoint;
     FItemList: TThItemList;
+//    FItemList2: TThItemList;
     FSelected: TThShapeItem;
     FSelectedItems: TThSelectedItems;
 
@@ -132,8 +133,10 @@ type
 implementation
 
 uses
-  ThUtils, System.Math,
-  Vcl.Forms, System.UITypes;
+  Winapi.Windows, // ODS
+  ThUtils,
+  System.SysUtils, System.Math, System.UITypes,
+  Vcl.Forms;
 
 { TThDrawObject }
 
@@ -184,7 +187,7 @@ end;
 
 procedure TThPenDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
 var
-  Poly: TThPoly;
+  LPoly: TThPoly;
 begin
   inherited;
 
@@ -192,8 +195,8 @@ begin
   FPenItem.SetStyle(FDrawStyle);
   FPath.Add(APoint);
 
-  Poly := Circle(APoint, FPenItem.Thickness / 2);
-  FPolyPoly := PolyPolygon(Poly);
+  LPoly := Circle(APoint, FPenItem.Thickness / 2);
+  FPolyPoly := GR32_VectorUtils.PolyPolygon(LPoly);
   FPolyPolyPath := AAFloatPoint2AAPoint(FPolyPoly, 3);
 end;
 
@@ -384,21 +387,19 @@ constructor TThSelectObject.Create(AItems: TThItemList);
 begin
   FItemList := AItems;
   FSelectedItems := TThSelectedItems.Create;
+//  FItemList2 := TThItemList.Create;
 end;
 
 destructor TThSelectObject.Destroy;
 begin
   FSelectedItems.Free;
+//  FItemList2.Free;
 
   inherited;
 end;
 
 procedure TThSelectObject.ClearSelection;
-//var
-//  Item: IThSelectableItem;
 begin
-//  for Item in FSelectedItems do
-//    Item.Selected := False;
   FSelectedItems.Clear;
 end;
 
@@ -433,6 +434,7 @@ begin
         ClearSelection;
 
       ASelectingItem.Selected := True;
+//      FItemList2.Add(ASelectingItem);
       FSelectedItems.Add(ASelectingItem);
       FSelected := ASelectingItem;
 
@@ -472,6 +474,8 @@ procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftSta
 begin
   inherited;
 
+  FItemList.MouseDown(APoint);
+
   FLastPoint := APoint;
 
   ProcessSelect(
@@ -483,80 +487,34 @@ end;
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
-  P: TFloatPoint;
-  TargetItem: IThSelectableItem;
+  MovePoint: TFloatPoint;
 begin
   inherited;
 
   FItemList.MouseMove(APoint);
-  TargetItem := FItemList.TargetItem;
+//  TargetItem := FItemList.TargetItem;
 
   if FMouseDowned then
   begin
     if FDragMode = dmItemMove then
     begin
-
+      MovePoint := APoint - FLastPoint;
+      FSelectedItems.MoveItems(MovePoint);
+      FLastPoint := APoint;
     end
     else if FDragMode = dmItemResize then
-    begin
-    end;
+      FSelected.Selection.ResizeItem(APoint);
   end
   else
   begin
 
   end;
-
-  if FMouseDowned then
-  begin
-    if Assigned(TargetItem) and TargetItem.Selected then
-    begin
-      if Assigned(TargetItem.Selection) and Assigned(TargetItem.Selection.HotHandle) then
-      begin
-        FSelected.Selection.MouseMove(APoint);
-      end;
-
-    end;
-  end;
-Exit;
-
-//  if FMouseDowned then
-//  begin
-//    if Assigned(FSelected) then
-//    begin
-//      if (FDragState = dsMove) then
-//      begin
-//        P := APoint - FLastPoint;
-//        FSelectedItems.MoveItems(P);
-//        FLastPoint := APoint;
-//        Screen.Cursor := crSizeAll;
-//      end
-//      else if (FDragState = dsResize) then
-//      begin
-//        FSelected.Selection.MouseMove(APoint, FMouseDowned);
-//      end;
-//    end;
-//  end
-//  else
-//  begin
-////    Item := FItemList.PtInItem(APoint) as TThShapeItem;
-//    Item := FItemList.TargetItem as TThShapeItem;
-//    if Assigned(Item) then
-//    begin
-//      if Assigned(Item.Selection) then
-//      begin
-////        Item.Selection.MouseOver(APoint);
-////        if not Item.Selection.IsOverHandle then
-////          Screen.Cursor := crSizeAll;
-//      end
-//      else
-////        Screen.Cursor := crSizeAll;
-//    end;
-////    FItemList.MouseOver(APoint);
-//  end;
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 begin
+  FItemList.MouseUp(APoint);
+
   FDragMode := dmNone;
 //  Screen.Cursor := crDefault;
 
@@ -565,10 +523,29 @@ end;
 
 procedure TThSelectObject.DeleteSelectedItems;
 var
-  Item: IThItem;
+  I: Integer;
+  Item: IThSelectableItem;
+  Item1, Item2: TThItem;
 begin
   for Item in FSelectedItems do
-    FItemList.Remove(Item);
+  begin
+    // FSelectedItems.Item(IThSelectableItem)으로
+    // FItemList.Item(IThItem) 삭제(Remove) 시
+    // 포인터가 달라 지워지지않음
+    // 객체로 전환 후 비교 후 삭제(ㅠㅜㅠㅜ)
+//    FItemList.Remove(SelItem as IThItem);
+    for I := FItemList.Count - 1 downto 0 do
+    begin
+      Item1 := FItemList[I] as TThItem;
+      Item2 := Item as TThItem;
+
+      if Item1 = Item2 then
+      begin
+        Item1 := nil;
+        FItemList.Delete(I);
+      end;
+    end;
+  end;
   FSelectedItems.Clear;
 end;
 

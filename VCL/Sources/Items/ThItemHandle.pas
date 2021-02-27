@@ -64,12 +64,15 @@ type
 
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
+    FLastCursor: TCursor;
     procedure SetHotHandle(const Value: IThItemHandle);
     function GetHotHandle: IThItemHandle;
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
   protected
     FParentItem: TThItem;
+
+    FMouseDowned: Boolean;
 
     FHandles: TArray<TThItemHandle>;
     FHotHandle: IThItemHandle;
@@ -191,6 +194,8 @@ begin
 
   FParentItem := AParent;
 
+  FMouseDowned := False;
+
   CreateHandles;
   RealignHandles;
 end;
@@ -255,16 +260,19 @@ end;
 
 procedure TThCustomItemHandles.MouseDown(const APoint: TFloatPoint);
 begin
+  FMouseDowned := True;
 end;
 
 procedure TThCustomItemHandles.MouseMove(const APoint: TFloatPoint);
 begin
-  HotHandle := GetHandleAtPoint(APoint);
+  if not FMouseDowned then
+    HotHandle := GetHandleAtPoint(APoint);
 end;
 
 procedure TThCustomItemHandles.MouseUp(const APoint: TFloatPoint);
 begin
-  HotHandle := GetHandleAtPoint(APoint);
+//  HotHandle := GetHandleAtPoint(APoint);
+  FMouseDowned := False;
 end;
 
 function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
@@ -275,15 +283,19 @@ end;
 
 procedure TThCustomItemHandles.SetHotHandle(const Value: IThItemHandle);
 begin
+  if FHotHandle = Value then
+    Exit;
+
   FHotHandle := Value;
 
   if FHotHandle = nil then
   begin
-    Screen.Cursor := crDefault;
+    Screen.Cursor := FLastCursor;
     OutputDebugString(PChar('FHotHandle = nil'));
   end
   else
   begin
+    FLastCursor := Screen.Cursor;
     Screen.Cursor := FHotHandle.Cursor;
     OutputDebugString(PChar('FHotHandle assigned'));
   end

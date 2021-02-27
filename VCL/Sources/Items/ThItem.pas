@@ -8,6 +8,7 @@ unit ThItem;
 interface
 
 uses
+  System.SysUtils,
   System.Generics.Collections,
   GR32,
   ThTypes, ThClasses;
@@ -26,10 +27,6 @@ type
   public
     constructor Create; virtual;
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); virtual; abstract;
-
-    procedure MouseMove(APoint: TFloatPoint); virtual;
-    procedure MouseEnter(APoint: TFloatPoint); virtual;
-    procedure MouseLeave(APoint: TFloatPoint); virtual;
 
     function PtInItem(APt: TFloatPoint): Boolean; virtual;
 
@@ -93,9 +90,11 @@ type
 
     function PtInItem(APt: TFloatPoint): Boolean; override;
 
-    procedure MouseMove(APoint: TFloatPoint); override;
-    procedure MouseEnter(APoint: TFloatPoint); override;
-    procedure MouseLeave(APoint: TFloatPoint); override;
+    procedure MouseDown(APoint: TFloatPoint);
+    procedure MouseMove(APoint: TFloatPoint);
+    procedure MouseUp(APoint: TFloatPoint);
+    procedure MouseEnter(APoint: TFloatPoint);
+    procedure MouseLeave(APoint: TFloatPoint);
 
     property Selected: Boolean read GetSelected write SetSelected;
     property Selection: IThItemSelection read FSelection;
@@ -104,6 +103,7 @@ type
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
   end;
 
+  {Naming: ClosedShapeItem, FillableShapeItem}
   TThFillShapeItem = class(TThShapeItem)
   private
     FRect: TFloatRect;
@@ -159,10 +159,11 @@ type
 implementation
 
 uses
+  Winapi.Windows, // ODS
+
   Vcl.Forms,
-  System.UITypes,
-  System.Math,
-  GR32_Polygons, GR32_VectorUtils, GR32_Clipper,
+  System.UITypes, System.Math,
+  GR32_Polygons, GR32_VectorUtils,
   ThUtils, ThItemStyle, ThItemSelection;
 
 { TThItem }
@@ -185,21 +186,9 @@ begin
   Result := FPolyPoly
 end;
 
-procedure TThItem.MouseMove(APoint: TFloatPoint);
-begin
-end;
-
-procedure TThItem.MouseEnter(APoint: TFloatPoint);
-begin
-end;
-
-procedure TThItem.MouseLeave(APoint: TFloatPoint);
-begin
-end;
-
 function TThItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
-  Result := PtInRect(FBounds, APt) and PtInPolyPolygon(APt, FPolyPoly);
+  Result := GR32.PtInRect(FBounds, APt) and PtInPolyPolygon(APt, FPolyPoly);
 end;
 
 procedure TThItem.Realign;
@@ -281,7 +270,7 @@ begin
   if Assigned(FSelection) then
   begin
     Radius := TThItemSelection(FSelection).HandleRadius;
-    InflateRect(Result, Radius, Radius)
+    GR32.InflateRect(Result, Radius, Radius)
   end;
 end;
 
@@ -295,6 +284,12 @@ begin
   Result := FSelection;
 end;
 
+procedure TThShapeItem.MouseDown(APoint: TFloatPoint);
+begin
+  if Assigned(FSelection) then
+    FSelection.MouseDown(APoint);
+end;
+
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
   // Selection > HotHandle 설정
@@ -302,23 +297,40 @@ begin
     FSelection.MouseMove(APoint);
 end;
 
+procedure TThShapeItem.MouseUp(APoint: TFloatPoint);
+begin
+  if Assigned(FSelection) then
+    FSelection.MouseUp(APoint);
+end;
+
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
+  if Assigned(FSelection) and TThItemSelection(FSelection).IsResizing then
+    Exit;
+
   Screen.Cursor := crSizeAll;
+  // 크기 변경 중에는 무시
+  OutputDebugString(PChar('TThShapeItem.MouseEnter = crSizeAll ' +
+    FormatDateTime('SS.ZZZ', Now)));
 end;
 
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
-  Screen.Cursor := crDefault;
+  if Assigned(FSelection) and TThItemSelection(FSelection).IsResizing then
+    Exit;
 
   if Assigned(FSelection) then
     FSelection.HotHandle := nil;
+  Screen.Cursor := crDefault;
+  // 크기 변경 중에는 무시
+  OutputDebugString(PChar('TThShapeItem.MouseLeave = crDefault' +
+    FormatDateTime('SS.ZZZ', Now)));
 end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
 begin
   Result := False;
-  if PtInRect(Bounds, APt) then
+  if GR32.PtInRect(Bounds, APt) then
   begin
     if Assigned(FSelection) and FSelection.PtInHandles(APt) then
       Exit(True);
@@ -372,7 +384,7 @@ procedure TThFillShapeItem.DoRealign;
 begin
   inherited;
 
-  FRect.Realign;
+//  FRect.Realign;
 
   FPolyPoly := RectToPolyPoly(FRect);
 

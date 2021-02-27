@@ -16,7 +16,9 @@ type
   TThItemSelection = class(TThCustomItemHandles, IThItemSelection)
   protected
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure ResizeItem(const APoint: TFloatPoint); virtual; abstract;
   public
+    function IsResizing: Boolean;
   end;
 
   TThShapeSelection = class(TThItemSelection)
@@ -27,7 +29,7 @@ type
     procedure CreateHandles; override;
     procedure RealignHandles; override;
 
-    procedure MouseMove(const APoint: TFloatPoint); override;
+    procedure ResizeItem(const APoint: TFloatPoint); override;
   end;
 
   TThLineSelection = class(TThItemSelection)
@@ -38,7 +40,7 @@ type
     procedure CreateHandles; override;
     procedure RealignHandles; override;
 
-    procedure MouseMove(const APoint: TFloatPoint); override;
+    procedure ResizeItem(const APoint: TFloatPoint); override;
   end;
 
 implementation
@@ -62,6 +64,11 @@ begin
   DrawHandles(Bitmap, AScale, AOffset);
 end;
 
+function TThItemSelection.IsResizing: Boolean;
+begin
+  Result := Assigned(FHotHandle) and FMouseDowned;
+end;
+
 { TThShapeSelection }
 
 procedure TThShapeSelection.CreateHandles;
@@ -77,21 +84,20 @@ end;
 procedure TThShapeSelection.RealignHandles;
   function HandlePoint(R: TFloatRect; D: TShapeHandleDirection): TFloatPoint;
   var
-    CP: TFloatPoint;
+    Center: TFloatPoint;
   begin
-    CP.X := (R.Left+R.Right)/2;
-    CP.Y := (R.Top+R.Bottom)/2;
+    Center.X := (R.Left+R.Right)/2;
+    Center.Y := (R.Top+R.Bottom)/2;
 
     case D of
-      shdTopLeft:     Result := FloatPoint(R.Left,  R.Top);
-      shdTop:
-        Result := FloatPoint(CP.X,    R.Top);
-      shdTopRight:    Result := FloatPoint(R.Right, R.Top);
-      shdRight:       Result := FloatPoint(R.Right, CP.Y);
-      shdBottomRight: Result := FloatPoint(R.Right, R.Bottom);
-      shdBottom:      Result := FloatPoint(CP.X,    R.Bottom);
-      shdBottomLeft:  Result := FloatPoint(R.Left,  R.Bottom);
-      shdLeft:        Result := FloatPoint(R.Left,  CP.Y);
+      shdTopLeft:     Result := FloatPoint(R.Left,    R.Top);
+      shdTop:         Result := FloatPoint(Center.X,  R.Top);
+      shdTopRight:    Result := FloatPoint(R.Right,   R.Top);
+      shdRight:       Result := FloatPoint(R.Right,   Center.Y);
+      shdBottomRight: Result := FloatPoint(R.Right,   R.Bottom);
+      shdBottom:      Result := FloatPoint(Center.X,  R.Bottom);
+      shdBottomLeft:  Result := FloatPoint(R.Left,    R.Bottom);
+      shdLeft:        Result := FloatPoint(R.Left,    Center.Y);
     end;
   end;
 var
@@ -106,11 +112,14 @@ begin
   Result := TThFillShapeItem(FParentItem);
 end;
 
-procedure TThShapeSelection.MouseMove(const APoint: TFloatPoint);
+procedure TThShapeSelection.ResizeItem(const APoint: TFloatPoint);
 var
   R: TFloatrect;
 begin
   if not Assigned(FHotHandle) then
+    Exit;
+
+  if not FMouseDowned then
     Exit;
 
   R := Shape.Rect;
@@ -143,12 +152,7 @@ begin
   FHandles[1].Point := Shape.ToPoint;
 end;
 
-function TThLineSelection.GetShape: TThLineShapeItem;
-begin
-  Result := TThLineShapeItem(FParentItem);
-end;
-
-procedure TThLineSelection.MouseMove(const APoint: TFloatPoint);
+procedure TThLineSelection.ResizeItem(const APoint: TFloatPoint);
 begin
   if not Assigned(FHotHandle) then
     Exit;
@@ -157,6 +161,11 @@ begin
     shdLineFrom:  Shape.ResizeItem(APoint, Shape.ToPoint);
     shdLineTo:    Shape.ResizeItem(Shape.FromPoint, APoint);
   end;
+end;
+
+function TThLineSelection.GetShape: TThLineShapeItem;
+begin
+  Result := TThLineShapeItem(FParentItem);
 end;
 
 end.

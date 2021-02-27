@@ -5,7 +5,8 @@ interface
 uses
   System.Generics.Collections,
   GR32,
-  ThTypes;
+  ThTypes,
+  ThItem;
 
 type
   TThItemList = class(TList<IThItem>)
@@ -19,7 +20,9 @@ type
     // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<IThItem>;
 
+    procedure MouseDown(APoint: TFloatPoint);
     procedure MouseMove(APoint: TFloatPoint);
+    procedure MouseUp(APoint: TFloatPoint);
 
     property TargetItem: IThSelectableItem read FTargetItem;
 
@@ -71,6 +74,12 @@ end;
 //  end;
 //end;
 
+procedure TThItemList.MouseDown(APoint: TFloatPoint);
+begin
+  if Assigned(FTargetItem) then
+    FTargetItem.MouseDown(APoint)
+end;
+
 procedure TThItemList.MouseMove(APoint: TFloatPoint);
 var
   Item: IThSelectableItem;
@@ -89,6 +98,12 @@ begin
 
   if Assigned(FTargetItem) then
     FTargetItem.MouseMove(APoint);
+end;
+
+procedure TThItemList.MouseUp(APoint: TFloatPoint);
+begin
+  if Assigned(FTargetItem) then
+    FTargetItem.MouseUp(APoint)
 end;
 
 procedure TThItemList.Notify(const Value: IThItem; Action: TCollectionNotification);

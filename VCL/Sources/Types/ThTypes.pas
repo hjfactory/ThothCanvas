@@ -32,6 +32,7 @@ type
   end;
 
   IThItem = interface
+  ['{2A361DAA-4178-4D6E-868B-B6ADD9CB21D9}']
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
     function PtInItem(APt: TFloatPoint): Boolean;
@@ -52,7 +53,10 @@ type
 
   IThSelectableItem = interface(IThItem)
   ['{796D1837-E123-4612-9307-53512AD52FDC}']
+
+    procedure MouseDown(APoint: TFloatPoint);
     procedure MouseMove(APoint: TFloatPoint);
+    procedure MouseUp(APoint: TFloatPoint);
     procedure MouseEnter(APoint: TFloatPoint);
     procedure MouseLeave(APoint: TFloatPoint);
 
@@ -90,18 +94,17 @@ type
     procedure MouseDown(const APoint: TFloatPoint);
     procedure MouseMove(const APoint: TFloatPoint);   // MouseDown & move
     procedure MouseUp(const APoint: TFloatPoint);
-//    procedure MouseOver(const APoint: TFloatPoint);   // Not mouse downed & move
 
     function PtInHandles(APoint: TFloatPoint): Boolean;
     function GetHotHandle: IThItemHandle;
     procedure SetHotHandle(const Value: IThItemHandle);
     property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
-//    function IsOverHandle: Boolean;
   end;
 
   // 선택 시 크기변경 핸들 관리
   IThItemSelection = interface(IThItemHandles)
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+    procedure ResizeItem(const APoint: TFloatPoint);
   end;
 
   IThItemConnection = interface(IThItemHandles)

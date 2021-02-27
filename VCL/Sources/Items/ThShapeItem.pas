@@ -81,8 +81,8 @@ function TThRoundRectItem.RectToPolyPoly(ARect: TFloatRect): TThPolyPoly;
 var
   Poly: TThPoly;
 begin
-  if ARect.Width <= ARect.Height then
-    ARect.Width := ARect.Height+1;
+  if ARect.Width <= ARect.Height * 2 then
+    ARect.Width := ARect.Height * 2;
   Poly := RoundRect(ARect, Max(Abs(ARect.Bottom - ARect.Top), 1) / 2);
   Result := PolyPolygon(Poly);
 end;
