@@ -21,6 +21,8 @@ function AAPoint2AAFloatPoint(const APaths: TPaths;
 function ScaleRect(AFR: TFloatRect; AScale: TFloatPoint): TFloatRect;
 function OffsetRect(AFR: TFloatRect; AOffset: TFloatPoint): TFloatRect;
 
+function IntfEquals(AIntf1, AIntf2: IInterface): Boolean;
+
 //function LocalToViewPort(
 type
   TFloatPointHelper = record helper for TFloatPoint
@@ -145,6 +147,11 @@ begin
   Result.Top    := AFR.Top + AOffset.Y;
   Result.Right  := AFR.Right + AOffset.X;
   Result.Bottom := AFR.Bottom + AOffset.Y;
+end;
+
+function IntfEquals(AIntf1, AIntf2: IInterface): Boolean;
+begin
+  Result := AIntf1 as IInterface = AIntf2 as IInterface;
 end;
 
 { TFloatRectHelper }

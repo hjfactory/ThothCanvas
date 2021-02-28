@@ -20,6 +20,7 @@ type
   public
     function IsResizing: Boolean;
   end;
+  TThItemSelectionClass = class of TThItemSelection;
 
   TThShapeSelection = class(TThItemSelection)
   private

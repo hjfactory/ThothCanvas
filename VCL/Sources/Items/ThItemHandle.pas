@@ -92,13 +92,14 @@ type
     procedure CreateHandles; virtual; abstract;
     procedure FreeHandles; virtual;
     procedure RealignHandles; virtual; abstract;
+    procedure ReleaseHotHandle;
   public
-    constructor Create(AParent: TThItem);
+    constructor Create(AParent: TThItem); virtual;
     destructor Destroy; override;
 
     function PtInHandles(APoint: TFloatPoint): Boolean; virtual;
 
-    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
+//    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
     property HandleRadius: Single read FRadius;
   end;
 
@@ -212,12 +213,10 @@ procedure TThCustomItemHandles.DrawHandles(Bitmap: TBitmap32; AScale,
 var
   P: TFloatPoint;
   H: TThItemHandle;
-  ItemHandle: TThItemHandle;
   Poly: TThPoly;
 begin
   for H in FHandles do
   begin
-//    ItemHandle := TThItemHandle(H);
     P := H.Point.Scale(AScale).Offset(AOffset);
     Poly := H.GetPoly(P);
 //    Poly := ScalePolygon(H.Poly, AScale.X, AScale.Y);
@@ -266,19 +265,24 @@ end;
 procedure TThCustomItemHandles.MouseMove(const APoint: TFloatPoint);
 begin
   if not FMouseDowned then
-    HotHandle := GetHandleAtPoint(APoint);
+    SetHotHandle(GetHandleAtPoint(APoint));
 end;
 
 procedure TThCustomItemHandles.MouseUp(const APoint: TFloatPoint);
 begin
-//  HotHandle := GetHandleAtPoint(APoint);
+  SetHotHandle(GetHandleAtPoint(APoint));
   FMouseDowned := False;
 end;
 
 function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
 begin
-//  HotHandle := GetHandleAtPoint(APoint);
   Result := Assigned(GetHandleAtPoint(APoint));
+end;
+
+procedure TThCustomItemHandles.ReleaseHotHandle;
+begin
+  FMouseDowned := False;
+  SetHotHandle(nil);
 end;
 
 procedure TThCustomItemHandles.SetHotHandle(const Value: IThItemHandle);
@@ -290,14 +294,12 @@ begin
 
   if FHotHandle = nil then
   begin
-    Screen.Cursor := FLastCursor;
-    OutputDebugString(PChar('FHotHandle = nil'));
+    Screen.Cursor := crDefault;
   end
   else
   begin
     FLastCursor := Screen.Cursor;
     Screen.Cursor := FHotHandle.Cursor;
-    OutputDebugString(PChar('FHotHandle assigned'));
   end
 end;
 

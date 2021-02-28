@@ -69,32 +69,38 @@ type
   private
     FSelected: Boolean;
     FSelection: IThItemSelection;
+//    FSelectionClass: TThItemSelectionClass;
 
     FBorderWidth: Integer;
 
     FBorderColor: TColor32;
+
+    // IThSelectableItem
     procedure SetSelected(const Value: Boolean);
     function GetSelected: Boolean;
+    function GetSelection: IThItemSelection;
   protected
     function GetBounds: TFloatRect; override;
 
     procedure DoRealign; override;
     function CreateSelection: IThItemSelection; virtual; abstract;
-    function GetSelection: IThItemSelection;
+
+    // IThSelectableItem
+    procedure MoveItem(APoint: TFloatPoint); virtual; abstract;
+
+    procedure MouseDown(APoint: TFloatPoint); virtual;
+    procedure MouseMove(APoint: TFloatPoint); virtual;
+    procedure MouseUp(APoint: TFloatPoint); virtual;
+    procedure MouseEnter(APoint: TFloatPoint); virtual;
+    procedure MouseLeave(APoint: TFloatPoint); virtual;
+
+    // IThShapeItem
+    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
+      AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
   public
     procedure SetStyle(AStyle: IThDrawStyle); virtual; abstract;
 
-    procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
-      AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
-    procedure MoveItem(APoint: TFloatPoint); virtual; abstract;
-
     function PtInItem(APt: TFloatPoint): Boolean; override;
-
-    procedure MouseDown(APoint: TFloatPoint);
-    procedure MouseMove(APoint: TFloatPoint);
-    procedure MouseUp(APoint: TFloatPoint);
-    procedure MouseEnter(APoint: TFloatPoint);
-    procedure MouseLeave(APoint: TFloatPoint);
 
     property Selected: Boolean read GetSelected write SetSelected;
     property Selection: IThItemSelection read FSelection;
@@ -104,14 +110,26 @@ type
   end;
 
   {Naming: ClosedShapeItem, FillableShapeItem}
-  TThFillShapeItem = class(TThShapeItem)
+  TThFillShapeItem = class(TThShapeItem, IThConnectableItem)
   private
     FRect: TFloatRect;
     FColor: TColor32;
+    FConnection: IThItemConnection;
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
+
+    procedure MouseDown(APoint: TFloatPoint); virtual;
+    procedure MouseMove(APoint: TFloatPoint); virtual;
+    procedure MouseUp(APoint: TFloatPoint); virtual;
+    procedure MouseEnter(APoint: TFloatPoint); override;
+    procedure MouseLeave(APoint: TFloatPoint); override;
+
     function CreateSelection: IThItemSelection; override;
+    function CreateConnection: IThItemConnection; virtual;
+
+    procedure ShowConnection;
+    procedure HideConnection;
   public
     constructor Create(ARect: TFloatRect; AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce;
@@ -131,7 +149,7 @@ type
     property Color: TColor32 read FColor;
   end;
 
-  TThLineShapeItem = class(TThShapeItem)
+  TThLineShapeItem = class(TThShapeItem, IThItemConnector)
   private
     FFromPoint, FToPoint: TFloatPoint;
   protected
@@ -159,12 +177,12 @@ type
 implementation
 
 uses
-  Winapi.Windows, // ODS
-
+//  Winapi.Windows, // ODS
   Vcl.Forms,
   System.UITypes, System.Math,
   GR32_Polygons, GR32_VectorUtils,
-  ThUtils, ThItemStyle, ThItemSelection;
+  ThUtils, ThItemStyle,
+  ThItemSelection, ThItemConnection;
 
 { TThItem }
 
@@ -256,6 +274,7 @@ begin
 end;
 
 { TThShapeItem }
+
 procedure TThShapeItem.DoRealign;
 begin
   inherited;
@@ -264,7 +283,6 @@ end;
 function TThShapeItem.GetBounds: TFloatRect;
 var
   Radius: Single;
-  Selection: TThItemSelection;
 begin
   Result := inherited GetBounds;
   if Assigned(FSelection) then
@@ -292,7 +310,6 @@ end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
-  // Selection > HotHandle 설정
   if Assigned(FSelection) then
     FSelection.MouseMove(APoint);
 end;
@@ -309,9 +326,6 @@ begin
     Exit;
 
   Screen.Cursor := crSizeAll;
-  // 크기 변경 중에는 무시
-  OutputDebugString(PChar('TThShapeItem.MouseEnter = crSizeAll ' +
-    FormatDateTime('SS.ZZZ', Now)));
 end;
 
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
@@ -320,11 +334,9 @@ begin
     Exit;
 
   if Assigned(FSelection) then
-    FSelection.HotHandle := nil;
+    FSelection.ReleaseHotHandle;
+
   Screen.Cursor := crDefault;
-  // 크기 변경 중에는 무시
-  OutputDebugString(PChar('TThShapeItem.MouseLeave = crDefault' +
-    FormatDateTime('SS.ZZZ', Now)));
 end;
 
 function TThShapeItem.PtInItem(APt: TFloatPoint): Boolean;
@@ -380,6 +392,16 @@ begin
   SetStyle(Style.Color, Style.BorderWidth, Style.BorderColor);
 end;
 
+procedure TThFillShapeItem.ShowConnection;
+begin
+  FConnection := CreateConnection;
+end;
+
+procedure TThFillShapeItem.HideConnection;
+begin
+  FConnection := nil;
+end;
+
 procedure TThFillShapeItem.DoRealign;
 begin
   inherited;
@@ -406,6 +428,9 @@ begin
 
   if FSelected and Assigned(FSelection) then
     FSelection.Draw(Bitmap, AScale, AOffset);
+
+  if Assigned(FConnection) then
+    FConnection.Draw(Bitmap, AScale, AOffset);
 end;
 
 procedure TThFillShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,
@@ -418,9 +443,39 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
+function TThFillShapeItem.CreateConnection: IThItemConnection;
+begin
+  Result := TThItemAnchorPoints.Create(Self);
+end;
+
 function TThFillShapeItem.CreateSelection: IThItemSelection;
 begin
   Result := TThShapeSelection.Create(Self);
+end;
+
+procedure TThFillShapeItem.MouseDown(APoint: TFloatPoint);
+begin
+end;
+
+procedure TThFillShapeItem.MouseMove(APoint: TFloatPoint);
+begin
+end;
+
+procedure TThFillShapeItem.MouseUp(APoint: TFloatPoint);
+begin
+end;
+
+procedure TThFillShapeItem.MouseEnter(APoint: TFloatPoint);
+begin
+  inherited;
+//  FConnection := CreateConnection;
+end;
+
+procedure TThFillShapeItem.MouseLeave(APoint: TFloatPoint);
+begin
+//  FConnection := nil;
+  HideConnection;
+  inherited;
 end;
 
 procedure TThFillShapeItem.MoveItem(APoint: TFloatPoint);

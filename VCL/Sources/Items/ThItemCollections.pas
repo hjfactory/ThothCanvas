@@ -6,17 +6,19 @@ uses
   System.Generics.Collections,
   GR32,
   ThTypes,
-  ThItem;
+  ThItem, ThUtils;
 
 type
   TThItemList = class(TList<IThItem>)
   private
     FTargetItem: IThSelectableItem;
+
+    // APoint에 포함되는 최상위 객체 반환
+    function GetItemAtPoint(APoint: TFloatPoint): IThItem;
+    procedure SetTargetItem(const AItem: IThSelectableItem; APoint: TFloatPoint);
   protected
     procedure Notify(const Value: IThItem; Action: TCollectionNotification); override;
   public
-    // APoint에 포함되는 최상위 객체 반환
-    function GetItemAtPoint(APoint: TFloatPoint): IThItem;
     // APoly 영역에 포함되는 객체 배열 반환
     function PolyInItems(APoly: TThPoly): TArray<IThItem>;
 
@@ -24,6 +26,7 @@ type
     procedure MouseMove(APoint: TFloatPoint);
     procedure MouseUp(APoint: TFloatPoint);
 
+    function GetConnectionItem(APoint: TFloatPoint): IThConnectableItem;
     property TargetItem: IThSelectableItem read FTargetItem;
 
 //    procedure MouseOver(APoint: TFloatPoint);
@@ -61,18 +64,27 @@ begin
   end;
 end;
 
-//procedure TThItemList.MouseOver(APoint: TFLoatPoint);
-//var
-//  I: Integer;
-//  Item: TThShapeItem;
-//begin
-//  for I := Count - 1 downto 0 do
-//  begin
-//    Item := Items[I] as TThShapeItem;
-//    if Assigned(Item.Selection) then
-//      Item.Selection.MouseOver(APoint);
-//  end;
-//end;
+function TThItemList.GetConnectionItem(APoint: TFloatPoint): IThConnectableItem;
+var
+  I: Integer;
+  Item: IThItem;
+  Item1, Item2: IInterface;
+begin
+  Result := nil;
+
+  for I := Count - 1 downto 0 do
+  begin
+    Item := Items[I];
+
+    if not Item.PtInItem(APoint) then
+      Continue;
+
+    if not Supports(Item, IThConnectableItem) then
+      Continue;
+
+    Exit(Item as IThConnectableItem);
+  end;
+end;
 
 procedure TThItemList.MouseDown(APoint: TFloatPoint);
 begin
@@ -86,11 +98,22 @@ var
 begin
   Item := GetItemAtPoint(APoint) as IThSelectableItem;
 
-  if FTargetItem <> Item then
+  SetTargetItem(Item, APoint);
+end;
+
+procedure TThItemList.MouseUp(APoint: TFloatPoint);
+begin
+  if Assigned(FTargetItem) then
+    FTargetItem.MouseUp(APoint)
+end;
+
+procedure TThItemList.SetTargetItem(const AItem: IThSelectableItem; APoint: TFloatPoint);
+begin
+  if FTargetItem <> AItem then
   begin
     if Assigned(FTargetItem) then
       FTargetItem.MouseLeave(APoint);
-    FTargetItem := Item;
+    FTargetItem := AItem;
 
     if Assigned(FTargetItem) then
       FTargetItem.MouseEnter(APoint)
@@ -98,12 +121,6 @@ begin
 
   if Assigned(FTargetItem) then
     FTargetItem.MouseMove(APoint);
-end;
-
-procedure TThItemList.MouseUp(APoint: TFloatPoint);
-begin
-  if Assigned(FTargetItem) then
-    FTargetItem.MouseUp(APoint)
 end;
 
 procedure TThItemList.Notify(const Value: IThItem; Action: TCollectionNotification);

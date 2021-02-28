@@ -112,8 +112,7 @@ type
 
     FLastPoint: TFloatPoint;
     FItemList: TThItemList;
-//    FItemList2: TThItemList;
-    FSelected: TThShapeItem;
+    FSelectedItem: IThSelectableItem;
     FSelectedItems: TThSelectedItems;
 
     procedure ProcessSelect(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
@@ -133,10 +132,10 @@ type
 implementation
 
 uses
-  Winapi.Windows, // ODS
+//  Winapi.Windows, // ODS
   ThUtils,
-  System.SysUtils, System.Math, System.UITypes,
-  Vcl.Forms;
+  System.SysUtils,
+  System.Math;
 
 { TThDrawObject }
 
@@ -387,13 +386,11 @@ constructor TThSelectObject.Create(AItems: TThItemList);
 begin
   FItemList := AItems;
   FSelectedItems := TThSelectedItems.Create;
-//  FItemList2 := TThItemList.Create;
 end;
 
 destructor TThSelectObject.Destroy;
 begin
   FSelectedItems.Free;
-//  FItemList2.Free;
 
   inherited;
 end;
@@ -422,7 +419,7 @@ begin
   begin
     if not AIsMultipleSelect then
       ClearSelection;
-    FSelected := nil;
+    FSelectedItem := nil;
   end
   else
   // Item click
@@ -436,7 +433,7 @@ begin
       ASelectingItem.Selected := True;
 //      FItemList2.Add(ASelectingItem);
       FSelectedItems.Add(ASelectingItem);
-      FSelected := ASelectingItem;
+      FSelectedItem := ASelectingItem;
 
       FDragMode := dmItemMove;
     end
@@ -451,11 +448,11 @@ begin
         begin
           ASelectingItem.Selected := False;
           FSelectedItems.Remove(ASelectingItem);
-          FSelected := nil;
+          FSelectedItem := nil;
         end
         else
         begin
-          FSelected := ASelectingItem;
+          FSelectedItem := ASelectingItem;
 
           FDragMode := dmItemMove;
         end;
@@ -464,13 +461,15 @@ begin
       // Handle click
       begin
         FDragMode := dmItemResize;
-        FSelected := ASelectingItem;
+        FSelectedItem := ASelectingItem;
       end;
     end;
   end;
 end;
 
 procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
@@ -482,17 +481,31 @@ begin
     FItemList.TargetItem as TThShapeItem,   // ASelectingItem
     AShift * [ssShift, ssCtrl] <> []        // AIsMultipleSelect
   );
+
+  if FDragMode = dmItemResize then
+  begin
+    if Supports(FSelectedItem, IThItemConnector) then
+    begin
+      ConnectionItem := FItemList.GetConnectionItem(APoint);
+      if Assigned(ConnectionItem) then
+      begin
+        ConnectionItem.ShowConnection;
+        ConnectionItem.MouseDown(APoint);
+      end;
+    end;
+  end;
+
 end;
 
 procedure TThSelectObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
   MovePoint: TFloatPoint;
+  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
   FItemList.MouseMove(APoint);
-//  TargetItem := FItemList.TargetItem;
 
   if FMouseDowned then
   begin
@@ -503,20 +516,51 @@ begin
       FLastPoint := APoint;
     end
     else if FDragMode = dmItemResize then
-      FSelected.Selection.ResizeItem(APoint);
+    begin
+      FSelectedItem.Selection.ResizeItem(APoint);
+
+      { TODO : 현재 선택된 항목이 Connector이며,
+        포인트가 위치한 항목(크기 조정 중인 항목 제외)이 Connection 지원하는 경우
+        AnchorPoint  표시 }
+      if Supports(FSelectedItem, IThItemConnector) then
+      begin
+        ConnectionItem := FItemList.GetConnectionItem(APoint);
+        if Assigned(ConnectionItem) then
+        begin
+          ConnectionItem.ShowConnection;
+          ConnectionItem.MouseMove(APoint);
+        end;
+      end;
+    end;
   end
   else
   begin
-
   end;
 end;
 
 procedure TThSelectObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
+var
+  ConnectionItem: IThConnectableItem;
 begin
   FItemList.MouseUp(APoint);
 
+  if Assigned(FSelectedItem) and (FItemList.TargetItem <> FSelectedItem) then
+    FSelectedItem.MouseUp(APoint);
+
+  if FDragMode = dmItemResize then
+  begin
+    if Supports(FSelectedItem, IThItemConnector) then
+    begin
+      ConnectionItem := FItemList.GetConnectionItem(APoint);
+      if Assigned(ConnectionItem) then
+      begin
+        ConnectionItem.HideConnection;
+        ConnectionItem.MouseUp(APoint);
+      end;
+    end;
+  end;
+
   FDragMode := dmNone;
-//  Screen.Cursor := crDefault;
 
   inherited;
 end;
@@ -525,25 +569,25 @@ procedure TThSelectObject.DeleteSelectedItems;
 var
   I: Integer;
   Item: IThSelectableItem;
-  Item1, Item2: TThItem;
+//  Item1, Item2: TThItem;
+  Item1, Item2: IInterface;
 begin
+  FSelectedItem := nil;
   for Item in FSelectedItems do
   begin
     // FSelectedItems.Item(IThSelectableItem)으로
     // FItemList.Item(IThItem) 삭제(Remove) 시
     // 포인터가 달라 지워지지않음
-    // 객체로 전환 후 비교 후 삭제(ㅠㅜㅠㅜ)
-//    FItemList.Remove(SelItem as IThItem);
+    // 객체(또는 IInterface)로 전환 후 비교 후 삭제필요(ㅠㅜㅠㅜ)
+      // https://blog.excastle.com/2008/05/10/interfaces-and-reference-equality-beware/
+//    FItemList.Remove(Item as IThItem);
     for I := FItemList.Count - 1 downto 0 do
     begin
-      Item1 := FItemList[I] as TThItem;
-      Item2 := Item as TThItem;
+      Item1 := FItemList[I] as IInterface;
+      Item2 := Item as IInterface;
 
       if Item1 = Item2 then
-      begin
-        Item1 := nil;
         FItemList.Delete(I);
-      end;
     end;
   end;
   FSelectedItems.Clear;
