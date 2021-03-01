@@ -115,6 +115,7 @@ type
     FRect: TFloatRect;
     FColor: TColor32;
     FConnection: IThItemConnection;
+    function GetConnection: IThItemConnection;
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
@@ -441,6 +442,11 @@ begin
   Realign;
 
   Draw(Bitmap, AScale, AOffset);
+end;
+
+function TThFillShapeItem.GetConnection: IThItemConnection;
+begin
+  Result := FConnection;
 end;
 
 function TThFillShapeItem.CreateConnection: IThItemConnection;

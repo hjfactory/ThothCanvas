@@ -24,6 +24,7 @@ type
 
 type
   IThItemSelection = interface;
+  IThItemConnection = interface;
 
   IThCanvas = interface
   end;
@@ -74,6 +75,10 @@ type
   ['{6ECF9DA8-3440-42B9-80DE-C33B296CC4D5}']
     procedure ShowConnection;
     procedure HideConnection;
+
+    function GetConnection: IThItemConnection;
+
+    property Connection: IThItemConnection read GetConnection;
   end;
 
   // ±×¸®±â °´Ã¼

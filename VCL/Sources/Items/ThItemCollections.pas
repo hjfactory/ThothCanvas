@@ -68,7 +68,6 @@ function TThItemList.GetConnectionItem(APoint: TFloatPoint): IThConnectableItem;
 var
   I: Integer;
   Item: IThItem;
-  Item1, Item2: IInterface;
 begin
   Result := nil;
 
