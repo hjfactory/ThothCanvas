@@ -11,7 +11,7 @@ uses
   System.SysUtils,
   System.Generics.Collections,
   GR32,
-  ThTypes, ThClasses;
+  ThTypes, ThClasses, ThItemSelection;
 
 type
   TThItem = class(TThInterfacedObject, IThItem)
@@ -34,10 +34,10 @@ type
     property PolyPoly: TThPolyPoly read GetPolyPoly;
   end;
 
-  TThDrawItem = class(TThItem)
+  TThCustomDrawItem = class(TThItem)
   end;
 
-  TThPenItem = class(TThDrawItem)
+  TThPenItem = class(TThCustomDrawItem)
   private
     FPath: TThPath;
 
@@ -48,9 +48,7 @@ type
     FIsDeletion: Boolean;
     function GetColor: TColor32;
   public
-    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly); reintroduce; overload;
-    destructor Destroy; override;
-
+//    constructor Create(APath: TThPath; APolyPoly: TThPolyPoly); reintroduce; overload;
     procedure SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte); overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload;
 
@@ -98,7 +96,12 @@ type
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
   public
+    constructor Create; override;
+    destructor Destroy; override;
+
     procedure SetStyle(AStyle: IThDrawStyle); virtual; abstract;
+
+    procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
 
     function PtInItem(APt: TFloatPoint): Boolean; override;
 
@@ -110,7 +113,7 @@ type
   end;
 
   {Naming: ClosedShapeItem, FillableShapeItem}
-  TThFillShapeItem = class(TThShapeItem, IThConnectableItem)
+  TThFaceShapeItem = class(TThShapeItem, IThConnectableItem)
   private
     FRect: TFloatRect;
     FColor: TColor32;
@@ -119,9 +122,9 @@ type
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
 
-    procedure MouseDown(APoint: TFloatPoint); virtual;
-    procedure MouseMove(APoint: TFloatPoint); virtual;
-    procedure MouseUp(APoint: TFloatPoint); virtual;
+    procedure MouseDown(APoint: TFloatPoint); override;
+    procedure MouseMove(APoint: TFloatPoint); override;
+    procedure MouseUp(APoint: TFloatPoint); override;
     procedure MouseEnter(APoint: TFloatPoint); override;
     procedure MouseLeave(APoint: TFloatPoint); override;
 
@@ -131,9 +134,8 @@ type
     procedure ShowConnection;
     procedure HideConnection;
   public
-    constructor Create(ARect: TFloatRect; AColor: TColor32;
-      ABorderWidth: Integer; ABorderColor: TColor32); reintroduce;
-
+//    constructor Create(ARect: TFloatRect; AColor: TColor32;
+//      ABorderWidth: Integer; ABorderColor: TColor32); reintroduce;
     procedure SetStyle(AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -149,7 +151,7 @@ type
     property Color: TColor32 read FColor;
   end;
 
-  TThLineShapeItem = class(TThShapeItem, IThItemConnector)
+  TThLineShapeItem = class(TThShapeItem, IThConnectorItem)
   private
     FFromPoint, FToPoint: TFloatPoint;
   protected
@@ -157,8 +159,8 @@ type
     function CreateSelection: IThItemSelection; override;
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
   public
-    constructor Create(AFromPoint, AToPoint: TFloatPoint; ABorderWidth: Integer;
-      ABorderColor: TColor32); reintroduce;
+//    constructor Create(AFromPoint, AToPoint: TFloatPoint; ABorderWidth: Integer;
+//      ABorderColor: TColor32); reintroduce;
 
     procedure SetStyle(ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -182,7 +184,7 @@ uses
   System.UITypes, System.Math,
   GR32_Polygons, GR32_VectorUtils,
   ThUtils, ThItemStyle,
-  ThItemSelection, ThItemConnection;
+  ThItemConnection;
 
 { TThItem }
 
@@ -217,12 +219,6 @@ end;
 
 { TThPenItem }
 
-constructor TThPenItem.Create(APath: TThPath; APolyPoly: TThPolyPoly);
-begin
-  FPath := APath;
-  FPolyPoly := APolyPoly;
-end;
-
 procedure TThPenItem.SetStyle(AThickness: Integer; AColor: TColor32; AAlpha: Byte);
 begin
   FThickness := AThickness;
@@ -236,11 +232,6 @@ var
 begin
   Style := TThPenStyle(AStyle);
   SetStyle(Style.Thickness, Style.Color, Style.Alpha);
-end;
-
-destructor TThPenItem.Destroy;
-begin
-  inherited;
 end;
 
 procedure TThPenItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
@@ -275,9 +266,29 @@ end;
 
 { TThShapeItem }
 
+constructor TThShapeItem.Create;
+begin
+  inherited;
+
+  FSelection := CreateSelection
+end;
+
+destructor TThShapeItem.Destroy;
+begin
+  FSelection := nil; // Free(ARC)
+
+  inherited;
+end;
+
 procedure TThShapeItem.DoRealign;
 begin
   inherited;
+end;
+
+procedure TThShapeItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
+begin
+  if FSelected and Assigned(FSelection) then
+    FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
 function TThShapeItem.GetBounds: TFloatRect;
@@ -304,25 +315,25 @@ end;
 
 procedure TThShapeItem.MouseDown(APoint: TFloatPoint);
 begin
-  if Assigned(FSelection) then
+  if FSelected then
     FSelection.MouseDown(APoint);
 end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
-  if Assigned(FSelection) then
+  if FSelected then
     FSelection.MouseMove(APoint);
 end;
 
 procedure TThShapeItem.MouseUp(APoint: TFloatPoint);
 begin
-  if Assigned(FSelection) then
+  if FSelected then
     FSelection.MouseUp(APoint);
 end;
 
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
-  if Assigned(FSelection) and TThItemSelection(FSelection).IsResizing then
+  if FSelected and TThItemSelection(FSelection).IsResizing then
     Exit;
 
   Screen.Cursor := crSizeAll;
@@ -330,10 +341,10 @@ end;
 
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
-  if Assigned(FSelection) and TThItemSelection(FSelection).IsResizing then
+  if FSelected and TThItemSelection(FSelection).IsResizing then
     Exit;
 
-  if Assigned(FSelection) then
+  if FSelected then
     FSelection.ReleaseHotHandle;
 
   Screen.Cursor := crDefault;
@@ -344,7 +355,7 @@ begin
   Result := False;
   if GR32.PtInRect(Bounds, APt) then
   begin
-    if Assigned(FSelection) and FSelection.PtInHandles(APt) then
+    if FSelected and FSelection.PtInHandles(APt) then
       Exit(True);
 
     Result := PtInPolyPolygon(APt, FPolyPoly);
@@ -355,28 +366,18 @@ procedure TThShapeItem.SetSelected(const Value: Boolean);
 begin
   if Value = FSelected then
     Exit;
-  FSelected := Value;
 
-  if Value then
-    FSelection := CreateSelection
-  else
-    FSelection := nil; // Free(ARC)
+  FSelected := Value;
+//
+//  if Value then
+//    FSelection := CreateSelection
+//  else
+//    FSelection := nil; // Free(ARC)
 end;
 
 { TThFillShapeItem }
 
-constructor TThFillShapeItem.Create(ARect: TFloatRect; AColor: TColor32;
-  ABorderWidth: Integer; ABorderColor: TColor32);
-begin
-  FRect := ARect;
-  FPolyPoly := RectToPolyPoly(FRect);
-
-  FColor := AColor;
-  FBorderWidth := ABorderWidth;
-  FBorderColor := ABorderColor;
-end;
-
-procedure TThFillShapeItem.SetStyle(AColor: TColor32; ABorderWidth: Integer;
+procedure TThFaceShapeItem.SetStyle(AColor: TColor32; ABorderWidth: Integer;
   ABorderColor: TColor32);
 begin
   FColor := AColor;
@@ -384,7 +385,7 @@ begin
   FBorderColor := ABorderColor;
 end;
 
-procedure TThFillShapeItem.SetStyle(AStyle: IThDrawStyle);
+procedure TThFaceShapeItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThShapeStyle;
 begin
@@ -392,17 +393,17 @@ begin
   SetStyle(Style.Color, Style.BorderWidth, Style.BorderColor);
 end;
 
-procedure TThFillShapeItem.ShowConnection;
+procedure TThFaceShapeItem.ShowConnection;
 begin
   FConnection := CreateConnection;
 end;
 
-procedure TThFillShapeItem.HideConnection;
+procedure TThFaceShapeItem.HideConnection;
 begin
   FConnection := nil;
 end;
 
-procedure TThFillShapeItem.DoRealign;
+procedure TThFaceShapeItem.DoRealign;
 begin
   inherited;
 
@@ -414,7 +415,7 @@ begin
     FSelection.RealignHandles;
 end;
 
-procedure TThFillShapeItem.Draw(Bitmap: TBitmap32; AScale,
+procedure TThFaceShapeItem.Draw(Bitmap: TBitmap32; AScale,
   AOffset: TFloatPoint);
 var
   PolyPoly: TThPolyPoly;
@@ -426,14 +427,13 @@ begin
 
   PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
 
-  if FSelected and Assigned(FSelection) then
-    FSelection.Draw(Bitmap, AScale, AOffset);
-
   if Assigned(FConnection) then
     FConnection.Draw(Bitmap, AScale, AOffset);
+
+  inherited; // Draw Selection
 end;
 
-procedure TThFillShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,
+procedure TThFaceShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,
   AFromPoint, AToPoint: TFloatPoint);
 begin
   FRect.TopLeft     := AFromPoint;
@@ -443,64 +443,66 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThFillShapeItem.CreateConnection: IThItemConnection;
+function TThFaceShapeItem.CreateConnection: IThItemConnection;
 begin
   Result := TThItemAnchorPoints.Create(Self);
 end;
 
-function TThFillShapeItem.CreateSelection: IThItemSelection;
+function TThFaceShapeItem.CreateSelection: IThItemSelection;
 begin
   Result := TThShapeSelection.Create(Self);
 end;
 
-procedure TThFillShapeItem.MouseDown(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MouseDown(APoint: TFloatPoint);
 begin
+  inherited;
+
+  if Assigned(FConnection) then
+    FConnection.MouseDown(APoint);
 end;
 
-procedure TThFillShapeItem.MouseMove(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MouseMove(APoint: TFloatPoint);
 begin
+  inherited;
+
+  if Assigned(FConnection) then
+    FConnection.MouseMove(APoint);
 end;
 
-procedure TThFillShapeItem.MouseUp(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MouseUp(APoint: TFloatPoint);
 begin
+  inherited;
+
+  if Assigned(FConnection) then
+    FConnection.MouseUp(APoint);
 end;
 
-procedure TThFillShapeItem.MouseEnter(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
   inherited;
 //  FConnection := CreateConnection;
 end;
 
-procedure TThFillShapeItem.MouseLeave(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
 //  FConnection := nil;
-  HideConnection;
   inherited;
+  HideConnection;
 end;
 
-procedure TThFillShapeItem.MoveItem(APoint: TFloatPoint);
+procedure TThFaceShapeItem.MoveItem(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
   Realign;
 end;
 
-procedure TThFillShapeItem.ResizeItem(ARect: TFloatRect);
+procedure TThFaceShapeItem.ResizeItem(ARect: TFloatRect);
 begin
   FRect := ARect;
   Realign;
 end;
 
 { TThLineShapeItem }
-
-constructor TThLineShapeItem.Create(AFromPoint, AToPoint: TFloatPoint;
-  ABorderWidth: Integer; ABorderColor: TColor32);
-begin
-  FFromPoint := AFromPoint;
-  FToPoint := AToPoint;
-
-  FBorderWidth := ABorderWidth;
-  FBorderColor := ABorderColor;
-end;
 
 procedure TThLineShapeItem.SetStyle(ABorderWidth: Integer;
   ABorderColor: TColor32);
@@ -539,8 +541,11 @@ begin
 
 //  PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
 
-  if FSelected and Assigned(FSelection) then
-    FSelection.Draw(Bitmap, AScale, AOffset);
+
+  inherited;
+
+//  if FSelected and Assigned(FSelection) then
+//    FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
 procedure TThLineShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,

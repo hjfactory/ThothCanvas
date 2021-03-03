@@ -115,7 +115,7 @@ type
     FSelectedItem: IThSelectableItem;
     FSelectedItems: TThSelectedItems;
 
-    procedure ProcessSelect(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
+    procedure ProcessSelect(ASelectingItem: IThSelectableItem; AIsMultipleSelect: Boolean);
   public
     constructor Create(AItems: TThItemList); reintroduce;
     destructor Destroy; override;
@@ -410,7 +410,7 @@ end;
   // Item           : Add to selection
   // Selected Item  : Remove from selection
   // Item Handle    : Start drag
-procedure TThSelectObject.ProcessSelect(ASelectingItem: TThShapeItem; AIsMultipleSelect: Boolean);
+procedure TThSelectObject.ProcessSelect(ASelectingItem: IThSelectableItem; AIsMultipleSelect: Boolean);
 begin
   FDragMode := dmNone;
 
@@ -468,8 +468,8 @@ begin
 end;
 
 procedure TThSelectObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  ConnectionItem: IThConnectableItem;
+//var
+//  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
@@ -478,22 +478,22 @@ begin
   FLastPoint := APoint;
 
   ProcessSelect(
-    FItemList.TargetItem as TThShapeItem,   // ASelectingItem
-    AShift * [ssShift, ssCtrl] <> []        // AIsMultipleSelect
+    FItemList.TargetItem,               // ASelectingItem
+    AShift * [ssShift, ssCtrl] <> []    // AIsMultipleSelect
   );
 
-  if FDragMode = dmItemResize then
-  begin
-    if Supports(FSelectedItem, IThItemConnector) then
-    begin
-      ConnectionItem := FItemList.GetConnectionItem(APoint);
-      if Assigned(ConnectionItem) then
-      begin
-        ConnectionItem.ShowConnection;
-        ConnectionItem.MouseDown(APoint);
-      end;
-    end;
-  end;
+//  if FDragMode = dmItemResize then
+//  begin
+//    if Supports(FSelectedItem, IThItemConnector) then
+//    begin
+//      ConnectionItem := FItemList.GetConnectionItem(APoint);
+//      if Assigned(ConnectionItem) then
+//      begin
+//        ConnectionItem.ShowConnection;
+//        ConnectionItem.MouseDown(APoint);
+//      end;
+//    end;
+//  end;
 
 end;
 
@@ -522,7 +522,7 @@ begin
       { TODO : 현재 선택된 항목이 Connector이며,
         포인트가 위치한 항목(크기 조정 중인 항목 제외)이 Connection 지원하는 경우
         AnchorPoint  표시 }
-      if Supports(FSelectedItem, IThItemConnector) then
+      if Supports(FSelectedItem, IThConnectorItem) then
       begin
         ConnectionItem := FItemList.GetConnectionItem(APoint);
         if Assigned(ConnectionItem) then
@@ -549,7 +549,7 @@ begin
 
   if FDragMode = dmItemResize then
   begin
-    if Supports(FSelectedItem, IThItemConnector) then
+    if Supports(FSelectedItem, IThConnectorItem) then
     begin
       ConnectionItem := FItemList.GetConnectionItem(APoint);
       if Assigned(ConnectionItem) then

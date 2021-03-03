@@ -10,7 +10,7 @@ uses
   System.Generics.Collections,
   GR32,
   ThTypes, ThUtils,
-  ThItem, ThItemHandle;
+  ThItemHandle;
 
 type
   TThItemSelection = class(TThCustomItemHandles, IThItemSelection)
@@ -23,9 +23,6 @@ type
   TThItemSelectionClass = class of TThItemSelection;
 
   TThShapeSelection = class(TThItemSelection)
-  private
-    function GetShape: TThFillShapeItem;
-    property Shape: TThFillShapeItem read GetShape;
   protected
     procedure CreateHandles; override;
     procedure RealignHandles; override;
@@ -34,9 +31,6 @@ type
   end;
 
   TThLineSelection = class(TThItemSelection)
-  private
-    function GetShape: TThLineShapeItem;
-    property Shape: TThLineShapeItem read GetShape;
   protected
     procedure CreateHandles; override;
     procedure RealignHandles; override;
@@ -50,6 +44,7 @@ uses
   Vcl.Forms,
   System.Math,
   System.UITypes,
+  ThItem,
   GR32_Polygons,
   GR32_Geometry,
   GR32_VectorUtils;
@@ -103,25 +98,25 @@ procedure TThShapeSelection.RealignHandles;
   end;
 var
   I: Integer;
+  Shape: TThFaceShapeItem;
 begin
+  Shape := TThFaceShapeItem(FParentItem);
   for I := Low(FHandles) to High(FHandles) do
     TThItemHandle(FHandles[I]).Point := HandlePoint(Shape.Rect, TThShapeHandle(FHandles[I]).Direction);
-end;
-
-function TThShapeSelection.GetShape: TThFillShapeItem;
-begin
-  Result := TThFillShapeItem(FParentItem);
 end;
 
 procedure TThShapeSelection.ResizeItem(const APoint: TFloatPoint);
 var
   R: TFloatrect;
+  Shape: TThFaceShapeItem;
 begin
   if not Assigned(FHotHandle) then
     Exit;
 
   if not FMouseDowned then
     Exit;
+
+  Shape := TThFaceShapeItem(FParentItem);
 
   R := Shape.Rect;
   case TThShapeHandle(FHotHandle).Direction of
@@ -148,25 +143,28 @@ begin
 end;
 
 procedure TThLineSelection.RealignHandles;
+var
+  Shape: TThLineShapeItem;
 begin
+  Shape := TThLineShapeItem(FParentItem);
+
   FHandles[0].Point := Shape.FromPoint;
   FHandles[1].Point := Shape.ToPoint;
 end;
 
 procedure TThLineSelection.ResizeItem(const APoint: TFloatPoint);
+var
+  Shape: TThLineShapeItem;
 begin
   if not Assigned(FHotHandle) then
     Exit;
+
+  Shape := TThLineShapeItem(FParentItem);
 
   case TThLineHandle(FHotHandle).Direction of
     shdLineFrom:  Shape.ResizeItem(APoint, Shape.ToPoint);
     shdLineTo:    Shape.ResizeItem(Shape.FromPoint, APoint);
   end;
-end;
-
-function TThLineSelection.GetShape: TThLineShapeItem;
-begin
-  Result := TThLineShapeItem(FParentItem);
 end;
 
 end.

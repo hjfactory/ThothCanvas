@@ -9,32 +9,32 @@ interface
 uses
   System.Generics.Collections,
   GR32,
-  ThTypes, ThItem, ThItemHandle;
+  ThTypes, ThItemHandle;
 
 type
   TThItemAnchorPoint = TThShapeHandle;
 
   TThItemAnchorPoints = class(TThCustomItemHandles, IThItemConnection)
-  private
-    function GetShape: TThFillShapeItem;
-    property Shape: TThFillShapeItem read GetShape;
   protected
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 
     procedure CreateHandles; override;
     procedure RealignHandles; override;
   public
-    constructor Create(AParent: TThItem); override;
+    constructor Create(AParent: IThItem); override;
   end;
 
 implementation
 
-constructor TThItemAnchorPoints.Create(AParent: TThItem);
+uses
+  ThItem;
+
+constructor TThItemAnchorPoints.Create(AParent: IThItem);
 begin
   inherited;
 
   FFillColor := clGray32;
-  FHotColor := clGray32;
+  FHotColor := clRed32;
 end;
 
 procedure TThItemAnchorPoints.Draw(Bitmap: TBitmap32; AScale,
@@ -80,14 +80,11 @@ procedure TThItemAnchorPoints.RealignHandles;
   end;
 var
   I: Integer;
+  Shape: TThFaceShapeItem;
 begin
+  Shape := TThFaceShapeItem(FParentItem);
   for I := Low(FHandles) to High(FHandles) do
     FHandles[I].Point := HandlePoint(Shape.Rect, TThItemAnchorPoint(FHandles[I]).Direction);
-end;
-
-function TThItemAnchorPoints.GetShape: TThFillShapeItem;
-begin
-  Result := TThFillShapeItem(FParentItem);
 end;
 
 end.

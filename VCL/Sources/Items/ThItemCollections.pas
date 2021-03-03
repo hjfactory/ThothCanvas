@@ -15,7 +15,6 @@ type
 
     // APoint에 포함되는 최상위 객체 반환
     function GetItemAtPoint(APoint: TFloatPoint): IThItem;
-    procedure SetTargetItem(const AItem: IThSelectableItem; APoint: TFloatPoint);
   protected
     procedure Notify(const Value: IThItem; Action: TCollectionNotification); override;
   public
@@ -68,7 +67,6 @@ function TThItemList.GetConnectionItem(APoint: TFloatPoint): IThConnectableItem;
 var
   I: Integer;
   Item: IThItem;
-  Item1, Item2: IInterface;
 begin
   Result := nil;
 
@@ -98,22 +96,11 @@ var
 begin
   Item := GetItemAtPoint(APoint) as IThSelectableItem;
 
-  SetTargetItem(Item, APoint);
-end;
-
-procedure TThItemList.MouseUp(APoint: TFloatPoint);
-begin
-  if Assigned(FTargetItem) then
-    FTargetItem.MouseUp(APoint)
-end;
-
-procedure TThItemList.SetTargetItem(const AItem: IThSelectableItem; APoint: TFloatPoint);
-begin
-  if FTargetItem <> AItem then
+  if FTargetItem <> Item then
   begin
     if Assigned(FTargetItem) then
       FTargetItem.MouseLeave(APoint);
-    FTargetItem := AItem;
+    FTargetItem := Item;
 
     if Assigned(FTargetItem) then
       FTargetItem.MouseEnter(APoint)
@@ -121,6 +108,12 @@ begin
 
   if Assigned(FTargetItem) then
     FTargetItem.MouseMove(APoint);
+end;
+
+procedure TThItemList.MouseUp(APoint: TFloatPoint);
+begin
+  if Assigned(FTargetItem) then
+    FTargetItem.MouseUp(APoint)
 end;
 
 procedure TThItemList.Notify(const Value: IThItem; Action: TCollectionNotification);

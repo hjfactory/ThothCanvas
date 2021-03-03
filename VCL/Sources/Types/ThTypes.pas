@@ -76,6 +76,11 @@ type
     procedure HideConnection;
   end;
 
+  IThConnectorItem = interface
+  ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
+
+  end;
+
   // ±×¸®±â °´Ã¼
   IThDrawObject = interface
     procedure MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
@@ -117,11 +122,6 @@ type
   IThItemConnection = interface(IThItemHandles)
   ['{A4ED614A-0CB3-419A-85B2-0C42176B6C53}']
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
-  end;
-
-  IThItemConnector = interface
-  ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
-
   end;
 
 implementation

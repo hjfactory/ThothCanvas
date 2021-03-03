@@ -18,12 +18,12 @@ type
     class function GetShapeItem(AId: string; AStyle: IThDrawStyle): TThShapeItem;
   end;
 
-  TThRectItem = class(TThFillShapeItem)
+  TThRectItem = class(TThFaceShapeItem)
   protected
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
 
-  TThRoundRectItem = class(TThFillShapeItem)
+  TThRoundRectItem = class(TThFaceShapeItem)
   protected
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; override;
   end;
@@ -33,7 +33,7 @@ type
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; override;
   end;
 
-  TThCurvedItem = class(TThLineItem)
+  TThElbowLineItem = class(TThLineItem)
   end;
 
 implementation

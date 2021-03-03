@@ -4,7 +4,7 @@ interface
 
 uses
   GR32,
-  ThTypes, ThItem, ThUtils, ThClasses,
+  ThTypes, ThUtils, ThClasses,
   System.UITypes,
   System.Generics.Collections;
 
@@ -70,7 +70,7 @@ type
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
   protected
-    FParentItem: TThItem;
+    FParentItem: IThItem;
 
     FMouseDowned: Boolean;
 
@@ -94,7 +94,7 @@ type
     procedure RealignHandles; virtual; abstract;
     procedure ReleaseHotHandle;
   public
-    constructor Create(AParent: TThItem); virtual;
+    constructor Create(AParent: IThItem); virtual;
     destructor Destroy; override;
 
     function PtInHandles(APoint: TFloatPoint): Boolean; virtual;
@@ -107,9 +107,9 @@ implementation
 
 uses
   Winapi.Windows,
-
   System.Math,
   Vcl.Forms,
+  ThItem,
   GR32_Polygons,
   GR32_Geometry,
   GR32_VectorUtils;
@@ -184,7 +184,7 @@ end;
 
 { TThCustomItemHandles }
 
-constructor TThCustomItemHandles.Create(AParent: TThItem);
+constructor TThCustomItemHandles.Create(AParent: IThItem);
 begin
   FFillColor := clWhite32;
   FHotColor := clRed32;
