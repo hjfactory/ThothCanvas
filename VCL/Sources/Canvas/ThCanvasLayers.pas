@@ -9,7 +9,7 @@ unit ThCanvasLayers;
 interface
 
 uses
-  System.Classes, System.Types, System.Math, System.Generics.Collections,
+  System.Classes, System.SysUtils, System.Types, System.Math, System.Generics.Collections,
   Vcl.Controls,
 
   GR32, GR32_Layers, GR32_Polygons, GR32_VectorUtils,
@@ -222,9 +222,12 @@ begin
   if FMouseDowned then
   begin
     FMouseDowned := False;
+
     Item := FDrawObject.ItemInstance;
+
     if Assigned(Item) then
        FItemList.Add(Item);
+
     FDrawObject.MouseUp(ViewportToLocal(X, Y), Shift);
     Update;
   end;
@@ -277,10 +280,8 @@ begin
   inherited;
 
   case Value of
-    dmPen:
-      FDrawObject := FPenDrawObj;
-    dmEraser:
-      FDrawObject := FEraDrawObj;
+    dmPen:    FDrawObject := FPenDrawObj;
+    dmEraser: FDrawObject := FEraDrawObj;
   end;
 
   Update;
