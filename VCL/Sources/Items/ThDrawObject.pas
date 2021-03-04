@@ -113,7 +113,7 @@ type
     FLastPoint: TFloatPoint;
     FItemList: TThItemList;
     FSelectedItem: IThSelectableItem;
-    FSelectedItems: TThSelectedItems;
+//    FSelectedItems: TThSelectedItems;
 
     procedure ProcessSelect(ASelectingItem: IThSelectableItem; AIsMultipleSelect: Boolean);
   public
@@ -385,19 +385,17 @@ end;
 constructor TThSelectObject.Create(AItems: TThItemList);
 begin
   FItemList := AItems;
-  FSelectedItems := TThSelectedItems.Create;
 end;
 
 destructor TThSelectObject.Destroy;
 begin
-  FSelectedItems.Free;
 
   inherited;
 end;
 
 procedure TThSelectObject.ClearSelection;
 begin
-  FSelectedItems.Clear;
+//  FSelectedItems.Clear;
 end;
 
 // Single(Click)
@@ -418,7 +416,8 @@ begin
   // Canvas click
   begin
     if not AIsMultipleSelect then
-      ClearSelection;
+      FItemList.ClearSelected;
+//      ClearSelection;
     FSelectedItem := nil;
   end
   else
@@ -432,7 +431,7 @@ begin
 
       ASelectingItem.Selected := True;
 //      FItemList2.Add(ASelectingItem);
-      FSelectedItems.Add(ASelectingItem);
+//      FSelectedItems.Add(ASelectingItem);
       FSelectedItem := ASelectingItem;
 
       FDragMode := dmItemMove;
@@ -447,7 +446,7 @@ begin
         // Cancel select of Selecting item
         begin
           ASelectingItem.Selected := False;
-          FSelectedItems.Remove(ASelectingItem);
+//          FSelectedItems.Remove(ASelectingItem);
           FSelectedItem := nil;
         end
         else
@@ -512,7 +511,8 @@ begin
     if FDragMode = dmItemMove then
     begin
       MovePoint := APoint - FLastPoint;
-      FSelectedItems.MoveItems(MovePoint);
+      FItemList.MoveSelectedItems(MovePoint);
+//      FSelectedItems.MoveItems(MovePoint);
       FLastPoint := APoint;
     end
     else if FDragMode = dmItemResize then
@@ -566,31 +566,8 @@ begin
 end;
 
 procedure TThSelectObject.DeleteSelectedItems;
-var
-  I: Integer;
-  Item: IThSelectableItem;
-//  Item1, Item2: TThItem;
-  Item1, Item2: IInterface;
 begin
-  FSelectedItem := nil;
-  for Item in FSelectedItems do
-  begin
-    // FSelectedItems.Item(IThSelectableItem)으로
-    // FItemList.Item(IThItem) 삭제(Remove) 시
-    // 포인터가 달라 지워지지않음
-    // 객체(또는 IInterface)로 전환 후 비교 후 삭제필요(ㅠㅜㅠㅜ)
-      // https://blog.excastle.com/2008/05/10/interfaces-and-reference-equality-beware/
-//    FItemList.Remove(Item as IThItem);
-    for I := FItemList.Count - 1 downto 0 do
-    begin
-      Item1 := FItemList[I] as IInterface;
-      Item2 := Item as IInterface;
-
-      if Item1 = Item2 then
-        FItemList.Delete(I);
-    end;
-  end;
-  FSelectedItems.Clear;
+  FItemList.RemoveSelectedItems;
 end;
 
 end.

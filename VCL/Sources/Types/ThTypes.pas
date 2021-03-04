@@ -71,6 +71,7 @@ type
     property Selection: IThItemSelection read GetSelection;
   end;
 
+  // 연결할 수 있는(도형)
   IThConnectableItem = interface(IThSelectableItem)
   ['{6ECF9DA8-3440-42B9-80DE-C33B296CC4D5}']
     procedure ShowConnection;
@@ -79,8 +80,10 @@ type
     function GetConnection: IThItemConnection;
 
     property Connection: IThItemConnection read GetConnection;
+    // Visible
   end;
 
+  // 연결자(선)
   IThConnectorItem = interface
   ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
 

@@ -157,6 +157,7 @@ end;
 
 procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
+  I: Integer;
   Item: IThItem;
   LScale, LOffset: TFloatPoint;
 begin
@@ -166,8 +167,8 @@ begin
   LOffset := Offset;
 
   Buffer.BeginUpdate;
-  for Item in FItemList do
-    Item.Draw(Buffer, LScale, LOffset);
+  for I := 0 to FItemList.Count - 1 do
+    FItemList[I].Draw(Buffer, LScale, LOffset);
   Buffer.EndUpdate;
 end;
 
