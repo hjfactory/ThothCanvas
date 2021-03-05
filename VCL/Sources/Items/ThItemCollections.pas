@@ -73,18 +73,20 @@ uses
 constructor TThItemList.Create;
 begin
   FSelectedItems := TList<IThSelectableItem>.Create;
+  FItems := TList<IThItem>.Create;
 end;
 
 destructor TThItemList.Destroy;
 begin
   FSelectedItems.Free;
+  FItems.Free;
 
   inherited;
 end;
 
 function TThItemList.GetItem(Index: Integer): IThItem;
 begin
-
+  Result := FItems[Index];
 end;
 
 function TThItemList.GetItemAtPoint(APoint: TFloatPoint): IThItem;
@@ -150,7 +152,7 @@ end;
 
 function TThItemList.GetCount: Integer;
 begin
-
+  Result := FItems.Count;
 end;
 
 procedure TThItemList.MouseDown(APoint: TFloatPoint);
