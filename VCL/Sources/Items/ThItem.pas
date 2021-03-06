@@ -93,6 +93,7 @@ type
     procedure MouseLeave(APoint: TFloatPoint); virtual;
 
     // IThShapeItem
+    procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); virtual; abstract;
   public
@@ -145,7 +146,7 @@ type
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); override;
 
-    procedure ResizeItem(ARect: TFloatRect);
+    procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint); override;
     procedure MoveItem(APoint: TFloatPoint); override;
 
     property Rect: TFloatRect read FRect;
@@ -170,7 +171,7 @@ type
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); override;
 
-    procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint);
+    procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint); override;
     procedure MoveItem(APoint: TFloatPoint); override;
 
     property FromPoint: TFloatPoint read FFromPoint;
@@ -215,7 +216,10 @@ end;
 procedure TThItem.Realign;
 begin
   DoRealign;
-  FBounds := PolypolygonBounds(FPolyPoly);
+  if Length(FPolyPoly) > 0 then
+    FBounds := PolypolygonBounds(FPolyPoly)
+  else
+    FBounds := EmptyRect;
 end;
 
 { TThPenItem }
@@ -502,9 +506,11 @@ begin
   Realign;
 end;
 
-procedure TThFaceShapeItem.ResizeItem(ARect: TFloatRect);
+procedure TThFaceShapeItem.ResizeItem(AFromPoint, AToPoint: TFloatPoint);
 begin
-  FRect := ARect;
+  FRect.TopLeft := AFromPoint;
+  FRect.BottomRight := AToPoint;
+
   Realign;
 end;
 

@@ -88,13 +88,11 @@ type
   private
     FShapeId: string;
 
-    FSelectObj: TThSelectObject;
     FShapeDrawObj: TThShapeDrawObject;
 
     procedure SetShapetId(const Value: string);
   protected
     procedure SetDrawMode(const Value: TThDrawMode); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -294,51 +292,33 @@ constructor TShapeDrawLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
 
-  FSelectObj := TThSelectObject.Create(FItemList);
-  FShapeDrawObj := TThShapeDrawObject.Create(TThShapeStyle.Create);
-
-  ShapeId := 'Rect';
-  FDrawObject := FSelectObj;
+  FShapeDrawObj := TThShapeDrawObject.Create(FItemList);
+  FDrawObject := FShapeDrawObj;
 end;
 
 procedure TShapeDrawLayer.DeleteSelectedItems;
 begin
-  FSelectObj.DeleteSelectedItems;
+  FShapeDrawObj.DeleteSelectedItems;
   Update;
 end;
 
 destructor TShapeDrawLayer.Destroy;
 begin
-  FSelectObj.Free;
   FShapeDrawObj.Free;
 
   inherited;
-end;
-
-procedure TShapeDrawLayer.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
-  Y: Integer);
-begin
-  inherited;
-
-  if FDrawMode = dmDraw then
-    DrawMode := dmSelect;
 end;
 
 procedure TShapeDrawLayer.SetDrawMode(const Value: TThDrawMode);
 begin
   inherited;
 
-  case Value of
-    dmSelect:  FDrawObject := FSelectObj;
-    dmDraw:    FDrawObject := FShapeDrawObj;
-  end;
+  if FDrawMode = dmSelect then
+    ShapeId := '';
 end;
 
 procedure TShapeDrawLayer.SetShapetId(const Value: string);
 begin
-  if FShapeId = Value then
-    Exit;
-
   FShapeId := Value;
 
   FShapeDrawObj.ShapeId := FShapeId;

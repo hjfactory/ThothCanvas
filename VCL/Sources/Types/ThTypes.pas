@@ -14,6 +14,7 @@ const
 
 type
   TThDrawMode       = (dmSelect, dmDraw, dmPen, dmEraser);
+  TThShapeDragState = (dsNone, dsItemAdd, dsItemMove, dsItemResize, dsMultSelect{Drag for select});
 
   TThPercent = 0..100;
 
@@ -48,11 +49,12 @@ type
   end;
 
   IThShapeItem = interface(IThItem)
+    procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint);
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint);
   end;
 
-  IThSelectableItem = interface(IThItem)
+  IThSelectableItem = interface(IThShapeItem)
   ['{796D1837-E123-4612-9307-53512AD52FDC}']
 
     procedure MoveItem(APoint: TFloatPoint);

@@ -111,10 +111,11 @@ var
   Shape: TThFaceShapeItem;
 begin
   if not Assigned(FHotHandle) then
-    Exit;
+    FHotHandle := FHandles[Ord(shdBottomRight)];
+//    Exit;
 
-  if not FMouseDowned then
-    Exit;
+//  if not FMouseDowned then
+//    Exit;
 
   Shape := TThFaceShapeItem(FParentItem);
 
@@ -129,7 +130,7 @@ begin
     shdBottomLeft:    R.BottomLeft := APoint;
     shdLeft:          R.Left := APoint.X;
   end;
-  Shape.ResizeItem(R);
+  Shape.ResizeItem(R.TopLeft, R.BottomRight);
 end;
 
 { TThLineSelection }
@@ -157,7 +158,8 @@ var
   Shape: TThLineShapeItem;
 begin
   if not Assigned(FHotHandle) then
-    Exit;
+    FHotHandle := FHandles[Ord(shdLineTo)];
+//    Exit;
 
   Shape := TThLineShapeItem(FParentItem);
 

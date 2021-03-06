@@ -155,7 +155,7 @@ end;
 
 function TThShapeHandle.GetCursor: TCursor;
 const
-  HANDLE_CURSOR: array [TShapeHandleDirection] of TCursor = (
+  HANDLE_CURSOR: array[TShapeHandleDirection] of TCursor = (
     crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE,         // TL, T, TR, R
     crSizeNWSE, crSizeNS, crSizeNESW, crSizeWE          // BR, B, BL, L
   );
