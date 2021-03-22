@@ -8,8 +8,11 @@ uses
   ThTypes, ThItemCollections;
 
 type
+  /// 도형 그리기의 마우스 처리 담당
   TThShapeDrawMouseProcessor = class
   private
+    FMouseDowned: Boolean;
+
     FItemList: TThItemList;
     FTargetItem: IThSelectableItem;
     FSelectedItems: TThSelectedItems;
@@ -23,6 +26,7 @@ type
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 
     function CalcDragState(const APoint: TFloatPoint): TThShapeDragState;
+    property TargetItem: IThSelectableItem read FTargetItem;
   end;
 
 implementation
@@ -63,6 +67,7 @@ begin
 procedure TThShapeDrawMouseProcessor.MouseDown(const APoint: TFloatPoint;
   AShift: TShiftState);
 begin
+  FMouseDowned := True;
 end;
 
 procedure TThShapeDrawMouseProcessor.MouseMove(const APoint: TFloatPoint;
@@ -70,7 +75,12 @@ procedure TThShapeDrawMouseProcessor.MouseMove(const APoint: TFloatPoint;
 var
   Item: IThSelectableItem;
 begin
-//  Item := GetItemAtPoint(APoint) as IThSelectableItem;
+  Item := GetItemAtPoint(APoint) as IThSelectableItem;
+
+  if FTargetItem <> Item then
+  begin
+    FTargetItem := Item;
+  end;
 //
 //  if FTargetItem <> Item then
 //  begin
@@ -89,7 +99,7 @@ end;
 procedure TThShapeDrawMouseProcessor.MouseUp(const APoint: TFloatPoint;
   AShift: TShiftState);
 begin
-
+  FMouseDowned := False;
 end;
 
 end.

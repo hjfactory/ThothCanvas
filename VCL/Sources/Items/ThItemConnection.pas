@@ -1,6 +1,6 @@
 {
   Role
-    -
+    - Show Mouse-Over Item Connection Handle(연결자 표시)
 }
 unit ThItemConnection;
 

@@ -24,6 +24,8 @@ type
     // 모든 항목 APoint만큼 이동
     procedure MoveItems(APoint: TFloatPoint);
 
+    procedure Add(const AItem: IThSelectableItem);
+    procedure Remove(const AItem: IThSelectableItem);
     procedure Clear;
   end;
 
@@ -156,6 +158,12 @@ end;
 
 { TThSelectedItems }
 
+procedure TThSelectedItems.Add(const AItem: IThSelectableItem);
+begin
+  AItem.Selected := True;
+  inherited Add(AItem);
+end;
+
 procedure TThSelectedItems.Clear;
 var
   Item: IThSelectableItem;
@@ -171,6 +179,12 @@ var
 begin
   for I := 0 to Count - 1 do
     Items[I].MoveItem(APoint);
+end;
+
+procedure TThSelectedItems.Remove(const AItem: IThSelectableItem);
+begin
+  AItem.Selected := False;
+  inherited Remove(AItem);
 end;
 
 end.

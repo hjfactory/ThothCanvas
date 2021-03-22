@@ -95,7 +95,7 @@ type
     FItemList: TThItemList;
     FSelectedItems: TThSelectedItems;
 
-    FSelectedItem: IThSelectableItem;
+    FSelectedItem: IThSelectableItem; // 필요한가?
 
     FShapeId: string;
 
@@ -402,12 +402,16 @@ end;
 //end;
 
 procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-//var
+var
+  TargetItem: IThSelectableItem;
+  PressedShift: Boolean;
 //  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
   FLastPoint := APoint;
+
+  FMouseProcessor.MouseDown(APoint, AShift);
 
   if FDragState = dsItemAdd then
   begin
@@ -416,12 +420,44 @@ begin
     FItemList.Add(SelectedItem);
 
     DragState := dsItemResize;
+    FShapeId := '';
   end
   else if FDragState = dsNone then
   begin
-    FMouseProcessor.MouseDown(APoint, AShift);
+    TargetItem := FMouseProcessor.TargetItem;
+    PressedShift := AShift * [ssShift, ssCtrl] <> [];
 
-    DragState := FMouseProcessor.CalcDragState(APoint);
+    // Canvas click
+    if not Assigned(TargetItem) then
+    begin
+      if PressedShift then
+        // None
+      else
+        FSelectedItems.Clear;
+    end
+    else
+    begin
+      if not TargetItem.Selected then
+      // Non-selected item click
+      begin
+        if not PressedShift then
+          FSelectedItems.Clear;
+        FSelectedItems.Add(Targetitem);
+      end
+      else
+      // Selected item click
+      begin
+        if PressedShift then
+        begin
+          TargetItem.Selected := False;
+          FSelectedItems.Remove(TargetItem);
+        end;
+      end;
+    end;
+
+
+
+//    DragState := FMouseProcessor.CalcDragState(APoint);
 
     // DragState 결정
     // dsResize
@@ -460,7 +496,7 @@ var
 begin
   inherited;
 
-//  FMouseProcessor.MouseMove(APoint, AShift);
+  FMouseProcessor.MouseMove(APoint, AShift);
 
   if FMouseDowned then
   begin
@@ -472,10 +508,6 @@ begin
       end;
     dsMultSelect: ;
     end;
-  end
-  else
-  begin
-    FMouseProcessor.MouseMove(APoint, AShift);
   end;
 
   // Resize
@@ -520,7 +552,7 @@ var
 begin
   inherited;
 
-//  FMouseProcessor.MouseUp(APoint, AShift);
+  FMouseProcessor.MouseUp(APoint, AShift);
 
   DragState := dsNone;
 

@@ -101,6 +101,8 @@ type
 
 //    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
     property HandleRadius: Single read FRadius;
+
+    // Visible: Boolean
   end;
 
 implementation

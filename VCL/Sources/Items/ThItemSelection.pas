@@ -1,6 +1,6 @@
 {
   Role
-    -
+    - Show selected item size change handle(선택자 표시)
 }
 unit ThItemSelection;
 
