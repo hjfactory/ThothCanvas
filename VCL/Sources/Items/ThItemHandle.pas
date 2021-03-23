@@ -201,6 +201,8 @@ begin
 
   CreateHandles;
   RealignHandles;
+
+  FHotHandle := nil;
 end;
 
 destructor TThCustomItemHandles.Destroy;

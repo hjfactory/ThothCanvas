@@ -1,3 +1,10 @@
+{
+  Role
+    Receive mouse pointer information
+     - Detect the item of the mouse position
+     - Firing Mouse-event on item
+}
+
 unit ThCanvasEventProcessor;
 
 interface
@@ -25,22 +32,12 @@ type
     procedure MouseMove(const APoint: TFloatPoint; AShift: TShiftState);
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 
-    function CalcDragState(const APoint: TFloatPoint): TThShapeDragState;
     property TargetItem: IThSelectableItem read FTargetItem;
   end;
 
 implementation
 
 { TThMouseHandler }
-
-function TThShapeDrawMouseProcessor.CalcDragState(const APoint: TFloatPoint): TThShapeDragState;
-begin
-  // Item 판단
-  // 선택 & dsItemMove
-
-  // 핸들 판단
-  // dsItemResize
-end;
 
 constructor TThShapeDrawMouseProcessor.Create(AItemList: TThItemList; ASelectedItems: TThSelectedItems);
 begin

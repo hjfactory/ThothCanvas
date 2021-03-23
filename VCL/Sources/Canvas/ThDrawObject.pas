@@ -424,15 +424,26 @@ begin
   end
   else if FDragState = dsNone then
   begin
+    {
+       Click
+         Canvas         : Clear Selections
+         Item           : Clear selection, Select Item
+         Selected Item  : None
+         Item Handle    : Start drag
+       Shift + Click
+         Canvas         : None
+         Item           : Add to selection
+         Selected Item  : Remove from selection
+         Item Handle    : Don't show
+    }
+    // Select item(Unselect, Multi-select)
     TargetItem := FMouseProcessor.TargetItem;
     PressedShift := AShift * [ssShift, ssCtrl] <> [];
 
     // Canvas click
     if not Assigned(TargetItem) then
     begin
-      if PressedShift then
-        // None
-      else
+      if not PressedShift then
         FSelectedItems.Clear;
     end
     else
@@ -455,6 +466,11 @@ begin
       end;
     end;
 
+    if Assigned(TargetItem) and TargetItem.Selected then
+//      if Assigned(TargetItem.Selection.HotHandle) then
+//        DragState := dsItemResize
+//      else
+        DragState := dsItemMove;
 
 
 //    DragState := FMouseProcessor.CalcDragState(APoint);
@@ -501,12 +517,16 @@ begin
   if FMouseDowned then
   begin
     case FDragState of
-    dsItemMove: ;
+    dsItemMove:
+      begin
+        MovePoint := APoint - FLastPoint;
+        FSelectedItems.MoveItems(MovePoint);
+        FLastPoint := APoint;
+      end;
     dsItemResize:
       begin
         FSelectedItem.Selection.ResizeItem(APoint);
       end;
-    dsMultSelect: ;
     end;
   end;
 
@@ -588,7 +608,6 @@ begin
   dsItemAdd:    Screen.Cursor := crCross;
   dsItemMove:   ;
   dsItemResize: Screen.Cursor := crCross;
-  dsMultSelect: ;
   end;
 end;
 

@@ -14,7 +14,7 @@ const
 
 type
   TThDrawMode       = (dmSelect, dmDraw, dmPen, dmEraser);
-  TThShapeDragState = (dsNone, dsItemAdd, dsItemMove, dsItemResize, dsMultSelect{Drag for select});
+  TThShapeDragState = (dsNone, dsItemAdd, dsItemMove, dsItemResize, dsMultiSelect{Drag for select});
 
   TThPercent = 0..100;
 
