@@ -467,9 +467,9 @@ begin
     end;
 
     if Assigned(TargetItem) and TargetItem.Selected then
-//      if Assigned(TargetItem.Selection.HotHandle) then
-//        DragState := dsItemResize
-//      else
+      if Assigned(TargetItem.Selection.HotHandle) then
+        DragState := dsItemResize
+      else
         DragState := dsItemMove;
 
 
@@ -604,7 +604,7 @@ begin
   FDragState := Value;
 
   case FDragState of
-  dsNone:       Screen.Cursor := crDefault;
+  dsNone:       ;
   dsItemAdd:    Screen.Cursor := crCross;
   dsItemMove:   ;
   dsItemResize: Screen.Cursor := crCross;

@@ -127,6 +127,7 @@ type
   IThItemSelection = interface(IThItemHandles)
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure ResizeItem(const APoint: TFloatPoint);
+    function IsResizing: Boolean;
   end;
 
   IThItemConnection = interface(IThItemHandles)

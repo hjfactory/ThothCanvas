@@ -72,25 +72,25 @@ procedure TThShapeDrawMouseProcessor.MouseMove(const APoint: TFloatPoint;
 var
   Item: IThSelectableItem;
 begin
-  Item := GetItemAtPoint(APoint) as IThSelectableItem;
+  Item := GetItemAtPoint(APoint);
+
+//  if FTargetItem <> Item then
+//  begin
+//    FTargetItem := Item;
+//  end;
 
   if FTargetItem <> Item then
   begin
+    if Assigned(FTargetItem) then
+      FTargetItem.MouseLeave(APoint);
     FTargetItem := Item;
+
+    if Assigned(FTargetItem) then
+      FTargetItem.MouseEnter(APoint)
   end;
-//
-//  if FTargetItem <> Item then
-//  begin
-//    if Assigned(FTargetItem) then
-//      FTargetItem.MouseLeave(APoint);
-//    FTargetItem := Item;
-//
-//    if Assigned(FTargetItem) then
-//      FTargetItem.MouseEnter(APoint)
-//  end;
-//
-//  if Assigned(FTargetItem) then
-//    FTargetItem.MouseMove(APoint);
+
+  if Assigned(FTargetItem) then
+    FTargetItem.MouseMove(APoint);
 end;
 
 procedure TThShapeDrawMouseProcessor.MouseUp(const APoint: TFloatPoint;

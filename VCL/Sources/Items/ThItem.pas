@@ -136,8 +136,6 @@ type
     procedure ShowConnection;
     procedure HideConnection;
   public
-//    constructor Create(ARect: TFloatRect; AColor: TColor32;
-//      ABorderWidth: Integer; ABorderColor: TColor32); reintroduce;
     procedure SetStyle(AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -161,9 +159,6 @@ type
     function CreateSelection: IThItemSelection; override;
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
   public
-//    constructor Create(AFromPoint, AToPoint: TFloatPoint; ABorderWidth: Integer;
-//      ABorderColor: TColor32); reintroduce;
-
     procedure SetStyle(ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
 
@@ -326,8 +321,16 @@ end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
+  if FSelection.IsResizing then
+    Exit;
+
   if FSelected then
     FSelection.MouseMove(APoint);
+
+  // Resize 중이라면 무시
+
+  if not Assigned(FSelection.HotHandle) then
+    Screen.Cursor := crSizeAll;
 end;
 
 procedure TThShapeItem.MouseUp(APoint: TFloatPoint);
@@ -338,7 +341,7 @@ end;
 
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
-  if FSelected and TThItemSelection(FSelection).IsResizing then
+  if FSelected and Assigned(FSelection.HotHandle) then
     Exit;
 
   Screen.Cursor := crSizeAll;
@@ -346,7 +349,8 @@ end;
 
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
-  if FSelected and TThItemSelection(FSelection).IsResizing then
+  // Resize 중이라면 무시
+  if FSelected and FSelection.IsResizing then
     Exit;
 
   if FSelected then
