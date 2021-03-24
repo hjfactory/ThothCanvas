@@ -350,7 +350,7 @@ end;
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
   // Resize 중이라면 무시
-  if FSelected and FSelection.IsResizing then
+  if FSelection.IsResizing then
     Exit;
 
   if FSelected then
