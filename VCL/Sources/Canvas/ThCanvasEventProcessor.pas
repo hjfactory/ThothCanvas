@@ -3,6 +3,8 @@
     Receive mouse pointer information
      - Detect the item of the mouse position
      - Firing Mouse-event on item
+
+  역할을 분담하는 것이 맞는가? DrawObj에 구현하는 것이 맞나?
 }
 
 unit ThCanvasEventProcessor;
