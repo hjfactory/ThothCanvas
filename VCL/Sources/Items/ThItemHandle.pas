@@ -64,11 +64,15 @@ type
 
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
+    FVisible: Boolean;
     FLastCursor: TCursor;
+
     procedure SetHotHandle(const Value: IThItemHandle);
     function GetHotHandle: IThItemHandle;
 
     function GetHandleAtPoint(APoint: TFloatPoint): TThItemHandle;
+    function GetVisible: Boolean;
+    procedure SetVisible(const Value: Boolean);
   protected
     FParentItem: IThItem;
 
@@ -102,6 +106,7 @@ type
 //    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
     property HandleRadius: Single read FRadius;
 
+    property Visible: Boolean read GetVisible write SetVisible;
     // Visible: Boolean
   end;
 
@@ -261,6 +266,11 @@ begin
   Result := FHotHandle;
 end;
 
+function TThCustomItemHandles.GetVisible: Boolean;
+begin
+  Result := FVisible;
+end;
+
 procedure TThCustomItemHandles.MouseDown(const APoint: TFloatPoint);
 begin
   FMouseDowned := True;
@@ -305,6 +315,11 @@ begin
     FLastCursor := Screen.Cursor;
     Screen.Cursor := FHotHandle.Cursor;
   end
+end;
+
+procedure TThCustomItemHandles.SetVisible(const Value: Boolean);
+begin
+  FVisible := Value;
 end;
 
 end.

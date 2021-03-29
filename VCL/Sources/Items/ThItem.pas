@@ -65,7 +65,7 @@ type
 
   TThShapeItem = class(TThItem, IThShapeItem, IThSelectableItem)
   private
-    FSelected: Boolean;
+//    FSelected: Boolean;
     FSelection: IThItemSelection;
 //    FSelectionClass: TThItemSelectionClass;
 
@@ -287,7 +287,7 @@ end;
 
 procedure TThShapeItem.Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 begin
-  if FSelected and Assigned(FSelection) then
+  if FSelection.Visible then
     FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
@@ -305,7 +305,7 @@ end;
 
 function TThShapeItem.GetSelected: Boolean;
 begin
-  Result := FSelected
+  Result := FSelection.Visible;
 end;
 
 function TThShapeItem.GetSelection: IThItemSelection;
@@ -315,19 +315,14 @@ end;
 
 procedure TThShapeItem.MouseDown(APoint: TFloatPoint);
 begin
-  if FSelected then
+  if FSelection.Visible then
     FSelection.MouseDown(APoint);
 end;
 
 procedure TThShapeItem.MouseMove(APoint: TFloatPoint);
 begin
-  if FSelection.IsResizing then
-    Exit;
-
-  if FSelected then
+  if FSelection.Visible then
     FSelection.MouseMove(APoint);
-
-  // Resize 중이라면 무시
 
   if not Assigned(FSelection.HotHandle) then
     Screen.Cursor := crSizeAll;
@@ -335,13 +330,13 @@ end;
 
 procedure TThShapeItem.MouseUp(APoint: TFloatPoint);
 begin
-  if FSelected then
+  if FSelection.Visible then
     FSelection.MouseUp(APoint);
 end;
 
 procedure TThShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
-  if FSelected and Assigned(FSelection.HotHandle) then
+  if Assigned(FSelection.HotHandle) then
     Exit;
 
   Screen.Cursor := crSizeAll;
@@ -349,11 +344,7 @@ end;
 
 procedure TThShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
-  // Resize 중이라면 무시
-  if FSelection.IsResizing then
-    Exit;
-
-  if FSelected then
+  if FSelection.Visible then
     FSelection.ReleaseHotHandle;
 
   Screen.Cursor := crDefault;
@@ -364,7 +355,7 @@ begin
   Result := False;
   if GR32.PtInRect(Bounds, APt) then
   begin
-    if FSelected and FSelection.PtInHandles(APt) then
+    if FSelection.Visible and FSelection.PtInHandles(APt) then
       Exit(True);
 
     Result := PtInPolyPolygon(APt, FPolyPoly);
@@ -373,15 +364,7 @@ end;
 
 procedure TThShapeItem.SetSelected(const Value: Boolean);
 begin
-  if Value = FSelected then
-    Exit;
-
-  FSelected := Value;
-//
-//  if Value then
-//    FSelection := CreateSelection
-//  else
-//    FSelection := nil; // Free(ARC)
+  FSelection.Visible := Value;
 end;
 
 { TThFillShapeItem }
@@ -415,8 +398,6 @@ end;
 procedure TThFaceShapeItem.DoRealign;
 begin
   inherited;
-
-//  FRect.Realign;
 
   FPolyPoly := RectToPolyPoly(FRect);
 

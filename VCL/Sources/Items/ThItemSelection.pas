@@ -17,8 +17,6 @@ type
   protected
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure ResizeItem(const APoint: TFloatPoint); virtual; abstract;
-  public
-    function IsResizing: Boolean;
   end;
   TThItemSelectionClass = class of TThItemSelection;
 
@@ -58,11 +56,6 @@ begin
 
   // Draw handles
   DrawHandles(Bitmap, AScale, AOffset);
-end;
-
-function TThItemSelection.IsResizing: Boolean;
-begin
-  Result := Assigned(FHotHandle) and FMouseDowned;
 end;
 
 { TThShapeSelection }
@@ -112,10 +105,6 @@ var
 begin
   if not Assigned(FHotHandle) then
     FHotHandle := FHandles[Ord(shdBottomRight)];
-//    Exit;
-
-//  if not FMouseDowned then
-//    Exit;
 
   Shape := TThFaceShapeItem(FParentItem);
 

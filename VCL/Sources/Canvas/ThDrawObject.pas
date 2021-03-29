@@ -86,27 +86,14 @@ type
     // Select > Move, Delete, Resize, Link
   TThShapeDrawObject = class(TThCustomDrawObject)
   private
-    FDragState: TThShapeDragState;
-
     FMouseProcessor: TThShapeDrawMouseProcessor;
-
-    FLastPoint: TFloatPoint;
 
     FItemList: TThItemList;
     FSelectedItems: TThSelectedItems;
 
-    FSelectedItem: IThSelectableItem; // 필요한가?
-
     FShapeId: string;
 
     procedure SetShapeId(const Value: string);
-    procedure SetDragState(const Value: TThShapeDragState);
-    procedure SetSelectedItem(const Value: IThSelectableItem);
-
-    property DragState: TThShapeDragState read FDragState write SetDragState;
-    property SelectedItem: IThSelectableItem read FSelectedItem write SetSelectedItem;
-
-//    procedure ProcessSelect(ASelectingItem: IThSelectableItem; AIsMultipleSelect: Boolean);
   public
     constructor Create(AItems: TThItemList); reintroduce;
     destructor Destroy; override;
@@ -402,168 +389,18 @@ end;
 //end;
 
 procedure TThShapeDrawObject.MouseDown(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  TargetItem: IThSelectableItem;
-  PressedShift: Boolean;
-//  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
-  FLastPoint := APoint;
-
   FMouseProcessor.MouseDown(APoint, AShift);
-
-  if FDragState = dsItemAdd then
-  begin
-    SelectedItem := TThShapeItemFactory.GetShapeItem(FShapeId, FDrawStyle);
-    SelectedItem.ResizeItem(FLastPoint, FLastPoint);
-    FItemList.Add(SelectedItem);
-
-    DragState := dsItemResize;
-    FShapeId := '';
-  end
-  else if FDragState = dsNone then
-  begin
-    {
-       Click
-         Canvas         : Clear Selections
-         Item           : Clear selection, Select Item
-         Selected Item  : None
-         Item Handle    : Start drag
-       Shift + Click
-         Canvas         : None
-         Item           : Add to selection
-         Selected Item  : Remove from selection
-         Item Handle    : Don't show
-    }
-    // Select item(Unselect, Multi-select)
-    TargetItem := FMouseProcessor.TargetItem;
-    PressedShift := AShift * [ssShift, ssCtrl] <> [];
-
-    // Canvas click
-    if not Assigned(TargetItem) then
-    begin
-      if not PressedShift then
-        FSelectedItems.Clear;
-    end
-    else
-    begin
-      if not TargetItem.Selected then
-      // Non-selected item click
-      begin
-        if not PressedShift then
-          FSelectedItems.Clear;
-        FSelectedItems.Add(Targetitem);
-      end
-      else
-      // Selected item click
-      begin
-        if PressedShift then
-        begin
-          TargetItem.Selected := False;
-          FSelectedItems.Remove(TargetItem);
-        end;
-      end;
-    end;
-
-    if Assigned(TargetItem) and TargetItem.Selected then
-      if Assigned(TargetItem.Selection.HotHandle) then
-        DragState := dsItemResize
-      else
-        DragState := dsItemMove;
-
-
-//    DragState := FMouseProcessor.CalcDragState(APoint);
-
-    // DragState 결정
-    // dsResize
-    // dsMove
-  end;
-
-
-
-//  FItemList.MouseDown(APoint);
-
-//  ProcessSelect(
-//    FItemList.TargetItem,               // ASelectingItem
-//    AShift * [ssShift, ssCtrl] <> []    // AIsMultipleSelect
-//  );
-
-//  if FDragMode = dmItemResize then
-//  begin
-//    if Supports(FSelectedItem, IThItemConnector) then
-//    begin
-//      ConnectionItem := FItemList.GetConnectionItem(APoint);
-//      if Assigned(ConnectionItem) then
-//      begin
-//        ConnectionItem.ShowConnection;
-//        ConnectionItem.MouseDown(APoint);
-//      end;
-//    end;
-//  end;
-
 end;
 
 procedure TThShapeDrawObject.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
-var
-  MovePoint: TFloatPoint;
-  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 
   FMouseProcessor.MouseMove(APoint, AShift);
-
-  if FMouseDowned then
-  begin
-    case FDragState of
-    dsItemMove:
-      begin
-        MovePoint := APoint - FLastPoint;
-        FSelectedItems.MoveItems(MovePoint);
-        FLastPoint := APoint;
-      end;
-    dsItemResize:
-      begin
-        FSelectedItem.Selection.ResizeItem(APoint);
-      end;
-    end;
-  end;
-
-  // Resize
-
-//  FItemList.MouseMove(APoint);
-
-//  if FMouseDowned then
-//  begin
-//    if FDragMode = dmItemMove then
-//    begin
-//      MovePoint := APoint - FLastPoint;
-//      FItemList.MoveSelectedItems(MovePoint);
-////      FSelectedItems.MoveItems(MovePoint);
-//      FLastPoint := APoint;
-//    end
-//    else if FDragMode = dmItemResize then
-//    begin
-//      FSelectedItem.Selection.ResizeItem(APoint);
-//
-//      { TODO : 현재 선택된 항목이 Connector이며,
-//        포인트가 위치한 항목(크기 조정 중인 항목 제외)이 Connection 지원하는 경우
-//        AnchorPoint  표시 }
-//      if Supports(FSelectedItem, IThConnectorItem) then
-//      begin
-//        ConnectionItem := FItemList.GetConnectionItem(APoint);
-//        if Assigned(ConnectionItem) then
-//        begin
-//          ConnectionItem.ShowConnection;
-//          ConnectionItem.MouseMove(APoint);
-//        end;
-//      end;
-//    end;
-//  end
-//  else
-//  begin
-//  end;
 end;
 
 procedure TThShapeDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
@@ -573,64 +410,13 @@ begin
   inherited;
 
   FMouseProcessor.MouseUp(APoint, AShift);
-
-  DragState := dsNone;
-
-//  FItemList.MouseUp(APoint);
-//
-//  if Assigned(FSelectedItem) and (FItemList.TargetItem <> FSelectedItem) then
-//    FSelectedItem.MouseUp(APoint);
-//
-//  if FDragMode = dmItemResize then
-//  begin
-//    if Supports(FSelectedItem, IThConnectorItem) then
-//    begin
-//      ConnectionItem := FItemList.GetConnectionItem(APoint);
-//      if Assigned(ConnectionItem) then
-//      begin
-//        ConnectionItem.HideConnection;
-//        ConnectionItem.MouseUp(APoint);
-//      end;
-//    end;
-//  end;
-//
-//  FDragMode := dmNone;
-//
-//  inherited;
-end;
-
-procedure TThShapeDrawObject.SetDragState(const Value: TThShapeDragState);
-begin
-  FDragState := Value;
-
-  case FDragState of
-  dsNone:       ;
-  dsItemAdd:    Screen.Cursor := crCross;
-  dsItemMove:   ;
-  dsItemResize: Screen.Cursor := crCross;
-  end;
-end;
-
-procedure TThShapeDrawObject.SetSelectedItem(const Value: IThSelectableItem);
-begin
-  FSelectedItem := Value;
-
-  FSelectedItems.Clear;
-  if Assigned(Value) then
-  begin
-    Value.Selected := True;
-    FSelectedItems.Add(Value);
-  end;
 end;
 
 procedure TThShapeDrawObject.SetShapeId(const Value: string);
 begin
   FShapeId := Value;
 
-  if FShapeId = '' then
-    DragState := dsNone
-  else
-    DragState := dsItemAdd;
+  FMouseProcessor.ShapeId := Value;
 end;
 
 procedure TThShapeDrawObject.DeleteSelectedItems;
@@ -639,7 +425,7 @@ var
   Item: IThSelectableItem;
   Item1, Item2: IInterface;
 begin
-  FSelectedItem := nil;
+//  FSelectedItem := nil;
   for Item in FSelectedItems do
   begin
     // FSelectedItems.Item(IThSelectableItem)으로
