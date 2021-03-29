@@ -74,6 +74,7 @@ type
     function GetSelected: Boolean;
     procedure SetSelected(const Value: Boolean);
     function GetSelection: IThItemSelection;
+//    function PtInHandle(APoint: TFloatPoint): Boolean;
 
     property Selected: Boolean read GetSelected write SetSelected;
     property Selection: IThItemSelection read GetSelection;
@@ -127,6 +128,8 @@ type
     function GetHotHandle: IThItemHandle;
     procedure ReleaseHotHandle;
     property HotHandle: IThItemHandle read GetHotHandle;
+
+    // Visible: Boolean
   end;
 
   // 선택 시 크기변경 핸들 관리
