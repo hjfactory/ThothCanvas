@@ -65,7 +65,6 @@ type
   TThCustomItemHandles = class(TInterfacedObject, IThItemHandles)
   private
     FVisible: Boolean;
-    FLastCursor: TCursor;
 
     procedure SetHotHandle(const Value: IThItemHandle);
     function GetHotHandle: IThItemHandle;
@@ -103,11 +102,9 @@ type
 
     function PtInHandles(APoint: TFloatPoint): Boolean; virtual;
 
-//    property HotHandle: IThItemHandle read GetHotHandle write SetHotHandle;
     property HandleRadius: Single read FRadius;
 
     property Visible: Boolean read GetVisible write SetVisible;
-    // Visible: Boolean
   end;
 
 implementation
@@ -228,9 +225,6 @@ begin
   begin
     P := H.Point.Scale(AScale).Offset(AOffset);
     Poly := H.GetPoly(P);
-//    Poly := ScalePolygon(H.Poly, AScale.X, AScale.Y);
-//    TranslatePolygonInplace(Poly, AOffset.X, AOffset.Y);
-//    Poly := TranslatePolygon(H.Poly, AOffset.X, AOffset.Y);
 
     if H = TThItemHandle(FHotHandle) then
       PolygonFS(Bitmap, Poly, FHotColor)
@@ -238,14 +232,6 @@ begin
       PolygonFS(Bitmap, Poly, FFillColor);
     PolylineFS(Bitmap, Poly, FBorderColor, True, FBorderWidth);
   end;
-end;
-
-procedure TThCustomItemHandles.FreeHandles;
-var
-  H: TThItemHandle;
-begin
-  for H in FHandles do
-    H.Free;
 end;
 
 function TThCustomItemHandles.GetHandleAtPoint(
@@ -259,6 +245,11 @@ begin
     if PointInPolygon(APoint, H.Poly) then
       Exit(H);
   end;
+end;
+
+function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
+begin
+  Result := Assigned(GetHandleAtPoint(APoint));
 end;
 
 function TThCustomItemHandles.GetHotHandle: IThItemHandle;
@@ -288,9 +279,12 @@ begin
   FMouseDowned := False;
 end;
 
-function TThCustomItemHandles.PtInHandles(APoint: TFloatPoint): Boolean;
+procedure TThCustomItemHandles.FreeHandles;
+var
+  H: TThItemHandle;
 begin
-  Result := Assigned(GetHandleAtPoint(APoint));
+  for H in FHandles do
+    H.Free;
 end;
 
 procedure TThCustomItemHandles.ReleaseHotHandle;
@@ -307,14 +301,9 @@ begin
   FHotHandle := Value;
 
   if FHotHandle = nil then
-  begin
-    Screen.Cursor := crDefault;
-  end
+    Screen.Cursor := crDefault
   else
-  begin
-    FLastCursor := Screen.Cursor;
     Screen.Cursor := FHotHandle.Cursor;
-  end
 end;
 
 procedure TThCustomItemHandles.SetVisible(const Value: Boolean);

@@ -156,7 +156,6 @@ end;
 procedure TThCustomViewLayer.Paint(Buffer: TBitmap32);
 var
   I: Integer;
-  Item: IThItem;
   LScale, LOffset: TFloatPoint;
 begin
   inherited;

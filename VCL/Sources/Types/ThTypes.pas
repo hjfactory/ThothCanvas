@@ -129,6 +129,8 @@ type
     property HotHandle: IThItemHandle read GetHotHandle;
     procedure ReleaseHotHandle;
 
+    function GetVisible: Boolean;
+    procedure SetVisible(const Value: Boolean);
     property Visible: Boolean read GetVisible write SetVisible;
     // Visible: Boolean
   end;

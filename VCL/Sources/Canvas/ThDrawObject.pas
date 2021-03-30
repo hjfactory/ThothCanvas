@@ -404,8 +404,6 @@ begin
 end;
 
 procedure TThShapeDrawObject.MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
-var
-  ConnectionItem: IThConnectableItem;
 begin
   inherited;
 

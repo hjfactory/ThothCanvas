@@ -17,6 +17,7 @@ type
     function GetPolyInItems(APoly: TThPoly): TArray<IThItem>;
 
     function GetConnectionItem(APoint: TFloatPoint): IThConnectableItem;
+    function GetItemAtPoint(APoint: TFloatPoint): IThSelectableItem;
   end;
 
   TThSelectedItems = class(TList<IThSelectableItem>)
@@ -58,43 +59,27 @@ begin
   end;
 end;
 
-//procedure TThItemList.MouseDown(APoint: TFloatPoint);
-//begin
-//  if Assigned(FTargetItem) then
-//    FTargetItem.MouseDown(APoint)
-//end;
-//
-//procedure TThItemList.MouseMove(APoint: TFloatPoint);
-//var
-//  Item: IThSelectableItem;
-//begin
-//  Item := GetItemAtPoint(APoint) as IThSelectableItem;
-//
-//  if FTargetItem <> Item then
-//  begin
-//    if Assigned(FTargetItem) then
-//      FTargetItem.MouseLeave(APoint);
-//    FTargetItem := Item;
-//
-//    if Assigned(FTargetItem) then
-//      FTargetItem.MouseEnter(APoint)
-//  end;
-//
-//  if Assigned(FTargetItem) then
-//    FTargetItem.MouseMove(APoint);
-//end;
-//
-//procedure TThItemList.MouseUp(APoint: TFloatPoint);
-//begin
-//  if Assigned(FTargetItem) then
-//    FTargetItem.MouseUp(APoint)
-//end;
-
 procedure TThItemList.Notify(const Value: IThItem; Action: TCollectionNotification);
 begin
   inherited;
   if Action = cnRemoved then
     TObject(Value).Free;
+end;
+
+function TThItemList.GetItemAtPoint(APoint: TFloatPoint): IThSelectableItem;
+var
+  I: Integer;
+  Item: IThItem;
+begin
+  Result := nil;
+
+  for I := Count - 1 downto 0 do
+  begin
+    Item := Items[I];
+
+    if Item.PtInItem(APoint) then
+      Exit(Item as IThSelectableItem);
+  end;
 end;
 
 function TThItemList.GetPolyInItems(APoly: TThPoly): TArray<IThItem>;

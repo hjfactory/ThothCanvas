@@ -136,6 +136,9 @@ type
     procedure ShowConnection;
     procedure HideConnection;
   public
+    constructor Create; override;
+    destructor Destroy; override;
+
     procedure SetStyle(AColor: TColor32;
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -143,6 +146,8 @@ type
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); override;
+
+    function PtInItem(APt: TFloatPoint): Boolean; override;
 
     procedure ResizeItem(AFromPoint, AToPoint: TFloatPoint); override;
     procedure MoveItem(APoint: TFloatPoint); override;
@@ -369,6 +374,17 @@ end;
 
 { TThFillShapeItem }
 
+constructor TThFaceShapeItem.Create;
+begin
+  inherited;
+end;
+
+destructor TThFaceShapeItem.Destroy;
+begin
+
+  inherited;
+end;
+
 procedure TThFaceShapeItem.SetStyle(AColor: TColor32; ABorderWidth: Integer;
   ABorderColor: TColor32);
 begin
@@ -475,13 +491,14 @@ end;
 procedure TThFaceShapeItem.MouseEnter(APoint: TFloatPoint);
 begin
   inherited;
-//  FConnection := CreateConnection;
+
+  ShowConnection;
 end;
 
 procedure TThFaceShapeItem.MouseLeave(APoint: TFloatPoint);
 begin
-//  FConnection := nil;
   inherited;
+
   HideConnection;
 end;
 
@@ -489,6 +506,18 @@ procedure TThFaceShapeItem.MoveItem(APoint: TFloatPoint);
 begin
   FRect := OffsetRect(FRect, APoint);
   Realign;
+end;
+
+function TThFaceShapeItem.PtInItem(APt: TFloatPoint): Boolean;
+begin
+  Result := False;
+  if GR32.PtInRect(Bounds, APt) then
+  begin
+    if Assigned(FConnection) and FConnection.PtInHandles(APt) then
+      Exit(True);
+
+    Result := inherited;
+  end;
 end;
 
 procedure TThFaceShapeItem.ResizeItem(AFromPoint, AToPoint: TFloatPoint);
@@ -536,13 +565,7 @@ begin
 
   PolyPolygonFS(Bitmap, PolyPoly, FBorderColor);
 
-//  PolyPolylineFS(Bitmap, PolyPoly, FBorderColor, True, FBorderWidth);
-
-
   inherited;
-
-//  if FSelected and Assigned(FSelection) then
-//    FSelection.Draw(Bitmap, AScale, AOffset);
 end;
 
 procedure TThLineShapeItem.DrawPoints(Bitmap: TBitmap32; AScale, AOffset,

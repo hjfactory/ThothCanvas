@@ -28,10 +28,9 @@ type
     FItemList: TThItemList;
 
     FTargetItem: IThSelectableItem;
+    FTargetConnection: IThConnectableItem;
     FSelectedItems: TThSelectedItems;
     FShapeId: string;
-
-    function GetItemAtPoint(APoint: TFloatPoint): IThSelectableItem;
     procedure SetDragState(const Value: TThShapeDragState);
     procedure SetShapeId(const Value: string);
   public
@@ -49,7 +48,7 @@ type
 implementation
 
 uses
-  Vcl.Forms, System.UITypes,
+  Vcl.Forms, System.SysUtils, System.UITypes,
   ThShapeItem, ThItemStyle;
 
 { TThMouseHandler }
@@ -59,22 +58,6 @@ begin
   FItemList := AItemList;
   FSelectedItems := ASelectedItems;
 end;
-
-function TThShapeDrawMouseProcessor.GetItemAtPoint(
-  APoint: TFloatPoint): IThSelectableItem;
-var
-  I: Integer;
-  Item: IThItem;
-begin
-  Result := nil;
-
-  for I := FItemList.Count - 1 downto 0 do
-  begin
-    Item := FItemList[I];
-
-    if Item.PtInItem(APoint) then
-      Exit(Item as IThSelectableItem);
-  end;end;
 
 procedure TThShapeDrawMouseProcessor.MouseDown(const APoint: TFloatPoint;
   AShift: TShiftState);
@@ -141,14 +124,12 @@ begin
     end;
 
     if Assigned(FTargetItem) and FTargetItem.Selected then
+    begin
       if Assigned(FTargetItem.Selection.HotHandle) then
         DragState := dsItemResize
       else
         DragState := dsItemMove;
-
-    // DragState ∞·¡§
-    // dsResize
-    // dsMove
+    end;
   end;
 end;
 
@@ -156,9 +137,10 @@ procedure TThShapeDrawMouseProcessor.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
   Item: IThSelectableItem;
+  ConnectionItem: IThConnectableItem;
   MovePoint: TFloatPoint;
 begin
-  Item := GetItemAtPoint(APoint);
+  Item := FItemList.GetItemAtPoint(APoint);
 
   if not FMouseDowned then
   begin
@@ -175,9 +157,7 @@ begin
       FTargetItem := Item;
 
       if Assigned(FTargetItem) then
-      begin
         FTargetItem.MouseEnter(APoint)
-      end;
     end;
 
     if Assigned(FTargetItem) then
@@ -195,6 +175,30 @@ begin
     dsItemResize:
       begin
         FTargetItem.Selection.ResizeItem(APoint);
+
+        if Supports(FTargetItem, IThConnectorItem) then
+        begin
+          ConnectionItem := FItemList.GetConnectionItem(APoint);
+
+          if FTargetConnection <> ConnectionItem then
+          begin
+            if Assigned(FTargetConnection) then
+            begin
+              if Assigned(FTargetConnection.Connection.HotHandle) then
+                FTargetConnection.Connection.ReleaseHotHandle;
+
+              FTargetConnection.MouseLeave(APoint);
+            end;
+
+            FTargetConnection := ConnectionItem;
+
+            if Assigned(FTargetConnection) then
+              FTargetConnection.MouseEnter(APoint)
+          end;
+
+          if Assigned(FTargetConnection) then
+            FTargetConnection.MouseMove(APoint);
+        end;
       end;
     end;
   end;

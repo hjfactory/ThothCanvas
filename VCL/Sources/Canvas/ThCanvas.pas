@@ -110,8 +110,6 @@ begin
   FImgView.Parent := Self;
   FImgView.Align := alClient;
 
-//  FImgView.Cursor := crNone;
-
   FImgView.Color := clSilver;
   FImgView.Centered := False;
 
