@@ -27,8 +27,10 @@ type
 
     FItemList: TThItemList;
 
-    FTargetItem: IThSelectableItem;
-    FTargetConnection: IThConnectableItem;
+
+    FTargetItem: IThSelectableItem; // Mouse가 올라간 Item
+    FTargetConnection: IThConnectableItem; // Mouse가 올라간 연결가능한 Item(dsItemResize 시 할당 됨)
+
     FSelectedItems: TThSelectedItems;
     FShapeId: string;
     procedure SetDragState(const Value: TThShapeDragState);
@@ -184,16 +186,21 @@ begin
           begin
             if Assigned(FTargetConnection) then
             begin
-              if Assigned(FTargetConnection.Connection.HotHandle) then
+              if Assigned(FTargetConnection.Connection)
+                 and Assigned(FTargetConnection.Connection.HotHandle) then
                 FTargetConnection.Connection.ReleaseHotHandle;
 
               FTargetConnection.MouseLeave(APoint);
+              FTargetConnection.HideConnection;
             end;
 
             FTargetConnection := ConnectionItem;
 
             if Assigned(FTargetConnection) then
-              FTargetConnection.MouseEnter(APoint)
+            begin
+              FTargetConnection.MouseEnter(APoint);
+              FTargetConnection.ShowConnection;
+            end;
           end;
 
           if Assigned(FTargetConnection) then
@@ -208,6 +215,14 @@ procedure TThShapeDrawMouseProcessor.MouseUp(const APoint: TFloatPoint;
   AShift: TShiftState);
 begin
   FMouseDowned := False;
+
+  if Assigned(FTargetConnection) then
+  begin
+    // ConnectionHandle이면 연결
+
+    FTargetConnection.HideConnection;
+    FTargetConnection := nil;
+  end;
 
   DragState := dsNone;
 end;

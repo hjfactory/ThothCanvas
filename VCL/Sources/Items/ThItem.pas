@@ -124,11 +124,7 @@ type
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
 
-    procedure MouseDown(APoint: TFloatPoint); override;
     procedure MouseMove(APoint: TFloatPoint); override;
-    procedure MouseUp(APoint: TFloatPoint); override;
-    procedure MouseEnter(APoint: TFloatPoint); override;
-    procedure MouseLeave(APoint: TFloatPoint); override;
 
     function CreateSelection: IThItemSelection; override;
     function CreateConnection: IThItemConnection; virtual;
@@ -369,7 +365,8 @@ end;
 
 procedure TThShapeItem.SetSelected(const Value: Boolean);
 begin
-  FSelection.Visible := Value;
+  if Assigned(FSelection) then
+    FSelection.Visible := Value;
 end;
 
 { TThFillShapeItem }
@@ -464,42 +461,12 @@ begin
   Result := TThShapeSelection.Create(Self);
 end;
 
-procedure TThFaceShapeItem.MouseDown(APoint: TFloatPoint);
-begin
-  inherited;
-
-  if Assigned(FConnection) then
-    FConnection.MouseDown(APoint);
-end;
-
 procedure TThFaceShapeItem.MouseMove(APoint: TFloatPoint);
 begin
   inherited;
 
   if Assigned(FConnection) then
     FConnection.MouseMove(APoint);
-end;
-
-procedure TThFaceShapeItem.MouseUp(APoint: TFloatPoint);
-begin
-  inherited;
-
-  if Assigned(FConnection) then
-    FConnection.MouseUp(APoint);
-end;
-
-procedure TThFaceShapeItem.MouseEnter(APoint: TFloatPoint);
-begin
-  inherited;
-
-  ShowConnection;
-end;
-
-procedure TThFaceShapeItem.MouseLeave(APoint: TFloatPoint);
-begin
-  inherited;
-
-  HideConnection;
 end;
 
 procedure TThFaceShapeItem.MoveItem(APoint: TFloatPoint);

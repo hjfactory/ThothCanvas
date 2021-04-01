@@ -34,7 +34,7 @@ begin
   inherited;
 
   FFillColor := clGray32;
-  FHotColor := clRed32;
+  FHotColor := clYellow32;
 end;
 
 procedure TThItemAnchorPoints.Draw(Bitmap: TBitmap32; AScale,
