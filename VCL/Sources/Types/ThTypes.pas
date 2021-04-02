@@ -80,6 +80,7 @@ type
     property Selection: IThItemSelection read GetSelection;
   end;
 
+  IThConnectorItem = interface;
   // 연결할 수 있는(도형)
   IThConnectableItem = interface(IThSelectableItem)
   ['{6ECF9DA8-3440-42B9-80DE-C33B296CC4D5}']
@@ -90,12 +91,22 @@ type
 
     property Connection: IThItemConnection read GetConnection;
     // Visible
+
+    function GetLinkedConnectors: TList<IThConnectorItem>;
+    property LinkedConnectors: TList<IThConnectorItem> read GetLinkedConnectors;
   end;
 
   // 연결자(선)
   IThConnectorItem = interface
   ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
+    function GetLinkedFromItem: IThConnectableItem;
+    procedure SetLinkedFromItem(const AValue: IThConnectableItem);
+    function GetLinkedToItem: IThConnectableItem;
+    procedure SetLinkedToItem(const AValue: IThConnectableItem);
+    property LinkedFromItem: IThConnectableItem read GetLinkedFromItem write SetLinkedFromItem;
+    property LinkedToItem: IThConnectableItem read GetLinkedToItem write SetLinkedToItem;
 
+//    procedure MoveLinkedItem(AItem: IThConnectableItem);
   end;
 
   // 그리기 객체

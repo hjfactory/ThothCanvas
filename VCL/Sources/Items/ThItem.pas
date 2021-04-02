@@ -120,6 +120,7 @@ type
     FColor: TColor32;
     FConnection: IThItemConnection;
     function GetConnection: IThItemConnection;
+    function GetLinkedConnectors: TList<IThConnectorItem>;
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
@@ -139,6 +140,8 @@ type
       ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
 
+    property LinkedConnectors: TList<IThConnectorItem> read GetLinkedConnectors;
+
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint); override;
     procedure DrawPoints(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint;
       AFromPoint, AToPoint: TFloatPoint); override;
@@ -155,6 +158,10 @@ type
   TThLineShapeItem = class(TThShapeItem, IThConnectorItem)
   private
     FFromPoint, FToPoint: TFloatPoint;
+    function GetLinkedFromItem: IThConnectableItem;
+    function GetLinkedToItem: IThConnectableItem;
+    procedure SetLinkedFromItem(const Value: IThConnectableItem);
+    procedure SetLinkedToItem(const Value: IThConnectableItem);
   protected
     procedure DoRealign; override;
     function CreateSelection: IThItemSelection; override;
@@ -172,6 +179,9 @@ type
 
     property FromPoint: TFloatPoint read FFromPoint;
     property ToPoint: TFloatPoint read FToPoint;
+
+    property LinkedFromItem: IThConnectableItem read GetLinkedFromItem write SetLinkedFromItem;
+    property LinkedToItem: IThConnectableItem read GetLinkedToItem write SetLinkedToItem;
   end;
 
 implementation
@@ -451,6 +461,11 @@ begin
   Result := FConnection;
 end;
 
+function TThFaceShapeItem.GetLinkedConnectors: TList<IThConnectorItem>;
+begin
+
+end;
+
 function TThFaceShapeItem.CreateConnection: IThItemConnection;
 begin
   Result := TThItemAnchorPoints.Create(Self);
@@ -504,6 +519,16 @@ begin
   FBorderColor := ABorderColor;
 end;
 
+procedure TThLineShapeItem.SetLinkedFromItem(const Value: IThConnectableItem);
+begin
+
+end;
+
+procedure TThLineShapeItem.SetLinkedToItem(const Value: IThConnectableItem);
+begin
+
+end;
+
 procedure TThLineShapeItem.SetStyle(AStyle: IThDrawStyle);
 var
   Style: TThShapeStyle;
@@ -543,6 +568,16 @@ begin
   Realign;
 
   Draw(Bitmap, AScale, AOffset);
+end;
+
+function TThLineShapeItem.GetLinkedFromItem: IThConnectableItem;
+begin
+
+end;
+
+function TThLineShapeItem.GetLinkedToItem: IThConnectableItem;
+begin
+
 end;
 
 function TThLineShapeItem.CreateSelection: IThItemSelection;

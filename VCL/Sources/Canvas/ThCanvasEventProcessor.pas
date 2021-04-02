@@ -51,7 +51,7 @@ implementation
 
 uses
   Vcl.Forms, System.SysUtils, System.UITypes,
-  ThShapeItem, ThItemStyle;
+  ThShapeItem, ThItemStyle, ThItemHandle;
 
 { TThMouseHandler }
 
@@ -138,10 +138,13 @@ end;
 procedure TThShapeDrawMouseProcessor.MouseMove(const APoint: TFloatPoint;
   AShift: TShiftState);
 var
+  Pt: TFloatPoint;
   Item: IThSelectableItem;
   ConnectionItem: IThConnectableItem;
   MovePoint: TFloatPoint;
 begin
+  Pt := APoint;
+
   Item := FItemList.GetItemAtPoint(APoint);
 
   if not FMouseDowned then
@@ -176,8 +179,6 @@ begin
       end;
     dsItemResize:
       begin
-        FTargetItem.Selection.ResizeItem(APoint);
-
         if Supports(FTargetItem, IThConnectorItem) then
         begin
           ConnectionItem := FItemList.GetConnectionItem(APoint);
@@ -204,8 +205,15 @@ begin
           end;
 
           if Assigned(FTargetConnection) then
+          begin
             FTargetConnection.MouseMove(APoint);
+
+            if Assigned(FTargetConnection.Connection.HotHandle) then
+              Pt := TThItemHandle(FTargetConnection.Connection.HotHandle).Point;
+          end;
         end;
+
+        FTargetItem.Selection.ResizeItem(Pt);
       end;
     end;
   end;
@@ -213,13 +221,28 @@ end;
 
 procedure TThShapeDrawMouseProcessor.MouseUp(const APoint: TFloatPoint;
   AShift: TShiftState);
+var
+  ConnectorItem: IThConnectorItem;
 begin
   FMouseDowned := False;
 
+  if FDragState = dsItemResize then
+  begin
+    if Assigned(FTargetConnection) then
+    begin
+      // ConnectionHandle이면 연결
+      if Assigned(FTargetConnection.Connection.HotHandle) then
+      begin
+        ConnectorItem := FTargetItem as IThConnectorItem;
+        FTargetConnection.LinkedConnectors.Add(ConnectorItem);
+//        ConnectorItem.
+  //      FTargetConnection.
+      end;
+    end;
+  end;
+
   if Assigned(FTargetConnection) then
   begin
-    // ConnectionHandle이면 연결
-
     FTargetConnection.HideConnection;
     FTargetConnection := nil;
   end;

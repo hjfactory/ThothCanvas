@@ -242,7 +242,8 @@ begin
   Result := nil;
   for H in FHandles do
   begin
-    if PointInPolygon(APoint, H.Poly) then
+    if PtInCircle(APoint, H.Point, H.Radius * 2) then
+//    if PointInPolygon(APoint, H.Poly) then
       Exit(H);
   end;
 end;
