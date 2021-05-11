@@ -28,8 +28,8 @@ type
     FItemList: TThItemList;
 
 
-    FTargetItem: IThSelectableItem; // Mouse가 올라간 Item
-    FTargetConnection: IThConnectableItem; // Mouse가 올라간 연결가능한 Item(dsItemResize 시 할당 됨)
+    FTargetItem: IThSelectableItem;         // Mouse가 올라간 Item
+    FTargetConnection: IThConnectableItem;  // Mouse가 올라간 연결가능한 Item(dsItemResize 시 할당 됨)
 
     FSelectedItems: TThSelectedItems;
     FShapeId: string;
@@ -234,7 +234,7 @@ begin
       if Assigned(FTargetConnection.Connection.HotHandle) then
       begin
         ConnectorItem := FTargetItem as IThConnectorItem;
-        FTargetConnection.LinkedConnectors.Add(ConnectorItem);
+//        FTargetConnection.LinkedConnectors.Add(ConnectorItem);
 //        ConnectorItem.
   //      FTargetConnection.
       end;
