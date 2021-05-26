@@ -23,6 +23,8 @@ function OffsetRect(AFR: TFloatRect; AOffset: TFloatPoint): TFloatRect;
 
 function IntfEquals(AIntf1, AIntf2: IInterface): Boolean;
 
+function PtInCircle(const Point, Center: TFloatPoint; Radius: TFloat): Boolean;
+
 //function LocalToViewPort(
 type
   TFloatPointHelper = record helper for TFloatPoint
@@ -152,6 +154,20 @@ end;
 function IntfEquals(AIntf1, AIntf2: IInterface): Boolean;
 begin
   Result := AIntf1 as IInterface = AIntf2 as IInterface;
+end;
+
+function PtInCircle(const Point, Center: TFloatPoint; Radius: TFloat): Boolean;
+begin
+  if Radius > 0 then
+  begin
+    Result := Sqr((Point.X - Center.X) / Radius) +
+      Sqr((Point.Y - Center.Y) / Radius) <= 1;
+  end
+  else
+  begin
+    Result := False;
+  end;
+
 end;
 
 { TFloatRectHelper }

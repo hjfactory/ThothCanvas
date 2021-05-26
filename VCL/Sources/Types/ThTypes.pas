@@ -80,6 +80,7 @@ type
     property Selection: IThItemSelectionHandles read GetSelection;
   end;
 
+  IThConnectorItem = interface;
   // 연결할 수 있는(도형)
   IThConnectableItem = interface(IThSelectableItem)
   ['{6ECF9DA8-3440-42B9-80DE-C33B296CC4D5}']
@@ -90,6 +91,9 @@ type
 
     property Connection: IThItemConnectionHandles read GetConnection;
     // Visible
+
+    function GetLinkedConnectors: TList<IThConnectorItem>;
+    property LinkedConnectors: TList<IThConnectorItem> read GetLinkedConnectors;
   end;
 
   // 연결자(선)

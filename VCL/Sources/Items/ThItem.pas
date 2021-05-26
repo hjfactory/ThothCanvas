@@ -120,6 +120,7 @@ type
     FColor: TColor32;
     FConnection: IThItemConnectionHandles;
     function GetConnection: IThItemConnectionHandles;
+    function GetLinkedConnectors: TList<IThConnectorItem>;
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
@@ -452,6 +453,11 @@ end;
 function TThFaceShapeItem.GetConnection: IThItemConnectionHandles;
 begin
   Result := FConnection;
+end;
+
+function TThFaceShapeItem.GetLinkedConnectors: TList<IThConnectorItem>;
+begin
+
 end;
 
 function TThFaceShapeItem.CreateConnection: IThItemConnectionHandles;
