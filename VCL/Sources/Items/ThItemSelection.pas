@@ -13,7 +13,7 @@ uses
   ThItemHandle;
 
 type
-  TThItemSelection = class(TThCustomItemHandles, IThItemSelection)
+  TThItemSelection = class(TThCustomItemHandles, IThItemSelectionHandles)
   protected
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure ResizeItem(const APoint: TFloatPoint); virtual; abstract;

@@ -66,7 +66,7 @@ type
   TThShapeItem = class(TThItem, IThShapeItem, IThSelectableItem)
   private
 //    FSelected: Boolean;
-    FSelection: IThItemSelection;
+    FSelection: IThItemSelectionHandles;
 //    FSelectionClass: TThItemSelectionClass;
 
     FBorderWidth: Integer;
@@ -76,12 +76,12 @@ type
     // IThSelectableItem
     procedure SetSelected(const Value: Boolean);
     function GetSelected: Boolean;
-    function GetSelection: IThItemSelection;
+    function GetSelection: IThItemSelectionHandles;
   protected
     function GetBounds: TFloatRect; override;
 
     procedure DoRealign; override;
-    function CreateSelection: IThItemSelection; virtual; abstract;
+    function CreateSelection: IThItemSelectionHandles; virtual; abstract;
 
     // IThSelectableItem
     procedure MoveItem(APoint: TFloatPoint); virtual; abstract;
@@ -107,7 +107,7 @@ type
     function PtInItem(APt: TFloatPoint): Boolean; override;
 
     property Selected: Boolean read GetSelected write SetSelected;
-    property Selection: IThItemSelection read FSelection;
+    property Selection: IThItemSelectionHandles read FSelection;
 
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property BorderColor: TColor32 read FBorderColor write FBorderColor;
@@ -118,16 +118,16 @@ type
   private
     FRect: TFloatRect;
     FColor: TColor32;
-    FConnection: IThItemConnection;
-    function GetConnection: IThItemConnection;
+    FConnection: IThItemConnectionHandles;
+    function GetConnection: IThItemConnectionHandles;
   protected
     procedure DoRealign; override;
     function RectToPolyPoly(ARect: TFloatRect): TThPolyPoly; virtual; abstract;
 
     procedure MouseMove(APoint: TFloatPoint); override;
 
-    function CreateSelection: IThItemSelection; override;
-    function CreateConnection: IThItemConnection; virtual;
+    function CreateSelection: IThItemSelectionHandles; override;
+    function CreateConnection: IThItemConnectionHandles; virtual;
 
     procedure ShowConnection;
     procedure HideConnection;
@@ -157,8 +157,11 @@ type
     FFromPoint, FToPoint: TFloatPoint;
   protected
     procedure DoRealign; override;
-    function CreateSelection: IThItemSelection; override;
+    function CreateSelection: IThItemSelectionHandles; override;
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
+
+    function GetFromItem: IThItem;
+    function GetToItem: IThItem;
   public
     procedure SetStyle(ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -309,7 +312,7 @@ begin
   Result := FSelection.Visible;
 end;
 
-function TThShapeItem.GetSelection: IThItemSelection;
+function TThShapeItem.GetSelection: IThItemSelectionHandles;
 begin
   Result := FSelection;
 end;
@@ -446,17 +449,17 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThFaceShapeItem.GetConnection: IThItemConnection;
+function TThFaceShapeItem.GetConnection: IThItemConnectionHandles;
 begin
   Result := FConnection;
 end;
 
-function TThFaceShapeItem.CreateConnection: IThItemConnection;
+function TThFaceShapeItem.CreateConnection: IThItemConnectionHandles;
 begin
   Result := TThItemAnchorPoints.Create(Self);
 end;
 
-function TThFaceShapeItem.CreateSelection: IThItemSelection;
+function TThFaceShapeItem.CreateSelection: IThItemSelectionHandles;
 begin
   Result := TThShapeSelection.Create(Self);
 end;
@@ -545,7 +548,17 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThLineShapeItem.CreateSelection: IThItemSelection;
+function TThLineShapeItem.GetFromItem: IThItem;
+begin
+  Result := nil;
+end;
+
+function TThLineShapeItem.GetToItem: IThItem;
+begin
+  Result := nil;
+end;
+
+function TThLineShapeItem.CreateSelection: IThItemSelectionHandles;
 begin
   Result := TThLineSelection.Create(Self);
 end;

@@ -14,7 +14,7 @@ uses
 type
   TThItemAnchorPoint = TThShapeHandle;
 
-  TThItemAnchorPoints = class(TThCustomItemHandles, IThItemConnection)
+  TThItemAnchorPoints = class(TThCustomItemHandles, IThItemConnectionHandles)
   protected
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
 

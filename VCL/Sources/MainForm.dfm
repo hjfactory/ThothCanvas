@@ -152,7 +152,7 @@ object frmMain: TfrmMain
     Top = 50
     Width = 50
     Height = 25
-    Caption = 'CvdLn'
+    Caption = 'EbwLn'
     TabOrder = 13
     OnClick = Button2Click
   end

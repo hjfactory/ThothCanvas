@@ -30,8 +30,8 @@ type
   TThPolyPoly = TArrayOfArrayOfFloatPoint;
 
 type
-  IThItemSelection = interface;
-  IThItemConnection = interface;
+  IThItemSelectionHandles = interface;
+  IThItemConnectionHandles = interface;
 
   IThCanvas = interface
   end;
@@ -73,11 +73,11 @@ type
 
     function GetSelected: Boolean;
     procedure SetSelected(const Value: Boolean);
-    function GetSelection: IThItemSelection;
+    function GetSelection: IThItemSelectionHandles;
 //    function PtInHandle(APoint: TFloatPoint): Boolean;
 
     property Selected: Boolean read GetSelected write SetSelected;
-    property Selection: IThItemSelection read GetSelection;
+    property Selection: IThItemSelectionHandles read GetSelection;
   end;
 
   // 연결할 수 있는(도형)
@@ -86,16 +86,20 @@ type
     procedure ShowConnection;
     procedure HideConnection;
 
-    function GetConnection: IThItemConnection;
+    function GetConnection: IThItemConnectionHandles;
 
-    property Connection: IThItemConnection read GetConnection;
+    property Connection: IThItemConnectionHandles read GetConnection;
     // Visible
   end;
 
   // 연결자(선)
   IThConnectorItem = interface
   ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
+    function GetFromItem: IThItem;
+    function GetToItem: IThItem;
 
+    property FromItm: IThItem read GetFromItem;
+    property ToItem: IThItem read GetToItem;
   end;
 
   // 그리기 객체
@@ -136,12 +140,12 @@ type
   end;
 
   // 선택 시 크기변경 핸들 관리
-  IThItemSelection = interface(IThItemHandles)
+  IThItemSelectionHandles = interface(IThItemHandles)
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
     procedure ResizeItem(const APoint: TFloatPoint);
   end;
 
-  IThItemConnection = interface(IThItemHandles)
+  IThItemConnectionHandles = interface(IThItemHandles)
   ['{A4ED614A-0CB3-419A-85B2-0C42176B6C53}']
     procedure Draw(Bitmap: TBitmap32; AScale, AOffset: TFloatPoint);
   end;
