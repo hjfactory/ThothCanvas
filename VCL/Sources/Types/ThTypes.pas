@@ -99,11 +99,11 @@ type
   // 연결자(선)
   IThConnectorItem = interface
   ['{B08D51EF-045C-4C7C-B694-DDD4B4C1625A}']
-    function GetFromItem: IThItem;
-    function GetToItem: IThItem;
+    function GetLinkedFromItem: IThShapeItem;
+    function GetLinkedToItem: IThShapeItem;
 
-    property FromItm: IThItem read GetFromItem;
-    property ToItem: IThItem read GetToItem;
+    property LinkedFromItm: IThShapeItem read GetLinkedFromItem;
+    property LinkedToItem: IThShapeItem read GetLinkedToItem;
   end;
 
   // 그리기 객체

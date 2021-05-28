@@ -156,13 +156,14 @@ type
   TThLineShapeItem = class(TThShapeItem, IThConnectorItem)
   private
     FFromPoint, FToPoint: TFloatPoint;
+    FLinkedFromItem, FLinkedToItem: IThShapeItem;
   protected
     procedure DoRealign; override;
     function CreateSelection: IThItemSelectionHandles; override;
     function PointToPolyPoly(AFromPoint, AToPoint: TFloatPoint): TThPolyPoly; virtual; abstract;
 
-    function GetFromItem: IThItem;
-    function GetToItem: IThItem;
+    function GetLinkedFromItem: IThShapeItem;
+    function GetLinkedToItem: IThShapeItem;
   public
     procedure SetStyle(ABorderWidth: Integer; ABorderColor: TColor32); reintroduce; overload;
     procedure SetStyle(AStyle: IThDrawStyle); overload; override;
@@ -554,12 +555,12 @@ begin
   Draw(Bitmap, AScale, AOffset);
 end;
 
-function TThLineShapeItem.GetFromItem: IThItem;
+function TThLineShapeItem.GetLinkedFromItem: IThShapeItem;
 begin
   Result := nil;
 end;
 
-function TThLineShapeItem.GetToItem: IThItem;
+function TThLineShapeItem.GetLinkedToItem: IThShapeItem;
 begin
   Result := nil;
 end;
