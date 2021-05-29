@@ -94,6 +94,9 @@ type
 
     function GetLinkedConnectors: TList<IThConnectorItem>;
     property LinkedConnectors: TList<IThConnectorItem> read GetLinkedConnectors;
+
+    function IsConnectable: Boolean;
+    procedure ConnectTo(AConnector: IThConnectorItem);
   end;
 
   // 연결자(선)

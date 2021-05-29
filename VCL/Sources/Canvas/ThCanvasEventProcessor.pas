@@ -43,7 +43,6 @@ type
     procedure MouseUp(const APoint: TFloatPoint; AShift: TShiftState);
 
     property DragState: TThShapeDragState read FDragState write SetDragState;
-//    property TargetItem: IThSelectableItem read FTargetItem;
     property ShapeId: string read FShapeId write SetShapeId;
   end;
 
@@ -152,12 +151,7 @@ begin
     if FTargetItem <> Item then
     begin
       if Assigned(FTargetItem) then
-      begin
-        if Assigned(FTargetItem.Selection.HotHandle) then
-          FTargetItem.Selection.ReleaseHotHandle;
-
         FTargetItem.MouseLeave(APoint);
-      end;
 
       FTargetItem := Item;
 
@@ -179,6 +173,9 @@ begin
       end;
     dsItemResize:
       begin
+        // 연결선을 변경하는 경우
+          // 연결 대상 인지
+          // 대상과 연결
         if Supports(FTargetItem, IThConnectorItem) then
         begin
           ConnectionItem := FItemList.GetConnectionItem(APoint);
@@ -187,11 +184,7 @@ begin
           begin
             if Assigned(FTargetConnection) then
             begin
-              if Assigned(FTargetConnection.Connection)
-                 and Assigned(FTargetConnection.Connection.HotHandle) then
-                FTargetConnection.Connection.ReleaseHotHandle;
-
-              FTargetConnection.MouseLeave(APoint);
+//              FTargetConnection.MouseLeave(APoint); // IThSelectableItem과 IThConnectorItem 분리?
               FTargetConnection.HideConnection;
             end;
 
@@ -199,7 +192,7 @@ begin
 
             if Assigned(FTargetConnection) then
             begin
-              FTargetConnection.MouseEnter(APoint);
+//              FTargetConnection.MouseEnter(APoint);
               FTargetConnection.ShowConnection;
             end;
           end;
@@ -230,13 +223,10 @@ begin
   begin
     if Assigned(FTargetConnection) then
     begin
-      // ConnectionHandle이면 연결
-      if Assigned(FTargetConnection.Connection.HotHandle) then
+      if FTargetConnection.IsConnectable
+        and Supports(FTargetItem, IThConnectorItem, ConnectorItem) then
       begin
-        ConnectorItem := FTargetItem as IThConnectorItem;
-//        FTargetConnection.LinkedConnectors.Add(ConnectorItem);
-//        ConnectorItem.
-  //      FTargetConnection.
+        FTargetConnection.ConnectTo(ConnectorItem);
       end;
     end;
   end;

@@ -132,6 +132,9 @@ type
 
     procedure ShowConnection;
     procedure HideConnection;
+
+    function IsConnectable: Boolean;
+    procedure ConnectTo(AConnector: IThConnectorItem);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -330,8 +333,8 @@ begin
   if FSelection.Visible then
     FSelection.MouseMove(APoint);
 
-  if not Assigned(FSelection.HotHandle) then
-    Screen.Cursor := crSizeAll;
+//  if not Assigned(FSelection.HotHandle) then
+//    Screen.Cursor := crSizeAll;
 end;
 
 procedure TThShapeItem.MouseUp(APoint: TFloatPoint);
@@ -376,6 +379,13 @@ end;
 
 { TThFillShapeItem }
 
+procedure TThFaceShapeItem.ConnectTo(AConnector: IThConnectorItem);
+begin
+  // LinkedConnectors에 AConnector 추가
+
+  // AConnector에 LinkedItem 지정
+end;
+
 constructor TThFaceShapeItem.Create;
 begin
   inherited;
@@ -410,7 +420,16 @@ end;
 
 procedure TThFaceShapeItem.HideConnection;
 begin
+  if Assigned(FConnection)
+     and Assigned(FConnection.HotHandle) then
+    FConnection.ReleaseHotHandle;
+
   FConnection := nil;
+end;
+
+function TThFaceShapeItem.IsConnectable: Boolean;
+begin
+  Result := Assigned(FConnection) and Assigned(FConnection.HotHandle)
 end;
 
 procedure TThFaceShapeItem.DoRealign;
