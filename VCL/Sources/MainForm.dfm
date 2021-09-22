@@ -2,21 +2,20 @@ object frmMain: TfrmMain
   Left = 0
   Top = 0
   Caption = 'ThCanvas'
-  ClientHeight = 757
-  ClientWidth = 1076
+  ClientHeight = 633
+  ClientWidth = 989
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  DesignSize = (
-    1076
-    757)
   PixelsPerInch = 96
+  DesignSize = (
+    989
+    633)
   TextHeight = 13
   object Button1: TButton
     Left = 16
@@ -30,13 +29,15 @@ object frmMain: TfrmMain
   object pnlMain: TPanel
     Left = 16
     Top = 96
-    Width = 1041
-    Height = 641
+    Width = 954
+    Height = 517
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     BorderWidth = 2
     BorderStyle = bsSingle
     TabOrder = 1
+    ExplicitWidth = 1041
+    ExplicitHeight = 641
   end
   object ColorBox1: TColorBox
     Left = 16

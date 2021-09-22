@@ -106,7 +106,7 @@ begin
   inherited Create(AOwner);
 
   FImgView := TImgView32.Create(nil);
-  FImgView.Name := 'ThImgView';
+  FImgView.Name := 'ThImageView';
   FImgView.Parent := Self;
   FImgView.Align := alClient;
 
